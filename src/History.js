@@ -34,7 +34,6 @@ function History({ navigateTo }) {
 
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
                 method: 'GET',
-                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'

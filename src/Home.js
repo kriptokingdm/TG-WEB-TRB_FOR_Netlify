@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
-// Используем HTTPS или относительный путь
+// Используем HTTPS
 const serverUrl = 'https://87.242.106.114.sslip.io';
 
 function Home({ navigateTo }) {
@@ -236,6 +236,7 @@ function Home({ navigateTo }) {
 
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
                 method: 'GET',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -246,18 +247,30 @@ function Home({ navigateTo }) {
                 const data = await response.json();
                 console.log('📦 Данные ордеров:', data);
                 
-                const activeOrders = data.orders ? data.orders.filter(order =>
-                    order.status === 'pending' || order.status === 'paid' || order.status === 'processing'
-                ) : [];
+                // Проверяем разные форматы ответа
+                let ordersList = [];
+                if (data.orders) {
+                    ordersList = data.orders;
+                } else if (Array.isArray(data)) {
+                    ordersList = data;
+                }
+                
+                const activeOrders = ordersList.filter(order =>
+                    order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
+                );
 
                 console.log('🔥 Активных ордеров:', activeOrders.length);
                 setActiveOrdersCount(activeOrders.length);
                 setHasActiveOrder(activeOrders.length > 0);
             } else {
-                console.error('❌ Ошибка ответа:', response.status);
+                console.log('ℹ️ Нет активных ордеров или ошибка сервера:', response.status);
+                setHasActiveOrder(false);
+                setActiveOrdersCount(0);
             }
         } catch (error) {
-            console.error('❌ Ошибка проверки активных ордеров:', error.message);
+            console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
+            // Не блокируем пользователя при ошибке сети
+            setHasActiveOrder(false);
         }
     };
 
@@ -273,6 +286,7 @@ function Home({ navigateTo }) {
             
             const response = await fetch(url, {
                 method: 'GET',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -352,18 +366,184 @@ function Home({ navigateTo }) {
         return rate.toFixed(2);
     };
 
-    // Функции для работы с реквизитами (оставляем без изменений)
-    // ... (все функции handleAddPayment, handleDeletePayment, handlePaymentSelect и т.д.)
+    // Функции для работы с реквизитами
+    const handleBankSelect = (bank) => {
+        setNewPayment(prev => ({
+            ...prev,
+            bankName: bank,
+            cardNumberError: '',
+            phoneNumber: bank === 'СБП (Система быстрых платежей)' ? prev.phoneNumber : '',
+            cardNumber: bank === 'СБП (Система быстрых платежей)' ? '' : prev.cardNumber
+        }));
+        setShowBankDropdown(false);
+    };
+
+    const handleCardNumberChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        
+        // Форматируем как 0000 0000 0000 0000
+        let formatted = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formatted += ' ';
+            }
+            formatted += value[i];
+        }
+
+        // Валидация номера карты
+        let cardNumberError = '';
+        if (value.length > 0 && value.length < 16) {
+            cardNumberError = 'Номер карты должен содержать 16 цифр';
+        }
+
+        setNewPayment(prev => ({
+            ...prev,
+            cardNumber: formatted,
+            cardNumberError
+        }));
+    };
+
+    const handlePhoneNumberChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+        
+        // Форматируем как +7 (XXX) XXX-XX-XX
+        let formatted = value;
+        if (value.length > 0) {
+            formatted = '+7';
+            if (value.length > 1) {
+                formatted += ' (' + value.slice(1, 4);
+                if (value.length > 4) {
+                    formatted += ') ' + value.slice(4, 7);
+                    if (value.length > 7) {
+                        formatted += '-' + value.slice(7, 9);
+                        if (value.length > 9) {
+                            formatted += '-' + value.slice(9, 11);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Валидация номера телефона
+        let cardNumberError = '';
+        if (value.length > 0 && value.length < 11) {
+            cardNumberError = 'Введите полный номер телефона (11 цифр)';
+        }
+
+        setNewPayment(prev => ({
+            ...prev,
+            phoneNumber: formatted,
+            cardNumberError
+        }));
+    };
+
+    const handleAddPayment = () => {
+        // Определяем тип реквизитов
+        const isSBP = newPayment.bankName === 'СБП (Система быстрых платежей)';
+        const number = isSBP ? 
+            newPayment.phoneNumber.replace(/\D/g, '') : 
+            newPayment.cardNumber.replace(/\s/g, '');
+
+        if (isSBP ? number.length !== 11 : number.length !== 16) {
+            setNewPayment(prev => ({
+                ...prev,
+                cardNumberError: isSBP ? 
+                    'Номер телефона должен содержать 11 цифр' : 
+                    'Номер карты должен содержать 16 цифр'
+            }));
+            return;
+        }
+
+        const newPaymentMethod = {
+            id: Date.now().toString(),
+            name: newPayment.bankName,
+            number: number,
+            type: isSBP ? 'sbp' : 'card',
+            formattedNumber: isSBP ? newPayment.phoneNumber : newPayment.cardNumber
+        };
+
+        setPaymentMethods(prev => [...prev, newPaymentMethod]);
+        setSelectedPayment(newPaymentMethod);
+        
+        // Сбрасываем форму
+        setNewPayment({
+            bankName: '',
+            cardNumber: '',
+            phoneNumber: '',
+            cardNumberError: ''
+        });
+        setShowAddPayment(false);
+    };
+
+    const handleDeletePayment = (id, e) => {
+        e.stopPropagation();
+        setPaymentMethods(prev => prev.filter(payment => payment.id !== id));
+        if (selectedPayment?.id === id) {
+            setSelectedPayment(null);
+        }
+    };
+
+    const handlePaymentSelect = (payment) => {
+        setSelectedPayment(payment);
+    };
+
+    const handleAddCryptoAddress = () => {
+        // Простая валидация адреса
+        if (!newCryptoAddress.address || newCryptoAddress.address.length < 10) {
+            setNewCryptoAddress(prev => ({
+                ...prev,
+                addressError: 'Введите корректный адрес кошелька'
+            }));
+            return;
+        }
+
+        const newAddress = {
+            id: Date.now().toString(),
+            name: newCryptoAddress.name || 'Мой кошелек',
+            address: newCryptoAddress.address,
+            network: newCryptoAddress.network
+        };
+
+        setCryptoAddresses(prev => [...prev, newAddress]);
+        setSelectedCryptoAddress(newAddress);
+        
+        // Сбрасываем форму
+        setNewCryptoAddress({
+            address: '',
+            network: 'ERC20',
+            name: '',
+            addressError: ''
+        });
+        setShowAddCrypto(false);
+    };
+
+    const handleDeleteCryptoAddress = (id, e) => {
+        e.stopPropagation();
+        setCryptoAddresses(prev => prev.filter(address => address.id !== id));
+        if (selectedCryptoAddress?.id === id) {
+            setSelectedCryptoAddress(null);
+        }
+    };
+
+    const handleCryptoAddressSelect = (address) => {
+        setSelectedCryptoAddress(address);
+    };
+
+    const copyToClipboard = (text, e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Адрес скопирован в буфер обмена!');
+        }).catch(err => {
+            console.error('Ошибка копирования:', err);
+        });
+    };
 
     // Проверка готовности к обмену
     const isExchangeReady = () => {
         if (!userInitialized) {
             console.log('⚠️ Пользователь не инициализирован');
-            return false;
-        }
-        
-        if (hasActiveOrder) {
-            console.log('⚠️ Есть активный ордер');
             return false;
         }
         
@@ -404,12 +584,6 @@ function Home({ navigateTo }) {
             return;
         }
 
-        if (hasActiveOrder) {
-            alert('❌ У вас уже есть активный ордер! Завершите текущую операцию перед созданием новой.');
-            navigateTo('/history');
-            return;
-        }
-
         if (!isExchangeReady()) {
             alert('❌ Заполните все поля правильно');
             return;
@@ -440,6 +614,7 @@ function Home({ navigateTo }) {
 
             const response = await fetch(`${serverUrl}/api/create-order`, {
                 method: 'POST',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -468,7 +643,7 @@ function Home({ navigateTo }) {
 
                     setShowSupportChat(true);
                     
-                    alert('✅ Заявка создана успешно! Уведомления отправлены.');
+                    alert('✅ Заявка создана успешно! Уведомления отправлены в Telegram.');
                     
                 } else {
                     console.error('❌ Ошибка при создании заявки:', result.error);
@@ -946,7 +1121,6 @@ function Home({ navigateTo }) {
                 onClick={handleExchange}
             >
                 {!userInitialized ? '⏳ Загрузка...' : 
-                 hasActiveOrder ? '❌ Завершите текущий ордер' : 
                  (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
             </button>
 

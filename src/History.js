@@ -9,7 +9,7 @@ function History({ navigateTo }) {
     const [activeChat, setActiveChat] = useState(null);
     const [viewMode, setViewMode] = useState('active');
 
-    // Используем тот же serverUrl что и в Home.js
+    // Используем HTTPS
     const serverUrl = 'https://87.242.106.114.sslip.io';
 
     useEffect(() => {
@@ -32,9 +32,9 @@ function History({ navigateTo }) {
             const userId = userData.id;
             console.log('🆔 User ID:', userId);
 
-            // Исправленный URL
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
                 method: 'GET',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -49,12 +49,14 @@ function History({ navigateTo }) {
 
                 // Обрабатываем разные форматы ответа
                 let ordersData = [];
-                if (Array.isArray(data.orders)) {
+                if (data.success && Array.isArray(data.orders)) {
                     ordersData = data.orders;
                 } else if (data.orders && typeof data.orders === 'object') {
                     ordersData = Object.values(data.orders);
                 } else if (Array.isArray(data)) {
                     ordersData = data;
+                } else if (data.orders && Array.isArray(data.orders)) {
+                    ordersData = data.orders;
                 }
 
                 const sortedOrders = ordersData.sort((a, b) => {
@@ -70,65 +72,40 @@ function History({ navigateTo }) {
                 console.error('❌ Ошибка сервера:', response.status);
                 const errorText = await response.text();
                 console.error('❌ Текст ошибки:', errorText);
-                setError(`Ошибка сервера: ${response.status}`);
                 
-                // Тестовые данные на случай ошибки
-                const testOrders = getTestOrders();
-                setOrders(testOrders);
+                // Пробуем получить данные из localStorage как fallback
+                const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                if (localOrders.length > 0) {
+                    console.log('📂 Используем данные из localStorage:', localOrders);
+                    setOrders(localOrders);
+                    setError('⚠️ Используем локальные данные');
+                } else {
+                    setError(`Ошибка сервера: ${response.status}`);
+                }
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки истории:', error);
-            setError('Ошибка соединения с сервером');
-
-            // Тестовые данные на случай ошибки
-            const testOrders = getTestOrders();
-            setOrders(testOrders);
+            
+            // Пробуем получить данные из localStorage как fallback
+            const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+            if (localOrders.length > 0) {
+                console.log('📂 Используем локальные данные из кэша:', localOrders);
+                setOrders(localOrders);
+                setError('⚠️ Используем локальные данные (ошибка сети)');
+            } else {
+                setError('Ошибка соединения с сервером');
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
-    const getTestOrders = () => {
-        return [
-            {
-                id: 'TEST001',
-                type: 'buy',
-                amount: 5000,
-                rate: 92.5,
-                status: 'completed',
-                createdAt: new Date().toISOString(),
-                completedAt: new Date().toISOString(),
-                cryptoAddress: {
-                    network: 'TRC20',
-                    address: 'TEst12345678901234567890'
-                }
-            },
-            {
-                id: 'TEST002',
-                type: 'sell',
-                amount: 100,
-                rate: 87.5,
-                status: 'pending',
-                createdAt: new Date(Date.now() - 3600000).toISOString(),
-                paymentMethod: {
-                    name: 'Сбербанк',
-                    number: '1234'
-                }
-            },
-            {
-                id: 'TEST003',
-                type: 'buy',
-                amount: 10000,
-                rate: 91.2,
-                status: 'processing',
-                createdAt: new Date(Date.now() - 7200000).toISOString(),
-                cryptoAddress: {
-                    network: 'ERC20',
-                    address: '0xABC1234567890123456789012345678901234567'
-                }
-            }
-        ];
-    };
+    // Сохраняем заказы в localStorage при получении
+    useEffect(() => {
+        if (orders.length > 0) {
+            localStorage.setItem('userOrders', JSON.stringify(orders));
+        }
+    }, [orders]);
 
     const getFilteredOrders = () => {
         if (viewMode === 'active') {
@@ -159,6 +136,8 @@ function History({ navigateTo }) {
     };
 
     const calculateTotal = (order) => {
+        if (!order || !order.amount || !order.rate) return '—';
+        
         if (order.type === 'buy') {
             return (order.amount / order.rate).toFixed(2) + ' USDT';
         } else {
@@ -193,6 +172,7 @@ function History({ navigateTo }) {
     };
 
     const canOpenChat = (order) => {
+        if (!order || !order.status) return false;
         const canChat = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
         return canChat;
     };
@@ -246,6 +226,58 @@ function History({ navigateTo }) {
         fetchUserOrders();
     };
 
+    // Функция для удаления заказа из истории
+    const deleteOrder = async (orderId, e) => {
+        e.stopPropagation();
+        if (window.confirm('Удалить эту заявку из истории?')) {
+            try {
+                const updatedOrders = orders.filter(order => order.id !== orderId);
+                setOrders(updatedOrders);
+                localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
+                console.log('🗑️ Удален заказ:', orderId);
+            } catch (error) {
+                console.error('❌ Ошибка удаления:', error);
+            }
+        }
+    };
+
+    // Функция для создания тестовой заявки
+    const createTestOrder = () => {
+        const testOrders = [
+            {
+                id: 'TEST' + Date.now().toString().slice(-6),
+                type: 'buy',
+                amount: 5000,
+                rate: 85.6,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                cryptoAddress: {
+                    network: 'TRC20',
+                    address: 'TEst12345678901234567890'
+                }
+            },
+            {
+                id: 'TEST' + (Date.now() + 1).toString().slice(-6),
+                type: 'sell',
+                amount: 100,
+                rate: 81.6,
+                status: 'completed',
+                createdAt: new Date(Date.now() - 3600000).toISOString(),
+                completedAt: new Date().toISOString(),
+                paymentMethod: {
+                    name: 'Сбербанк',
+                    number: '1234',
+                    type: 'card'
+                }
+            }
+        ];
+
+        const newOrders = [...testOrders, ...orders];
+        setOrders(newOrders);
+        localStorage.setItem('userOrders', JSON.stringify(newOrders));
+        alert('✅ Тестовые заявки добавлены!');
+    };
+
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
 
@@ -253,6 +285,13 @@ function History({ navigateTo }) {
         <div className="home-container">
             <div className="page-header">
                 <h1>История операций</h1>
+                <button 
+                    className="refresh-button"
+                    onClick={retryFetchOrders}
+                    title="Обновить историю"
+                >
+                    🔄
+                </button>
             </div>
 
             <div className="history-content">
@@ -260,15 +299,8 @@ function History({ navigateTo }) {
                     <div className="loading-state">
                         <div className="loading-icon">💫</div>
                         <p>Загрузка истории...</p>
-                        <button
-                            className="retry-button"
-                            onClick={retryFetchOrders}
-                            style={{ marginTop: '10px' }}
-                        >
-                            🔄 Обновить
-                        </button>
                     </div>
-                ) : error ? (
+                ) : error && orders.length === 0 ? (
                     <div className="no-history-message">
                         <div className="no-history-icon">⚠️</div>
                         <p>Ошибка загрузки</p>
@@ -282,9 +314,16 @@ function History({ navigateTo }) {
                             </button>
                             <button
                                 className="home-button"
-                                onClick={() => navigateTo('home')}
+                                onClick={() => navigateTo('/')}
                             >
                                 🏠 На главную
+                            </button>
+                            <button
+                                className="test-button"
+                                onClick={createTestOrder}
+                                title="Добавить тестовые данные"
+                            >
+                                🧪 Тест
                             </button>
                         </div>
                     </div>
@@ -295,13 +334,29 @@ function History({ navigateTo }) {
                         <p className="history-subtext">Совершите первую операцию обмена</p>
                         <button
                             className="start-exchange-button"
-                            onClick={() => navigateTo('home')}
+                            onClick={() => navigateTo('/')}
                         >
                             💰 Начать обмен
+                        </button>
+                        <button
+                            className="test-button"
+                            onClick={createTestOrder}
+                            style={{ marginTop: '10px' }}
+                        >
+                            🧪 Добавить тестовые данные
                         </button>
                     </div>
                 ) : (
                     <>
+                        {error && (
+                            <div className="error-banner">
+                                ⚠️ {error}
+                                <button onClick={retryFetchOrders} className="error-retry">
+                                    Обновить
+                                </button>
+                            </div>
+                        )}
+
                         <div className="history-header">
                             <h2 style={{ margin: 0, fontSize: '18px' }}>Мои операции</h2>
                             <div className="history-stats">
@@ -389,7 +444,7 @@ function History({ navigateTo }) {
 
                                                 <div className="order-conversion">
                                                     <div className="order-rate">
-                                                        Курс: {order.rate} RUB
+                                                        Курс: {order.rate} ₽
                                                     </div>
                                                     <div className="order-total">
                                                         → {calculateTotal(order)}
@@ -457,6 +512,14 @@ function History({ navigateTo }) {
                                                             💬 Чат поддержки
                                                         </button>
                                                     )}
+
+                                                    <button
+                                                        className="action-button delete-button"
+                                                        onClick={(e) => deleteOrder(order.id, e)}
+                                                        title="Удалить"
+                                                    >
+                                                        🗑️
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -477,12 +540,12 @@ function History({ navigateTo }) {
             )}
 
             <div className="bottom-nav">
-                <button className="nav-button" onClick={() => navigateTo('home')}>
+                <button className="nav-button" onClick={() => navigateTo('/')}>
                     <span>🏠</span>
                     <span>Обмен</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('profile')}>
+                <button className="nav-button" onClick={() => navigateTo('/profile')}>
                     <span>👤</span>
                     <span>Профиль</span>
                 </button>
@@ -492,7 +555,7 @@ function History({ navigateTo }) {
                     <span>История</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('help')}>
+                <button className="nav-button" onClick={() => navigateTo('/help')}>
                     <span>❓</span>
                     <span>Справка</span>
                 </button>

@@ -1,4 +1,4 @@
-/* Основные стили для Telegram Web App */
+/* Home.css - Объединенная версия */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -11,37 +11,98 @@
     min-height: 100vh;
     background: #f5f5f7;
     padding: 16px;
+    padding-bottom: 80px;
   }
   
-  /* Переключатель Покупка/Продажа */
+  /* Баннер активного ордера */
+  .active-order-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .warning-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .warning-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  
+  .warning-text {
+    flex: 1;
+  }
+  
+  .warning-text strong {
+    display: block;
+    color: #856404;
+    margin-bottom: 4px;
+  }
+  
+  .warning-text span {
+    color: #856404;
+    font-size: 14px;
+  }
+  
+  .warning-button {
+    background: #007cff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+  
+  .warning-button:hover {
+    background: #0066cc;
+  }
+  
+  /* Переключатель режимов - ИСПРАВЛЕННЫЙ */
   .mode-switcher {
     display: flex;
-    background: #ffffff;
-    border-radius: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
     padding: 4px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    width: 100%;
   }
   
   .mode-button {
     flex: 1;
-    padding: 14px;
+    padding: 12px 20px;
     border: none;
-    background: transparent;
-    font-size: 16px;
-    font-weight: 600;
-    color: #8e8e93;
-    border-radius: 12px;
+    background: none;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    color: #666;
   }
   
   .mode-button.active {
-    background: #007CFF;
-    color: white;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
-  /* Карточки валют */
+  .mode-button.buy.active {
+    color: #00a86b !important;
+    background: rgba(0, 168, 107, 0.1) !important;
+  }
+  
+  .mode-button.sell.active {
+    color: #ff4444 !important;
+    background: rgba(255, 68, 68, 0.1) !important;
+  }
+  
+  /* Карточки валют - ВЕРСИЯ ИЗ МОЕГО КОДА */
   .currency-cards-horizontal {
     display: flex;
     align-items: center;
@@ -83,7 +144,11 @@
     color: #8e8e93;
   }
   
-  /* Кнопка обмена */
+  .currency-rate.light {
+    color: #999;
+  }
+  
+  /* Кнопка обмена - КРУТАЯ ВЕРСИЯ */
   .swap-center-button {
     position: absolute;
     left: 50%;
@@ -97,292 +162,638 @@
     z-index: 10;
   }
   
-  /* Поля ввода */
+  .swap-center-button.swapped {
+    transform: translate(-50%, -50%) rotate(180deg);
+  }
+  
+  /* SVG внутри кнопки свапа */
+  .swap-center-button svg {
+    width: 58px;
+    height: 58px;
+  }
+  
+  .swap-center-button svg circle {
+    fill: #007CFF;
+    stroke: #EFEFF3;
+    stroke-width: 5;
+  }
+  
+  .swap-center-button svg path {
+    stroke: white;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  /* Поля ввода суммы */
   .amount-input-section {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+    width: 100%;
   }
   
   .amount-input-group {
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
   }
   
   .amount-label {
-    display: block;
     font-size: 14px;
-    color: #8e8e93;
+    color: #666;
     margin-bottom: 8px;
+    font-weight: 600;
   }
   
   .amount-input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
   }
   
   .amount-input {
     width: 100%;
     padding: 16px;
-    font-size: 32px;
-    font-weight: 700;
-    border: 2px solid #e5e5ea;
+    border: 2px solid #e1e1e1;
     border-radius: 12px;
-    background: #f9f9fb;
-    color: #1d1d1f;
+    font-size: 18px;
+    font-weight: 600;
+    outline: none;
+    background: white;
   }
   
   .amount-input:focus {
-    outline: none;
-    border-color: #007CFF;
+    border-color: #007cff;
   }
   
   .amount-currency {
     position: absolute;
     right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: #8e8e93;
+    font-size: 16px;
     font-weight: 600;
+    color: #666;
   }
   
   .min-limit-hint {
     font-size: 12px;
-    color: #8e8e93;
-    margin-top: 8px;
+    color: #999;
+    margin-top: 6px;
   }
   
   .error-message {
-    color: #ff3b30;
-    font-size: 14px;
-    margin-top: 8px;
+    color: #ff4444;
+    font-size: 12px;
+    margin-top: 6px;
   }
   
-  /* Секция реквизитов */
+  /* Секции оплаты */
   .payment-section {
-    background: #ffffff;
-    border-radius: 16px;
+    background: white;
+    border: 1px solid #e1e1e1;
+    border-radius: 12px;
     padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    width: 100%;
   }
   
   .payment-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 15px;
   }
   
   .payment-header h3 {
-    font-size: 18px;
-    color: #1d1d1f;
     margin: 0;
+    font-size: 16px;
+    color: #333;
   }
   
   .add-payment-button {
-    background: transparent;
-    border: 2px solid #007CFF;
-    color: #007CFF;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  
-  .payment-methods {
-    margin-top: 16px;
-  }
-  
-  .payment-method-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    background: #f9f9fb;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.3s;
-  }
-  
-  .payment-method-item.selected {
-    border-color: #007CFF;
-    background: #e8f3ff;
-  }
-  
-  .payment-info {
-    flex: 1;
-  }
-  
-  .payment-name {
-    font-weight: 600;
-    color: #1d1d1f;
-    margin-bottom: 4px;
-  }
-  
-  .payment-number {
-    font-size: 14px;
-    color: #8e8e93;
-  }
-  
-  .delete-payment {
-    background: transparent;
+    background: #007cff;
+    color: white;
     border: none;
-    color: #ff3b30;
-    font-size: 18px;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    padding: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
   }
   
-  /* Форма добавления */
+  .add-payment-button:hover {
+    background: #0066cc;
+  }
+  
+  /* Форма добавления платежа */
   .add-payment-form {
-    background: #f9f9fb;
-    border-radius: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
     padding: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 15px;
   }
   
   .form-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   .form-header h4 {
-    font-size: 16px;
-    color: #1d1d1f;
     margin: 0;
+    color: #333;
   }
   
   .close-form {
-    background: transparent;
+    background: none;
     border: none;
-    font-size: 24px;
-    color: #8e8e93;
+    font-size: 18px;
     cursor: pointer;
+    color: #666;
   }
   
   .form-input-group {
-    margin-bottom: 16px;
+    margin-bottom: 15px;
   }
   
   .input-label {
     display: block;
     font-size: 14px;
-    color: #8e8e93;
-    margin-bottom: 8px;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  
+  .bank-select-container {
+    position: relative;
+  }
+  
+  .bank-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e1e1;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .bank-select.has-value {
+    border-color: #007cff;
+  }
+  
+  .dropdown-arrow {
+    color: #666;
+  }
+  
+  .bank-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .bank-option {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
+  .bank-option:hover {
+    background: #f8f9fa;
+  }
+  
+  .bank-option:last-child {
+    border-bottom: none;
   }
   
   .payment-input {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e5e5ea;
+    border: 2px solid #e1e1e1;
     border-radius: 8px;
     font-size: 16px;
+    outline: none;
     background: white;
   }
   
   .payment-input:focus {
-    outline: none;
-    border-color: #007CFF;
+    border-color: #007cff;
+  }
+  
+  .payment-input.error {
+    border-color: #ff4444;
+  }
+  
+  .input-error {
+    color: #ff4444;
+    font-size: 12px;
+    margin-top: 4px;
   }
   
   .save-payment-button {
     width: 100%;
-    padding: 14px;
-    background: #007CFF;
+    background: #007cff;
     color: white;
     border: none;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
     font-size: 16px;
     font-weight: 600;
-    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .save-payment-button:hover:not(:disabled) {
+    background: #0066cc;
   }
   
   .save-payment-button:disabled {
-    background: #e5e5ea;
+    background: #ccc;
     cursor: not-allowed;
+  }
+  
+  /* Список методов оплаты */
+  .payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .payment-method-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e1e1e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .payment-method-item:hover {
+    border-color: #007cff;
+    background: #f0f7ff;
+  }
+  
+  .payment-method-item.selected {
+    border-color: #007cff;
+    background: #e7f3ff;
+  }
+  
+  .payment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .payment-name {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .payment-number {
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .crypto-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  
+  .crypto-network {
+    font-size: 12px;
+    color: #666;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .crypto-address {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 13px;
+    font-family: monospace;
+  }
+  
+  .copy-address {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #007cff;
+  }
+  
+  .delete-payment {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ff4444;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .delete-payment:hover {
+    background: #ffe6e6;
+  }
+  
+  .no-payments-message {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+  }
+  
+  .no-payments-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
   }
   
   /* Кнопка обмена */
   .exchange-button {
     width: 100%;
     padding: 18px;
+    border: none;
+    border-radius: 12px;
     font-size: 18px;
     font-weight: 700;
-    border: none;
-    border-radius: 16px;
     cursor: pointer;
+    transition: all 0.3s ease;
     margin-top: 20px;
   }
   
   .exchange-button.buy {
-    background: linear-gradient(135deg, #007CFF, #0056CC);
+    background: #00a86b;
     color: white;
   }
   
   .exchange-button.sell {
-    background: linear-gradient(135deg, #34C759, #28A745);
+    background: #ff4444;
     color: white;
   }
   
-  .exchange-button.disabled {
-    background: #e5e5ea;
-    color: #8e8e93;
-    cursor: not-allowed;
+  .exchange-button:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
   
-  /* Нижнее меню */
+  .exchange-button.buy:hover:not(.disabled) {
+    background: #009658;
+  }
+  
+  .exchange-button.sell:hover:not(.disabled) {
+    background: #e63939;
+  }
+  
+  .exchange-button.disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Форма отключена при активном ордере */
+  .form-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  /* НАВИГАЦИЯ - ФИКСИРОВАННАЯ */
   .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: #ffffff;
+    background: white;
+    border-top: 1px solid #e1e1e1;
     display: flex;
     justify-content: space-around;
     padding: 12px 0;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    max-width: 100%;
   }
   
   .nav-button {
-    background: transparent;
+    background: none;
     border: none;
+    padding: 8px 16px;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #8e8e93;
+    gap: 6px;
+    color: #858589;
     font-size: 12px;
-    cursor: pointer;
-    padding: 8px;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    min-width: 60px;
+  }
+  
+  .nav-button:hover {
+    background: #f8f9fa;
   }
   
   .nav-button.active {
-    color: #007CFF;
+    color: #007cff;
   }
   
   .nav-button span:first-child {
     font-size: 20px;
-    margin-bottom: 4px;
   }
   
-  /* Адаптация под Telegram */
+  .nav-button span:last-child {
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  /* Специальные стили для SBP */
+  .sbp-phone-input {
+    margin-top: 10px;
+  }
+  
+  .payment-method-item.sbp {
+    border-left: 3px solid #28a745;
+  }
+  
+  .sbp-badge {
+    background: #28a745;
+    color: white;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  
+  /* Адаптивность для Telegram Web App */
   @media (max-width: 600px) {
     .home-container {
-      padding-bottom: 70px; /* Для нижнего меню */
+      padding: 16px;
+      padding-bottom: 70px;
+    }
+    
+    .currency-cards-horizontal {
+      gap: 10px;
+    }
+    
+    .currency-card-side {
+      padding: 15px;
     }
     
     .currency-name {
       font-size: 20px;
     }
     
-    .amount-input {
-      font-size: 28px;
+    .amount-input-section {
+      grid-template-columns: 1fr;
+      gap: 15px;
     }
+    
+    .amount-input {
+      font-size: 16px;
+      padding: 14px;
+    }
+    
+    .payment-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .add-payment-button {
+      align-self: flex-start;
+    }
+    
+    .bottom-nav {
+      padding: 10px 0;
+    }
+    
+    .nav-button {
+      padding: 6px 12px;
+      min-width: 50px;
+    }
+    
+    .nav-button span:first-child {
+      font-size: 18px;
+    }
+    
+    .nav-button span:last-child {
+      font-size: 10px;
+    }
+    
+    .swap-center-button {
+      width: 50px;
+      height: 50px;
+    }
+    
+    .swap-center-button svg {
+      width: 50px;
+      height: 50px;
+    }
+  }
+  
+  @media (max-width: 400px) {
+    .currency-name {
+      font-size: 18px;
+    }
+    
+    .currency-card-side {
+      padding: 12px;
+    }
+    
+    .swap-center-button {
+      width: 45px;
+      height: 45px;
+    }
+    
+    .swap-center-button svg {
+      width: 45px;
+      height: 45px;
+    }
+    
+    .nav-button {
+      padding: 5px 8px;
+      min-width: 45px;
+    }
+    
+    .nav-button span:first-child {
+      font-size: 16px;
+    }
+    
+    .nav-button span:last-child {
+      font-size: 9px;
+    }
+  }
+  
+  /* Телефонный ввод для СБП */
+  input[type="tel"] {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Иконки сетей */
+  .network-icon {
+    margin-right: 6px;
+    font-size: 14px;
+  }
+  
+  /* Выбор сети */
+  .network-select-container {
+    position: relative;
+  }
+  
+  .network-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e1e1;
+    border-radius: 8px;
+    background: white;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+  }
+  
+  .network-select:focus {
+    outline: none;
+    border-color: #007cff;
+  }
+  
+  /* Кнопка копирования */
+  .copy-address {
+    transition: all 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .copy-address:hover {
+    background: #f0f7ff;
+    color: #0066cc;
   }

@@ -8,151 +8,96 @@ function History({ navigateTo }) {
     const [error, setError] = useState('');
     const [activeChat, setActiveChat] = useState(null);
     const [viewMode, setViewMode] = useState('active');
-    const [adminAssignments, setAdminAssignments] = useState({});
+    const [message, setMessage] = useState({ type: '', text: '' });
 
-    // Используем HTTPS
     const serverUrl = 'https://87.242.106.114.sslip.io';
 
     useEffect(() => {
         fetchUserOrders();
         
-        // Добавляем периодическую проверку новых уведомлений
         const intervalId = setInterval(() => {
             if (!isLoading && orders.length > 0) {
                 fetchUserOrders();
             }
-        }, 30000); // Проверяем каждые 30 секунд
+        }, 30000);
 
         return () => clearInterval(intervalId);
     }, []);
 
     const fetchUserOrders = async () => {
         try {
-            console.log('🔄 Начинаем загрузку истории...');
-
+            setIsLoading(true);
             const userData = JSON.parse(localStorage.getItem('currentUser'));
-            console.log('👤 Данные пользователя:', userData);
 
             if (!userData || !userData.id) {
-                setError('Не авторизован');
+                setError('Требуется авторизация');
                 setIsLoading(false);
                 return;
             }
 
-            const userId = userData.id;
-            console.log('🆔 User ID:', userId);
-
-            const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
+            const response = await fetch(`${serverUrl}/api/user-orders/${userData.id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
             });
-
-            console.log('📡 Ответ сервера:', response.status);
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('📦 Данные с сервера:', data);
-
-                // Обрабатываем разные форматы ответа
                 let ordersData = [];
+
                 if (data.success && Array.isArray(data.orders)) {
                     ordersData = data.orders;
                 } else if (data.orders && typeof data.orders === 'object') {
                     ordersData = Object.values(data.orders);
                 } else if (Array.isArray(data)) {
                     ordersData = data;
-                } else if (data.orders && Array.isArray(data.orders)) {
-                    ordersData = data.orders;
                 }
 
                 const sortedOrders = ordersData.sort((a, b) => {
-                    const dateA = new Date(a.createdAt || a.created_at || a.timestamp || Date.now());
-                    const dateB = new Date(b.createdAt || b.created_at || b.timestamp || Date.now());
+                    const dateA = new Date(a.createdAt || a.timestamp || Date.now());
+                    const dateB = new Date(b.createdAt || b.timestamp || Date.now());
                     return dateB - dateA;
                 });
-                
-                console.log('✅ Отсортированные ордера:', sortedOrders);
+
                 setOrders(sortedOrders);
                 setError('');
+                showMessage('success', '✅ История обновлена');
                 
-                // Сохраняем информацию об админах
-                const admins = {};
-                sortedOrders.forEach(order => {
-                    if (order.assignedTo) {
-                        admins[order.assignedTo] = order.assignedToUsername || 'Оператор';
-                    }
-                });
-                setAdminAssignments(admins);
-                
-                // Показываем уведомления о новых сообщениях
-                showNewNotifications(sortedOrders);
-                
+                localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
             } else {
-                console.error('❌ Ошибка сервера:', response.status);
-                const errorText = await response.text();
-                console.error('❌ Текст ошибки:', errorText);
-                
-                // Пробуем получить данные из localStorage как fallback
                 const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
                 if (localOrders.length > 0) {
-                    console.log('📂 Используем данные из localStorage:', localOrders);
                     setOrders(localOrders);
                     setError('⚠️ Используем локальные данные');
+                    showMessage('warning', '⚠️ Используем кэшированные данные');
                 } else {
-                    setError(`Ошибка сервера: ${response.status}`);
+                    setError('Ошибка загрузки данных');
+                    showMessage('error', '❌ Ошибка загрузки');
                 }
             }
         } catch (error) {
-            console.error('❌ Ошибка загрузки истории:', error);
-            
-            // Пробуем получить данные из localStorage как fallback
+            console.error('❌ Ошибка загрузки:', error);
             const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
             if (localOrders.length > 0) {
-                console.log('📂 Используем локальные данные из кэша:', localOrders);
                 setOrders(localOrders);
-                setError('⚠️ Используем локальные данные (ошибка сети)');
+                showMessage('warning', '⚠️ Используем кэшированные данные');
             } else {
-                setError('Ошибка соединения с сервером');
+                setError('Ошибка соединения');
+                showMessage('error', '❌ Ошибка сети');
             }
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Функция для показа уведомлений о новых сообщениях
-    const showNewNotifications = (orders) => {
-        let unreadCount = 0;
-        
-        orders.forEach(order => {
-            if (order.notifications && Array.isArray(order.notifications)) {
-                const unreadNotifications = order.notifications.filter(n => !n.read);
-                unreadCount += unreadNotifications.length;
-                
-                // Показываем всплывающее уведомление для каждого непрочитанного
-                if (unreadNotifications.length > 0) {
-                    console.log(`🔔 Новые сообщения в заявке #${order.id}: ${unreadNotifications.length}`);
-                }
-            }
-        });
-        
-        console.log(`📊 Всего непрочитанных уведомлений: ${unreadCount}`);
-        return unreadCount;
+    const showMessage = (type, text) => {
+        setMessage({ type, text });
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     };
-
-    // Сохраняем заказы в localStorage при получении
-    useEffect(() => {
-        if (orders.length > 0) {
-            localStorage.setItem('userOrders', JSON.stringify(orders));
-        }
-    }, [orders]);
 
     const getFilteredOrders = () => {
         if (viewMode === 'active') {
             return orders.filter(order =>
-                order.status === 'pending' || order.status === 'paid' || order.status === 'processing'
+                order.status === 'pending' || order.status === 'processing'
             );
         }
         return orders;
@@ -162,16 +107,12 @@ function History({ navigateTo }) {
         switch (status?.toLowerCase()) {
             case 'completed':
                 return { class: 'status-completed', text: 'Завершено', icon: '✅' };
-            case 'paid':
-                return { class: 'status-paid', text: 'Оплачено', icon: '💰' };
             case 'pending':
                 return { class: 'status-pending', text: 'Ожидание', icon: '⏳' };
             case 'processing':
-                return { class: 'status-processing', text: 'В обработке', icon: '⚡' };
+                return { class: 'status-processing', text: 'В работе', icon: '⚡' };
             case 'cancelled':
                 return { class: 'status-cancelled', text: 'Отменено', icon: '❌' };
-            case 'failed':
-                return { class: 'status-cancelled', text: 'Ошибка', icon: '❌' };
             default:
                 return { class: 'status-pending', text: status || 'Неизвестно', icon: '❓' };
         }
@@ -179,7 +120,6 @@ function History({ navigateTo }) {
 
     const calculateTotal = (order) => {
         if (!order || !order.amount || !order.rate) return '—';
-        
         if (order.type === 'buy') {
             return (order.amount / order.rate).toFixed(2) + ' USDT';
         } else {
@@ -202,62 +142,33 @@ function History({ navigateTo }) {
         }
     };
 
-    const getNetworkIcon = (network) => {
-        const icons = {
-            'ERC20': '⛓️',
-            'TRC20': '⚡',
-            'TON': '💎',
-            'SOL': '🔥',
-            'BEP20': '🟡'
-        };
-        return icons[network] || '🔗';
-    };
-
     const canOpenChat = (order) => {
         if (!order || !order.status) return false;
-        
-        // Чат доступен если:
-        // 1. Статус позволяет
-        const statusAllowed = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
-        // 2. Есть оператор (заявка взята в работу)
-        const hasOperator = order.assignedTo && order.status === 'processing';
-        // 3. Есть уведомления от оператора
-        const hasNotifications = order.notifications && order.notifications.length > 0;
-        
-        return statusAllowed && (hasOperator || hasNotifications);
+        return order.status === 'pending' || order.status === 'processing';
     };
 
     const openOrderChat = (order) => {
         if (!canOpenChat(order)) {
-            alert(`❌ Чат недоступен для заявок со статусом "${order.status}"`);
+            showMessage('error', `❌ Чат недоступен для статуса "${order.status}"`);
             return;
         }
 
-        // Проверяем есть ли оператор
         if (!order.assignedTo && order.status === 'pending') {
-            alert('⏳ Ожидайте, оператор скоро свяжется с вами');
+            showMessage('warning', '⏳ Ожидайте, оператор скоро свяжется');
             return;
         }
 
-        setActiveChat({
-            orderId: order.id
-        });
-
-        console.log('🎯 Чат установлен для заявки:', order.id);
-    };
-
-    const closeChat = () => {
-        setActiveChat(null);
+        setActiveChat({ orderId: order.id });
     };
 
     const copyOrderId = (orderId) => {
         navigator.clipboard.writeText(orderId);
-        alert('✅ ID заявки скопирован!');
+        showMessage('success', '✅ ID скопирован');
     };
 
     const getOrdersStats = () => {
         const activeOrders = orders.filter(order =>
-            order.status === 'pending' || order.status === 'paid' || order.status === 'processing'
+            order.status === 'pending' || order.status === 'processing'
         );
         const completedOrders = orders.filter(order => order.status === 'completed');
 
@@ -268,395 +179,208 @@ function History({ navigateTo }) {
         };
     };
 
-    const retryFetchOrders = () => {
-        setIsLoading(true);
-        setError('');
-        fetchUserOrders();
-    };
-
-    // Функция для удаления заказа из истории
     const deleteOrder = async (orderId, e) => {
         e.stopPropagation();
-        if (window.confirm('Удалить эту заявку из истории?')) {
-            try {
-                const updatedOrders = orders.filter(order => order.id !== orderId);
-                setOrders(updatedOrders);
-                localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
-                console.log('🗑️ Удален заказ:', orderId);
-            } catch (error) {
-                console.error('❌ Ошибка удаления:', error);
-            }
+        if (window.confirm('Удалить заявку из истории?')) {
+            const updatedOrders = orders.filter(order => order.id !== orderId);
+            setOrders(updatedOrders);
+            localStorage.setItem('userOrders', JSON.stringify(updatedOrders));
+            showMessage('success', '✅ Заявка удалена');
         }
-    };
-
-    // Функция для создания тестовой заявки
-    const createTestOrder = () => {
-        const testOrders = [
-            {
-                id: 'TEST' + Date.now().toString().slice(-6),
-                type: 'buy',
-                amount: 5000,
-                rate: 85.6,
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-                cryptoAddress: {
-                    network: 'TRC20',
-                    address: 'TEst12345678901234567890'
-                },
-                notifications: [
-                    {
-                        id: 1,
-                        text: 'Тестовое сообщение от оператора',
-                        from: 'Оператор1',
-                        timestamp: new Date().toISOString(),
-                        read: false
-                    }
-                ]
-            },
-            {
-                id: 'TEST' + (Date.now() + 1).toString().slice(-6),
-                type: 'sell',
-                amount: 100,
-                rate: 81.6,
-                status: 'processing',
-                createdAt: new Date(Date.now() - 3600000).toISOString(),
-                assignedTo: '123456789',
-                notifications: [
-                    {
-                        id: 1,
-                        text: 'Переведите RUB на карту 1234',
-                        from: 'Оператор2',
-                        timestamp: new Date().toISOString(),
-                        read: true
-                    }
-                ],
-                paymentMethod: {
-                    name: 'Сбербанк',
-                    number: '1234',
-                    type: 'card'
-                }
-            }
-        ];
-
-        const newOrders = [...testOrders, ...orders];
-        setOrders(newOrders);
-        localStorage.setItem('userOrders', JSON.stringify(newOrders));
-        alert('✅ Тестовые заявки добавлены!');
     };
 
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
 
     return (
-        <div className="home-container">
-            <div className="page-header">
-                <h1>История операций</h1>
-                <button 
-                    className="refresh-button"
-                    onClick={retryFetchOrders}
-                    title="Обновить историю"
-                >
-                    🔄
-                </button>
+        <div className="history-container">
+            {/* Header */}
+            <div className="history-header">
+                <div className="header-top">
+                    <h1 className="header-title">История операций</h1>
+                    <button className="refresh-button" onClick={fetchUserOrders} title="Обновить">
+                        🔄
+                    </button>
+                </div>
+
+                <div className="stats-grid">
+                    <div className="stat-card">
+                        <div className="stat-value">{stats.total}</div>
+                        <div className="stat-label">Всего</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-value">{stats.active}</div>
+                        <div className="stat-label">Активных</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-value">{stats.completed}</div>
+                        <div className="stat-label">Завершено</div>
+                    </div>
+                </div>
+
+                <div className="view-switcher">
+                    <button
+                        className={`view-tab ${viewMode === 'active' ? 'active' : ''}`}
+                        onClick={() => setViewMode('active')}
+                    >
+                        <span>🔥</span>
+                        <span>Активные ({stats.active})</span>
+                    </button>
+                    <button
+                        className={`view-tab ${viewMode === 'all' ? 'active' : ''}`}
+                        onClick={() => setViewMode('all')}
+                    >
+                        <span>📋</span>
+                        <span>Все ({stats.total})</span>
+                    </button>
+                </div>
             </div>
 
-            <div className="history-content">
+            {/* Orders Container */}
+            <div className="orders-container">
                 {isLoading ? (
-                    <div className="loading-state">
-                        <div className="loading-icon">💫</div>
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
                         <p>Загрузка истории...</p>
                     </div>
-                ) : error && orders.length === 0 ? (
-                    <div className="no-history-message">
-                        <div className="no-history-icon">⚠️</div>
-                        <p>Ошибка загрузки</p>
-                        <p className="history-subtext">{error}</p>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                            <button
-                                className="retry-button"
-                                onClick={retryFetchOrders}
-                            >
-                                🔄 Повторить
-                            </button>
-                            <button
-                                className="home-button"
-                                onClick={() => navigateTo('/')}
-                            >
-                                🏠 На главную
-                            </button>
-                            <button
-                                className="test-button"
-                                onClick={createTestOrder}
-                                title="Добавить тестовые данные"
-                            >
-                                🧪 Тест
-                            </button>
-                        </div>
-                    </div>
-                ) : orders.length === 0 ? (
-                    <div className="no-history-message">
-                        <div className="no-history-icon">📊</div>
-                        <p>История операций пуста</p>
-                        <p className="history-subtext">Совершите первую операцию обмена</p>
-                        <button
-                            className="start-exchange-button"
+                ) : filteredOrders.length === 0 ? (
+                    <div className="empty-state">
+                        <div className="empty-icon">📊</div>
+                        <h3 className="empty-title">
+                            {viewMode === 'active' ? 'Нет активных операций' : 'История пуста'}
+                        </h3>
+                        <p className="empty-subtitle">
+                            {viewMode === 'active' 
+                                ? 'Все операции завершены или отменены' 
+                                : 'Совершите первую операцию обмена'
+                            }
+                        </p>
+                        <button 
+                            className="action-btn primary"
                             onClick={() => navigateTo('/')}
                         >
                             💰 Начать обмен
                         </button>
-                        <button
-                            className="test-button"
-                            onClick={createTestOrder}
-                            style={{ marginTop: '10px' }}
-                        >
-                            🧪 Добавить тестовые данные
-                        </button>
                     </div>
                 ) : (
-                    <>
-                        {error && (
-                            <div className="error-banner">
-                                ⚠️ {error}
-                                <button onClick={retryFetchOrders} className="error-retry">
-                                    Обновить
-                                </button>
-                            </div>
-                        )}
+                    <div className="orders-list">
+                        {filteredOrders.map((order) => {
+                            const statusInfo = getStatusInfo(order.status);
+                            const isBuy = order.type === 'buy';
+                            const canChat = canOpenChat(order);
+                            const hasNotifications = order.notifications && order.notifications.length > 0;
+                            const unreadCount = hasNotifications ? 
+                                order.notifications.filter(n => !n.read).length : 0;
 
-                        <div className="history-header">
-                            <h2 style={{ margin: 0, fontSize: '18px' }}>Мои операции</h2>
-                            <div className="history-stats">
-                                <div className="stat-badge">
-                                    Всего: {stats.total}
-                                </div>
-                                <div className="stat-badge active-badge">
-                                    Активных: {stats.active}
-                                </div>
-                            </div>
-                        </div>
+                            return (
+                                <div key={order.id} className="order-card">
+                                    {hasNotifications && unreadCount > 0 && (
+                                        <div className="chat-badge">{unreadCount}</div>
+                                    )}
 
-                        <div className="view-mode-switcher">
-                            <button
-                                className={`view-mode-button ${viewMode === 'active' ? 'active' : ''}`}
-                                onClick={() => setViewMode('active')}
-                            >
-                                🔥 Активные ({stats.active})
-                            </button>
-                            <button
-                                className={`view-mode-button ${viewMode === 'all' ? 'active' : ''}`}
-                                onClick={() => setViewMode('all')}
-                            >
-                                📋 Все операции ({stats.total})
-                            </button>
-                        </div>
-
-                        <div className="orders-list">
-                            {filteredOrders.length === 0 ? (
-                                <div className="no-orders-message">
-                                    <div className="no-orders-icon">🔍</div>
-                                    <p>
-                                        {viewMode === 'active'
-                                            ? 'Нет активных операций'
-                                            : 'Операции не найдены'
-                                        }
-                                    </p>
-                                    <p className="no-orders-subtext">
-                                        {viewMode === 'active'
-                                            ? 'Все операции завершены или отменены'
-                                            : 'Попробуйте изменить фильтр'
-                                        }
-                                    </p>
-                                    <button
-                                        className="show-all-button"
-                                        onClick={() => setViewMode('all')}
-                                    >
-                                        📋 Показать все
-                                    </button>
-                                </div>
-                            ) : (
-                                filteredOrders.map((order) => {
-                                    const statusInfo = getStatusInfo(order.status);
-                                    const isBuy = order.type === 'buy';
-                                    const canChat = canOpenChat(order);
-                                    const isActive = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
-                                    const hasNotifications = order.notifications && order.notifications.length > 0;
-                                    const unreadCount = hasNotifications ? 
-                                        order.notifications.filter(n => !n.read).length : 0;
-
-                                    return (
-                                        <div key={order.id || Math.random()} className={`order-item ${isActive ? 'active-order' : ''}`}>
-                                            {isActive && (
-                                                <div className="active-order-badge">🔥 Активно</div>
-                                            )}
-
-                                            <div className="order-header">
-                                                <div className="order-id" onClick={() => copyOrderId(order.id)} title="Копировать ID">
-                                                    #{order.id}
-                                                </div>
-                                                <div className={`order-status ${statusInfo.class}`}>
-                                                    {statusInfo.icon} {statusInfo.text}
-                                                </div>
-                                            </div>
-
-                                            <div className="order-main">
-                                                <div className="order-type-amount">
-                                                    <div className="order-type">
-                                                        <span className={isBuy ? 'buy-icon' : 'sell-icon'}>
-                                                            {isBuy ? 'B' : 'S'}
-                                                        </span>
-                                                        {isBuy ? 'Покупка USDT' : 'Продажа USDT'}
-                                                    </div>
-                                                    <div className="order-amount">
-                                                        {order.amount} {isBuy ? 'RUB' : 'USDT'}
-                                                    </div>
-                                                </div>
-
-                                                <div className="order-conversion">
-                                                    <div className="order-rate">
-                                                        Курс: {order.rate} ₽
-                                                    </div>
-                                                    <div className="order-total">
-                                                        → {calculateTotal(order)}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="order-details">
-                                                <div className="detail-item">
-                                                    <div className="detail-label">Сеть/Банк</div>
-                                                    <div className="detail-value">
-                                                        {order.cryptoAddress ? (
-                                                            <>
-                                                                {getNetworkIcon(order.cryptoAddress.network)} {order.cryptoAddress.network}
-                                                            </>
-                                                        ) : order.paymentMethod ? (
-                                                            order.paymentMethod.type === 'sbp' ?
-                                                                `📱 СБП: ${order.paymentMethod.number}` :
-                                                                `💳 ${order.paymentMethod.name || 'Банковская карта'} •••• ${order.paymentMethod.number || ''}`
-                                                        ) : (
-                                                            '—'
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="detail-item">
-                                                    <div className="detail-label">Создана</div>
-                                                    <div className="detail-value">
-                                                        {formatDate(order.createdAt)}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Информация об операторе */}
-                                            {order.assignedTo && (
-                                                <div className="order-details">
-                                                    <div className="detail-item">
-                                                        <div className="detail-label">Оператор</div>
-                                                        <div className="detail-value">
-                                                            👷 @{adminAssignments[order.assignedTo] || 'Оператор'}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Информация о сообщениях */}
-                                            {hasNotifications && (
-                                                <div className="order-details">
-                                                    <div className="detail-item">
-                                                        <div className="detail-label">Сообщений</div>
-                                                        <div className="detail-value">
-                                                            💬 {order.notifications.length} 
-                                                            {unreadCount > 0 && 
-                                                                ` (${unreadCount} новых)`}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {(order.completedAt || order.cancelledAt) && (
-                                                <div className="order-details">
-                                                    <div className="detail-item">
-                                                        <div className="detail-label">
-                                                            {order.completedAt ? 'Завершена' : 'Отменена'}
-                                                        </div>
-                                                        <div className="detail-value">
-                                                            {order.completedAt ? formatDate(order.completedAt) : formatDate(order.cancelledAt)}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="order-footer">
-                                                <div className="order-date-mobile">
-                                                    {formatDate(order.createdAt)}
-                                                </div>
-                                                <div className="order-actions">
-                                                    <button
-                                                        className="action-button copy-button"
-                                                        onClick={() => copyOrderId(order.id)}
-                                                        title="Копировать ID"
-                                                    >
-                                                        📋 ID
-                                                    </button>
-
-                                                    {canChat && (
-                                                        <button
-                                                            className="action-button chat-button"
-                                                            onClick={() => openOrderChat(order)}
-                                                        >
-                                                            💬 Чат
-                                                            {hasNotifications && (
-                                                                <span className="notification-badge">
-                                                                    {unreadCount || order.notifications.length}
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    )}
-
-                                                    <button
-                                                        className="action-button delete-button"
-                                                        onClick={(e) => deleteOrder(order.id, e)}
-                                                        title="Удалить"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </div>
+                                    <div className="order-header">
+                                        <div className="order-id-section">
+                                            <button 
+                                                className="order-id-badge"
+                                                onClick={() => copyOrderId(order.id)}
+                                            >
+                                                <span>#</span>
+                                                <span>{order.id}</span>
+                                                <span>📋</span>
+                                            </button>
+                                            <span className={`type-badge ${isBuy ? 'type-buy' : 'type-sell'}`}>
+                                                {isBuy ? '🛒 Покупка' : '💳 Продажа'}
+                                            </span>
                                         </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </>
+                                        <div className={`order-status-badge ${statusInfo.class}`}>
+                                            <span>{statusInfo.icon}</span>
+                                            <span>{statusInfo.text}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="order-info-grid">
+                                        <div className="info-card">
+                                            <div className="info-label">Сумма</div>
+                                            <div className="info-value large">{order.amount} {isBuy ? 'RUB' : 'USDT'}</div>
+                                        </div>
+                                        <div className="info-card">
+                                            <div className="info-label">Курс</div>
+                                            <div className="info-value highlight">{order.rate} ₽</div>
+                                        </div>
+                                        <div className="info-card">
+                                            <div className="info-label">Итого</div>
+                                            <div className="info-value large">{calculateTotal(order)}</div>
+                                        </div>
+                                        <div className="info-card">
+                                            <div className="info-label">Создана</div>
+                                            <div className="info-value">{formatDate(order.createdAt)}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="action-bar">
+                                        {canChat && (
+                                            <button 
+                                                className="action-btn primary"
+                                                onClick={() => openOrderChat(order)}
+                                            >
+                                                💬 Чат с оператором
+                                                {hasNotifications && unreadCount > 0 && (
+                                                    <span className="chat-indicator">+{unreadCount}</span>
+                                                )}
+                                            </button>
+                                        )}
+                                        <button 
+                                            className="action-btn secondary"
+                                            onClick={() => copyOrderId(order.id)}
+                                        >
+                                            📋 Копировать ID
+                                        </button>
+                                        <button 
+                                            className="action-btn danger"
+                                            onClick={(e) => deleteOrder(order.id, e)}
+                                        >
+                                            🗑️ Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 )}
             </div>
 
+            {/* Message Toast */}
+            {message.text && (
+                <div className={`message-toast message-${message.type}`}>
+                    <span>{message.text}</span>
+                </div>
+            )}
+
+            {/* Support Chat */}
             {activeChat && (
                 <SupportChat
                     orderId={activeChat.orderId}
-                    onClose={closeChat}
+                    onClose={() => setActiveChat(null)}
                 />
             )}
 
+            {/* Bottom Navigation */}
             <div className="bottom-nav">
-                <button className="nav-button" onClick={() => navigateTo('/')}>
-                    <span>🏠</span>
-                    <span>Обмен</span>
+                <button className="nav-item" onClick={() => navigateTo('/')}>
+                    <span className="nav-icon">💸</span>
+                    <span className="nav-label">Обмен</span>
                 </button>
-
-                <button className="nav-button" onClick={() => navigateTo('/profile')}>
-                    <span>👤</span>
-                    <span>Профиль</span>
+                <button className="nav-item active">
+                    <span className="nav-icon">📊</span>
+                    <span className="nav-label">История</span>
                 </button>
-
-                <button className="nav-button active">
-                    <span>📊</span>
-                    <span>История</span>
+                <button className="nav-item" onClick={() => navigateTo('/profile')}>
+                    <span className="nav-icon">👤</span>
+                    <span className="nav-label">Профиль</span>
                 </button>
-
-                <button className="nav-button" onClick={() => navigateTo('/help')}>
-                    <span>❓</span>
-                    <span>Справка</span>
+                <button className="nav-item" onClick={() => navigateTo('/help')}>
+                    <span className="nav-icon">❓</span>
+                    <span className="nav-label">Помощь</span>
                 </button>
             </div>
         </div>

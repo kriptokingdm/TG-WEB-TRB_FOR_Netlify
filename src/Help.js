@@ -7,7 +7,7 @@ function Help({ navigateTo }) {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     
-    const { isDarkMode, toggleTheme } = useTheme();
+    // Убрана строка с useTheme
 
     const toggleSection = (section) => {
         setActiveSection(activeSection === section ? null : section);
@@ -180,7 +180,6 @@ function Help({ navigateTo }) {
 
     return (
         <div className="help-container">
-             
             <div className="page-header">
                 <h1>FAQ</h1>
                 <p className="page-subtitle">Задайте вопрос или выберите тему</p>
@@ -389,17 +388,17 @@ function Help({ navigateTo }) {
 
             {/* Нижняя навигация */}
             <div className="bottom-nav">
-                <button className="nav-button" onClick={() => navigateTo('home')}>
+                <button className="nav-button" onClick={() => navigateTo('/')}>
                     <span>🏠</span>
                     <span>Обмен</span>
                 </button>
                 
-                <button className="nav-button" onClick={() => navigateTo('profile')}>
+                <button className="nav-button" onClick={() => navigateTo('/profile')}>
                     <span>👤</span>
                     <span>Профиль</span>
                 </button>
                 
-                <button className="nav-button" onClick={() => navigateTo('history')}>
+                <button className="nav-button" onClick={() => navigateTo('/history')}>
                     <span>📊</span>
                     <span>История</span>
                 </button>
@@ -414,4 +413,3 @@ function Help({ navigateTo }) {
 }
 
 export default Help;
-

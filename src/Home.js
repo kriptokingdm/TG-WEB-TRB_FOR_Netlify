@@ -3,14 +3,8 @@ import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
-// Используем HTTPS для Telegram Web App
-const getServerUrl = () => {
-    return window.location.hostname === 'localhost' 
-        ? 'http://87.242.106.114:3001'
-        : 'https://87.242.106.114:3001'; // HTTPS для продакшена
-};
-
-const serverUrl = getServerUrl();
+// Правильный URL для сервера
+const serverUrl = 'http://87.242.106.114:3001';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -146,14 +140,11 @@ function Home({ navigateTo }) {
 
             console.log('🔍 Проверяем активные ордеры...');
             
-            const endpoint = `/api/user-orders/${userId}`;
-            
-            const response = await fetch(`${serverUrl}${endpoint}`, {
+            const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
-                },
-                mode: 'cors'
+                }
             });
 
             console.log('📡 Статус ответа:', response.status);
@@ -190,7 +181,7 @@ function Home({ navigateTo }) {
         };
     }, []);
 
-    // Загрузка курсов с бекенда
+    // Загрузка курсов с бекенда - ИСПРАВЛЕНА
     const fetchExchangeRates = async () => {
         try {
             let requestAmount;
@@ -204,12 +195,21 @@ function Home({ navigateTo }) {
                 requestAmount = MIN_USDT;
             }
             
-            const response = await fetch(`${serverUrl}/api/exchange-rate?amount=${requestAmount}&type=${isBuyMode ? 'buy' : 'sell'}`, {
-                mode: 'cors'
+            const type = isBuyMode ? 'buy' : 'sell';
+            const url = `${serverUrl}/api/exchange-rate?amount=${requestAmount}&type=${type}`;
+            console.log('📡 Запрашиваем курсы по URL:', url);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
             
+            console.log('📊 Статус ответа курсов:', response.status);
+            
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
             const data = await response.json();
@@ -220,7 +220,7 @@ function Home({ navigateTo }) {
             setCurrentTier(data.tier || 'standard');
 
         } catch (error) {
-            console.error('❌ Ошибка загрузки курсов:', error);
+            console.error('❌ Ошибка загрузки курсов:', error.message);
             setBuyRate(85.6);
             setSellRate(81.6);
             setCurrentTier('standard');
@@ -472,7 +472,7 @@ function Home({ navigateTo }) {
     const handleExchange = async () => {
         if (hasActiveOrder) {
             alert('❌ У вас уже есть активный ордер! Завершите текущую операцию перед созданием новой.');
-            navigateTo('history');
+            navigateTo('/history');
             return;
         }
 
@@ -574,7 +574,7 @@ function Home({ navigateTo }) {
                         </div>
                         <button
                             className="warning-button"
-                            onClick={() => navigateTo('history')}
+                            onClick={() => navigateTo('/history')}
                         >
                             Перейти к операции
                         </button>

@@ -31,7 +31,7 @@ function History({ navigateTo }) {
             console.log('🆔 User ID:', userId);
 
             // ИСПРАВЛЕННАЯ СТРОКА - используем новый URL
-            const serverUrl = 'http://87.242.106.114:3001';
+            const serverUrl = 'http://87.242.106.114:8080';
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
                 headers: {
                     'Content-Type': 'application/json'

@@ -4,7 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Правильный URL для сервера
-const serverUrl = 'http://87.242.106.114:3001';
+const serverUrl = 'http://87.242.106.114:8080';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);

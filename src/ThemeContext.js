@@ -6,22 +6,19 @@ export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        // Проверяем сохраненную тему или системную
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            return savedTheme === 'dark';
-        }
-        // Проверяем системные настройки
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Проверяем localStorage
+        const saved = localStorage.getItem('theme');
+        return saved === 'dark';
     });
 
     useEffect(() => {
-        // Применяем тему к body
+        const body = document.body;
+        
         if (isDarkMode) {
-            document.body.classList.add('dark-theme');
+            body.classList.add('dark-theme');
             localStorage.setItem('theme', 'dark');
         } else {
-            document.body.classList.remove('dark-theme');
+            body.classList.remove('dark-theme');
             localStorage.setItem('theme', 'light');
         }
     }, [isDarkMode]);

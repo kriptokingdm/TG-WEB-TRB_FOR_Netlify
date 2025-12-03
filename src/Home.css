@@ -26,7 +26,29 @@
     padding-bottom: 80px;
     overflow-x: hidden;
   }
-  
+  .home-container {
+    background: var(--bg-secondary);
+    /* вместо #ffffff */
+}
+
+.currency-card-side {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.mode-switcher {
+    background: var(--bg-secondary);
+}
+
+.mode-button {
+    color: var(--text-secondary);
+}
+
+.mode-button.active {
+    background: var(--accent-color);
+    color: white;
+}
   /* Отключаем зум на мобильных устройствах */
   @media screen and (max-width: 768px) {
     body {

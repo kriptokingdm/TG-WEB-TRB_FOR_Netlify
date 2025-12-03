@@ -6,8 +6,6 @@ function Help({ navigateTo }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
-    
-    // Убрана строка с useTheme
 
     const toggleSection = (section) => {
         setActiveSection(activeSection === section ? null : section);
@@ -109,12 +107,12 @@ function Help({ navigateTo }) {
         {
             id: 'faq-2',
             question: "Какие есть лимиты?",
-            answer: "Минимальная сумма: 5 USDT или 500 RUB. Максимальная сумма : 10 000usdt или 1 000 000 RUB"
+            answer: "Минимальная сумма: 10 USDT или 1 000 RUB. Максимальная сумма : 10 000 USDT или 1 000 000 RUB"
         },
         {
             id: 'faq-3',
             question: "Почему курс отличается от биржевого?",
-            answer: "Наш курс включает комиссию за обслуживание и обеспечивает мгновенную конвертацию без риска колебаний рынка, а также без участия посторонних лиц."
+            answer: "Наш курс включает комиссию за обслуживание и обеспечивает мгновенную конвертацию без риска колебаний рынка."
         },
         {
             id: 'faq-4',
@@ -128,7 +126,6 @@ function Help({ navigateTo }) {
         }
     ];
 
-    // ОБНОВЛЕННЫЕ ПРАВИЛА
     const rules = [
         {
             title: "✅ Верификация аккаунта",
@@ -136,11 +133,11 @@ function Help({ navigateTo }) {
         },
         {
             title: "⚡ Время выполнения операций",
-            description: "Стандартное время обработки заявки - 5-30 минут. В пиковые часы время может увеличиться до 60 минут."
+            description: "Стандартное время обработки заявки - 5-30 минут."
         },
         {
             title: "💰 Лимиты операций",
-            description: "Минимальная сумма обмена: 300 RUB / 3 USDT. Максимальная сумма для новых пользователей: 50,000 RUB. После верификации лимиты повышаются."
+            description: "Минимальная сумма обмена: 1000 RUB / 10 USDT. Максимальная сумма для новых пользователей: 100,000 RUB."
         },
         {
             title: "🔐 Безопасность операций",
@@ -148,27 +145,27 @@ function Help({ navigateTo }) {
         },
         {
             title: "📝 Требования к платежам",
-            description: "Платежи должны осуществляться только с банковских счетов, принадлежащих владельцу аккаунта. Третьи лица не допускаются."
+            description: "Платежи должны осуществляться только с банковских счетов, принадлежащих владельцу аккаунта."
         },
         {
             title: "⏰ Авто-отмена заявок",
-            description: "Неоплаченные заявки автоматически отменяются через 15 минут. Оплаченные заявки обрабатываются в течение 24 часов."
+            description: "Неоплаченные заявки автоматически отменяются через 15 минут."
         },
         {
             title: "🔄 Возвраты и отмены",
-            description: "Отмена операции возможна только до момента подтверждения платежа. После подтверждения возврат осуществляется по согласованию с поддержкой."
+            description: "Отмена операции возможна только до момента подтверждения платежа."
         },
         {
             title: "📊 Курс обмена",
-            description: "Курс фиксируется на момент создания заявки. Изменения курса во время обработки не влияют на зафиксированную сумму."
+            description: "Курс фиксируется на момент создания заявки."
         },
         {
             title: "🚫 Запрещенные операции",
-            description: "Запрещены попытки обмана, использование чужих платежных средств, создание мультиаккаунтов."
+            description: "Запрещены попытки обмана, использование чужих платежных средств."
         },
         {
             title: "🎯 Ответственность пользователя",
-            description: "Пользователь несет ответственность за правильность введенных реквизитов. Проверяйте данные перед подтверждением операции."
+            description: "Пользователь несет ответственность за правильность введенных реквизитов."
         }
     ];
 
@@ -180,70 +177,103 @@ function Help({ navigateTo }) {
 
     return (
         <div className="help-container">
-            <div className="page-header">
-                <h1>FAQ</h1>
-                <p className="page-subtitle">Задайте вопрос или выберите тему</p>
-            </div>
-            
-            <div className="help-content">
-                {/* Поисковая строка с помощником */}
-                <div className="assistant-search">
-                    <div className="search-container">
-                        <div className="search-icon">🔍</div>
-                        <input
-                            type="text"
-                            placeholder="Спросите у кролика..."
-                            value={searchQuery}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="search-input"
-                        />
-                        {searchQuery && (
-                            <button 
-                                className="clear-search"
-                                onClick={() => {
-                                    setSearchQuery('');
-                                    setShowSearchResults(false);
-                                }}
-                            >
-                                ✕
-                            </button>
-                        )}
-                    </div>
+            {/* Header */}
+            <div className="help-header">
+                <div className="header-top">
+                    <h1 className="header-title">Помощь и поддержка</h1>
+                </div>
 
-                    {/* Результаты поиска */}
-                    {showSearchResults && (
-                        <div className="search-results">
-                            <div className="results-header">
-                                <span>Найдено ответов: {searchResults.length}</span>
-                            </div>
-                            {searchResults.map((result, index) => (
-                                <div
-                                    key={index}
-                                    className="search-result-item"
-                                    onClick={() => handleResultClick(result)}
+                <div className="search-container-wrapper">
+                    <div className="assistant-search">
+                        <div className="search-box">
+                            <div className="search-icon">🔍</div>
+                            <input
+                                type="text"
+                                placeholder="Спросите у кролика..."
+                                value={searchQuery}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                className="search-input"
+                            />
+                            {searchQuery && (
+                                <button 
+                                    className="clear-search"
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setShowSearchResults(false);
+                                    }}
                                 >
-                                    <div className="result-type">{result.type === 'faq' ? '❓' : result.type === 'rule' ? '📋' : '📞'}</div>
-                                    <div className="result-content">
-                                        <div className="result-title">{result.title}</div>
-                                        <div className="result-preview">{result.content}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                    ✕
+                                </button>
+                            )}
                         </div>
-                    )}
 
-                    {/* Популярные вопросы */}
-                    {!searchQuery && (
-                        <div className="popular-questions">
-                            <h3>Популярные вопросы</h3>
-                            <div className="questions-grid">
-                                {popularQuestions.map((question, index) => (
+                        {showSearchResults && (
+                            <div className="search-results">
+                                <div className="results-header">
+                                    <span>Найдено ответов: {searchResults.length}</span>
+                                </div>
+                                {searchResults.map((result, index) => (
                                     <div
                                         key={index}
-                                        className="question-chip"
-                                        onClick={() => handleSearch(question)}
+                                        className="search-result-item"
+                                        onClick={() => handleResultClick(result)}
                                     >
-                                        {question}
+                                        <div className="result-type">
+                                            {result.type === 'faq' ? '❓' : result.type === 'rule' ? '📋' : '📞'}
+                                        </div>
+                                        <div className="result-content">
+                                            <div className="result-title">{result.title}</div>
+                                            <div className="result-preview">{result.content}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {!searchQuery && (
+                            <div className="popular-questions">
+                                <h3>Популярные вопросы</h3>
+                                <div className="questions-grid">
+                                    {popularQuestions.map((question, index) => (
+                                        <div
+                                            key={index}
+                                            className="question-chip"
+                                            onClick={() => handleSearch(question)}
+                                        >
+                                            {question}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="help-content">
+                {/* FAQ Section */}
+                <div className={`help-section ${activeSection === 'faq' ? 'active' : ''}`}>
+                    <div className="section-header" onClick={() => toggleSection('faq')}>
+                        <div className="section-title">
+                            <span className="section-icon">❓</span>
+                            <h3>Часто задаваемые вопросы</h3>
+                        </div>
+                        <span className="toggle-icon">{activeSection === 'faq' ? '−' : '+'}</span>
+                    </div>
+                    {activeSection === 'faq' && (
+                        <div className="section-content">
+                            <div className="faq-grid">
+                                {faqItems.map((item, index) => (
+                                    <div key={index} id={item.id} className="faq-card">
+                                        <div className="faq-question">
+                                            <div className="question-icon">Q</div>
+                                            <div className="question-text">{item.question}</div>
+                                        </div>
+                                        <div className="faq-answer">
+                                            <div className="answer-icon">A</div>
+                                            <div className="answer-text">{item.answer}</div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -251,32 +281,13 @@ function Help({ navigateTo }) {
                     )}
                 </div>
 
-                {/* FAQ секция */}
-                <div className={`help-section ${activeSection === 'faq' ? 'active' : ''}`}>
-                    <div className="section-header" onClick={() => toggleSection('faq')}>
-                        <h3>📋 Часто задаваемые вопросы</h3>
-                        <span className="toggle-icon">{activeSection === 'faq' ? '−' : '+'}</span>
-                    </div>
-                    {activeSection === 'faq' && (
-                        <div className="section-content">
-                            {faqItems.map((item, index) => (
-                                <div key={index} id={item.id} className="faq-item">
-                                    <div className="faq-question">
-                                        <strong>Q:</strong> {item.question}
-                                    </div>
-                                    <div className="faq-answer">
-                                        <strong>A:</strong> {item.answer}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* ОБНОВЛЕННАЯ СЕКЦИЯ ПРАВИЛ */}
+                {/* Rules Section */}
                 <div className={`help-section ${activeSection === 'rules' ? 'active' : ''}`}>
                     <div className="section-header" onClick={() => toggleSection('rules')}>
-                        <h3>⚖️ Правила использования обменника</h3>
+                        <div className="section-title">
+                            <span className="section-icon">⚖️</span>
+                            <h3>Правила использования</h3>
+                        </div>
                         <span className="toggle-icon">{activeSection === 'rules' ? '−' : '+'}</span>
                     </div>
                     {activeSection === 'rules' && (
@@ -293,51 +304,66 @@ function Help({ navigateTo }) {
                                 ))}
                             </div>
                             <div className="important-note">
-                                <strong>⚠️ Важно:</strong> Нарушение правил может привести к блокировке аккаунта и заморозке средств. 
-                                Перед совершением операции убедитесь, что вы ознакомились со всеми правилами.
+                                <div className="note-icon">⚠️</div>
+                                <div className="note-text">
+                                    <strong>Важно:</strong> Нарушение правил может привести к блокировке аккаунта и заморозке средств.
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Контакты секция */}
+                {/* Contacts Section */}
                 <div className={`help-section ${activeSection === 'contacts' ? 'active' : ''}`}>
                     <div className="section-header" onClick={() => toggleSection('contacts')}>
-                        <h3>📞 Контакты поддержки</h3>
+                        <div className="section-title">
+                            <span className="section-icon">📞</span>
+                            <h3>Контакты поддержки</h3>
+                        </div>
                         <span className="toggle-icon">{activeSection === 'contacts' ? '−' : '+'}</span>
                     </div>
                     {activeSection === 'contacts' && (
                         <div className="section-content">
-                            <div className="contacts-list">
+                            <div className="contacts-grid">
                                 {contacts.map((contact, index) => (
-                                    <div key={index} id={`contacts-${index}`} className="contact-item">
-                                        <span className="contact-type">{contact.type}:</span>
-                                        {contact.link ? (
-                                            <a 
-                                                href={contact.link} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="contact-value"
-                                            >
-                                                {contact.value}
-                                            </a>
-                                        ) : (
-                                            <span className="contact-value">{contact.value}</span>
-                                        )}
+                                    <div key={index} id={`contacts-${index}`} className="contact-card">
+                                        <div className="contact-icon">
+                                            {contact.type === 'Telegram' ? '📱' : 
+                                             contact.type === 'Email' ? '📧' : '⏰'}
+                                        </div>
+                                        <div className="contact-content">
+                                            <div className="contact-type">{contact.type}</div>
+                                            {contact.link ? (
+                                                <a 
+                                                    href={contact.link} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="contact-value"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            ) : (
+                                                <div className="contact-value">{contact.value}</div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                             <div className="response-time">
-                                <strong>Среднее время ответа:</strong> до  ~ 10 минут 
+                                <span className="time-icon">⏱️</span>
+                                <span className="time-text">Среднее время ответа: ~10 минут</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Инструкция по обмену */}
+                {/* Guide Section */}
                 <div className={`help-section ${activeSection === 'guide' ? 'active' : ''}`}>
                     <div className="section-header" onClick={() => toggleSection('guide')}>
-                        <h3>🎯 Как пользоваться обменником</h3>
+                        <div className="section-title">
+                            <span className="section-icon">🎯</span>
+                            <h3>Как пользоваться обменником</h3>
+                        </div>
                         <span className="toggle-icon">{activeSection === 'guide' ? '−' : '+'}</span>
                     </div>
                     {activeSection === 'guide' && (
@@ -346,29 +372,29 @@ function Help({ navigateTo }) {
                                 <div className="guide-step">
                                     <div className="step-number">1</div>
                                     <div className="step-content">
-                                        <strong>Выберите направление</strong>
+                                        <h4>Выберите направление</h4>
                                         <p>Нажмите "Покупка" или "Продажа" USDT</p>
                                     </div>
                                 </div>
                                 <div className="guide-step">
                                     <div className="step-number">2</div>
                                     <div className="step-content">
-                                        <strong>Введите сумму</strong>
-                                        <p>Укажите сумму для обмена в соответствующем поле, добавьте реквизиты для получение средств</p>
+                                        <h4>Введите сумму</h4>
+                                        <p>Укажите сумму для обмена в соответствующем поле</p>
                                     </div>
                                 </div>
                                 <div className="guide-step">
                                     <div className="step-number">3</div>
                                     <div className="step-content">
-                                        <strong>Выберите способ оплаты</strong>
+                                        <h4>Выберите способ оплаты</h4>
                                         <p>Выберите подходящий банк/сеть для перевода</p>
                                     </div>
                                 </div>
                                 <div className="guide-step">
                                     <div className="step-number">4</div>
                                     <div className="step-content">
-                                        <strong>Подтвердите операцию</strong>
-                                        <p>Нажмите кнопку обмена и следуйте инструкциям оператора в открывшемся диалоговом окне</p>
+                                        <h4>Подтвердите операцию</h4>
+                                        <p>Нажмите кнопку обмена и следуйте инструкциям оператора</p>
                                     </div>
                                 </div>
                             </div>
@@ -376,36 +402,33 @@ function Help({ navigateTo }) {
                     )}
                 </div>
 
-                {/* Безопасность */}
-                <div className="security-notice">
+                {/* Security Notice */}
+                <div className="security-card">
                     <div className="security-icon">🛡️</div>
                     <div className="security-content">
                         <h4>Безопасность прежде всего</h4>
-                        <p>Никогда не сообщайте свои пароли и приватные ключи третьим лицам, включая сотрудников поддержки, существует только один аккаунт для оффициального обращения @tetherrabbit_support.</p>
+                        <p>Никогда не сообщайте свои пароли и приватные ключи третьим лицам. Существует только один аккаунт для оффициального обращения @tetherrabbit_support.</p>
                     </div>
                 </div>
             </div>
 
-            {/* Нижняя навигация */}
+            {/* Bottom Navigation */}
             <div className="bottom-nav">
-                <button className="nav-button" onClick={() => navigateTo('/')}>
-                    <span>🏠</span>
-                    <span>Обмен</span>
+                <button className="nav-item" onClick={() => navigateTo('/')}>
+                    <span className="nav-icon">💸</span>
+                    <span className="nav-label">Обмен</span>
                 </button>
-                
-                <button className="nav-button" onClick={() => navigateTo('/profile')}>
-                    <span>👤</span>
-                    <span>Профиль</span>
+                <button className="nav-item" onClick={() => navigateTo('/profile')}>
+                    <span className="nav-icon">👤</span>
+                    <span className="nav-label">Профиль</span>
                 </button>
-                
-                <button className="nav-button" onClick={() => navigateTo('/history')}>
-                    <span>📊</span>
-                    <span>История</span>
+                <button className="nav-item" onClick={() => navigateTo('/history')}>
+                    <span className="nav-icon">📊</span>
+                    <span className="nav-label">История</span>
                 </button>
-                
-                <button className="nav-button active">
-                    <span>❓</span>
-                    <span>Справка</span>
+                <button className="nav-item active">
+                    <span className="nav-icon">❓</span>
+                    <span className="nav-label">Помощь</span>
                 </button>
             </div>
         </div>

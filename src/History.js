@@ -10,9 +10,7 @@ function History({ navigateTo }) {
     const [viewMode, setViewMode] = useState('active');
 
     // Используем тот же serverUrl что и в Home.js
-    const serverUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080' 
-        : 'https://87.242.106.114:8080';
+    const serverUrl = 'https://87.242.106.114';
 
     useEffect(() => {
         fetchUserOrders();

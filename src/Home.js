@@ -4,9 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Используем HTTPS или относительный путь
-const serverUrl = window.location.hostname === 'localhost' 
-  ? 'http://localhost:8080' 
-  : 'https://87.242.106.114:8080';
+const serverUrl = 'https://87.242.106.114';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);

@@ -184,7 +184,7 @@ function History({ navigateTo }) {
 
     return (
         <div className="history-container">
-            {/* Header - БЕЗ КНОПКИ ОБНОВЛЕНИЯ */}
+            {/* Header */}
             <div className="history-header">
                 <div className="header-top">
                     <h1 className="header-title">История операций</h1>
@@ -266,23 +266,29 @@ function History({ navigateTo }) {
                                     )}
 
                                     <div className="order-header">
-                                        <div className="order-id-section">
-                                            <button 
-                                                className="order-id-badge"
-                                                onClick={() => copyOrderId(order.id)}
-                                            >
-                                                <span>#</span>
-                                                <span>{order.id}</span>
-                                                <span>📋</span>
-                                            </button>
-                                        </div>
-                                        <div className="order-status-section">
-                                            <div className={`type-badge ${isBuy ? 'type-buy' : 'type-sell'}`}>
-                                                {isBuy ? '🛒 Покупка' : '💳 Продажа'}
-                                            </div>
-                                            <div className={`order-status-badge ${statusInfo.class}`}>
-                                                <span>{statusInfo.icon}</span>
-                                                <span>{statusInfo.text}</span>
+                                        <div className="order-id-wrapper">
+                                            <div className="order-meta">
+                                                <button 
+                                                    className="order-id-badge"
+                                                    onClick={() => copyOrderId(order.id)}
+                                                    title="Копировать ID"
+                                                >
+                                                    <span className="order-hash">#</span>
+                                                    <span className="order-number">{order.id}</span>
+                                                    <span className="copy-icon">📋</span>
+                                                </button>
+                                                
+                                                <div className="order-type-status">
+                                                    <div className={`type-badge ${isBuy ? 'type-buy' : 'type-sell'}`}>
+                                                        <span className="type-icon">{isBuy ? '🛒' : '💳'}</span>
+                                                        <span className="type-text">{isBuy ? 'Покупка' : 'Продажа'}</span>
+                                                    </div>
+                                                    
+                                                    <div className={`order-status-badge ${statusInfo.class}`}>
+                                                        <span className="status-icon">{statusInfo.icon}</span>
+                                                        <span className="status-text">{statusInfo.text}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -312,7 +318,7 @@ function History({ navigateTo }) {
                                                 className="chat-btn"
                                                 onClick={() => openOrderChat(order)}
                                             >
-                                                💬 Чат с оператором
+                                                <span>💬 Чат с оператором</span>
                                                 {hasNotifications && unreadCount > 0 && (
                                                     <span className="notification-count">+{unreadCount}</span>
                                                 )}
@@ -339,7 +345,7 @@ function History({ navigateTo }) {
                 </div>
             )}
 
-            {/* Support Chat - теперь правильное модальное окно */}
+            {/* Support Chat */}
             {activeChat && (
                 <div className="chat-modal-overlay">
                     <div className="chat-modal">

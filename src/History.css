@@ -16,6 +16,9 @@
     margin-bottom: 24px;
     color: white;
     box-shadow: 0 8px 32px rgba(0, 124, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .header-top {
@@ -23,6 +26,7 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .header-title {
@@ -80,6 +84,8 @@
     border-radius: 20px;
     padding: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    max-width: 400px;
 }
 
 .view-tab {
@@ -147,46 +153,70 @@
     background: linear-gradient(90deg, #007CFF, #0056CC);
 }
 
+/* Order Header */
 .order-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    flex-wrap: nowrap;
 }
 
-.order-id-section {
+.order-id-wrapper {
+    flex: 1;
+    width: 100%;
+}
+
+.order-meta {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
+    width: 100%;
 }
 
 .order-id-badge {
     background: linear-gradient(135deg, #007CFF 0%, #0056CC 100%);
     color: white;
-    padding: 8px 16px;
+    padding: 10px 18px;
     border-radius: 12px;
     font-size: 14px;
     font-weight: 700;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     border: none;
+    max-width: fit-content;
+}
+
+.order-hash {
+    opacity: 0.9;
+    font-size: 12px;
+}
+
+.order-number {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.copy-icon {
+    font-size: 12px;
+    opacity: 0.8;
 }
 
 .order-id-badge:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 124, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 124, 255, 0.4);
 }
 
-.order-status-section {
+.order-type-status {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .type-badge {
@@ -196,21 +226,31 @@
     border-radius: 50px;
     font-size: 14px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    gap: 6px;
+    gap: 8px;
+    border: 2px solid;
+    background: white;
 }
 
 .type-buy {
-    background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(40, 167, 69, 0.1) 100%);
     color: #28A745;
-    border: 2px solid rgba(52, 199, 89, 0.2);
+    border-color: rgba(52, 199, 89, 0.3);
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(40, 167, 69, 0.05) 100%);
 }
 
 .type-sell {
-    background: linear-gradient(135deg, rgba(255, 59, 48, 0.1) 0%, rgba(220, 53, 69, 0.1) 100%);
     color: #DC3545;
-    border: 2px solid rgba(255, 59, 48, 0.2);
+    border-color: rgba(220, 53, 69, 0.3);
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);
+}
+
+.type-icon {
+    font-size: 16px;
+}
+
+.type-text {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .order-status-badge {
@@ -222,79 +262,100 @@
     letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    color: white;
+    min-width: 120px;
+    justify-content: center;
 }
 
 .status-pending {
     background: linear-gradient(135deg, #FF9500 0%, #FF6B00 100%);
-    color: white;
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
 }
 
 .status-processing {
     background: linear-gradient(135deg, #007CFF 0%, #0056CC 100%);
-    color: white;
+    box-shadow: 0 4px 12px rgba(0, 124, 255, 0.3);
 }
 
 .status-completed {
     background: linear-gradient(135deg, #34C759 0%, #28A745 100%);
-    color: white;
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
 }
 
 .status-cancelled {
     background: linear-gradient(135deg, #FF3B30 0%, #DC3545 100%);
-    color: white;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.status-icon {
+    font-size: 14px;
+}
+
+.status-text {
+    font-size: 12px;
 }
 
 /* Order Info Grid */
 .order-info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
     margin-bottom: 20px;
 }
 
 .info-card {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 16px;
-    padding: 20px;
+    padding: 18px;
     border: 1px solid rgba(0, 0, 0, 0.05);
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
 .info-label {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     color: #6c757d;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
+    display: block;
 }
 
 .info-value {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
     color: #212529;
+    line-height: 1.3;
 }
 
 .info-value.large {
-    font-size: 20px;
+    font-size: 22px;
+    color: #007CFF;
 }
 
 .info-value.highlight {
-    color: #007CFF;
+    color: #FF9500;
+    font-weight: 900;
 }
 
 /* Action Bar */
 .action-bar {
     display: flex;
-    gap: 12px;
+    gap: 15px;
     padding-top: 20px;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
-    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .chat-btn, .copy-btn {
-    padding: 14px 24px;
+    padding: 15px 25px;
     border-radius: 16px;
     border: none;
     font-size: 15px;
@@ -304,29 +365,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    flex: 1;
     min-width: 200px;
 }
 
 .chat-btn {
     background: linear-gradient(135deg, #007CFF 0%, #0056CC 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(0, 124, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 124, 255, 0.3);
 }
 
 .chat-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 124, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 124, 255, 0.4);
 }
 
 .copy-btn {
-    background: rgba(0, 0, 0, 0.05);
-    color: #6c757d;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
 }
 
 .copy-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: #212529;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
 }
 
 /* Notification Badge */
@@ -357,7 +421,9 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    margin-left: 6px;
+    font-weight: 900;
+    margin-left: 8px;
+    animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
@@ -395,7 +461,7 @@
     margin-right: auto;
 }
 
-/* Кнопка "Начать обмен" ПО ЦЕНТРУ */
+/* Кнопка "Начать обмен" */
 .exchange-btn {
     background: linear-gradient(135deg, #007CFF 0%, #0056CC 100%);
     color: white;
@@ -597,9 +663,25 @@
         padding: 20px;
     }
     
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .order-id-badge {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .order-type-status {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
     .order-info-grid {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 12px;
     }
     
     .action-bar {
@@ -609,6 +691,10 @@
     .chat-btn, .copy-btn {
         width: 100%;
         min-width: auto;
+    }
+    
+    .stats-grid {
+        gap: 15px;
     }
     
     .chat-modal {
@@ -640,15 +726,13 @@
         font-size: 13px;
     }
     
-    .order-header {
+    .order-type-status {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
     }
     
-    .order-status-section {
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
+    .type-badge, .order-status-badge {
+        width: 100%;
+        justify-content: center;
     }
 }

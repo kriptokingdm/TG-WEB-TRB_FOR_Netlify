@@ -4,7 +4,6 @@ import Home from './Home';
 import History from './History';
 import Profile from './Profile';
 import Help from './Help';
-import { ThemeProvider } from './ThemeContext';
 
 // Компонент для навигации
 function NavigationWrapper() {
@@ -32,11 +31,9 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <Router>
-        <NavigationWrapper />
-      </Router>
-    </ThemeProvider>
+    <Router>
+      <NavigationWrapper />
+    </Router>
   );
 }
 

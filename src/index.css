@@ -1,34 +1,4 @@
-/* index.css - Упрощенная версия */
-:root {
-  /* Light theme (default) */
-  --bg-primary: #f5f5f7;
-  --bg-secondary: #ffffff;
-  --text-primary: #1d1d1f;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --border-color: #e5e5ea;
-  --accent-color: #007cff;
-  --accent-hover: #0066cc;
-  --success-color: #00a86b;
-  --error-color: #ff4444;
-  --warning-color: #ff9500;
-}
-
-/* Просто добавляем класс к body */
-body.dark-theme {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-tertiary: #888888;
-  --border-color: #333333;
-  --accent-color: #0a84ff;
-  --accent-hover: #409cff;
-  --success-color: #32d74b;
-  --error-color: #ff453a;
-  --warning-color: #ff9f0a;
-}
-
+/* index.css - чистые стили без темы */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -36,48 +6,15 @@ body.dark-theme {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+html, body {
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+  background: #f5f5f7;
 }
 
-/* Общие стили с CSS переменными */
-.page-header,
-.home-container,
-.history-content,
-.profile-content,
-.help-content {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.bottom-nav {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-}
-
-.nav-button {
-  color: var(--text-tertiary);
-}
-
-.nav-button.active {
-  color: var(--accent-color);
-}
-
-input, textarea, select {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.button-primary {
-  background: var(--accent-color);
-}
-
-.button-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
+#root {
+  min-height: 100vh;
+  background: #f5f5f7;
 }
 
 /* Отключаем зум на мобильных */

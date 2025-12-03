@@ -1,11 +1,16 @@
 import React from "react";
-// src/Home.js
 import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
-// serverURL - ИСПРАВЛЕННАЯ ВЕРСИЯ
-const serverUrl = 'http://87.242.106.114:3001';
+// Используем HTTPS для Telegram Web App
+const getServerUrl = () => {
+    return window.location.hostname === 'localhost' 
+        ? 'http://87.242.106.114:3001'
+        : 'https://87.242.106.114:3001'; // HTTPS для продакшена
+};
+
+const serverUrl = getServerUrl();
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -118,106 +123,108 @@ function Home({ navigateTo }) {
         checkActiveOrders();
         fetchExchangeRates();
 
-        // Глобальная функция для обновления из других компонентов
-            window.updateActiveOrders = checkActiveOrders;
+        window.updateActiveOrders = checkActiveOrders;
 
-            return () => {
-                window.updateActiveOrders = null;
-            };
-        }, []);
-
-        // Функция проверки активных ордеров
-        const checkActiveOrders = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.log('❌ Токен не найден');
-                    return;
-                }
-        
-                // ПОЛУЧАЕМ USER ID ИЗ LOCALSTORAGE
-                const userData = localStorage.getItem('user');
-                if (!userData) {
-                    console.log('❌ Данные пользователя не найдены');
-                    return;
-                }
-                
-                const user = JSON.parse(userData);
-                const userId = user.id;
-        
-                console.log('🔍 Проверяем активные ордеры...');
-                
-                // ОПРЕДЕЛЯЕМ ENDPOINT
-                const endpoint = `/api/user-orders/${userId}`;
-                const serverUrl = 'http://87.242.106.114:3001';
-                
-                // Будет автоматически идти к /api/user-orders/USER_ID
-                const response = await fetch(`${serverUrl}${endpoint}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-        
-                console.log('📡 Статус ответа:', response.status);
-        
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('📦 Данные ордеров:', data);
-                    
-                    const activeOrders = data.orders.filter(order =>
-                        order.status === 'pending' || order.status === 'paid' || order.status === 'processing'
-                    );
-        
-                    console.log('🔥 Активных ордеров:', activeOrders.length);
-                    console.log('📋 Все ордеры:', data.orders.map(o => ({id: o.id, status: o.status})));
-        
-                    setActiveOrdersCount(activeOrders.length);
-                    setHasActiveOrder(activeOrders.length > 0);
-        
-                } else {
-                    console.error('❌ Ошибка ответа:', response.status);
-                }
-            } catch (error) {
-                console.error('❌ Ошибка проверки активных ордеров:', error);
-            }
+        return () => {
+            window.updateActiveOrders = null;
         };
+    }, []);
 
-        // Проверяем активные ордеры каждые 30 секунд
-        useEffect(() => {
-            const interval = setInterval(() => {
-                checkActiveOrders();
-            }, 30000);
+    // Функция проверки активных ордеров
+    const checkActiveOrders = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
+            
+            if (!token || !userData) {
+                console.log('❌ Токен или данные пользователя не найдены');
+                return;
+            }
+            
+            const user = JSON.parse(userData);
+            const userId = user.id;
 
-            return () => {
-                clearInterval(interval);
+            console.log('🔍 Проверяем активные ордеры...');
+            
+            const endpoint = `/api/user-orders/${userId}`;
+            
+            const response = await fetch(`${serverUrl}${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors'
+            });
+
+            console.log('📡 Статус ответа:', response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📦 Данные ордеров:', data);
+                
+                const activeOrders = data.orders ? data.orders.filter(order =>
+                    order.status === 'pending' || order.status === 'paid' || order.status === 'processing'
+                ) : [];
+
+                console.log('🔥 Активных ордеров:', activeOrders.length);
+
+                setActiveOrdersCount(activeOrders.length);
+                setHasActiveOrder(activeOrders.length > 0);
+
+            } else {
+                console.error('❌ Ошибка ответа:', response.status);
+            }
+        } catch (error) {
+            console.error('❌ Ошибка проверки активных ордеров:', error);
+        }
+    };
+
+    // Проверяем активные ордеры каждые 30 секунд
+    useEffect(() => {
+        const interval = setInterval(() => {
+            checkActiveOrders();
+        }, 30000);
+
+        return () => {
+            clearInterval(interval);
         };
     }, []);
 
     // Загрузка курсов с бекенда
     const fetchExchangeRates = async () => {
-       try {
-        let requestAmount;
-        if (amount) {
-            requestAmount = parseFloat(amount);
-        } else {
-            requestAmount = 100;
-        }
+        try {
+            let requestAmount;
+            if (amount) {
+                requestAmount = parseFloat(amount);
+            } else {
+                requestAmount = 100;
+            }
 
-        if (requestAmount < MIN_USDT) {
-            requestAmount = MIN_USDT;
-        }
-            const response = await fetch(`${serverUrl}/api/exchange-rate?amount=${requestAmount}&type=${isBuyMode ? 'buy' : 'sell'}`);
+            if (requestAmount < MIN_USDT) {
+                requestAmount = MIN_USDT;
+            }
+            
+            const response = await fetch(`${serverUrl}/api/exchange-rate?amount=${requestAmount}&type=${isBuyMode ? 'buy' : 'sell'}`, {
+                mode: 'cors'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const data = await response.json();
             console.log('📊 Курсы с бекенда:', data);
 
-            setBuyRate(data.buy);
-            setSellRate(data.sell);
-            setCurrentTier(data.tier);
+            setBuyRate(data.buy || 85.6);
+            setSellRate(data.sell || 81.6);
+            setCurrentTier(data.tier || 'standard');
 
-        }  catch (error) {
-        console.error('❌ Ошибка загрузки курсов:', error);
-    }
+        } catch (error) {
+            console.error('❌ Ошибка загрузки курсов:', error);
+            setBuyRate(85.6);
+            setSellRate(81.6);
+            setCurrentTier('standard');
+        }
     };
 
     useEffect(() => {
@@ -233,13 +240,11 @@ function Home({ navigateTo }) {
         setError('');
         fetchExchangeRates();
         
-        // Добавить анимацию поворота кнопки
         const swapButton = document.querySelector('.swap-center-button');
         if (swapButton) {
-          swapButton.classList.toggle('rotated');
+            swapButton.classList.toggle('rotated');
         }
-      };
-    
+    };
 
     const handleAmountChange = (e) => {
         const value = e.target.value;
@@ -286,7 +291,6 @@ function Home({ navigateTo }) {
             return;
         }
 
-        // Для СБП проверяем номер телефона
         if (newPayment.bankName === 'СБП (Система быстрых платежей)') {
             if (!newPayment.phoneNumber.trim()) {
                 setNewPayment(prev => ({ ...prev, cardNumberError: 'Введите номер телефона для СБП' }));
@@ -306,7 +310,6 @@ function Home({ navigateTo }) {
             setSelectedPayment(newPaymentMethod);
             
         } else {
-            // Обычная карта
             const cleanedCardNumber = newPayment.cardNumber.replace(/\s/g, '');
             if (!/^\d+$/.test(cleanedCardNumber)) {
                 setNewPayment(prev => ({ ...prev, cardNumberError: 'Номер карты должен содержать только цифры' }));
@@ -449,7 +452,6 @@ function Home({ navigateTo }) {
     // Проверка готовности к обмену
     const isExchangeReady = () => {
         if (hasActiveOrder) return false;
-
         if (!amount || error) return false;
 
         const numAmount = parseFloat(amount);
@@ -562,7 +564,6 @@ function Home({ navigateTo }) {
 
     return (
         <div className="home-container">
-            {/* Баннер активного ордера */}
             {hasActiveOrder && (
                 <div className="active-order-warning">
                     <div className="warning-content">
@@ -581,7 +582,6 @@ function Home({ navigateTo }) {
                 </div>
             )}
 
-            {/* Переключатель Покупка/Продажа */}
             <div className="mode-switcher">
                 <button
                     className={`mode-button buy ${isBuyMode ? 'active' : ''}`}
@@ -609,9 +609,7 @@ function Home({ navigateTo }) {
                 </button>
             </div>
 
-            {/* Основная форма обмена */}
             <div className={hasActiveOrder ? 'form-disabled' : ''}>
-                {/* Блок с карточками валют */}
                 <div className="currency-cards-horizontal">
                     <div className="currency-card-side left-card">
                         <div className="currency-content">
@@ -650,7 +648,6 @@ function Home({ navigateTo }) {
                     </div>
                 </div>
 
-                {/* Поля ввода суммы */}
                 <div className="amount-input-section">
                     <div className="amount-input-group">
                         <label className="amount-label">Вы отдаете</label>
@@ -692,7 +689,6 @@ function Home({ navigateTo }) {
                     </div>
                 </div>
 
-                {/* Банковские реквизиты для ПРОДАЖИ USDT */}
                 {!isBuyMode && (
                     <div className="payment-section">
                         <div className="payment-header">
@@ -841,7 +837,6 @@ function Home({ navigateTo }) {
                     </div>
                 )}
 
-                {/* Крипто-адреса для ПОКУПКИ USDT */}
                 {isBuyMode && (
                     <div className="payment-section">
                         <div className="payment-header">
@@ -990,7 +985,6 @@ function Home({ navigateTo }) {
                 )}
             </div>
 
-            {/* Кнопка обмена */}
             <button
                 className={`exchange-button ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
                 disabled={!isExchangeReady()}
@@ -999,7 +993,6 @@ function Home({ navigateTo }) {
                 {hasActiveOrder ? '❌ Завершите текущий ордер' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
             </button>
 
-            {/* Чат поддержки */}
             {showSupportChat && (
                 <SupportChat
                     orderId={currentOrderId}
@@ -1008,24 +1001,23 @@ function Home({ navigateTo }) {
                 />
             )}
 
-            {/* Нижнее меню */}
             <div className="bottom-nav">
-                <button className="nav-button active" onClick={() => navigateTo('home')}>
+                <button className="nav-button active" onClick={() => navigateTo('/')}>
                     <span>🏠</span>
                     <span>Обмен</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('profile')}>
+                <button className="nav-button" onClick={() => navigateTo('/profile')}>
                     <span>👤</span>
                     <span>Профиль</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('history')}>
+                <button className="nav-button" onClick={() => navigateTo('/history')}>
                     <span>📊</span>
                     <span>История</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('help')}>
+                <button className="nav-button" onClick={() => navigateTo('/help')}>
                     <span>❓</span>
                     <span>Справка</span>
                 </button>

@@ -1,6 +1,6 @@
-// SupportChat.js - обновленный с красивым дизайном
+// SupportChat.js - БЕЗ Material UI
 import React, { useState, useEffect } from 'react';
-import './History.css';
+import './SupportChat.css';
 
 const SupportChat = ({ orderId, onClose }) => {
   const [message, setMessage] = useState('');
@@ -9,7 +9,6 @@ const SupportChat = ({ orderId, onClose }) => {
   const [isTyping, setIsTyping] = useState(false);
   const serverUrl = 'https://87.242.106.114.sslip.io';
 
-  // Загружаем сообщения
   useEffect(() => {
     const loadMessages = async () => {
       try {
@@ -151,19 +150,17 @@ const SupportChat = ({ orderId, onClose }) => {
       {/* Header */}
       <div className="chat-header">
         <div className="chat-header-left">
-          <div className="chat-back-btn" onClick={onClose}>
+          <button className="chat-back-btn" onClick={onClose}>
             ←
-          </div>
+          </button>
           <div className="chat-title">
             <div className="chat-order-id">Заявка #{orderId}</div>
             <div className="chat-subtitle">Чат с оператором</div>
           </div>
         </div>
-        <div className="chat-header-right">
-          <button className="chat-close-btn" onClick={onClose}>
-            ✕
-          </button>
-        </div>
+        <button className="chat-close-btn" onClick={onClose}>
+          ✕
+        </button>
       </div>
 
       {/* Messages */}

@@ -1,4 +1,3 @@
-// src/History.js
 import { useState, useEffect } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
@@ -9,6 +8,11 @@ function History({ navigateTo }) {
     const [error, setError] = useState('');
     const [activeChat, setActiveChat] = useState(null);
     const [viewMode, setViewMode] = useState('active');
+
+    // Используем тот же serverUrl что и в Home.js
+    const serverUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:8080' 
+        : 'https://87.242.106.114:8080';
 
     useEffect(() => {
         fetchUserOrders();
@@ -30,71 +34,104 @@ function History({ navigateTo }) {
             const userId = userData.id;
             console.log('🆔 User ID:', userId);
 
-            // ИСПРАВЛЕННАЯ СТРОКА - используем новый URL
-            const serverUrl = 'http://87.242.106.114:3001';
+            // Исправленный URL
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
+                method: 'GET',
                 headers: {
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
             });
 
             console.log('📡 Ответ сервера:', response.status);
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📦 Данные с сервера:', data);
 
-            const data = await response.json();
-            console.log('📦 Данные с сервера:', data);
+                // Обрабатываем разные форматы ответа
+                let ordersData = [];
+                if (Array.isArray(data.orders)) {
+                    ordersData = data.orders;
+                } else if (data.orders && typeof data.orders === 'object') {
+                    ordersData = Object.values(data.orders);
+                } else if (Array.isArray(data)) {
+                    ordersData = data;
+                }
 
-            if (data.success) {
-                const sortedOrders = (data.orders || []).sort((a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
+                const sortedOrders = ordersData.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.created_at || a.timestamp || Date.now());
+                    const dateB = new Date(b.createdAt || b.created_at || b.timestamp || Date.now());
+                    return dateB - dateA;
+                });
+                
                 console.log('✅ Отсортированные ордера:', sortedOrders);
                 setOrders(sortedOrders);
+                setError('');
             } else {
-                setError(data.error || 'Ошибка загрузки');
+                console.error('❌ Ошибка сервера:', response.status);
+                const errorText = await response.text();
+                console.error('❌ Текст ошибки:', errorText);
+                setError(`Ошибка сервера: ${response.status}`);
+                
+                // Тестовые данные на случай ошибки
+                const testOrders = getTestOrders();
+                setOrders(testOrders);
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки истории:', error);
             setError('Ошибка соединения с сервером');
 
             // Тестовые данные на случай ошибки
-            const testOrders = [
-                {
-                    id: 'TEST001',
-                    type: 'buy',
-                    amount: 5000,
-                    rate: 92.5,
-                    status: 'completed',
-                    createdAt: new Date().toISOString(),
-                    completedAt: new Date().toISOString(),
-                    cryptoAddress: {
-                        network: 'TRC20',
-                        address: 'TEst12345678901234567890'
-                    }
-                },
-                {
-                    id: 'TEST002',
-                    type: 'sell',
-                    amount: 100,
-                    rate: 87.5,
-                    status: 'pending',
-                    createdAt: new Date(Date.now() - 3600000).toISOString(),
-                    paymentMethod: {
-                        name: 'Сбербанк',
-                        number: '1234'
-                    }
-                }
-            ];
+            const testOrders = getTestOrders();
             setOrders(testOrders);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Остальной код без изменений...
+    const getTestOrders = () => {
+        return [
+            {
+                id: 'TEST001',
+                type: 'buy',
+                amount: 5000,
+                rate: 92.5,
+                status: 'completed',
+                createdAt: new Date().toISOString(),
+                completedAt: new Date().toISOString(),
+                cryptoAddress: {
+                    network: 'TRC20',
+                    address: 'TEst12345678901234567890'
+                }
+            },
+            {
+                id: 'TEST002',
+                type: 'sell',
+                amount: 100,
+                rate: 87.5,
+                status: 'pending',
+                createdAt: new Date(Date.now() - 3600000).toISOString(),
+                paymentMethod: {
+                    name: 'Сбербанк',
+                    number: '1234'
+                }
+            },
+            {
+                id: 'TEST003',
+                type: 'buy',
+                amount: 10000,
+                rate: 91.2,
+                status: 'processing',
+                createdAt: new Date(Date.now() - 7200000).toISOString(),
+                cryptoAddress: {
+                    network: 'ERC20',
+                    address: '0xABC1234567890123456789012345678901234567'
+                }
+            }
+        ];
+    };
+
     const getFilteredOrders = () => {
         if (viewMode === 'active') {
             return orders.filter(order =>
@@ -105,7 +142,7 @@ function History({ navigateTo }) {
     };
 
     const getStatusInfo = (status) => {
-        switch (status) {
+        switch (status?.toLowerCase()) {
             case 'completed':
                 return { class: 'status-completed', text: 'Завершено', icon: '✅' };
             case 'paid':
@@ -113,11 +150,13 @@ function History({ navigateTo }) {
             case 'pending':
                 return { class: 'status-pending', text: 'Ожидание', icon: '⏳' };
             case 'processing':
-                return { class: 'status-pending', text: 'В обработке', icon: '⚡' };
+                return { class: 'status-processing', text: 'В обработке', icon: '⚡' };
             case 'cancelled':
                 return { class: 'status-cancelled', text: 'Отменено', icon: '❌' };
+            case 'failed':
+                return { class: 'status-cancelled', text: 'Ошибка', icon: '❌' };
             default:
-                return { class: 'status-pending', text: status, icon: '⚡' };
+                return { class: 'status-pending', text: status || 'Неизвестно', icon: '❓' };
         }
     };
 
@@ -131,13 +170,17 @@ function History({ navigateTo }) {
 
     const formatDate = (dateString) => {
         if (!dateString) return '—';
-        return new Date(dateString).toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        try {
+            return new Date(dateString).toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return '—';
+        }
     };
 
     const getNetworkIcon = (network) => {
@@ -145,29 +188,22 @@ function History({ navigateTo }) {
             'ERC20': '⛓️',
             'TRC20': '⚡',
             'TON': '💎',
-            'SOL': '🔥'
+            'SOL': '🔥',
+            'BEP20': '🟡'
         };
         return icons[network] || '🔗';
     };
 
     const canOpenChat = (order) => {
-        console.log('🔍 Проверка чата для ордера:', order.id, 'Статус:', order.status);
         const canChat = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
-        console.log('✅ Чат доступен:', canChat);
         return canChat;
     };
 
     const openOrderChat = (order) => {
-        console.log('💬 Пытаемся открыть чат для заявки:', order);
-        console.log('📊 ID:', order.id, 'Статус:', order.status, 'Тип:', order.type);
-
         if (!canOpenChat(order)) {
-            console.log('❌ Чат недоступен! Статус:', order.status);
             alert(`❌ Чат недоступен для заявок со статусом "${order.status}"`);
             return;
         }
-
-        console.log('✅ Открываем чат для заявки:', order.id);
 
         const exchangeData = {
             type: order.type,
@@ -181,7 +217,7 @@ function History({ navigateTo }) {
             exchangeData: exchangeData
         });
 
-        console.log('🎯 Чат установлен:', order.id);
+        console.log('🎯 Чат установлен для заявки:', order.id);
     };
 
     const closeChat = () => {
@@ -206,6 +242,12 @@ function History({ navigateTo }) {
         };
     };
 
+    const retryFetchOrders = () => {
+        setIsLoading(true);
+        setError('');
+        fetchUserOrders();
+    };
+
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
 
@@ -221,9 +263,9 @@ function History({ navigateTo }) {
                         <div className="loading-icon">💫</div>
                         <p>Загрузка истории...</p>
                         <button
-                            className="start-exchange-button"
-                            onClick={fetchUserOrders}
-                            style={{ marginTop: '10px', background: '#666' }}
+                            className="retry-button"
+                            onClick={retryFetchOrders}
+                            style={{ marginTop: '10px' }}
                         >
                             🔄 Обновить
                         </button>
@@ -235,16 +277,14 @@ function History({ navigateTo }) {
                         <p className="history-subtext">{error}</p>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                             <button
-                                className="start-exchange-button"
-                                onClick={fetchUserOrders}
-                                style={{ background: '#007cff' }}
+                                className="retry-button"
+                                onClick={retryFetchOrders}
                             >
                                 🔄 Повторить
                             </button>
                             <button
-                                className="start-exchange-button"
+                                className="home-button"
                                 onClick={() => navigateTo('home')}
-                                style={{ background: '#009F00' }}
                             >
                                 🏠 На главную
                             </button>
@@ -270,7 +310,7 @@ function History({ navigateTo }) {
                                 <div className="stat-badge">
                                     Всего: {stats.total}
                                 </div>
-                                <div className="stat-badge" style={{ background: 'rgba(0, 124, 255, 0.1)', color: '#007CFF' }}>
+                                <div className="stat-badge active-badge">
                                     Активных: {stats.active}
                                 </div>
                             </div>
@@ -308,9 +348,8 @@ function History({ navigateTo }) {
                                         }
                                     </p>
                                     <button
-                                        className="start-exchange-button"
+                                        className="show-all-button"
                                         onClick={() => setViewMode('all')}
-                                        style={{ marginTop: '10px', background: '#666' }}
                                     >
                                         📋 Показать все
                                     </button>
@@ -323,13 +362,15 @@ function History({ navigateTo }) {
                                     const isActive = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
 
                                     return (
-                                        <div key={order.id} className={`order-item ${isActive ? 'active-order' : ''}`}>
+                                        <div key={order.id || Math.random()} className={`order-item ${isActive ? 'active-order' : ''}`}>
                                             {isActive && (
-                                                <div className="active-badge">🔥 Активно</div>
+                                                <div className="active-order-badge">🔥 Активно</div>
                                             )}
 
                                             <div className="order-header">
-                                                <div className="order-id">#{order.id}</div>
+                                                <div className="order-id" onClick={() => copyOrderId(order.id)} title="Копировать ID">
+                                                    #{order.id}
+                                                </div>
                                                 <div className={`order-status ${statusInfo.class}`}>
                                                     {statusInfo.icon} {statusInfo.text}
                                                 </div>
@@ -369,7 +410,7 @@ function History({ navigateTo }) {
                                                         ) : order.paymentMethod ? (
                                                             order.paymentMethod.type === 'sbp' ?
                                                                 `📱 СБП: ${order.paymentMethod.number}` :
-                                                                `💳 ${order.paymentMethod.name || 'Банковская карта'}`
+                                                                `💳 ${order.paymentMethod.name || 'Банковская карта'} •••• ${order.paymentMethod.number || ''}`
                                                         ) : (
                                                             '—'
                                                         )}
@@ -391,37 +432,28 @@ function History({ navigateTo }) {
                                                             {order.completedAt ? 'Завершена' : 'Отменена'}
                                                         </div>
                                                         <div className="detail-value">
-                                                            {order.cryptoAddress ? (
-                                                                <>
-                                                                    {getNetworkIcon(order.cryptoAddress.network)} {order.cryptoAddress.network}
-                                                                </>
-                                                            ) : order.paymentMethod ? (
-                                                                order.paymentMethod.type === 'sbp' ?
-                                                                    `📱 СБП: ${order.paymentMethod.number}` :
-                                                                    `💳 ${order.paymentMethod.name || 'Банковская карта'}`
-                                                            ) : (
-                                                                '—'
-                                                            )}
+                                                            {order.completedAt ? formatDate(order.completedAt) : formatDate(order.cancelledAt)}
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
 
                                             <div className="order-footer">
-                                                <div className="order-date">
+                                                <div className="order-date-mobile">
                                                     {formatDate(order.createdAt)}
                                                 </div>
                                                 <div className="order-actions">
                                                     <button
-                                                        className="action-button"
+                                                        className="action-button copy-button"
                                                         onClick={() => copyOrderId(order.id)}
+                                                        title="Копировать ID"
                                                     >
                                                         📋 ID
                                                     </button>
 
                                                     {canChat && (
                                                         <button
-                                                            className="action-button chat-button-active"
+                                                            className="action-button chat-button"
                                                             onClick={() => openOrderChat(order)}
                                                         >
                                                             💬 Чат поддержки

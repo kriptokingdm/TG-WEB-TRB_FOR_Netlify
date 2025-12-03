@@ -10,7 +10,7 @@ function TestApp() {
       color: 'white',
       textAlign: 'center'
     }
-  }, '? ???? ????????!');
+  }, 'WORKING!');
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

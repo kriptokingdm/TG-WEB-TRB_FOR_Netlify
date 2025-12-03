@@ -60,27 +60,37 @@ const SupportChat = ({ orderId, onClose, exchangeData }) => {
     const sendMessage = async () => {
         if (!newMessage.trim()) return;
         
-        // Для теста просто добавляем сообщение локально
-        const newMsg = {
-            id: Date.now(),
-            text: newMessage.trim(),
-            sender: 'user',
-            timestamp: new Date().toISOString()
-        };
-        
-        setMessages(prev => [...prev, newMsg]);
-        setNewMessage('');
-        
-        // В реальности здесь будет запрос к серверу
-        setTimeout(() => {
-            const botReply = {
-                id: Date.now() + 1,
-                text: 'Ваше сообщение получено. Оператор скоро ответит.',
-                sender: 'support',
-                timestamp: new Date().toISOString()
-            };
-            setMessages(prev => [...prev, botReply]);
-        }, 1000);
+        try {
+            const response = await fetch(`${serverUrl}/api/chat/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    message: newMessage.trim(),
+                    userId: 'current_user'
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    // Добавляем сообщение в локальный список
+                    const newMsg = {
+                        id: Date.now(),
+                        text: newMessage.trim(),
+                        sender: 'user',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    setMessages(prev => [...prev, newMsg]);
+                    setNewMessage('');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Ошибка отправки:', error);
+        }
     };
 
     const scrollToBottom = () => {

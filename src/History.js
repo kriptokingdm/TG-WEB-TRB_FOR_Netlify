@@ -190,18 +190,27 @@ function History({ navigateTo }) {
                     <h1 className="header-title">История операций</h1>
                 </div>
 
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-value">{stats.total}</div>
-                        <div className="stat-label">Всего</div>
+                <div className="stats-grid-horizontal">
+                    <div className="stat-card-horizontal">
+                        <div className="stat-icon-horizontal">📊</div>
+                        <div className="stat-content-horizontal">
+                            <div className="stat-value-horizontal">{stats.total}</div>
+                            <div className="stat-label-horizontal">Всего</div>
+                        </div>
                     </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{stats.active}</div>
-                        <div className="stat-label">Активных</div>
+                    <div className="stat-card-horizontal">
+                        <div className="stat-icon-horizontal">🔥</div>
+                        <div className="stat-content-horizontal">
+                            <div className="stat-value-horizontal">{stats.active}</div>
+                            <div className="stat-label-horizontal">Активных</div>
+                        </div>
                     </div>
-                    <div className="stat-card">
-                        <div className="stat-value">{stats.completed}</div>
-                        <div className="stat-label">Завершено</div>
+                    <div className="stat-card-horizontal">
+                        <div className="stat-icon-horizontal">✅</div>
+                        <div className="stat-content-horizontal">
+                            <div className="stat-value-horizontal">{stats.completed}</div>
+                            <div className="stat-label-horizontal">Завершено</div>
+                        </div>
                     </div>
                 </div>
 
@@ -363,14 +372,17 @@ function History({ navigateTo }) {
                     <span className="nav-icon">💸</span>
                     <span className="nav-label">Обмен</span>
                 </button>
-                <button className="nav-item active">
-                    <span className="nav-icon">📊</span>
-                    <span className="nav-label">История</span>
-                </button>
+                
                 <button className="nav-item" onClick={() => navigateTo('/profile')}>
                     <span className="nav-icon">👤</span>
                     <span className="nav-label">Профиль</span>
                 </button>
+
+                <button className="nav-item active">
+                    <span className="nav-icon">📊</span>
+                    <span className="nav-label">История</span>
+                </button>
+               
                 <button className="nav-item" onClick={() => navigateTo('/help')}>
                     <span className="nav-icon">❓</span>
                     <span className="nav-label">Помощь</span>

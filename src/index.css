@@ -27,3 +27,231 @@ html, body {
       font-size: 16px !important;
   }
 }
+
+/* index.css */
+:root {
+  --tg-bg-color: #ffffff;
+  --tg-text-color: #000000;
+  --tg-secondary-bg: #f5f5f5;
+  --tg-border-color: #e0e0e0;
+  --tg-primary-color: #007cff;
+  --tg-accent-color: #34c759;
+  --tg-error-color: #ff3b30;
+  --tg-warning-color: #ff9500;
+}
+
+/* Базовые стили для темной темы */
+[data-theme="dark"] {
+  --tg-bg-color: #0f0f0f;
+  --tg-text-color: #ffffff;
+  --tg-secondary-bg: #1a1a1a;
+  --tg-border-color: #333333;
+  --tg-primary-color: #3f51b5;
+  --tg-accent-color: #4caf50;
+  --tg-error-color: #f44336;
+  --tg-warning-color: #ff9800;
+}
+
+body {
+  background-color: var(--tg-bg-color);
+  color: var(--tg-text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Темная тема для History */
+[data-theme="dark"] .history-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+[data-theme="dark"] .history-header {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%) !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .stat-card-horizontal {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .orders-container {
+  background: #1e1e2e !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .order-card {
+  background: #252525 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .order-card::before {
+  background: linear-gradient(90deg, #3f51b5, #303f9f) !important;
+}
+
+[data-theme="dark"] .info-card {
+  background: linear-gradient(135deg, #2d2d2d 0%, #252525 100%) !important;
+  color: #e0e0e0 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .bottom-nav {
+  background: #1e1e2e !important;
+  color: #e0e0e0 !important;
+  border-top-color: #333333 !important;
+}
+
+[data-theme="dark"] .nav-item {
+  color: #999999 !important;
+}
+
+[data-theme="dark"] .nav-item.active {
+  color: #3f51b5 !important;
+  background: rgba(63, 81, 181, 0.15) !important;
+}
+
+/* Темная тема для других компонентов */
+[data-theme="dark"] .help-container,
+[data-theme="dark"] .profile-container,
+[data-theme="dark"] .home-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+[data-theme="dark"] .help-header,
+[data-theme="dark"] .profile-header {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%) !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .help-content,
+[data-theme="dark"] .profile-content {
+  background: #1e1e2e !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .help-section,
+[data-theme="dark"] .profile-section {
+  background: #252525 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .section-header {
+  background: linear-gradient(135deg, #2d2d2d 0%, #252525 100%) !important;
+}
+
+[data-theme="dark"] .search-box {
+  background: #333333 !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .search-input {
+  color: #e0e0e0 !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] .search-input::placeholder {
+  color: #999999 !important;
+}
+
+/* Общие стили для темной темы */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: #333333 !important;
+  color: #e0e0e0 !important;
+  border-color: #555555 !important;
+}
+
+[data-theme="dark"] button:not(.nav-item) {
+  background: linear-gradient(135deg, #3f51b5, #303f9f) !important;
+}
+
+[data-theme="dark"] .chat-btn {
+  background: linear-gradient(135deg, #3f51b5, #303f9f) !important;
+}
+
+[data-theme="dark"] .logout-btn {
+  background: linear-gradient(135deg, #f44336, #d32f2f) !important;
+}
+
+[data-theme="dark"] .exchange-btn {
+  background: linear-gradient(135deg, #4caf50, #388e3c) !important;
+}
+
+/* Сообщения в темной теме */
+[data-theme="dark"] .message-toast {
+  background: #333333 !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Модальное окно чата */
+[data-theme="dark"] .chat-modal {
+  background: #1e1e2e !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .support-chat-container {
+  background: #1e1e2e !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .chat-header {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%) !important;
+}
+
+[data-theme="dark"] .chat-messages-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+[data-theme="dark"] .message-content {
+  background: #333333 !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .user-message .message-content {
+  background: linear-gradient(135deg, #3f51b5, #303f9f) !important;
+  color: white !important;
+}
+
+[data-theme="dark"] .chat-input {
+  background: #333333 !important;
+  color: #e0e0e0 !important;
+  border-color: #555555 !important;
+}
+
+/* Анимация перехода между темами */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Скрываем стандартный скроллбар для темной темы */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e1e2e;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #555555;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}
+
+/* Убедись что index.css подключен в index.js */

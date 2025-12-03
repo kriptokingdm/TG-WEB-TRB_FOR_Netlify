@@ -1,19 +1,41 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-  <base href="/" />
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000" />
-  <meta name="format-detection" content="telephone=no">
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <title>Cryptocurrency Exchange</title>
-</head>
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</body>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Tether Rabbit - обмен USDT/RUB" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <base href="/">
+    
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <title>Tether Rabbit</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Preload scripts -->
+    <link rel="preload" as="script" href="%PUBLIC_URL%/static/js/main.js">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Fallback for missing JS -->
+    <script>
+      setTimeout(() => {
+        if (!document.getElementById('root').hasChildNodes()) {
+          document.body.innerHTML = '<div style="padding: 20px; text-align: center;">' +
+            '<h1>Tether Rabbit</h1>' +
+            '<p>Загрузка приложения...</p>' +
+            '<button onclick="location.reload()">Перезагрузить</button>' +
+            '</div>';
+        }
+      }, 3000);
+    </script>
+  </body>
 </html>

@@ -6,6 +6,8 @@ function Help({ navigateTo }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
+    
+    const { isDarkMode, toggleTheme } = useTheme();
 
     const toggleSection = (section) => {
         setActiveSection(activeSection === section ? null : section);
@@ -178,6 +180,17 @@ function Help({ navigateTo }) {
 
     return (
         <div className="help-container">
+             <div className="theme-switcher">
+                <button 
+                    className={`theme-toggle ${isDarkMode ? 'dark' : 'light'}`}
+                    onClick={toggleTheme}
+                    aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                >
+                    <span className="sun-icon">☀️</span>
+                    <span className="moon-icon">🌙</span>
+                </button>
+            </div>
+
             <div className="page-header">
                 <h1>FAQ</h1>
                 <p className="page-subtitle">Задайте вопрос или выберите тему</p>

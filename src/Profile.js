@@ -23,7 +23,7 @@ function Profile({ navigateTo }) {
         console.log('🔄 Загрузка данных пользователя...');
         
         // Загружаем основные данные пользователя
-        const userResponse = await fetch('http://87.242.106.114:3001/api/user/profile', {
+        const userResponse = await fetch(' https://87.242.106.114/api/api/user/profile', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -37,7 +37,7 @@ function Profile({ navigateTo }) {
         const userDataResult = await userResponse.json();
         
         // Загружаем реальную статистику
-        const statsResponse = await fetch(`http://87.242.106.114:3001/api/user/stats/${currentUser.id}`, {
+        const statsResponse = await fetch(` https://87.242.106.114/api/user/stats/${currentUser.id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

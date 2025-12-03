@@ -536,3 +536,27 @@
     font-weight: 600;
     border: 1px solid rgba(0, 159, 0, 0.2);
 }
+
+.notification-badge {
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.action-button.chat-button {
+    position: relative;
+}

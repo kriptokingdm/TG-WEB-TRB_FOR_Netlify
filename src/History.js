@@ -8,12 +8,22 @@ function History({ navigateTo }) {
     const [error, setError] = useState('');
     const [activeChat, setActiveChat] = useState(null);
     const [viewMode, setViewMode] = useState('active');
+    const [adminAssignments, setAdminAssignments] = useState({});
 
     // Используем HTTPS
     const serverUrl = 'https://87.242.106.114.sslip.io';
 
     useEffect(() => {
         fetchUserOrders();
+        
+        // Добавляем периодическую проверку новых уведомлений
+        const intervalId = setInterval(() => {
+            if (!isLoading && orders.length > 0) {
+                fetchUserOrders();
+            }
+        }, 30000); // Проверяем каждые 30 секунд
+
+        return () => clearInterval(intervalId);
     }, []);
 
     const fetchUserOrders = async () => {
@@ -67,6 +77,19 @@ function History({ navigateTo }) {
                 console.log('✅ Отсортированные ордера:', sortedOrders);
                 setOrders(sortedOrders);
                 setError('');
+                
+                // Сохраняем информацию об админах
+                const admins = {};
+                sortedOrders.forEach(order => {
+                    if (order.assignedTo) {
+                        admins[order.assignedTo] = order.assignedToUsername || 'Оператор';
+                    }
+                });
+                setAdminAssignments(admins);
+                
+                // Показываем уведомления о новых сообщениях
+                showNewNotifications(sortedOrders);
+                
             } else {
                 console.error('❌ Ошибка сервера:', response.status);
                 const errorText = await response.text();
@@ -97,6 +120,26 @@ function History({ navigateTo }) {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Функция для показа уведомлений о новых сообщениях
+    const showNewNotifications = (orders) => {
+        let unreadCount = 0;
+        
+        orders.forEach(order => {
+            if (order.notifications && Array.isArray(order.notifications)) {
+                const unreadNotifications = order.notifications.filter(n => !n.read);
+                unreadCount += unreadNotifications.length;
+                
+                // Показываем всплывающее уведомление для каждого непрочитанного
+                if (unreadNotifications.length > 0) {
+                    console.log(`🔔 Новые сообщения в заявке #${order.id}: ${unreadNotifications.length}`);
+                }
+            }
+        });
+        
+        console.log(`📊 Всего непрочитанных уведомлений: ${unreadCount}`);
+        return unreadCount;
     };
 
     // Сохраняем заказы в localStorage при получении
@@ -172,8 +215,16 @@ function History({ navigateTo }) {
 
     const canOpenChat = (order) => {
         if (!order || !order.status) return false;
-        const canChat = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
-        return canChat;
+        
+        // Чат доступен если:
+        // 1. Статус позволяет
+        const statusAllowed = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
+        // 2. Есть оператор (заявка взята в работу)
+        const hasOperator = order.assignedTo && order.status === 'processing';
+        // 3. Есть уведомления от оператора
+        const hasNotifications = order.notifications && order.notifications.length > 0;
+        
+        return statusAllowed && (hasOperator || hasNotifications);
     };
 
     const openOrderChat = (order) => {
@@ -182,16 +233,14 @@ function History({ navigateTo }) {
             return;
         }
 
-        const exchangeData = {
-            type: order.type,
-            amount: order.amount,
-            rate: order.rate,
-            convertedAmount: calculateTotal(order)
-        };
+        // Проверяем есть ли оператор
+        if (!order.assignedTo && order.status === 'pending') {
+            alert('⏳ Ожидайте, оператор скоро свяжется с вами');
+            return;
+        }
 
         setActiveChat({
-            orderId: order.id,
-            exchangeData: exchangeData
+            orderId: order.id
         });
 
         console.log('🎯 Чат установлен для заявки:', order.id);
@@ -253,16 +302,34 @@ function History({ navigateTo }) {
                 cryptoAddress: {
                     network: 'TRC20',
                     address: 'TEst12345678901234567890'
-                }
+                },
+                notifications: [
+                    {
+                        id: 1,
+                        text: 'Тестовое сообщение от оператора',
+                        from: 'Оператор1',
+                        timestamp: new Date().toISOString(),
+                        read: false
+                    }
+                ]
             },
             {
                 id: 'TEST' + (Date.now() + 1).toString().slice(-6),
                 type: 'sell',
                 amount: 100,
                 rate: 81.6,
-                status: 'completed',
+                status: 'processing',
                 createdAt: new Date(Date.now() - 3600000).toISOString(),
-                completedAt: new Date().toISOString(),
+                assignedTo: '123456789',
+                notifications: [
+                    {
+                        id: 1,
+                        text: 'Переведите RUB на карту 1234',
+                        from: 'Оператор2',
+                        timestamp: new Date().toISOString(),
+                        read: true
+                    }
+                ],
                 paymentMethod: {
                     name: 'Сбербанк',
                     number: '1234',
@@ -412,6 +479,9 @@ function History({ navigateTo }) {
                                     const isBuy = order.type === 'buy';
                                     const canChat = canOpenChat(order);
                                     const isActive = order.status === 'pending' || order.status === 'paid' || order.status === 'processing';
+                                    const hasNotifications = order.notifications && order.notifications.length > 0;
+                                    const unreadCount = hasNotifications ? 
+                                        order.notifications.filter(n => !n.read).length : 0;
 
                                     return (
                                         <div key={order.id || Math.random()} className={`order-item ${isActive ? 'active-order' : ''}`}>
@@ -477,6 +547,32 @@ function History({ navigateTo }) {
                                                 </div>
                                             </div>
 
+                                            {/* Информация об операторе */}
+                                            {order.assignedTo && (
+                                                <div className="order-details">
+                                                    <div className="detail-item">
+                                                        <div className="detail-label">Оператор</div>
+                                                        <div className="detail-value">
+                                                            👷 @{adminAssignments[order.assignedTo] || 'Оператор'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Информация о сообщениях */}
+                                            {hasNotifications && (
+                                                <div className="order-details">
+                                                    <div className="detail-item">
+                                                        <div className="detail-label">Сообщений</div>
+                                                        <div className="detail-value">
+                                                            💬 {order.notifications.length} 
+                                                            {unreadCount > 0 && 
+                                                                ` (${unreadCount} новых)`}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {(order.completedAt || order.cancelledAt) && (
                                                 <div className="order-details">
                                                     <div className="detail-item">
@@ -508,7 +604,12 @@ function History({ navigateTo }) {
                                                             className="action-button chat-button"
                                                             onClick={() => openOrderChat(order)}
                                                         >
-                                                            💬 Чат поддержки
+                                                            💬 Чат
+                                                            {hasNotifications && (
+                                                                <span className="notification-badge">
+                                                                    {unreadCount || order.notifications.length}
+                                                                </span>
+                                                            )}
                                                         </button>
                                                     )}
 
@@ -534,7 +635,6 @@ function History({ navigateTo }) {
                 <SupportChat
                     orderId={activeChat.orderId}
                     onClose={closeChat}
-                    exchangeData={activeChat.exchangeData}
                 />
             )}
 

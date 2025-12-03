@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
-// Правильный URL для сервера
+// URL сервера - используем порт 8080
 const serverUrl = 'http://87.242.106.114:8080';
 
 function Home({ navigateTo }) {
@@ -110,7 +110,78 @@ function Home({ navigateTo }) {
         if (savedSelectedCrypto) {
             setSelectedCryptoAddress(JSON.parse(savedSelectedCrypto));
         }
+
+        // Загружаем данные Telegram пользователя
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                console.log('👤 Telegram пользователь найден:', user);
+                localStorage.setItem('telegramUser', JSON.stringify(user));
+                
+                // Автоматически логиним пользователя
+                loginTelegramUser(user);
+            } else {
+                console.log('👤 Telegram пользователь не найден в initDataUnsafe');
+                // Пробуем другие варианты
+                if (tg.initData) {
+                    console.log('Есть initData, но нет user');
+                }
+            }
+        } else {
+            console.log('⚠️ Telegram WebApp не доступен');
+            // Для тестирования создаем тестового пользователя
+            if (!localStorage.getItem('telegramUser')) {
+                const testUser = {
+                    id: 123456789,
+                    username: 'test_user',
+                    first_name: 'Test',
+                    last_name: 'User'
+                };
+                localStorage.setItem('telegramUser', JSON.stringify(testUser));
+                loginTelegramUser(testUser);
+            }
+        }
     }, []);
+
+    // Функция логина Telegram пользователя
+    const loginTelegramUser = async (user) => {
+        try {
+            const response = await fetch(`${serverUrl}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    telegramId: user.id,
+                    username: user.username || `user_${user.id}`,
+                    firstName: user.first_name || '',
+                    lastName: user.last_name || ''
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    console.log('✅ Пользователь залогинен:', data.user);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Ошибка логина:', error);
+            // Создаем локального пользователя для теста
+            const localUser = {
+                id: `user_${user.id}`,
+                telegramId: user.id,
+                username: user.username || `user_${user.id}`,
+                firstName: user.first_name || '',
+                lastName: user.last_name || ''
+            };
+            localStorage.setItem('currentUser', JSON.stringify(localUser));
+        }
+    };
 
     // Загрузка курсов и проверка активных ордеров
     useEffect(() => {
@@ -127,27 +198,22 @@ function Home({ navigateTo }) {
     // Функция проверки активных ордеров
     const checkActiveOrders = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const userData = localStorage.getItem('user');
-            
-            if (!token || !userData) {
-                console.log('❌ Токен или данные пользователя не найдены');
+            const userData = JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.id) {
+                console.log('❌ Данные пользователя не найдены');
                 return;
             }
-            
-            const user = JSON.parse(userData);
-            const userId = user.id;
 
-            console.log('🔍 Проверяем активные ордеры...');
-            
+            const userId = userData.id;
+            console.log('🔍 Проверяем активные ордеры для пользователя:', userId);
+
             const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
             });
-
-            console.log('📡 Статус ответа:', response.status);
 
             if (response.ok) {
                 const data = await response.json();
@@ -181,7 +247,7 @@ function Home({ navigateTo }) {
         };
     }, []);
 
-    // Загрузка курсов с бекенда - ИСПРАВЛЕНА
+    // Загрузка курсов с бекенда
     const fetchExchangeRates = async () => {
         try {
             let requestAmount;
@@ -202,25 +268,30 @@ function Home({ navigateTo }) {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 }
             });
             
             console.log('📊 Статус ответа курсов:', response.status);
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Курсы с бекенда:', data);
+
+                setBuyRate(data.buy || 85.6);
+                setSellRate(data.sell || 81.6);
+                setCurrentTier(data.tier || 'standard');
+            } else {
+                // Если сервер не отвечает, используем фиктивные данные
+                console.log('⚠️  Используем фиктивные курсы');
+                setBuyRate(85.6);
+                setSellRate(81.6);
+                setCurrentTier('standard');
             }
-            
-            const data = await response.json();
-            console.log('📊 Курсы с бекенда:', data);
-
-            setBuyRate(data.buy || 85.6);
-            setSellRate(data.sell || 81.6);
-            setCurrentTier(data.tier || 'standard');
-
         } catch (error) {
-            console.error('❌ Ошибка загрузки курсов:', error.message);
+            console.error('❌ Ошибка загрузки курсов, используем фиктивные:', error.message);
+            // Фиктивные данные для тестирования
             setBuyRate(85.6);
             setSellRate(81.6);
             setCurrentTier('standard');
@@ -480,7 +551,10 @@ function Home({ navigateTo }) {
 
         try {
             const userData = JSON.parse(localStorage.getItem('currentUser'));
-            console.log('👤 Данные пользователя из localStorage:', userData);
+            const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
+            
+            console.log('👤 Данные пользователя:', userData);
+            console.log('🤖 Telegram пользователь:', telegramUser);
             
             if (!userData || !userData.id) {
                 alert('❌ Ошибка: пользователь не авторизован');
@@ -492,6 +566,8 @@ function Home({ navigateTo }) {
                 amount: parseFloat(amount),
                 rate: isBuyMode ? buyRate : sellRate,
                 userId: userData.id,
+                telegramId: telegramUser.id || userData.telegramId || userData.id,
+                username: telegramUser.username || userData.username || 'Пользователь',
                 paymentMethod: isBuyMode ? null : selectedPayment,
                 cryptoAddress: isBuyMode ? selectedCryptoAddress : null
             };
@@ -502,37 +578,43 @@ function Home({ navigateTo }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
                 },
                 body: JSON.stringify(exchangeData)
             });
 
-            console.log('📡 Ответ сервера:', response.status, response.statusText);
+            console.log('📡 Ответ сервера:', response.status);
 
-            const result = await response.json();
-            console.log('📦 Данные ответа:', result);
+            if (response.ok) {
+                const result = await response.json();
+                console.log('📦 Данные ответа:', result);
 
-            if (result.success) {
-                console.log('✅ Заявка создана:', result.order);
+                if (result.success) {
+                    console.log('✅ Заявка создана:', result.order);
 
-                setHasActiveOrder(true);
-                setActiveOrdersCount(prev => prev + 1);
+                    setHasActiveOrder(true);
+                    setActiveOrdersCount(prev => prev + 1);
 
-                setCurrentOrderId(result.order.id);
-                setCurrentExchangeData({
-                    type: exchangeData.type,
-                    amount: exchangeData.amount,
-                    rate: exchangeData.rate,
-                    convertedAmount: calculateConvertedAmount()
-                });
+                    setCurrentOrderId(result.order.id);
+                    setCurrentExchangeData({
+                        type: exchangeData.type,
+                        amount: exchangeData.amount,
+                        rate: exchangeData.rate,
+                        convertedAmount: calculateConvertedAmount()
+                    });
 
-                setShowSupportChat(true);
-                
-                alert('✅ Заявка создана успешно! Открыт чат с поддержкой.');
-                
+                    setShowSupportChat(true);
+                    
+                    alert('✅ Заявка создана успешно! Открыт чат с поддержкой.');
+                    
+                } else {
+                    console.error('❌ Ошибка при создании заявки:', result.error);
+                    alert(`❌ Ошибка при создании заявки: ${result.error || 'Неизвестная ошибка'}`);
+                }
             } else {
-                console.error('❌ Ошибка при создании заявки:', result.error);
-                alert(`❌ Ошибка при создании заявки: ${result.error}`);
+                const errorText = await response.text();
+                console.error('❌ Ошибка HTTP:', response.status, errorText);
+                alert(`❌ Ошибка сервера: ${response.status}`);
             }
 
         } catch (error) {

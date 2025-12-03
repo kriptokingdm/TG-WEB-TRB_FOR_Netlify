@@ -232,7 +232,14 @@ function Home({ navigateTo }) {
         setAmount('');
         setError('');
         fetchExchangeRates();
-    };
+        
+        // Добавить анимацию поворота кнопки
+        const swapButton = document.querySelector('.swap-center-button');
+        if (swapButton) {
+          swapButton.classList.toggle('rotated');
+        }
+      };
+    
 
     const handleAmountChange = (e) => {
         const value = e.target.value;

@@ -1,9 +1,21 @@
-/* Home.css - Объединенная версия */
+/* Home.css - Объединенная версия с анимацией и улучшениями */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version */
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  html, body {
+    touch-action: manipulation; /* Отключаем двойной тап для зумирования */
+    overscroll-behavior: contain;
   }
   
   .home-container {
@@ -12,6 +24,35 @@
     background: #f5f5f7;
     padding: 16px;
     padding-bottom: 80px;
+    overflow-x: hidden;
+  }
+  
+  /* Отключаем зум на мобильных устройствах */
+  @media screen and (max-width: 768px) {
+    body {
+      touch-action: pan-x pan-y; /* Разрешаем только скролл */
+    }
+    
+    input, textarea, select {
+      font-size: 16px !important; /* Предотвращает увеличение на iOS */
+    }
+    
+    /* Отключаем масштабирование */
+    @viewport {
+      width: device-width;
+      zoom: 1.0;
+      max-zoom: 1.0;
+      min-zoom: 1.0;
+      user-zoom: fixed;
+    }
+    
+    @-ms-viewport {
+      width: device-width;
+      zoom: 1.0;
+      max-zoom: 1.0;
+      min-zoom: 1.0;
+      user-zoom: fixed;
+    }
   }
   
   /* Баннер активного ордера */
@@ -102,80 +143,104 @@
     background: rgba(255, 68, 68, 0.1) !important;
   }
   
-  /* Карточки валют - ВЕРСИЯ ИЗ МОЕГО КОДА */
+  /* Карточки валют - УВЕЛИЧЕННЫЕ И УЛУЧШЕННЫЕ */
   .currency-cards-horizontal {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 32px; /* Увеличил отступ */
     position: relative;
   }
   
   .currency-card-side {
     flex: 1;
     background: #ffffff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 20px; /* Увеличил скругление */
+    padding: 30px 25px; /* Увеличил padding */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Более мягкая тень */
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    min-height: 120px; /* Минимальная высота */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .currency-card-side:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
   }
   
   .left-card {
-    margin-right: 8px;
+    margin-right: 10px;
+    border-color: #e1e5e9;
   }
   
   .right-card {
-    margin-left: 8px;
+    margin-left: 10px;
+    border-color: #e1e5e9;
   }
   
   .currency-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
   }
   
   .currency-name {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px; /* Увеличил шрифт */
+    font-weight: 800; /* Жирнее */
     color: #1d1d1f;
+    letter-spacing: -0.5px;
   }
   
   .currency-rate {
-    font-size: 16px;
+    font-size: 18px; /* Увеличил шрифт */
     color: #8e8e93;
+    font-weight: 600;
   }
   
   .currency-rate.light {
     color: #999;
   }
   
-  /* Кнопка обмена - КРУТАЯ ВЕРСИЯ */
+  /* Кнопка обмена - С АНИМАЦИЕЙ ПОВОРОТА */
   .swap-center-button {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 58px;
-    height: 58px;
+    width: 68px; /* Увеличил размер */
+    height: 68px;
     border: none;
     background: transparent;
     cursor: pointer;
     z-index: 10;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
   }
   
-  .swap-center-button.swapped {
-    transform: translate(-50%, -50%) rotate(180deg);
+  .swap-center-button.rotated {
+    transform: translate(-50%, -50%) rotate(180deg); /* Поворот на 180 градусов */
   }
   
-  /* SVG внутри кнопки свапа */
+  /* SVG внутри кнопки свапа - УВЕЛИЧЕННЫЙ */
   .swap-center-button svg {
-    width: 58px;
-    height: 58px;
+    width: 68px;
+    height: 68px;
+    transition: all 0.3s ease;
   }
   
   .swap-center-button svg circle {
     fill: #007CFF;
     stroke: #EFEFF3;
     stroke-width: 5;
+    transition: all 0.3s ease;
+  }
+  
+  .swap-center-button:hover svg circle {
+    fill: #0066cc;
+    stroke-width: 6;
   }
   
   .swap-center-button svg path {
@@ -183,6 +248,11 @@
     stroke-width: 3;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: all 0.3s ease;
+  }
+  
+  .swap-center-button:active {
+    transform: translate(-50%, -50%) scale(0.95);
   }
   
   /* Поля ввода суммы */
@@ -221,6 +291,9 @@
     font-weight: 600;
     outline: none;
     background: white;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
   }
   
   .amount-input:focus {
@@ -388,6 +461,9 @@
     font-size: 16px;
     outline: none;
     background: white;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
   }
   
   .payment-input:focus {
@@ -540,6 +616,9 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 20px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
   }
   
   .exchange-button.buy {
@@ -608,6 +687,9 @@
     transition: all 0.2s ease;
     border-radius: 8px;
     min-width: 60px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
   }
   
   .nav-button:hover {
@@ -646,7 +728,7 @@
   }
   
   /* Адаптивность для Telegram Web App */
-  @media (max-width: 600px) {
+  @media screen and (max-width: 600px) {
     .home-container {
       padding: 16px;
       padding-bottom: 70px;
@@ -654,19 +736,32 @@
     
     .currency-cards-horizontal {
       gap: 10px;
+      margin-bottom: 24px;
     }
     
     .currency-card-side {
-      padding: 15px;
+      padding: 24px 20px;
+      min-height: 100px;
+      border-radius: 18px;
     }
     
     .currency-name {
-      font-size: 20px;
+      font-size: 24px;
+    }
+    
+    .swap-center-button {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .swap-center-button svg {
+      width: 60px;
+      height: 60px;
     }
     
     .amount-input-section {
       grid-template-columns: 1fr;
-      gap: 15px;
+      gap: 16px;
     }
     
     .amount-input {
@@ -700,35 +795,26 @@
     .nav-button span:last-child {
       font-size: 10px;
     }
-    
-    .swap-center-button {
-      width: 50px;
-      height: 50px;
-    }
-    
-    .swap-center-button svg {
-      width: 50px;
-      height: 50px;
-    }
   }
   
-  @media (max-width: 400px) {
+  @media screen and (max-width: 400px) {
     .currency-name {
-      font-size: 18px;
+      font-size: 22px;
     }
     
     .currency-card-side {
-      padding: 12px;
+      padding: 20px 16px;
+      min-height: 90px;
     }
     
     .swap-center-button {
-      width: 45px;
-      height: 45px;
+      width: 55px;
+      height: 55px;
     }
     
     .swap-center-button svg {
-      width: 45px;
-      height: 45px;
+      width: 55px;
+      height: 55px;
     }
     
     .nav-button {
@@ -772,6 +858,8 @@
     color: #333;
     cursor: pointer;
     appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
@@ -797,3 +885,7 @@
     background: #f0f7ff;
     color: #0066cc;
   }
+  
+  /* Мета-тег в HTML для отключения масштабирования */
+  /* Добавь в public/index.html: */
+  /* <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"> */

@@ -10,7 +10,7 @@ function History({ navigateTo }) {
     const [viewMode, setViewMode] = useState('active');
 
     // Используем тот же serverUrl что и в Home.js
-    const serverUrl = 'https://87.242.106.114';
+    const serverUrl = 'https://87.242.106.114.sslip.io';
 
     useEffect(() => {
         fetchUserOrders();

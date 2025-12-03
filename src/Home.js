@@ -4,7 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Используем HTTPS или относительный путь
-const serverUrl = 'https://87.242.106.114';
+const serverUrl = 'https://87.242.106.114.sslip.io';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);

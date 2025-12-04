@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
@@ -14,6 +14,12 @@ function Home({ navigateTo }) {
     const [buyRate, setBuyRate] = useState(85.6);
     const [sellRate, setSellRate] = useState(81.6);
     const [currentTier, setCurrentTier] = useState('');
+    
+    // Анимация переключения
+    const [swapAnimation, setSwapAnimation] = useState(false);
+    const [isSwapDisabled, setIsSwapDisabled] = useState(false);
+    const [glowEffect, setGlowEffect] = useState(false);
+    const [particles, setParticles] = useState([]);
 
     // Состояния для чата
     const [showSupportChat, setShowSupportChat] = useState(false);
@@ -23,6 +29,11 @@ function Home({ navigateTo }) {
     // Состояния для активных ордеров
     const [hasActiveOrder, setHasActiveOrder] = useState(false);
     const [activeOrdersCount, setActiveOrdersCount] = useState(0);
+
+    // Рефы для анимаций
+    const swapButtonRef = useRef(null);
+    const amountInputRef = useRef(null);
+    const modeSwitcherRef = useRef(null);
 
     // Лимиты
     const MIN_RUB = 1000;
@@ -68,6 +79,34 @@ function Home({ navigateTo }) {
 
     // Состояние инициализации пользователя
     const [userInitialized, setUserInitialized] = useState(false);
+
+    // Эффект частиц для анимации
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (Math.random() > 0.7) {
+                const newParticle = {
+                    x: e.clientX,
+                    y: e.clientY,
+                    id: Date.now(),
+                    color: isBuyMode ? '#00ffaa' : '#ff6b9d'
+                };
+                setParticles(prev => [...prev.slice(-20), newParticle]);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [isBuyMode]);
+
+    // Эффект для очистки частиц
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (particles.length > 0) {
+                setParticles(prev => prev.slice(1));
+            }
+        }, 100);
+        return () => clearInterval(interval);
+    }, [particles.length]);
 
     // Функция для расчета конвертированной суммы
     const calculateConvertedAmount = () => {
@@ -149,7 +188,6 @@ function Home({ navigateTo }) {
     const initializeUser = () => {
         console.log('🔧 Инициализация пользователя Telegram...');
         
-        // Проверяем Telegram WebApp
         if (window.Telegram?.WebApp) {
             console.log('🤖 Telegram WebApp доступен');
             const tg = window.Telegram.WebApp;
@@ -157,7 +195,6 @@ function Home({ navigateTo }) {
             tg.ready();
             tg.expand();
             
-            // Пробуем получить пользователя
             const telegramUser = tg.initDataUnsafe?.user;
             if (telegramUser) {
                 console.log('✅ Telegram пользователь найден:', telegramUser);
@@ -168,7 +205,6 @@ function Home({ navigateTo }) {
             console.log('⚠️ Telegram пользователь не найден в initDataUnsafe');
         }
         
-        // Проверяем сохраненные данные
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             try {
@@ -181,7 +217,6 @@ function Home({ navigateTo }) {
             }
         }
         
-        // Создаем тестового пользователя
         console.log('⚠️ Создаем тестового пользователя');
         const testUser = {
             id: 7879866656,
@@ -196,10 +231,8 @@ function Home({ navigateTo }) {
     const saveUserData = (telegramUser) => {
         console.log('💾 Сохранение пользователя:', telegramUser);
         
-        // Сохраняем Telegram данные
         localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
         
-        // Создаем пользователя для приложения
         const appUser = {
             id: `user_${telegramUser.id}`,
             telegramId: telegramUser.id,
@@ -246,7 +279,6 @@ function Home({ navigateTo }) {
                 const data = await response.json();
                 console.log('📦 Данные ордеров:', data);
                 
-                // Проверяем разные форматы ответа
                 let ordersList = [];
                 if (data.orders) {
                     ordersList = data.orders;
@@ -268,7 +300,6 @@ function Home({ navigateTo }) {
             }
         } catch (error) {
             console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
-            // Не блокируем пользователя при ошибке сети
             setHasActiveOrder(false);
         }
     };
@@ -285,7 +316,7 @@ function Home({ navigateTo }) {
             
             const response = await fetch(url, {
                 method: 'GET',
-                mode: 'cors', // ← ВАЖНО: добавляем mode cors
+                mode: 'cors',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -312,19 +343,47 @@ function Home({ navigateTo }) {
         }
     };
 
-    // Эффект для загрузки курсов при изменении суммы
-    useEffect(() => {
-        if (amount) {
-            fetchExchangeRates();
-        }
-    }, [amount]);
-
+    // Анимация свапа с кд 2 секунды
     const handleSwap = () => {
-        setIsSwapped(!isSwapped);
-        setIsBuyMode(!isBuyMode);
-        setAmount('');
-        setError('');
-        fetchExchangeRates();
+        if (isSwapDisabled) return;
+        
+        // Активируем анимацию
+        setSwapAnimation(true);
+        setIsSwapDisabled(true);
+        setGlowEffect(true);
+        
+        // Создаем эффект частиц
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const newParticle = {
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    id: Date.now() + i,
+                    color: isBuyMode ? '#ff6b9d' : '#00ffaa'
+                };
+                setParticles(prev => [...prev, newParticle]);
+            }, i * 50);
+        }
+        
+        // Изменяем состояние с задержкой
+        setTimeout(() => {
+            setIsSwapped(!isSwapped);
+            setIsBuyMode(!isBuyMode);
+            setAmount('');
+            setError('');
+            fetchExchangeRates();
+            setGlowEffect(false);
+        }, 300);
+        
+        // Сбрасываем анимацию
+        setTimeout(() => {
+            setSwapAnimation(false);
+        }, 600);
+        
+        // Снимаем блокировку через 2 секунды
+        setTimeout(() => {
+            setIsSwapDisabled(false);
+        }, 2000);
     };
 
     const handleAmountChange = (e) => {
@@ -381,7 +440,6 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 16) value = value.slice(0, 16);
         
-        // Форматируем как 0000 0000 0000 0000
         let formatted = '';
         for (let i = 0; i < value.length; i++) {
             if (i > 0 && i % 4 === 0) {
@@ -390,7 +448,6 @@ function Home({ navigateTo }) {
             formatted += value[i];
         }
 
-        // Валидация номера карты
         let cardNumberError = '';
         if (value.length > 0 && value.length < 16) {
             cardNumberError = 'Номер карты должен содержать 16 цифр';
@@ -407,7 +464,6 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);
         
-        // Форматируем как +7 (XXX) XXX-XX-XX
         let formatted = value;
         if (value.length > 0) {
             formatted = '+7';
@@ -425,7 +481,6 @@ function Home({ navigateTo }) {
             }
         }
 
-        // Валидация номера телефона
         let cardNumberError = '';
         if (value.length > 0 && value.length < 11) {
             cardNumberError = 'Введите полный номер телефона (11 цифр)';
@@ -439,7 +494,6 @@ function Home({ navigateTo }) {
     };
 
     const handleAddPayment = () => {
-        // Определяем тип реквизитов
         const isSBP = newPayment.bankName === 'СБП (Система быстрых платежей)';
         const number = isSBP ? 
             newPayment.phoneNumber.replace(/\D/g, '') : 
@@ -466,7 +520,6 @@ function Home({ navigateTo }) {
         setPaymentMethods(prev => [...prev, newPaymentMethod]);
         setSelectedPayment(newPaymentMethod);
         
-        // Сбрасываем форму
         setNewPayment({
             bankName: '',
             cardNumber: '',
@@ -489,7 +542,6 @@ function Home({ navigateTo }) {
     };
 
     const handleAddCryptoAddress = () => {
-        // Простая валидация адреса
         if (!newCryptoAddress.address || newCryptoAddress.address.length < 10) {
             setNewCryptoAddress(prev => ({
                 ...prev,
@@ -508,7 +560,6 @@ function Home({ navigateTo }) {
         setCryptoAddresses(prev => [...prev, newAddress]);
         setSelectedCryptoAddress(newAddress);
         
-        // Сбрасываем форму
         setNewCryptoAddress({
             address: '',
             network: 'ERC20',
@@ -613,7 +664,7 @@ function Home({ navigateTo }) {
 
             const response = await fetch(`${serverUrl}/api/create-order`, {
                 method: 'POST',
-                mode: 'cors', // ← ВАЖНО: добавляем mode cors
+                mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -683,6 +734,27 @@ function Home({ navigateTo }) {
 
     return (
         <div className="home-container">
+            {/* Частицы анимации */}
+            {particles.map(particle => (
+                <div
+                    key={particle.id}
+                    className="particle"
+                    style={{
+                        left: particle.x,
+                        top: particle.y,
+                        backgroundColor: particle.color
+                    }}
+                />
+            ))}
+
+            {/* Анимированный бэкграунд */}
+            <div className={`gradient-bg ${isBuyMode ? 'buy-mode' : 'sell-mode'}`}></div>
+            
+            {/* Анимированные орбиты */}
+            <div className="orbit orbit-1"></div>
+            <div className="orbit orbit-2"></div>
+            <div className="orbit orbit-3"></div>
+
             {!userInitialized && (
                 <div className="loading-overlay">
                     <div className="loading-spinner"></div>
@@ -708,135 +780,209 @@ function Home({ navigateTo }) {
                 </div>
             )}
 
-            <div className="mode-switcher">
-                <button
-                    className={`mode-button buy ${isBuyMode ? 'active' : ''}`}
-                    onClick={() => {
-                        setIsBuyMode(true);
-                        setIsSwapped(false);
-                        setAmount('');
-                        setError('');
-                        fetchExchangeRates();
-                    }}
-                >
-                    Покупка
-                </button>
-                <button
-                    className={`mode-button sell ${!isBuyMode ? 'active' : ''}`}
-                    onClick={() => {
-                        setIsBuyMode(false);
-                        setIsSwapped(true);
-                        setAmount('');
-                        setError('');
-                        fetchExchangeRates();
-                    }}
-                >
-                    Продажа
-                </button>
+            {/* Хедер с анимацией */}
+            <div className="app-header">
+                <div className="logo-container">
+                    <div className="logo-icon">₿</div>
+                    <div className="logo-text">
+                        <h1>CryptoExchange</h1>
+                        <p>Мгновенный обмен криптовалют</p>
+                    </div>
+                </div>
+                <div className="user-status">
+                    <button className="notification-btn">
+                        🔔 <span className="notification-count">2</span>
+                    </button>
+                    <div className="user-balance">
+                        <span className="balance-label">Баланс:</span>
+                        <span className="balance-amount">15,450 ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Карточка с курсами */}
+            <div className="rates-card">
+                <div className="rates-header">
+                    <span className="rates-title">Текущий курс</span>
+                    <div className="rate-badge">
+                        <span className="rate-trend">📈</span>
+                        <span className="rate-change">+0.5%</span>
+                    </div>
+                </div>
+                <div className="rates-grid">
+                    <div className="rate-item">
+                        <div className="rate-label">Покупка USDT</div>
+                        <div className="rate-value">{buyRate.toFixed(2)} ₽</div>
+                    </div>
+                    <div className="rate-divider"></div>
+                    <div className="rate-item">
+                        <div className="rate-label">Продажа USDT</div>
+                        <div className="rate-value">{sellRate.toFixed(2)} ₽</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Переключатель режимов */}
+            <div className="mode-switcher-wrapper" ref={modeSwitcherRef}>
+                <div className="mode-switcher-3d">
+                    <button
+                        className={`mode-button-3d buy ${isBuyMode ? 'active' : ''}`}
+                        onClick={() => {
+                            if (isBuyMode) return;
+                            setIsBuyMode(true);
+                            setAmount('');
+                            setError('');
+                            fetchExchangeRates();
+                        }}
+                    >
+                        <div className="button-content">
+                            <span className="mode-icon">🛒</span>
+                            <span className="mode-text">Купить USDT</span>
+                        </div>
+                        <div className="button-glow"></div>
+                    </button>
+                    <button
+                        className={`mode-button-3d sell ${!isBuyMode ? 'active' : ''}`}
+                        onClick={() => {
+                            if (!isBuyMode) return;
+                            setIsBuyMode(false);
+                            setAmount('');
+                            setError('');
+                            fetchExchangeRates();
+                        }}
+                    >
+                        <div className="button-content">
+                            <span className="mode-icon">💰</span>
+                            <span className="mode-text">Продать USDT</span>
+                        </div>
+                        <div className="button-glow"></div>
+                    </button>
+                </div>
             </div>
 
             <div className={hasActiveOrder ? 'form-disabled' : ''}>
-                <div className="currency-cards-horizontal">
-                    <div className="currency-card-side left-card">
-                        <div className="currency-content">
-                            <span className="currency-name">
-                                {isBuyMode ? "RUB" : "USDT"}
-                            </span>
-                            {isBuyMode && (
-                                <span className="currency-rate light">
-                                    {formatRate(getCurrentRateForDisplay())} ₽
-                                </span>
-                            )}
+                {/* Карточки валют с улучшенным дизайном */}
+                <div className="currency-cards-enhanced">
+                    <div className={`currency-card-3d left-card ${isBuyMode ? 'buy-glow' : 'sell-glow'}`}>
+                        <div className="currency-header">
+                            <span className="currency-icon">{isBuyMode ? "💳" : "₿"}</span>
+                            <span className="currency-label">Вы отдаете</span>
                         </div>
-                    </div>
-
-                    <button
-                        className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
-                        onClick={handleSwap}
-                    >
-                        <svg width="58" height="58" viewBox="0 0 58 58" fill="none">
-                            <circle cx="29" cy="29" r="26.5" fill="#007CFF" stroke="#EFEFF3" strokeWidth="5" />
-                            <path d="M37.3333 17.5423C40.8689 20.1182 43.1666 24.2907 43.1666 29C43.1666 36.824 36.824 43.1666 29 43.1666H28.1666M20.6666 40.4576C17.1311 37.8817 14.8333 33.7092 14.8333 29C14.8333 21.1759 21.1759 14.8333 29 14.8333H29.8333M30.6666 46.3333L27.3333 43L30.6666 39.6666M27.3333 18.3333L30.6666 15L27.3333 11.6666" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </button>
-
-                    <div className="currency-card-side right-card">
-                        <div className="currency-content">
-                            <span className="currency-name">
-                                {isBuyMode ? "USDT" : "RUB"}
-                            </span>
-                            {!isBuyMode && (
-                                <span className="currency-rate light">
-                                    {formatRate(getCurrentRateForDisplay())} ₽
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="amount-input-section">
-                    <div className="amount-input-group">
-                        <label className="amount-label">Вы отдаете</label>
-                        <div className="amount-input-wrapper">
+                        <div className="currency-amount">
                             <input
                                 type="number"
                                 placeholder="0"
                                 value={amount}
                                 onChange={handleAmountChange}
-                                className="amount-input"
+                                className="amount-input-enhanced"
                                 disabled={!userInitialized}
+                                ref={amountInputRef}
                             />
-                            <span className="amount-currency">
+                            <span className="currency-code">
                                 {isBuyMode ? "RUB" : "USDT"}
                             </span>
                         </div>
-                        <div className="min-limit-hint">
-                            Лимиты: {isBuyMode 
-                                ? `${MIN_RUB.toLocaleString()} - ${MAX_RUB.toLocaleString()} RUB`
-                                : `${MIN_USDT} - ${MAX_USDT} USDT`
-                            }
+                        <div className="currency-details">
+                            <span className="currency-rate-enhanced">
+                                {formatRate(getCurrentRateForDisplay())} ₽
+                            </span>
+                            <div className="min-limit">
+                                Лимит: {isBuyMode 
+                                    ? `${MIN_RUB.toLocaleString()} RUB`
+                                    : `${MIN_USDT} USDT`
+                                }
+                            </div>
                         </div>
-                        {error && <div className="error-message">{error}</div>}
+                        {error && <div className="error-message-enhanced">{error}</div>}
                     </div>
 
-                    <div className="amount-input-group">
-                        <label className="amount-label">Вы получаете</label>
-                        <div className="amount-input-wrapper">
-                            <input
-                                type="text"
-                                placeholder="0"
-                                value={convertedAmount}
-                                readOnly
-                                className="amount-input"
-                            />
-                            <span className="amount-currency">
+                    {/* Кнопка свапа с анимацией */}
+                    <div className="swap-center-wrapper">
+                        <button
+                            ref={swapButtonRef}
+                            className={`swap-center-enhanced ${swapAnimation ? 'rotating' : ''} ${isSwapDisabled ? 'disabled' : ''} ${glowEffect ? 'glowing' : ''}`}
+                            onClick={handleSwap}
+                            disabled={isSwapDisabled}
+                        >
+                            <div className="swap-inner">
+                                <div className="swap-icon">🔄</div>
+                                <div className="swap-rings">
+                                    <div className="ring ring-1"></div>
+                                    <div className="ring ring-2"></div>
+                                    <div className="ring ring-3"></div>
+                                </div>
+                            </div>
+                            {isSwapDisabled && (
+                                <div className="swap-cooldown">
+                                    <div className="cooldown-text">{Math.ceil(2000/1000)}с</div>
+                                </div>
+                            )}
+                        </button>
+                    </div>
+
+                    <div className={`currency-card-3d right-card ${isBuyMode ? 'buy-glow' : 'sell-glow'}`}>
+                        <div className="currency-header">
+                            <span className="currency-icon">{isBuyMode ? "₿" : "💳"}</span>
+                            <span className="currency-label">Вы получаете</span>
+                        </div>
+                        <div className="currency-amount">
+                            <div className="converted-amount">
+                                {convertedAmount || '0'}
+                            </div>
+                            <span className="currency-code">
                                 {isBuyMode ? "USDT" : "RUB"}
                             </span>
                         </div>
+                        <div className="currency-details">
+                            <span className="total-label">Итого к получению</span>
+                            <div className="total-amount">
+                                {convertedAmount || '0'} {isBuyMode ? 'USDT' : 'RUB'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Детали обмена */}
+                <div className="exchange-details">
+                    <div className="detail-item">
+                        <span className="detail-label">Комиссия</span>
+                        <span className="detail-value">0%</span>
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">Скорость обработки</span>
+                        <span className="detail-value">5-15 минут</span>
+                    </div>
+                    <div className="detail-item">
+                        <span className="detail-label">Резервы</span>
+                        <span className="detail-value">Высокие</span>
                     </div>
                 </div>
 
                 {/* Банковские реквизиты для продажи */}
                 {!isBuyMode && (
-                    <div className="payment-section">
-                        <div className="payment-header">
-                            <h3>Банковские реквизиты для получения RUB</h3>
+                    <div className="payment-section-enhanced">
+                        <div className="section-header-3d">
+                            <div className="header-left">
+                                <span className="section-icon">🏦</span>
+                                <h3>Банковские реквизиты</h3>
+                            </div>
                             {!showAddPayment && (
                                 <button
-                                    className="add-payment-button"
+                                    className="add-button-3d"
                                     onClick={() => setShowAddPayment(true)}
                                 >
-                                    + Добавить реквизиты
+                                    <span className="add-icon">+</span>
+                                    <span>Добавить</span>
                                 </button>
                             )}
                         </div>
 
                         {showAddPayment && (
-                            <div className="add-payment-form">
-                                <div className="form-header">
-                                    <h4>Добавить реквизиты</h4>
+                            <div className="add-form-3d">
+                                <div className="form-header-3d">
+                                    <h4>Новые реквизиты</h4>
                                     <button
-                                        className="close-form"
+                                        className="close-form-3d"
                                         onClick={() => {
                                             setShowAddPayment(false);
                                             setShowBankDropdown(false);
@@ -852,67 +998,62 @@ function Home({ navigateTo }) {
                                     </button>
                                 </div>
 
-                                <div className="form-input-group">
-                                    <label className="input-label">Банк</label>
-                                    <div className="bank-select-container">
-                                        <div
-                                            className={`bank-select ${newPayment.bankName ? 'has-value' : ''}`}
-                                            onClick={() => setShowBankDropdown(!showBankDropdown)}
-                                        >
-                                            {newPayment.bankName || 'Выберите банк'}
-                                            <span className="dropdown-arrow">▼</span>
-                                        </div>
-
-                                        {showBankDropdown && (
-                                            <div className="bank-dropdown">
-                                                {availableBanks.map((bank, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="bank-option"
-                                                        onClick={() => handleBankSelect(bank)}
-                                                    >
-                                                        {bank}
-                                                    </div>
-                                                ))}
+                                <div className="form-inputs-3d">
+                                    <div className="input-group-3d">
+                                        <label className="input-label-3d">Банк</label>
+                                        <div className="bank-select-3d">
+                                            <div
+                                                className={`select-trigger ${newPayment.bankName ? 'has-value' : ''}`}
+                                                onClick={() => setShowBankDropdown(!showBankDropdown)}
+                                            >
+                                                {newPayment.bankName || 'Выберите банк'}
+                                                <span className="dropdown-arrow-3d">▼</span>
                                             </div>
-                                        )}
+                                            {showBankDropdown && (
+                                                <div className="bank-dropdown-3d">
+                                                    {availableBanks.map((bank, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="bank-option-3d"
+                                                            onClick={() => handleBankSelect(bank)}
+                                                        >
+                                                            {bank}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
+
+                                    {newPayment.bankName === 'СБП (Система быстрых платежей)' ? (
+                                        <div className="input-group-3d">
+                                            <label className="input-label-3d">Номер телефона</label>
+                                            <input
+                                                type="tel"
+                                                placeholder="+7 (900) 123-45-67"
+                                                value={newPayment.phoneNumber}
+                                                onChange={handlePhoneNumberChange}
+                                                className={`input-3d ${newPayment.cardNumberError ? 'error' : ''}`}
+                                                maxLength="18"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="input-group-3d">
+                                            <label className="input-label-3d">Номер карты</label>
+                                            <input
+                                                type="text"
+                                                placeholder="0000 0000 0000 0000"
+                                                value={newPayment.cardNumber}
+                                                onChange={handleCardNumberChange}
+                                                className={`input-3d ${newPayment.cardNumberError ? 'error' : ''}`}
+                                                maxLength="19"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
-                                {newPayment.bankName === 'СБП (Система быстрых платежей)' ? (
-                                    <div className="form-input-group">
-                                        <label className="input-label">Номер телефона для СБП</label>
-                                        <input
-                                            type="tel"
-                                            placeholder="+7 (900) 123-45-67"
-                                            value={newPayment.phoneNumber}
-                                            onChange={handlePhoneNumberChange}
-                                            className={`payment-input ${newPayment.cardNumberError ? 'error' : ''}`}
-                                            maxLength="18"
-                                        />
-                                        {newPayment.cardNumberError && (
-                                            <div className="input-error">{newPayment.cardNumberError}</div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="form-input-group">
-                                        <label className="input-label">Номер карты</label>
-                                        <input
-                                            type="text"
-                                            placeholder="0000 0000 0000 0000"
-                                            value={newPayment.cardNumber}
-                                            onChange={handleCardNumberChange}
-                                            className={`payment-input ${newPayment.cardNumberError ? 'error' : ''}`}
-                                            maxLength="19"
-                                        />
-                                        {newPayment.cardNumberError && (
-                                            <div className="input-error">{newPayment.cardNumberError}</div>
-                                        )}
-                                    </div>
-                                )}
-
                                 <button
-                                    className="save-payment-button"
+                                    className="save-button-3d"
                                     onClick={handleAddPayment}
                                     disabled={
                                         !newPayment.bankName || 
@@ -927,37 +1068,39 @@ function Home({ navigateTo }) {
                             </div>
                         )}
 
-                        <div className="payment-methods">
+                        <div className="payment-methods-3d">
                             {paymentMethods.length === 0 ? (
-                                <div className="no-payments-message">
-                                    <div className="no-payments-icon">💳</div>
-                                    <p>Добавьте банковские реквизиты для получения рублей</p>
+                                <div className="empty-state-3d">
+                                    <div className="empty-icon-3d">💳</div>
+                                    <p>Добавьте банковские реквизиты</p>
                                 </div>
                             ) : (
                                 paymentMethods.map((payment) => (
                                     <div
                                         key={payment.id}
-                                        className={`payment-method-item ${payment.type === 'sbp' ? 'sbp' : ''} ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
+                                        className={`payment-card-3d ${payment.type === 'sbp' ? 'sbp-card' : ''} ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
                                         onClick={() => handlePaymentSelect(payment)}
                                     >
-                                        <div className="payment-info">
-                                            <div className="payment-header-info">
-                                                <span className="payment-name">{payment.name}</span>
+                                        <div className="payment-card-header">
+                                            <div className="bank-info">
+                                                <span className="bank-name">{payment.name}</span>
                                                 {payment.type === 'sbp' && (
-                                                    <span className="sbp-badge">СБП</span>
+                                                    <span className="sbp-badge-3d">СБП</span>
                                                 )}
                                             </div>
-                                            <span className="payment-number">
-                                                {payment.type === 'sbp' ? '📱 ' + payment.number : '💳 •••• ' + payment.number}
-                                            </span>
+                                            <button
+                                                className="delete-card-btn"
+                                                onClick={(e) => handleDeletePayment(payment.id, e)}
+                                            >
+                                                ✕
+                                            </button>
                                         </div>
-                                        <button
-                                            className="delete-payment"
-                                            onClick={(e) => handleDeletePayment(payment.id, e)}
-                                            title="Удалить реквизиты"
-                                        >
-                                            ✕
-                                        </button>
+                                        <div className="payment-card-number">
+                                            {payment.type === 'sbp' 
+                                                ? `📱 ${payment.formattedNumber}`
+                                                : `💳 •••• ${payment.number.slice(-4)}`
+                                            }
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -967,25 +1110,29 @@ function Home({ navigateTo }) {
 
                 {/* Крипто-адреса для покупки */}
                 {isBuyMode && (
-                    <div className="payment-section">
-                        <div className="payment-header">
-                            <h3>Адрес для получения USDT</h3>
+                    <div className="payment-section-enhanced">
+                        <div className="section-header-3d">
+                            <div className="header-left">
+                                <span className="section-icon">₿</span>
+                                <h3>Крипто-адреса</h3>
+                            </div>
                             {!showAddCrypto && (
                                 <button
-                                    className="add-payment-button"
+                                    className="add-button-3d"
                                     onClick={() => setShowAddCrypto(true)}
                                 >
-                                    + Добавить адрес
+                                    <span className="add-icon">+</span>
+                                    <span>Добавить</span>
                                 </button>
                             )}
                         </div>
 
                         {showAddCrypto && (
-                            <div className="add-payment-form">
-                                <div className="form-header">
-                                    <h4>Добавить адрес USDT</h4>
+                            <div className="add-form-3d">
+                                <div className="form-header-3d">
+                                    <h4>Новый адрес</h4>
                                     <button
-                                        className="close-form"
+                                        className="close-form-3d"
                                         onClick={() => {
                                             setShowAddCrypto(false);
                                             setNewCryptoAddress({
@@ -1000,62 +1147,58 @@ function Home({ navigateTo }) {
                                     </button>
                                 </div>
 
-                                <div className="form-input-group">
-                                    <label className="input-label">Название кошелька</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Например: Мой основной кошелек"
-                                        value={newCryptoAddress.name}
-                                        onChange={(e) => setNewCryptoAddress(prev => ({
-                                            ...prev,
-                                            name: e.target.value,
-                                            addressError: ''
-                                        }))}
-                                        className="payment-input"
-                                    />
-                                </div>
-
-                                <div className="form-input-group">
-                                    <label className="input-label">Сеть</label>
-                                    <div className="network-select-container">
-                                        <select
-                                            value={newCryptoAddress.network}
+                                <div className="form-inputs-3d">
+                                    <div className="input-group-3d">
+                                        <label className="input-label-3d">Название</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Мой кошелек"
+                                            value={newCryptoAddress.name}
                                             onChange={(e) => setNewCryptoAddress(prev => ({
                                                 ...prev,
-                                                network: e.target.value,
-                                                addressError: ''
+                                                name: e.target.value
                                             }))}
-                                            className="network-select"
-                                        >
-                                            {availableNetworks.map(network => (
-                                                <option key={network.value} value={network.value}>
-                                                    {network.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            className="input-3d"
+                                        />
+                                    </div>
+
+                                    <div className="input-group-3d">
+                                        <label className="input-label-3d">Сеть</label>
+                                        <div className="network-select-3d">
+                                            <select
+                                                value={newCryptoAddress.network}
+                                                onChange={(e) => setNewCryptoAddress(prev => ({
+                                                    ...prev,
+                                                    network: e.target.value
+                                                }))}
+                                                className="select-3d"
+                                            >
+                                                {availableNetworks.map(network => (
+                                                    <option key={network.value} value={network.value}>
+                                                        {network.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="input-group-3d">
+                                        <label className="input-label-3d">Адрес кошелька</label>
+                                        <input
+                                            type="text"
+                                            placeholder={`Введите адрес ${newCryptoAddress.network}`}
+                                            value={newCryptoAddress.address}
+                                            onChange={(e) => setNewCryptoAddress(prev => ({
+                                                ...prev,
+                                                address: e.target.value
+                                            }))}
+                                            className={`input-3d ${newCryptoAddress.addressError ? 'error' : ''}`}
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="form-input-group">
-                                    <label className="input-label">Адрес кошелька {newCryptoAddress.network}</label>
-                                    <input
-                                        type="text"
-                                        placeholder={`Введите адрес кошелька ${newCryptoAddress.network}`}
-                                        value={newCryptoAddress.address}
-                                        onChange={(e) => setNewCryptoAddress(prev => ({
-                                            ...prev,
-                                            address: e.target.value,
-                                            addressError: ''
-                                        }))}
-                                        className={`payment-input ${newCryptoAddress.addressError ? 'error' : ''}`}
-                                    />
-                                    {newCryptoAddress.addressError && (
-                                        <div className="input-error">{newCryptoAddress.addressError}</div>
-                                    )}
-                                </div>
-
                                 <button
-                                    className="save-payment-button"
+                                    className="save-button-3d"
                                     onClick={handleAddCryptoAddress}
                                     disabled={!newCryptoAddress.address || !newCryptoAddress.name}
                                 >
@@ -1064,11 +1207,11 @@ function Home({ navigateTo }) {
                             </div>
                         )}
 
-                        <div className="payment-methods">
+                        <div className="payment-methods-3d">
                             {cryptoAddresses.length === 0 ? (
-                                <div className="no-payments-message">
-                                    <div className="no-payments-icon">₿</div>
-                                    <p>Добавьте адрес кошелька для получения USDT</p>
+                                <div className="empty-state-3d">
+                                    <div className="empty-icon-3d">₿</div>
+                                    <p>Добавьте адрес кошелька</p>
                                 </div>
                             ) : (
                                 cryptoAddresses.map((address) => {
@@ -1076,35 +1219,34 @@ function Home({ navigateTo }) {
                                     return (
                                         <div
                                             key={address.id}
-                                            className={`payment-method-item ${selectedCryptoAddress?.id === address.id ? 'selected' : ''}`}
+                                            className={`payment-card-3d ${selectedCryptoAddress?.id === address.id ? 'selected' : ''}`}
                                             onClick={() => handleCryptoAddressSelect(address)}
                                         >
-                                            <div className="payment-info">
-                                                <div className="crypto-header">
-                                                    <span className="payment-name">{address.name}</span>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                        <span>{networkInfo?.icon}</span>
-                                                        <span className="crypto-network">{address.network}</span>
-                                                    </div>
+                                            <div className="payment-card-header">
+                                                <div className="crypto-info">
+                                                    <span className="address-name">{address.name}</span>
+                                                    <span className="network-badge">
+                                                        {networkInfo?.icon} {address.network}
+                                                    </span>
                                                 </div>
-                                                <div className="crypto-address">
-                                                    {address.address.slice(0, 8)}...{address.address.slice(-8)}
-                                                    <button
-                                                        className="copy-address"
-                                                        onClick={(e) => copyToClipboard(address.address, e)}
-                                                        title="Скопировать адрес"
-                                                    >
-                                                        📋
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    className="delete-card-btn"
+                                                    onClick={(e) => handleDeleteCryptoAddress(address.id, e)}
+                                                >
+                                                    ✕
+                                                </button>
                                             </div>
-                                            <button
-                                                className="delete-payment"
-                                                onClick={(e) => handleDeleteCryptoAddress(address.id, e)}
-                                                title="Удалить адрес"
-                                            >
-                                                ✕
-                                            </button>
+                                            <div className="crypto-address-wrapper">
+                                                <div className="crypto-address-display">
+                                                    {address.address.slice(0, 10)}...{address.address.slice(-10)}
+                                                </div>
+                                                <button
+                                                    className="copy-btn-3d"
+                                                    onClick={(e) => copyToClipboard(address.address, e)}
+                                                >
+                                                    📋
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })
@@ -1114,14 +1256,42 @@ function Home({ navigateTo }) {
                 )}
             </div>
 
+            {/* Главная кнопка обмена */}
             <button
-                className={`exchange-button ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
+                className={`exchange-button-enhanced ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
                 disabled={!isExchangeReady()}
                 onClick={handleExchange}
             >
-                {!userInitialized ? '⏳ Загрузка...' : 
-                 (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
+                <div className="button-content-enhanced">
+                    <span className="button-icon">{isBuyMode ? '🛒' : '💰'}</span>
+                    <span className="button-text">
+                        {!userInitialized ? 'Загрузка...' : 
+                         (isBuyMode ? 'Купить USDT сейчас' : 'Продать USDT сейчас')}
+                    </span>
+                </div>
+                <div className="button-sparkle"></div>
+                <div className="button-glow-enhanced"></div>
             </button>
+
+            {/* Быстрые действия */}
+            <div className="quick-actions">
+                <button className="quick-action">
+                    <span className="action-icon">📱</span>
+                    <span className="action-text">Приложение</span>
+                </button>
+                <button className="quick-action" onClick={() => navigateTo('/history')}>
+                    <span className="action-icon">📊</span>
+                    <span className="action-text">История</span>
+                </button>
+                <button className="quick-action" onClick={() => navigateTo('/help')}>
+                    <span className="action-icon">❓</span>
+                    <span className="action-text">Помощь</span>
+                </button>
+                <button className="quick-action">
+                    <span className="action-icon">⭐</span>
+                    <span className="action-text">Отзывы</span>
+                </button>
+            </div>
 
             {showSupportChat && (
                 <SupportChat
@@ -1131,26 +1301,47 @@ function Home({ navigateTo }) {
                 />
             )}
 
-            <div className="bottom-nav">
-                <button className="nav-button active" onClick={() => navigateTo('/')}>
-                    <span>🏠</span>
-                    <span>Обмен</span>
+            {/* Навигация */}
+            <div className="bottom-nav-enhanced">
+                <button className="nav-item-enhanced active" onClick={() => navigateTo('/')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon-enhanced">🏠</span>
+                    </div>
+                    <span className="nav-label-enhanced">Главная</span>
+                </button>
+                
+                <button className="nav-item-enhanced" onClick={() => navigateTo('/profile')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon-enhanced">👤</span>
+                    </div>
+                    <span className="nav-label-enhanced">Профиль</span>
                 </button>
 
-                <button className="nav-button" onClick={() => navigateTo('/profile')}>
-                    <span>👤</span>
-                    <span>Профиль</span>
-                </button>
+                <div className="nav-center">
+                    <button className="nav-center-button" onClick={handleExchange} disabled={!isExchangeReady()}>
+                        <span className="nav-center-icon">💸</span>
+                    </button>
+                </div>
 
-                <button className="nav-button" onClick={() => navigateTo('/history')}>
-                    <span>📊</span>
-                    <span>История</span>
+                <button className="nav-item-enhanced" onClick={() => navigateTo('/history')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon-enhanced">📊</span>
+                    </div>
+                    <span className="nav-label-enhanced">История</span>
                 </button>
+               
+                <button className="nav-item-enhanced" onClick={() => navigateTo('/help')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon-enhanced">❓</span>
+                    </div>
+                    <span className="nav-label-enhanced">Помощь</span>
+                </button>
+            </div>
 
-                <button className="nav-button" onClick={() => navigateTo('/help')}>
-                    <span>❓</span>
-                    <span>Справка</span>
-                </button>
+            {/* Индикатор сети */}
+            <div className="network-status">
+                <div className="status-dot online"></div>
+                <span className="status-text">Сеть: {selectedCryptoAddress?.network || 'Не выбрана'}</span>
             </div>
         </div>
     );

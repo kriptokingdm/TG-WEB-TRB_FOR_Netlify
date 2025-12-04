@@ -3,6 +3,7 @@ import './Profile.css';
 
 function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);
+    const [telegramData, setTelegramData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('personal');
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -21,14 +22,20 @@ function Profile({ navigateTo }) {
 
     const loadUserData = () => {
         try {
-            const savedUser = localStorage.getItem('currentUser');
+            // Загружаем Telegram данные
             const telegramUser = localStorage.getItem('telegramUser');
-            
+            if (telegramUser) {
+                const parsed = JSON.parse(telegramUser);
+                setTelegramData(parsed);
+                console.log('Telegram данные:', parsed);
+            }
+
+            // Загружаем данные приложения
+            const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 setUserData(JSON.parse(savedUser));
-            } else if (telegramUser) {
-                setUserData(JSON.parse(telegramUser));
             } else {
+                // Создаем тестовые данные если нет пользователя
                 setUserData({
                     id: 'user_123',
                     username: 'testuser',
@@ -46,13 +53,8 @@ function Profile({ navigateTo }) {
 
     const loadStats = () => {
         try {
-            // Загружаем крипто-адреса
             const cryptoAddresses = JSON.parse(localStorage.getItem('userCryptoAddresses') || '[]');
-            
-            // Загружаем платежные методы
             const paymentMethods = JSON.parse(localStorage.getItem('userPaymentMethods') || '[]');
-            
-            // Загружаем историю ордеров
             const orders = JSON.parse(localStorage.getItem('userOrders') || '[]');
             
             setStats({
@@ -71,7 +73,7 @@ function Profile({ navigateTo }) {
         
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
-        showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'темную' : 'светлую'}`);
+        showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
     };
 
     const showMessage = (type, text) => {
@@ -113,22 +115,63 @@ function Profile({ navigateTo }) {
     };
 
     const copyToClipboard = (text, label) => {
+        if (!text) return;
         navigator.clipboard.writeText(text);
         showMessage('success', `✅ ${label} скопирован`);
     };
 
     const clearUserData = () => {
         if (window.confirm('Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.')) {
+            // Сохраняем только тему
+            const currentTheme = localStorage.getItem('theme');
             localStorage.clear();
+            
+            // Восстанавливаем тему
+            if (currentTheme) {
+                localStorage.setItem('theme', currentTheme);
+                document.documentElement.setAttribute('data-theme', currentTheme);
+            }
+            
             showMessage('success', '✅ Все данные очищены');
             setTimeout(() => {
                 window.location.reload();
-            }, 1000);
+            }, 1500);
         }
+    };
+
+    // Функция для получения URL аватарки Telegram
+    const getTelegramAvatar = () => {
+        if (!telegramData) return null;
+        
+        // Проверяем разные способы получения фото
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.photo_url) {
+            return window.Telegram.WebApp.initDataUnsafe.user.photo_url;
+        }
+        
+        return null;
+    };
+
+    const getDisplayName = () => {
+        if (telegramData) {
+            return `${telegramData.first_name || ''} ${telegramData.last_name || ''}`.trim() || telegramData.username || 'Пользователь';
+        }
+        if (userData) {
+            return `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || 'Пользователь';
+        }
+        return 'Пользователь';
+    };
+
+    const getUsername = () => {
+        return telegramData?.username || userData?.username || 'Не указан';
+    };
+
+    const getUserId = () => {
+        return telegramData?.id || userData?.id || userData?.telegramId || '—';
     };
 
     const cryptoAddresses = getCryptoAddresses();
     const paymentMethods = getPaymentMethods();
+    const telegramAvatar = getTelegramAvatar();
 
     if (isLoading) {
         return (
@@ -154,6 +197,38 @@ function Profile({ navigateTo }) {
                         <div className="header-titles">
                             <h1 className="header-title-new">Профиль</h1>
                             <p className="header-subtitle">Управление вашим аккаунтом</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Карточка профиля */}
+                <div className="profile-main-card">
+                    <div className="profile-avatar-section">
+                        {telegramAvatar ? (
+                            <img 
+                                src={telegramAvatar} 
+                                alt="Аватар" 
+                                className="profile-avatar-img"
+                            />
+                        ) : (
+                            <div className="profile-avatar-fallback">
+                                {getDisplayName().charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="profile-info-section">
+                        <h2 className="profile-display-name">{getDisplayName()}</h2>
+                        <p className="profile-username">@{getUsername()}</p>
+                        
+                        <div className="profile-id-section">
+                            <span className="id-label">ID:</span>
+                            <button 
+                                className="id-value"
+                                onClick={() => copyToClipboard(getUserId(), 'ID пользователя')}
+                            >
+                                {getUserId()}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -229,39 +304,6 @@ function Profile({ navigateTo }) {
             <div className="orders-container-new">
                 {activeTab === 'personal' && (
                     <div className="profile-content-section">
-                        {/* Карточка пользователя */}
-                        <div className="profile-card-new">
-                            <div className="profile-card-header">
-                                <div className="profile-avatar">
-                                    {userData?.firstName?.[0] || 'U'}
-                                </div>
-                                <div className="profile-info">
-                                    <h3 className="profile-name">
-                                        {userData?.firstName || 'Пользователь'} {userData?.lastName || ''}
-                                    </h3>
-                                    <div className="profile-details">
-                                        <div className="profile-detail">
-                                            <span className="detail-label">Telegram ID:</span>
-                                            <button 
-                                                className="detail-value clickable"
-                                                onClick={() => copyToClipboard(userData?.id || '', 'ID')}
-                                            >
-                                                {userData?.id || '—'}
-                                            </button>
-                                        </div>
-                                        <div className="profile-detail">
-                                            <span className="detail-label">Имя пользователя:</span>
-                                            <span className="detail-value">@{userData?.username || 'Не указан'}</span>
-                                        </div>
-                                        <div className="profile-detail">
-                                            <span className="detail-label">Дата регистрации:</span>
-                                            <span className="detail-value">{getRegistrationDate()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Настройки */}
                         <div className="profile-card-new">
                             <h3 className="section-title-profile">Настройки</h3>
@@ -274,7 +316,7 @@ function Profile({ navigateTo }) {
                                     <div className="settings-content-profile">
                                         <div className="settings-title-profile">Тема оформления</div>
                                         <div className="settings-description-profile">
-                                            Переключить между светлой и темной темой
+                                            Переключить между светлой и тёмной темой
                                         </div>
                                     </div>
                                     <div className="settings-action-profile">
@@ -311,12 +353,30 @@ function Profile({ navigateTo }) {
                                     </div>
                                     <div className="settings-action-profile">→</div>
                                 </button>
+                                
+                                <button 
+                                    className="settings-item-profile"
+                                    onClick={() => window.open('https://t.me/Terbestbot', '_blank')}
+                                >
+                                    <div className="settings-icon-profile">🤖</div>
+                                    <div className="settings-content-profile">
+                                        <div className="settings-title-profile">Наш Telegram бот</div>
+                                        <div className="settings-description-profile">
+                                            Получайте уведомления о статусе заказов
+                                        </div>
+                                    </div>
+                                    <div className="settings-action-profile">↗️</div>
+                                </button>
                             </div>
                         </div>
 
                         {/* Опасная зона */}
                         <div className="profile-card-new danger-zone">
                             <h3 className="section-title-profile">Опасная зона</h3>
+                            <p className="danger-warning">
+                                Удаление данных приведет к очистке всей вашей информации, 
+                                включая историю операций, кошельки и реквизиты.
+                            </p>
                             <button 
                                 className="danger-button-profile"
                                 onClick={clearUserData}
@@ -324,10 +384,25 @@ function Profile({ navigateTo }) {
                                 <span className="danger-icon-profile">🗑️</span>
                                 Очистить все данные
                             </button>
-                            <p className="danger-warning">
-                                Это действие удалит все ваши данные, включая историю операций, 
-                                кошельки и реквизиты. Действие нельзя отменить.
-                            </p>
+                        </div>
+
+                        {/* Информация о системе */}
+                        <div className="profile-card-new system-info">
+                            <h3 className="section-title-profile">О приложении</h3>
+                            <div className="system-details">
+                                <div className="system-item">
+                                    <span className="system-label">Версия приложения:</span>
+                                    <span className="system-value">1.0.0</span>
+                                </div>
+                                <div className="system-item">
+                                    <span className="system-label">Дата регистрации:</span>
+                                    <span className="system-value">{getRegistrationDate()}</span>
+                                </div>
+                                <div className="system-item">
+                                    <span className="system-label">Статус аккаунта:</span>
+                                    <span className="system-value status-active">Активен</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -376,7 +451,7 @@ function Profile({ navigateTo }) {
                                                         </span>
                                                     </div>
                                                     <span className="order-id-new">
-                                                        {address.name || 'Без названия'}
+                                                        {address.name || `Кошелек ${index + 1}`}
                                                     </span>
                                                 </div>
                                             </div>

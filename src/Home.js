@@ -858,16 +858,6 @@ function Home({ navigateTo }) {
                         </div>
 
                         {/* Информация о курсе */}
-                        <div className="rate-info">
-                            <div className="rate-info-item">
-                                <span className="rate-label">Курс:</span>
-                                <span className="rate-value">{formatRate(getCurrentRateForDisplay())} ₽</span>
-                            </div>
-                            <div className="rate-info-item">
-                                <span className="rate-label">Тип:</span>
-                                <span className="rate-value">{currentTier || 'Стандарт'}</span>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Банковские реквизиты для продажи */}

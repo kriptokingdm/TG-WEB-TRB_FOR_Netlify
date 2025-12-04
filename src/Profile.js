@@ -410,20 +410,6 @@ function Profile({ navigateTo }) {
                 </div>
 
                 {/* Опасная зона */}
-                <div className="profile-card-new danger-zone">
-                    <h3 className="section-title-profile">Опасная зона</h3>
-                    <p className="danger-warning">
-                        Удаление данных приведет к очистке всей вашей информации, 
-                        включая историю операций, кошельки и реквизиты.
-                    </p>
-                    <button 
-                        className="danger-button-profile"
-                        onClick={clearUserData}
-                    >
-                        <span className="danger-icon-profile">🗑️</span>
-                        Очистить все данные
-                    </button>
-                </div>
             </div>
 
             {/* Toast сообщения */}

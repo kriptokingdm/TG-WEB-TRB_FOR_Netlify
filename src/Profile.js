@@ -4,365 +4,527 @@ import './Profile.css';
 function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [showReferralInfo, setShowReferralInfo] = useState(false);
-    const [copied, setCopied] = useState(false);
+    const [activeTab, setActiveTab] = useState('personal');
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [stats, setStats] = useState({
+        cryptoAddresses: 0,
+        paymentMethods: 0,
+        totalOrders: 0
+    });
 
     useEffect(() => {
-        fetchUserData();
+        loadUserData();
+        loadStats();
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
     }, []);
 
-    const fetchUserData = async () => {
+    const loadUserData = () => {
         try {
-            setIsLoading(true);
-            const token = localStorage.getItem('token');
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            
-            if (!token || !currentUser) {
-                throw new Error('Требуется авторизация');
-            }
-
-            console.log('🔄 Загрузка данных пользователя...');
-            
-            // Загружаем основные данные пользователя
-            const userResponse = await fetch('https://87.242.106.114.sslip.io/api/user/profile', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            }); 
-            
-            if (!userResponse.ok) {
-                throw new Error(`HTTP ${userResponse.status}`);
-            }
-            
-            const userDataResult = await userResponse.json();
-            
-            // Загружаем статистику
-            const statsResponse = await fetch(`https://87.242.106.114.sslip.io/api/user/stats/${currentUser.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            let statsData = { stats: {} };
-            if (statsResponse.ok) {
-                statsData = await statsResponse.json();
-            }
-
-            // Объединяем данные с реферальной информацией
-            const completeUserData = {
-                ...userDataResult.user,
-                stats: statsData.stats || { 
-                    totalVolume: 0, 
-                    totalTrades: 0, 
-                    successRate: 0 
-                },
-                referral: {
-                    code: `REF${currentUser.id.slice(0, 8).toUpperCase()}`,
-                    link: `https://tether-rabbit.app?ref=${currentUser.id}`,
-                    earnings: 1500,
-                    referrals: 3
-                },
-                fromStorage: false
-            };
-
-            console.log('✅ Данные пользователя:', completeUserData);
-            setUserData(completeUserData);
-            
-            // Сохраняем в localStorage
-            localStorage.setItem('currentUser', JSON.stringify(completeUserData));
-            
-        } catch (error) {
-            console.error('❌ Ошибка загрузки данных:', error);
-            setError('Ошибка загрузки данных');
-            
-            // Пробуем взять данные из localStorage
             const savedUser = localStorage.getItem('currentUser');
+            const telegramUser = localStorage.getItem('telegramUser');
+            
             if (savedUser) {
-                console.log('⚠️ Использую данные из localStorage');
-                const userFromStorage = JSON.parse(savedUser);
-                
-                // Добавляем реферальную систему если нет
-                if (!userFromStorage.referral) {
-                    userFromStorage.referral = {
-                        code: `REF${userFromStorage.id?.slice(0, 8).toUpperCase() || 'USER'}`,
-                        link: `https://tether-rabbit.app?ref=${userFromStorage.id || 'user'}`,
-                        earnings: 0,
-                        referrals: 0
-                    };
-                }
-                
+                setUserData(JSON.parse(savedUser));
+            } else if (telegramUser) {
+                setUserData(JSON.parse(telegramUser));
+            } else {
                 setUserData({
-                    ...userFromStorage,
-                    fromStorage: true
+                    id: 'user_123',
+                    username: 'testuser',
+                    firstName: 'Тестовый',
+                    lastName: 'Пользователь',
+                    registrationDate: new Date().toISOString()
                 });
             }
+        } catch (error) {
+            console.error('Ошибка загрузки данных:', error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleLogout = () => {
-        console.log('🚪 Выход из системы');
-        localStorage.removeItem('token');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('isLoggedIn');
-        navigateTo('welcome');
-    };
-
-    const copyReferralCode = () => {
-        if (userData?.referral?.link) {
-            navigator.clipboard.writeText(userData.referral.link);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+    const loadStats = () => {
+        try {
+            // Загружаем крипто-адреса
+            const cryptoAddresses = JSON.parse(localStorage.getItem('userCryptoAddresses') || '[]');
+            
+            // Загружаем платежные методы
+            const paymentMethods = JSON.parse(localStorage.getItem('userPaymentMethods') || '[]');
+            
+            // Загружаем историю ордеров
+            const orders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+            
+            setStats({
+                cryptoAddresses: cryptoAddresses.length,
+                paymentMethods: paymentMethods.length,
+                totalOrders: orders.length
+            });
+        } catch (error) {
+            console.error('Ошибка загрузки статистики:', error);
         }
     };
 
+    const toggleTheme = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'темную' : 'светлую'}`);
+    };
+
+    const showMessage = (type, text) => {
+        setMessage({ type, text });
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    };
+
+    const getCryptoAddresses = () => {
+        try {
+            const saved = localStorage.getItem('userCryptoAddresses');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const getPaymentMethods = () => {
+        try {
+            const saved = localStorage.getItem('userPaymentMethods');
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const getRegistrationDate = () => {
+        if (!userData) return '—';
+        
+        const dateStr = userData.registrationDate || userData.createdAt || new Date().toISOString();
+        try {
+            return new Date(dateStr).toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch {
+            return '—';
+        }
+    };
+
+    const copyToClipboard = (text, label) => {
+        navigator.clipboard.writeText(text);
+        showMessage('success', `✅ ${label} скопирован`);
+    };
+
+    const clearUserData = () => {
+        if (window.confirm('Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.')) {
+            localStorage.clear();
+            showMessage('success', '✅ Все данные очищены');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    };
+
+    const cryptoAddresses = getCryptoAddresses();
+    const paymentMethods = getPaymentMethods();
+
     if (isLoading) {
         return (
-            <div className="profile-container">
-                <div className="profile-header">
-                    <div className="header-top">
-                        <h1 className="header-title">Профиль</h1>
-                    </div>
-                </div>
-                
-                <div className="loading-container">
-                    <div className="loading-spinner"></div>
-                    <p>Загрузка профиля...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error && !userData) {
-        return (
-            <div className="profile-container">
-                <div className="profile-header">
-                    <div className="header-top">
-                        <h1 className="header-title">Профиль</h1>
-                    </div>
-                </div>
-                
-                <div className="error-state">
-                    <div className="error-icon">⚠️</div>
-                    <h3 className="error-title">Ошибка загрузки</h3>
-                    <p className="error-subtitle">{error}</p>
-                    <button 
-                        className="retry-btn"
-                        onClick={fetchUserData}
-                    >
-                        🔄 Повторить
-                    </button>
-                </div>
+            <div className="profile-loading">
+                <div className="loading-spinner-new"></div>
+                <p className="loading-text">Загрузка профиля...</p>
             </div>
         );
     }
 
     return (
         <div className="profile-container">
-            {/* Header */}
-            <div className="profile-header">
-                <div className="header-top">
-                    <h1 className="header-title">Профиль пользователя</h1>
-                    <div className="user-id-badge">
-                        ID: {userData?.id || 'N/A'}
+            {/* Хедер профиля */}
+            <div className="profile-header-new">
+                <div className="header-content">
+                    <div className="header-left">
+                        <button 
+                            className="back-button"
+                            onClick={() => navigateTo('/')}
+                        >
+                            ←
+                        </button>
+                        <div className="header-titles">
+                            <h1 className="header-title-new">Профиль</h1>
+                            <p className="header-subtitle">Управление вашим аккаунтом</p>
+                        </div>
                     </div>
                 </div>
 
-                {/* User Info Stats */}
-                <div className="user-stats-grid">
-                    <div className="user-stat-card">
-                        <div className="user-stat-icon">👤</div>
-                        <div className="user-stat-content">
-                            <div className="user-stat-label">Никнейм</div>
-                            <div className="user-stat-value">{userData?.username || 'Пользователь'}</div>
+                {/* Карточки статистики */}
+                <div className="stats-cards">
+                    <div className="stat-card-new">
+                        <div className="stat-icon-container">
+                            <div className="stat-icon">📊</div>
+                        </div>
+                        <div className="stat-content">
+                            <div className="stat-value-new">{stats.totalOrders}</div>
+                            <div className="stat-label-new">Операций</div>
                         </div>
                     </div>
-                    <div className="user-stat-card">
-                        <div className="user-stat-icon">⭐</div>
-                        <div className="user-stat-content">
-                            <div className="user-stat-label">Рейтинг</div>
-                            <div className="user-stat-value">{userData?.stats?.successRate || 0}%</div>
+                    
+                    <div className="stat-card-new">
+                        <div className="stat-icon-container">
+                            <div className="stat-icon">₿</div>
+                        </div>
+                        <div className="stat-content">
+                            <div className="stat-value-new">{stats.cryptoAddresses}</div>
+                            <div className="stat-label-new">Кошельки</div>
                         </div>
                     </div>
+                    
+                    <div className="stat-card-new">
+                        <div className="stat-icon-container">
+                            <div className="stat-icon">💳</div>
+                        </div>
+                        <div className="stat-content">
+                            <div className="stat-value-new">{stats.paymentMethods}</div>
+                            <div className="stat-label-new">Реквизиты</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Табы профиля */}
+                <div className="view-tabs">
+                    <button
+                        className={`view-tab-new ${activeTab === 'personal' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('personal')}
+                    >
+                        <span className="tab-icon">👤</span>
+                        <span className="tab-text">Профиль</span>
+                    </button>
+                    
+                    <button
+                        className={`view-tab-new ${activeTab === 'wallet' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('wallet')}
+                    >
+                        <span className="tab-icon">₿</span>
+                        <span className="tab-text">Кошельки</span>
+                        {stats.cryptoAddresses > 0 && (
+                            <span className="tab-badge">{stats.cryptoAddresses}</span>
+                        )}
+                    </button>
+                    
+                    <button
+                        className={`view-tab-new ${activeTab === 'bank' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('bank')}
+                    >
+                        <span className="tab-icon">💳</span>
+                        <span className="tab-text">Реквизиты</span>
+                        {stats.paymentMethods > 0 && (
+                            <span className="tab-badge">{stats.paymentMethods}</span>
+                        )}
+                    </button>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="profile-content">
-                {/* Personal Information */}
-                <div className="profile-section">
-                    <div className="section-header">
-                        <div className="section-title">
-                            <span className="section-icon">📋</span>
-                            <h3>Личная информация</h3>
-                        </div>
-                    </div>
-                    
-                    <div className="section-content">
-                        <div className="info-grid">
-                            <div className="info-card">
-                                <div className="info-label">📧 Email</div>
-                                <div className="info-value">{userData?.email || 'Не указан'}</div>
-                            </div>
-                            <div className="info-card">
-                                <div className="info-label">📅 Регистрация</div>
-                                <div className="info-value">{userData?.registrationDate || 'Неизвестно'}</div>
-                            </div>
-                            <div className="info-card">
-                                <div className="info-label">🟢 Статус</div>
-                                <div className="info-value verified">✅ Верифицирован</div>
-                            </div>
-                            <div className="info-card">
-                                <div className="info-label">🔒 Уровень</div>
-                                <div className="info-value highlight">Стандартный</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Statistics */}
-                <div className="profile-section">
-                    <div className="section-header">
-                        <div className="section-title">
-                            <span className="section-icon">📊</span>
-                            <h3>Статистика обменов</h3>
-                        </div>
-                        <div className="stats-update">Актуально</div>
-                    </div>
-                    
-                    <div className="section-content">
-                        <div className="stats-grid">
-                            <div className="stat-card">
-                                <div className="stat-icon">🔄</div>
-                                <div className="stat-value">{userData?.stats?.totalTrades || 0}</div>
-                                <div className="stat-label">Всего сделок</div>
-                            </div>
-                            <div className="stat-card">
-                                <div className="stat-icon">✅</div>
-                                <div className="stat-value">{userData?.stats?.successfulTrades || 0}</div>
-                                <div className="stat-label">Успешных</div>
-                            </div>
-                            <div className="stat-card">
-                                <div className="stat-icon">📈</div>
-                                <div className="stat-value">{userData?.stats?.successRate || 0}%</div>
-                                <div className="stat-label">Успешность</div>
-                            </div>
-                            <div className="stat-card">
-                                <div className="stat-icon">💰</div>
-                                <div className="stat-value large">{(userData?.stats?.totalVolume || 0).toLocaleString()} ₽</div>
-                                <div className="stat-label">Общий оборот</div>
-                            </div>
-                            <div className="stat-card">
-                                <div className="stat-icon">📊</div>
-                                <div className="stat-value">{(userData?.stats?.averageAmount || 0).toLocaleString()} ₽</div>
-                                <div className="stat-label">Средняя сумма</div>
-                            </div>
-                            <div className="stat-card">
-                                <div className="stat-icon">⚡</div>
-                                <div className="stat-value">{userData?.stats?.activeTrades || 0}</div>
-                                <div className="stat-label">Активных</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Referral System */}
-                <div className="profile-section">
-                    <div className="section-header" onClick={() => setShowReferralInfo(!showReferralInfo)}>
-                        <div className="section-title">
-                            <span className="section-icon">👥</span>
-                            <h3>Реферальная система</h3>
-                        </div>
-                        <span className="toggle-icon">{showReferralInfo ? '−' : '+'}</span>
-                    </div>
-                    
-                    <div className={`section-content ${showReferralInfo ? 'expanded' : ''}`}>
-                        <div className="referral-card">
-                            <div className="referral-header">
-                                <div className="referral-title">Приглашайте друзей и получайте бонусы!</div>
-                                <div className="referral-subtitle">За каждого приглашенного друга получайте 0.5% от его оборота</div>
-                            </div>
-                            
-                            <div className="referral-stats">
-                                <div className="referral-stat">
-                                    <div className="referral-stat-value">{userData?.referral?.referrals || 0}</div>
-                                    <div className="referral-stat-label">Приглашено</div>
+            {/* Контент профиля */}
+            <div className="orders-container-new">
+                {activeTab === 'personal' && (
+                    <div className="profile-content-section">
+                        {/* Карточка пользователя */}
+                        <div className="profile-card-new">
+                            <div className="profile-card-header">
+                                <div className="profile-avatar">
+                                    {userData?.firstName?.[0] || 'U'}
                                 </div>
-                                <div className="referral-stat">
-                                    <div className="referral-stat-value large">{userData?.referral?.earnings || 0} ₽</div>
-                                    <div className="referral-stat-label">Заработано</div>
-                                </div>
-                            </div>
-                            
-                            <div className="referral-code-section">
-                                <div className="referral-code-label">Ваша реферальная ссылка:</div>
-                                <div className="referral-code-wrapper">
-                                    <div className="referral-code">
-                                        {userData?.referral?.code || 'REF-XXXXXX'}
+                                <div className="profile-info">
+                                    <h3 className="profile-name">
+                                        {userData?.firstName || 'Пользователь'} {userData?.lastName || ''}
+                                    </h3>
+                                    <div className="profile-details">
+                                        <div className="profile-detail">
+                                            <span className="detail-label">Telegram ID:</span>
+                                            <button 
+                                                className="detail-value clickable"
+                                                onClick={() => copyToClipboard(userData?.id || '', 'ID')}
+                                            >
+                                                {userData?.id || '—'}
+                                            </button>
+                                        </div>
+                                        <div className="profile-detail">
+                                            <span className="detail-label">Имя пользователя:</span>
+                                            <span className="detail-value">@{userData?.username || 'Не указан'}</span>
+                                        </div>
+                                        <div className="profile-detail">
+                                            <span className="detail-label">Дата регистрации:</span>
+                                            <span className="detail-value">{getRegistrationDate()}</span>
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Настройки */}
+                        <div className="profile-card-new">
+                            <h3 className="section-title-profile">Настройки</h3>
+                            <div className="settings-grid">
+                                <button 
+                                    className="settings-item-profile"
+                                    onClick={toggleTheme}
+                                >
+                                    <div className="settings-icon-profile">🌙</div>
+                                    <div className="settings-content-profile">
+                                        <div className="settings-title-profile">Тема оформления</div>
+                                        <div className="settings-description-profile">
+                                            Переключить между светлой и темной темой
+                                        </div>
+                                    </div>
+                                    <div className="settings-action-profile">
+                                        <div className="toggle-switch-profile">
+                                            <div className="toggle-slider-profile"></div>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <button 
+                                    className="settings-item-profile"
+                                    onClick={() => navigateTo('/history')}
+                                >
+                                    <div className="settings-icon-profile">📊</div>
+                                    <div className="settings-content-profile">
+                                        <div className="settings-title-profile">История операций</div>
+                                        <div className="settings-description-profile">
+                                            Просмотр всех ваших транзакций
+                                        </div>
+                                    </div>
+                                    <div className="settings-action-profile">→</div>
+                                </button>
+                                
+                                <button 
+                                    className="settings-item-profile"
+                                    onClick={() => navigateTo('/help')}
+                                >
+                                    <div className="settings-icon-profile">❓</div>
+                                    <div className="settings-content-profile">
+                                        <div className="settings-title-profile">Помощь и поддержка</div>
+                                        <div className="settings-description-profile">
+                                            Часто задаваемые вопросы и контакты
+                                        </div>
+                                    </div>
+                                    <div className="settings-action-profile">→</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Опасная зона */}
+                        <div className="profile-card-new danger-zone">
+                            <h3 className="section-title-profile">Опасная зона</h3>
+                            <button 
+                                className="danger-button-profile"
+                                onClick={clearUserData}
+                            >
+                                <span className="danger-icon-profile">🗑️</span>
+                                Очистить все данные
+                            </button>
+                            <p className="danger-warning">
+                                Это действие удалит все ваши данные, включая историю операций, 
+                                кошельки и реквизиты. Действие нельзя отменить.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'wallet' && (
+                    <div className="profile-content-section">
+                        {cryptoAddresses.length === 0 ? (
+                            <div className="empty-state-new">
+                                <div className="empty-icon-container">
+                                    <div className="empty-icon">₿</div>
+                                </div>
+                                <h3 className="empty-title-new">Нет крипто-адресов</h3>
+                                <p className="empty-subtitle-new">
+                                    Добавьте адреса для получения USDT при обмене
+                                </p>
+                                <button 
+                                    className="exchange-btn-new"
+                                    onClick={() => navigateTo('/')}
+                                >
+                                    <span className="exchange-icon">➕</span>
+                                    <span>Добавить адрес</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="list-header">
+                                    <h3 className="section-title-profile">Мои кошельки</h3>
                                     <button 
-                                        className="copy-referral-btn"
-                                        onClick={copyReferralCode}
+                                        className="add-button"
+                                        onClick={() => navigateTo('/')}
                                     >
-                                        {copied ? '✅ Скопировано' : '📋 Копировать'}
+                                        + Добавить
                                     </button>
                                 </div>
-                                
-                                <div className="referral-link">
-                                    {userData?.referral?.link || 'https://tether-rabbit.app?ref=your-code'}
+                                <div className="orders-list-new">
+                                    {cryptoAddresses.map((address, index) => (
+                                        <div key={index} className="order-card-new">
+                                            <div className="order-card-header">
+                                                <div className="order-header-left">
+                                                    <div className="order-type-badge-new">
+                                                        <span className="type-icon-new">
+                                                            ₿
+                                                        </span>
+                                                        <span className="type-text-new">
+                                                            {address.network}
+                                                        </span>
+                                                    </div>
+                                                    <span className="order-id-new">
+                                                        {address.name || 'Без названия'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="order-details-grid">
+                                                <div className="order-detail">
+                                                    <span className="detail-label">Адрес кошелька</span>
+                                                    <span className="detail-value address-value">
+                                                        {address.address.slice(0, 12)}...{address.address.slice(-8)}
+                                                    </span>
+                                                </div>
+                                                <div className="order-detail">
+                                                    <span className="detail-label">Сеть</span>
+                                                    <span className="detail-value highlight">
+                                                        {address.network}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="order-actions">
+                                                <button 
+                                                    className="chat-btn-new"
+                                                    onClick={() => copyToClipboard(address.address, 'Адрес кошелька')}
+                                                >
+                                                    <span className="chat-icon">📋</span>
+                                                    <span>Скопировать адрес</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                            
-                            <div className="referral-rules">
-                                <div className="rule-item">🎯 Приглашенный получает +0.1% к первому обмену</div>
-                                <div className="rule-item">💰 Вы получаете 0.5% от объема сделок реферала</div>
-                                <div className="rule-item">📊 Вывод средств доступен от 1000 ₽</div>
-                                <div className="rule-item">⚡ Выплаты производятся ежедневно</div>
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
-                </div>
+                )}
 
-                {/* Logout Button */}
-                <div className="logout-section">
-                    <button 
-                        className="logout-btn"
-                        onClick={handleLogout}
-                    >
-                        <span className="logout-icon">🚪</span>
-                        <span className="logout-text">Выйти из системы</span>
-                    </button>
-                </div>
+                {activeTab === 'bank' && (
+                    <div className="profile-content-section">
+                        {paymentMethods.length === 0 ? (
+                            <div className="empty-state-new">
+                                <div className="empty-icon-container">
+                                    <div className="empty-icon">💳</div>
+                                </div>
+                                <h3 className="empty-title-new">Нет банковских реквизитов</h3>
+                                <p className="empty-subtitle-new">
+                                    Добавьте реквизиты для получения RUB при обмене
+                                </p>
+                                <button 
+                                    className="exchange-btn-new"
+                                    onClick={() => navigateTo('/')}
+                                >
+                                    <span className="exchange-icon">➕</span>
+                                    <span>Добавить реквизиты</span>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="list-header">
+                                    <h3 className="section-title-profile">Мои реквизиты</h3>
+                                    <button 
+                                        className="add-button"
+                                        onClick={() => navigateTo('/')}
+                                    >
+                                        + Добавить
+                                    </button>
+                                </div>
+                                <div className="orders-list-new">
+                                    {paymentMethods.map((payment, index) => (
+                                        <div key={index} className="order-card-new">
+                                            <div className="order-card-header">
+                                                <div className="order-header-left">
+                                                    <div className="order-type-badge-new">
+                                                        <span className="type-icon-new">
+                                                            {payment.type === 'sbp' ? '📱' : '💳'}
+                                                        </span>
+                                                        <span className="type-text-new">
+                                                            {payment.type === 'sbp' ? 'СБП' : 'Карта'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="order-id-new">
+                                                        {payment.name}
+                                                    </span>
+                                                </div>
+                                            </div>
 
-                {/* Debug Info (only in development) */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div className="debug-info">
-                        <div className="debug-label">Отладка:</div>
-                        <div className="debug-value">
-                            Данные {userData?.fromStorage ? 'из localStorage' : 'с сервера'}
-                        </div>
+                                            <div className="order-details-grid">
+                                                <div className="order-detail">
+                                                    <span className="detail-label">Номер</span>
+                                                    <span className="detail-value address-value">
+                                                        {payment.type === 'sbp' 
+                                                            ? payment.number 
+                                                            : `•••• ${payment.number.slice(-4)}`}
+                                                    </span>
+                                                </div>
+                                                <div className="order-detail">
+                                                    <span className="detail-label">Тип</span>
+                                                    <span className="detail-value highlight">
+                                                        {payment.type === 'sbp' ? 'Телефон' : 'Банковская карта'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="order-actions">
+                                                <button 
+                                                    className="chat-btn-new"
+                                                    onClick={() => copyToClipboard(payment.number, 'Номер реквизитов')}
+                                                >
+                                                    <span className="chat-icon">📋</span>
+                                                    <span>Скопировать номер</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Bottom Navigation */}
+            {/* Toast сообщения */}
+            {message.text && (
+                <div className={`message-toast-new message-${message.type}`}>
+                    <span className="toast-icon">
+                        {message.type === 'success' ? '✅' : 
+                         message.type === 'error' ? '❌' : '⚠️'}
+                    </span>
+                    <span className="toast-text">{message.text}</span>
+                </div>
+            )}
+
+            {/* Навигация */}
             <div className="bottom-nav">
                 <button className="nav-item" onClick={() => navigateTo('/')}>
                     <span className="nav-icon">💸</span>
                     <span className="nav-label">Обмен</span>
                 </button>
-                <button className="nav-item" onClick={() => navigateTo('/history')}>
-                    <span className="nav-icon">📊</span>
-                    <span className="nav-label">История</span>
-                </button>
+                
                 <button className="nav-item active">
                     <span className="nav-icon">👤</span>
                     <span className="nav-label">Профиль</span>
                 </button>
+
+                <button className="nav-item" onClick={() => navigateTo('/history')}>
+                    <span className="nav-icon">📊</span>
+                    <span className="nav-label">История</span>
+                </button>
+               
                 <button className="nav-item" onClick={() => navigateTo('/help')}>
                     <span className="nav-icon">❓</span>
                     <span className="nav-label">Помощь</span>

@@ -199,16 +199,6 @@ function History({ navigateTo }) {
                             <p className="header-subtitle">Все ваши транзакции и обмены</p>
                         </div>
                     </div>
-                    
-                    <div className="header-right">
-                        <button 
-                            className="refresh-button"
-                            onClick={fetchUserOrders}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? '🔄' : '🔄'}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Статистика в виде карточек */}
@@ -388,7 +378,7 @@ function History({ navigateTo }) {
                 )}
             </div>
 
-            {/* Toast сообщения */}
+            {/* Toast сообщения (теперь сверху справа) */}
             {message.text && (
                 <div className={`message-toast-new message-${message.type}`}>
                     <span className="toast-icon">

@@ -1052,3 +1052,245 @@
         padding: 20px;
     }
 }
+/* Реферальная система - дополнительные стили */
+
+.referral-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.referral-share-btn {
+    background: linear-gradient(135deg, #0088cc 0%, #00aced 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.referral-share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+}
+
+.withdrawal-section {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    color: white;
+}
+
+.withdrawal-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.withdrawal-icon {
+    font-size: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.withdrawal-details h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.withdrawal-amount {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.withdrawal-note {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 5px 0 0 0;
+}
+
+.withdrawal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.withdraw-button {
+    background: white;
+    color: #f5576c;
+    border: none;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.withdraw-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.withdraw-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.referrals-list-section,
+.withdrawals-history-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 15px 0;
+}
+
+.referrals-list-section h4,
+.withdrawals-history-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--text-primary);
+}
+
+.referrals-list,
+.withdrawals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.referral-item,
+.withdrawal-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.referral-id {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.referral-status,
+.withdrawal-status {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.referral-status {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48BB78;
+}
+
+.referral-earned {
+    color: #48BB78;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: rgba(246, 173, 85, 0.1);
+    color: #F6AD55;
+}
+
+.status-completed {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48BB78;
+}
+
+.withdrawal-amount {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.withdrawal-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.earned-badge {
+    background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.danger-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.danger-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+}
+
+.danger-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .referral-input-wrapper {
+        flex-direction: column;
+    }
+    
+    .withdrawal-section {
+        padding: 15px;
+    }
+    
+    .withdrawal-amount {
+        font-size: 24px;
+    }
+    
+    .referral-item,
+    .withdrawal-item {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}

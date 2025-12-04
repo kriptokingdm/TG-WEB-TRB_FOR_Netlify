@@ -5,17 +5,17 @@ function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);
     const [telegramData, setTelegramData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('personal');
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [stats, setStats] = useState({
-        cryptoAddresses: 0,
-        paymentMethods: 0,
-        totalOrders: 0
+    const [showReferral, setShowReferral] = useState(false);
+    const [referralStats, setReferralStats] = useState({
+        totalReferrals: 0,
+        activeReferrals: 0,
+        earned: 0
     });
 
     useEffect(() => {
         loadUserData();
-        loadStats();
+        loadReferralStats();
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     }, []);
@@ -51,19 +51,25 @@ function Profile({ navigateTo }) {
         }
     };
 
-    const loadStats = () => {
+    const loadReferralStats = () => {
         try {
-            const cryptoAddresses = JSON.parse(localStorage.getItem('userCryptoAddresses') || '[]');
-            const paymentMethods = JSON.parse(localStorage.getItem('userPaymentMethods') || '[]');
-            const orders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+            // Загружаем статистику рефералов из localStorage
+            const stats = JSON.parse(localStorage.getItem('referralStats') || '{}');
             
-            setStats({
-                cryptoAddresses: cryptoAddresses.length,
-                paymentMethods: paymentMethods.length,
-                totalOrders: orders.length
-            });
+            if (Object.keys(stats).length === 0) {
+                // Генерируем начальные данные
+                const initialStats = {
+                    totalReferrals: Math.floor(Math.random() * 5),
+                    activeReferrals: Math.floor(Math.random() * 3),
+                    earned: Math.floor(Math.random() * 1000)
+                };
+                localStorage.setItem('referralStats', JSON.stringify(initialStats));
+                setReferralStats(initialStats);
+            } else {
+                setReferralStats(stats);
+            }
         } catch (error) {
-            console.error('Ошибка загрузки статистики:', error);
+            console.error('Ошибка загрузки статистики рефералов:', error);
         }
     };
 
@@ -122,14 +128,19 @@ function Profile({ navigateTo }) {
 
     const clearUserData = () => {
         if (window.confirm('Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.')) {
-            // Сохраняем только тему
+            // Сохраняем только тему и реферальные данные
             const currentTheme = localStorage.getItem('theme');
+            const referralStats = localStorage.getItem('referralStats');
+            
             localStorage.clear();
             
-            // Восстанавливаем тему
+            // Восстанавливаем данные
             if (currentTheme) {
                 localStorage.setItem('theme', currentTheme);
                 document.documentElement.setAttribute('data-theme', currentTheme);
+            }
+            if (referralStats) {
+                localStorage.setItem('referralStats', referralStats);
             }
             
             showMessage('success', '✅ Все данные очищены');
@@ -169,6 +180,30 @@ function Profile({ navigateTo }) {
         return telegramData?.id || userData?.id || userData?.telegramId || '—';
     };
 
+    // Генерация реферальной ссылки
+    const getReferralLink = () => {
+        const userId = getUserId();
+        return `https://t.me/Terbestbot?start=${userId}`;
+    };
+
+    const getReferralCode = () => {
+        const userId = getUserId();
+        return `REF-${userId.slice(-6).toUpperCase()}`;
+    };
+
+    // Функция для копирования реферальной ссылки
+    const copyReferralLink = () => {
+        const link = getReferralLink();
+        copyToClipboard(link, 'Реферальная ссылка');
+    };
+
+    // Функция для копирования реферального кода
+    const copyReferralCode = () => {
+        const code = getReferralCode();
+        copyToClipboard(code, 'Реферальный код');
+    };
+
+    // Загрузка статистики
     const cryptoAddresses = getCryptoAddresses();
     const paymentMethods = getPaymentMethods();
     const telegramAvatar = getTelegramAvatar();
@@ -201,7 +236,7 @@ function Profile({ navigateTo }) {
                     </div>
                 </div>
 
-                {/* Карточка профиля */}
+                {/* Карточка профиля с информацией */}
                 <div className="profile-main-card">
                     <div className="profile-avatar-section">
                         {telegramAvatar ? (
@@ -230,346 +265,165 @@ function Profile({ navigateTo }) {
                                 {getUserId()}
                             </button>
                         </div>
-                    </div>
-                </div>
 
-                {/* Карточки статистики */}
-                <div className="stats-cards">
-                    <div className="stat-card-new">
-                        <div className="stat-icon-container">
-                            <div className="stat-icon">📊</div>
-                        </div>
-                        <div className="stat-content">
-                            <div className="stat-value-new">{stats.totalOrders}</div>
-                            <div className="stat-label-new">Операций</div>
-                        </div>
-                    </div>
-                    
-                    <div className="stat-card-new">
-                        <div className="stat-icon-container">
-                            <div className="stat-icon">₿</div>
-                        </div>
-                        <div className="stat-content">
-                            <div className="stat-value-new">{stats.cryptoAddresses}</div>
-                            <div className="stat-label-new">Кошельки</div>
-                        </div>
-                    </div>
-                    
-                    <div className="stat-card-new">
-                        <div className="stat-icon-container">
-                            <div className="stat-icon">💳</div>
-                        </div>
-                        <div className="stat-content">
-                            <div className="stat-value-new">{stats.paymentMethods}</div>
-                            <div className="stat-label-new">Реквизиты</div>
+                        {/* Статистика пользователя */}
+                        <div className="user-stats">
+                            <div className="user-stat-item">
+                                <div className="stat-icon-small">📊</div>
+                                <div className="stat-info">
+                                    <div className="stat-number">{cryptoAddresses.length}</div>
+                                    <div className="stat-label-small">Кошельки</div>
+                                </div>
+                            </div>
+                            <div className="user-stat-item">
+                                <div className="stat-icon-small">💳</div>
+                                <div className="stat-info">
+                                    <div className="stat-number">{paymentMethods.length}</div>
+                                    <div className="stat-label-small">Реквизиты</div>
+                                </div>
+                            </div>
+                            <div className="user-stat-item">
+                                <div className="stat-icon-small">📅</div>
+                                <div className="stat-info">
+                                    <div className="stat-date">{getRegistrationDate()}</div>
+                                    <div className="stat-label-small">Регистрация</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Табы профиля */}
-                <div className="view-tabs">
-                    <button
-                        className={`view-tab-new ${activeTab === 'personal' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('personal')}
-                    >
-                        <span className="tab-icon">👤</span>
-                        <span className="tab-text">Профиль</span>
-                    </button>
-                    
-                    <button
-                        className={`view-tab-new ${activeTab === 'wallet' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('wallet')}
-                    >
-                        <span className="tab-icon">₿</span>
-                        <span className="tab-text">Кошельки</span>
-                        {stats.cryptoAddresses > 0 && (
-                            <span className="tab-badge">{stats.cryptoAddresses}</span>
-                        )}
-                    </button>
-                    
-                    <button
-                        className={`view-tab-new ${activeTab === 'bank' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('bank')}
-                    >
-                        <span className="tab-icon">💳</span>
-                        <span className="tab-text">Реквизиты</span>
-                        {stats.paymentMethods > 0 && (
-                            <span className="tab-badge">{stats.paymentMethods}</span>
-                        )}
-                    </button>
                 </div>
             </div>
 
             {/* Контент профиля */}
             <div className="orders-container-new">
-                {activeTab === 'personal' && (
-                    <div className="profile-content-section">
-                        {/* Настройки */}
-                        <div className="profile-card-new">
-                            <h3 className="section-title-profile">Настройки</h3>
-                            <div className="settings-grid">
-                                <button 
-                                    className="settings-item-profile"
-                                    onClick={toggleTheme}
-                                >
-                                    <div className="settings-icon-profile">🌙</div>
-                                    <div className="settings-content-profile">
-                                        <div className="settings-title-profile">Тема оформления</div>
-                                        <div className="settings-description-profile">
-                                            Переключить между светлой и тёмной темой
-                                        </div>
-                                    </div>
-                                    <div className="settings-action-profile">
-                                        <div className="toggle-switch-profile">
-                                            <div className="toggle-slider-profile"></div>
-                                        </div>
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                    className="settings-item-profile"
-                                    onClick={() => navigateTo('/history')}
-                                >
-                                    <div className="settings-icon-profile">📊</div>
-                                    <div className="settings-content-profile">
-                                        <div className="settings-title-profile">История операций</div>
-                                        <div className="settings-description-profile">
-                                            Просмотр всех ваших транзакций
-                                        </div>
-                                    </div>
-                                    <div className="settings-action-profile">→</div>
-                                </button>
-                                
-                                <button 
-                                    className="settings-item-profile"
-                                    onClick={() => navigateTo('/help')}
-                                >
-                                    <div className="settings-icon-profile">❓</div>
-                                    <div className="settings-content-profile">
-                                        <div className="settings-title-profile">Помощь и поддержка</div>
-                                        <div className="settings-description-profile">
-                                            Часто задаваемые вопросы и контакты
-                                        </div>
-                                    </div>
-                                    <div className="settings-action-profile">→</div>
-                                </button>
-                                
-                                <button 
-                                    className="settings-item-profile"
-                                    onClick={() => window.open('https://t.me/Terbestbot', '_blank')}
-                                >
-                                    <div className="settings-icon-profile">🤖</div>
-                                    <div className="settings-content-profile">
-                                        <div className="settings-title-profile">Наш Telegram бот</div>
-                                        <div className="settings-description-profile">
-                                            Получайте уведомления о статусе заказов
-                                        </div>
-                                    </div>
-                                    <div className="settings-action-profile">↗️</div>
-                                </button>
-                            </div>
+                {/* Реферальная система */}
+                <div className="profile-card-new referral-card">
+                    <div className="referral-header">
+                        <div className="referral-icon">👥</div>
+                        <div className="referral-title">
+                            <h3 className="section-title-profile">Реферальная система</h3>
+                            <p className="referral-subtitle">Приглашайте друзей и получайте бонусы</p>
                         </div>
+                    </div>
 
-                        {/* Опасная зона */}
-                        <div className="profile-card-new danger-zone">
-                            <h3 className="section-title-profile">Опасная зона</h3>
-                            <p className="danger-warning">
-                                Удаление данных приведет к очистке всей вашей информации, 
-                                включая историю операций, кошельки и реквизиты.
-                            </p>
+                    <div className="referral-stats">
+                        <div className="referral-stat-item">
+                            <div className="referral-stat-value">{referralStats.totalReferrals}</div>
+                            <div className="referral-stat-label">Всего приглашено</div>
+                        </div>
+                        <div className="referral-stat-item">
+                            <div className="referral-stat-value">{referralStats.activeReferrals}</div>
+                            <div className="referral-stat-label">Активных</div>
+                        </div>
+                        <div className="referral-stat-item">
+                            <div className="referral-stat-value">{referralStats.earned} ₽</div>
+                            <div className="referral-stat-label">Заработано</div>
+                        </div>
+                    </div>
+
+                    {showReferral ? (
+                        <div className="referral-details">
+                            <div className="referral-input-group">
+                                <label className="referral-label">Реферальная ссылка</label>
+                                <div className="referral-input-wrapper">
+                                    <input
+                                        type="text"
+                                        value={getReferralLink()}
+                                        readOnly
+                                        className="referral-input"
+                                    />
+                                    <button 
+                                        className="referral-copy-btn"
+                                        onClick={copyReferralLink}
+                                    >
+                                        📋
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="referral-input-group">
+                                <label className="referral-label">Реферальный код</label>
+                                <div className="referral-input-wrapper">
+                                    <input
+                                        type="text"
+                                        value={getReferralCode()}
+                                        readOnly
+                                        className="referral-input"
+                                    />
+                                    <button 
+                                        className="referral-copy-btn"
+                                        onClick={copyReferralCode}
+                                    >
+                                        📋
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="referral-info">
+                                <div className="info-icon">💡</div>
+                                <div className="info-text">
+                                    <strong>Как это работает:</strong> Приглашайте друзей по ссылке или коду. 
+                                    За каждого активного реферала вы получаете <strong>1%</strong> от суммы его операций.
+                                </div>
+                            </div>
+
                             <button 
-                                className="danger-button-profile"
-                                onClick={clearUserData}
+                                className="referral-hide-btn"
+                                onClick={() => setShowReferral(false)}
                             >
-                                <span className="danger-icon-profile">🗑️</span>
-                                Очистить все данные
+                                Скрыть
                             </button>
                         </div>
+                    ) : (
+                        <button 
+                            className="referral-show-btn"
+                            onClick={() => setShowReferral(true)}
+                        >
+                            <span className="btn-icon">🔗</span>
+                            <span>Показать реферальную ссылку</span>
+                        </button>
+                    )}
+                </div>
 
-                        {/* Информация о системе */}
-                        <div className="profile-card-new system-info">
-                            <h3 className="section-title-profile">О приложении</h3>
-                            <div className="system-details">
-                                <div className="system-item">
-                                    <span className="system-label">Версия приложения:</span>
-                                    <span className="system-value">1.0.0</span>
-                                </div>
-                                <div className="system-item">
-                                    <span className="system-label">Дата регистрации:</span>
-                                    <span className="system-value">{getRegistrationDate()}</span>
-                                </div>
-                                <div className="system-item">
-                                    <span className="system-label">Статус аккаунта:</span>
-                                    <span className="system-value status-active">Активен</span>
+                {/* Настройки */}
+                <div className="profile-card-new">
+                    <h3 className="section-title-profile">Настройки</h3>
+                    <div className="settings-grid">
+                        <button 
+                            className="settings-item-profile"
+                            onClick={toggleTheme}
+                        >
+                            <div className="settings-icon-profile">🌙</div>
+                            <div className="settings-content-profile">
+                                <div className="settings-title-profile">Тема оформления</div>
+                                <div className="settings-description-profile">
+                                    Переключить между светлой и тёмной темой
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'wallet' && (
-                    <div className="profile-content-section">
-                        {cryptoAddresses.length === 0 ? (
-                            <div className="empty-state-new">
-                                <div className="empty-icon-container">
-                                    <div className="empty-icon">₿</div>
+                            <div className="settings-action-profile">
+                                <div className="toggle-switch-profile">
+                                    <div className="toggle-slider-profile"></div>
                                 </div>
-                                <h3 className="empty-title-new">Нет крипто-адресов</h3>
-                                <p className="empty-subtitle-new">
-                                    Добавьте адреса для получения USDT при обмене
-                                </p>
-                                <button 
-                                    className="exchange-btn-new"
-                                    onClick={() => navigateTo('/')}
-                                >
-                                    <span className="exchange-icon">➕</span>
-                                    <span>Добавить адрес</span>
-                                </button>
                             </div>
-                        ) : (
-                            <>
-                                <div className="list-header">
-                                    <h3 className="section-title-profile">Мои кошельки</h3>
-                                    <button 
-                                        className="add-button"
-                                        onClick={() => navigateTo('/')}
-                                    >
-                                        + Добавить
-                                    </button>
-                                </div>
-                                <div className="orders-list-new">
-                                    {cryptoAddresses.map((address, index) => (
-                                        <div key={index} className="order-card-new">
-                                            <div className="order-card-header">
-                                                <div className="order-header-left">
-                                                    <div className="order-type-badge-new">
-                                                        <span className="type-icon-new">
-                                                            ₿
-                                                        </span>
-                                                        <span className="type-text-new">
-                                                            {address.network}
-                                                        </span>
-                                                    </div>
-                                                    <span className="order-id-new">
-                                                        {address.name || `Кошелек ${index + 1}`}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="order-details-grid">
-                                                <div className="order-detail">
-                                                    <span className="detail-label">Адрес кошелька</span>
-                                                    <span className="detail-value address-value">
-                                                        {address.address.slice(0, 12)}...{address.address.slice(-8)}
-                                                    </span>
-                                                </div>
-                                                <div className="order-detail">
-                                                    <span className="detail-label">Сеть</span>
-                                                    <span className="detail-value highlight">
-                                                        {address.network}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="order-actions">
-                                                <button 
-                                                    className="chat-btn-new"
-                                                    onClick={() => copyToClipboard(address.address, 'Адрес кошелька')}
-                                                >
-                                                    <span className="chat-icon">📋</span>
-                                                    <span>Скопировать адрес</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
+                        </button>
                     </div>
-                )}
+                </div>
 
-                {activeTab === 'bank' && (
-                    <div className="profile-content-section">
-                        {paymentMethods.length === 0 ? (
-                            <div className="empty-state-new">
-                                <div className="empty-icon-container">
-                                    <div className="empty-icon">💳</div>
-                                </div>
-                                <h3 className="empty-title-new">Нет банковских реквизитов</h3>
-                                <p className="empty-subtitle-new">
-                                    Добавьте реквизиты для получения RUB при обмене
-                                </p>
-                                <button 
-                                    className="exchange-btn-new"
-                                    onClick={() => navigateTo('/')}
-                                >
-                                    <span className="exchange-icon">➕</span>
-                                    <span>Добавить реквизиты</span>
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="list-header">
-                                    <h3 className="section-title-profile">Мои реквизиты</h3>
-                                    <button 
-                                        className="add-button"
-                                        onClick={() => navigateTo('/')}
-                                    >
-                                        + Добавить
-                                    </button>
-                                </div>
-                                <div className="orders-list-new">
-                                    {paymentMethods.map((payment, index) => (
-                                        <div key={index} className="order-card-new">
-                                            <div className="order-card-header">
-                                                <div className="order-header-left">
-                                                    <div className="order-type-badge-new">
-                                                        <span className="type-icon-new">
-                                                            {payment.type === 'sbp' ? '📱' : '💳'}
-                                                        </span>
-                                                        <span className="type-text-new">
-                                                            {payment.type === 'sbp' ? 'СБП' : 'Карта'}
-                                                        </span>
-                                                    </div>
-                                                    <span className="order-id-new">
-                                                        {payment.name}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="order-details-grid">
-                                                <div className="order-detail">
-                                                    <span className="detail-label">Номер</span>
-                                                    <span className="detail-value address-value">
-                                                        {payment.type === 'sbp' 
-                                                            ? payment.number 
-                                                            : `•••• ${payment.number.slice(-4)}`}
-                                                    </span>
-                                                </div>
-                                                <div className="order-detail">
-                                                    <span className="detail-label">Тип</span>
-                                                    <span className="detail-value highlight">
-                                                        {payment.type === 'sbp' ? 'Телефон' : 'Банковская карта'}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="order-actions">
-                                                <button 
-                                                    className="chat-btn-new"
-                                                    onClick={() => copyToClipboard(payment.number, 'Номер реквизитов')}
-                                                >
-                                                    <span className="chat-icon">📋</span>
-                                                    <span>Скопировать номер</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
+                {/* Опасная зона */}
+                <div className="profile-card-new danger-zone">
+                    <h3 className="section-title-profile">Опасная зона</h3>
+                    <p className="danger-warning">
+                        Удаление данных приведет к очистке всей вашей информации, 
+                        включая историю операций, кошельки и реквизиты.
+                    </p>
+                    <button 
+                        className="danger-button-profile"
+                        onClick={clearUserData}
+                    >
+                        <span className="danger-icon-profile">🗑️</span>
+                        Очистить все данные
+                    </button>
+                </div>
             </div>
 
             {/* Toast сообщения */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
@@ -15,11 +15,6 @@ function Home({ navigateTo }) {
     const [sellRate, setSellRate] = useState(81.6);
     const [currentTier, setCurrentTier] = useState('');
 
-    // Анимация переключения
-    const [swapAnimation, setSwapAnimation] = useState(false);
-    const [isSwapDisabled, setIsSwapDisabled] = useState(false);
-    const [particles, setParticles] = useState([]);
-
     // Состояния для чата
     const [showSupportChat, setShowSupportChat] = useState(false);
     const [currentOrderId, setCurrentOrderId] = useState(null);
@@ -28,9 +23,6 @@ function Home({ navigateTo }) {
     // Состояния для активных ордеров
     const [hasActiveOrder, setHasActiveOrder] = useState(false);
     const [activeOrdersCount, setActiveOrdersCount] = useState(0);
-
-    // Рефы для анимаций
-    const swapButtonRef = useRef(null);
 
     // Лимиты
     const MIN_RUB = 1000;
@@ -76,34 +68,6 @@ function Home({ navigateTo }) {
 
     // Состояние инициализации пользователя
     const [userInitialized, setUserInitialized] = useState(false);
-
-    // Эффект частиц для анимации
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            if (Math.random() > 0.7) {
-                const newParticle = {
-                    x: e.clientX,
-                    y: e.clientY,
-                    id: Date.now(),
-                    color: isBuyMode ? '#00ffaa' : '#ff6b9d'
-                };
-                setParticles(prev => [...prev.slice(-20), newParticle]);
-            }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [isBuyMode]);
-
-    // Эффект для очистки частиц
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (particles.length > 0) {
-                setParticles(prev => prev.slice(1));
-            }
-        }, 100);
-        return () => clearInterval(interval);
-    }, [particles.length]);
 
     // Функция для расчета конвертированной суммы
     const calculateConvertedAmount = () => {
@@ -185,6 +149,7 @@ function Home({ navigateTo }) {
     const initializeUser = () => {
         console.log('🔧 Инициализация пользователя Telegram...');
         
+        // Проверяем Telegram WebApp
         if (window.Telegram?.WebApp) {
             console.log('🤖 Telegram WebApp доступен');
             const tg = window.Telegram.WebApp;
@@ -192,6 +157,7 @@ function Home({ navigateTo }) {
             tg.ready();
             tg.expand();
             
+            // Пробуем получить пользователя
             const telegramUser = tg.initDataUnsafe?.user;
             if (telegramUser) {
                 console.log('✅ Telegram пользователь найден:', telegramUser);
@@ -202,6 +168,7 @@ function Home({ navigateTo }) {
             console.log('⚠️ Telegram пользователь не найден в initDataUnsafe');
         }
         
+        // Проверяем сохраненные данные
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             try {
@@ -214,6 +181,7 @@ function Home({ navigateTo }) {
             }
         }
         
+        // Создаем тестового пользователя
         console.log('⚠️ Создаем тестового пользователя');
         const testUser = {
             id: 7879866656,
@@ -228,8 +196,10 @@ function Home({ navigateTo }) {
     const saveUserData = (telegramUser) => {
         console.log('💾 Сохранение пользователя:', telegramUser);
         
+        // Сохраняем Telegram данные
         localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
         
+        // Создаем пользователя для приложения
         const appUser = {
             id: `user_${telegramUser.id}`,
             telegramId: telegramUser.id,
@@ -276,6 +246,7 @@ function Home({ navigateTo }) {
                 const data = await response.json();
                 console.log('📦 Данные ордеров:', data);
                 
+                // Проверяем разные форматы ответа
                 let ordersList = [];
                 if (data.orders) {
                     ordersList = data.orders;
@@ -297,6 +268,7 @@ function Home({ navigateTo }) {
             }
         } catch (error) {
             console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
+            // Не блокируем пользователя при ошибке сети
             setHasActiveOrder(false);
         }
     };
@@ -313,7 +285,7 @@ function Home({ navigateTo }) {
             
             const response = await fetch(url, {
                 method: 'GET',
-                mode: 'cors',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -340,45 +312,19 @@ function Home({ navigateTo }) {
         }
     };
 
-    // Анимация свапа с кд 2 секунды
-    const handleSwap = () => {
-        if (isSwapDisabled) return;
-        
-        // Активируем анимацию
-        setSwapAnimation(true);
-        setIsSwapDisabled(true);
-        
-        // Создаем эффект частиц
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-                const newParticle = {
-                    x: window.innerWidth / 2,
-                    y: window.innerHeight / 2,
-                    id: Date.now() + i,
-                    color: isBuyMode ? '#ff6b9d' : '#00ffaa'
-                };
-                setParticles(prev => [...prev, newParticle]);
-            }, i * 50);
-        }
-        
-        // Изменяем состояние с задержкой
-        setTimeout(() => {
-            setIsSwapped(!isSwapped);
-            setIsBuyMode(!isBuyMode);
-            setAmount('');
-            setError('');
+    // Эффект для загрузки курсов при изменении суммы
+    useEffect(() => {
+        if (amount) {
             fetchExchangeRates();
-        }, 300);
-        
-        // Сбрасываем анимацию
-        setTimeout(() => {
-            setSwapAnimation(false);
-        }, 600);
-        
-        // Снимаем блокировку через 2 секунды
-        setTimeout(() => {
-            setIsSwapDisabled(false);
-        }, 2000);
+        }
+    }, [amount]);
+
+    const handleSwap = () => {
+        setIsSwapped(!isSwapped);
+        setIsBuyMode(!isBuyMode);
+        setAmount('');
+        setError('');
+        fetchExchangeRates();
     };
 
     const handleAmountChange = (e) => {
@@ -435,6 +381,7 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 16) value = value.slice(0, 16);
         
+        // Форматируем как 0000 0000 0000 0000
         let formatted = '';
         for (let i = 0; i < value.length; i++) {
             if (i > 0 && i % 4 === 0) {
@@ -443,6 +390,7 @@ function Home({ navigateTo }) {
             formatted += value[i];
         }
 
+        // Валидация номера карты
         let cardNumberError = '';
         if (value.length > 0 && value.length < 16) {
             cardNumberError = 'Номер карты должен содержать 16 цифр';
@@ -459,6 +407,7 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);
         
+        // Форматируем как +7 (XXX) XXX-XX-XX
         let formatted = value;
         if (value.length > 0) {
             formatted = '+7';
@@ -476,6 +425,7 @@ function Home({ navigateTo }) {
             }
         }
 
+        // Валидация номера телефона
         let cardNumberError = '';
         if (value.length > 0 && value.length < 11) {
             cardNumberError = 'Введите полный номер телефона (11 цифр)';
@@ -489,6 +439,7 @@ function Home({ navigateTo }) {
     };
 
     const handleAddPayment = () => {
+        // Определяем тип реквизитов
         const isSBP = newPayment.bankName === 'СБП (Система быстрых платежей)';
         const number = isSBP ? 
             newPayment.phoneNumber.replace(/\D/g, '') : 
@@ -515,6 +466,7 @@ function Home({ navigateTo }) {
         setPaymentMethods(prev => [...prev, newPaymentMethod]);
         setSelectedPayment(newPaymentMethod);
         
+        // Сбрасываем форму
         setNewPayment({
             bankName: '',
             cardNumber: '',
@@ -537,6 +489,7 @@ function Home({ navigateTo }) {
     };
 
     const handleAddCryptoAddress = () => {
+        // Простая валидация адреса
         if (!newCryptoAddress.address || newCryptoAddress.address.length < 10) {
             setNewCryptoAddress(prev => ({
                 ...prev,
@@ -555,6 +508,7 @@ function Home({ navigateTo }) {
         setCryptoAddresses(prev => [...prev, newAddress]);
         setSelectedCryptoAddress(newAddress);
         
+        // Сбрасываем форму
         setNewCryptoAddress({
             address: '',
             network: 'ERC20',
@@ -659,7 +613,7 @@ function Home({ navigateTo }) {
 
             const response = await fetch(`${serverUrl}/api/create-order`, {
                 method: 'POST',
-                mode: 'cors',
+                mode: 'cors', // ← ВАЖНО: добавляем mode cors
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -729,27 +683,6 @@ function Home({ navigateTo }) {
 
     return (
         <div className="home-container">
-            {/* Частицы анимации */}
-            {particles.map(particle => (
-                <div
-                    key={particle.id}
-                    className="particle"
-                    style={{
-                        left: particle.x,
-                        top: particle.y,
-                        backgroundColor: particle.color
-                    }}
-                />
-            ))}
-
-            {/* Анимированный бэкграунд */}
-            <div className={`gradient-bg ${isBuyMode ? 'buy-mode' : 'sell-mode'}`}></div>
-            
-            {/* Анимированные орбиты */}
-            <div className="orbit orbit-1"></div>
-            <div className="orbit orbit-2"></div>
-            <div className="orbit orbit-3"></div>
-
             {!userInitialized && (
                 <div className="loading-overlay">
                     <div className="loading-spinner"></div>
@@ -775,7 +708,6 @@ function Home({ navigateTo }) {
                 </div>
             )}
 
-            {/* Переключатель режимов */}
             <div className="mode-switcher">
                 <button
                     className={`mode-button buy ${isBuyMode ? 'active' : ''}`}
@@ -787,10 +719,7 @@ function Home({ navigateTo }) {
                         fetchExchangeRates();
                     }}
                 >
-                    <div className="mode-content">
-                        <span className="mode-icon">🛒</span>
-                        <span className="mode-text">Купить USDT</span>
-                    </div>
+                    Покупка
                 </button>
                 <button
                     className={`mode-button sell ${!isBuyMode ? 'active' : ''}`}
@@ -802,26 +731,19 @@ function Home({ navigateTo }) {
                         fetchExchangeRates();
                     }}
                 >
-                    <div className="mode-content">
-                        <span className="mode-icon">💰</span>
-                        <span className="mode-text">Продать USDT</span>
-                    </div>
+                    Продажа
                 </button>
             </div>
 
             <div className={hasActiveOrder ? 'form-disabled' : ''}>
-                {/* Карточки валют */}
                 <div className="currency-cards-horizontal">
-                    <div className={`currency-card ${isBuyMode ? 'buy-card' : 'sell-card'}`}>
+                    <div className="currency-card-side left-card">
                         <div className="currency-content">
-                            <div className="currency-header">
-                                <span className="currency-icon">{isBuyMode ? "💳" : "₿"}</span>
-                                <span className="currency-name">
-                                    {isBuyMode ? "RUB" : "USDT"}
-                                </span>
-                            </div>
+                            <span className="currency-name">
+                                {isBuyMode ? "RUB" : "USDT"}
+                            </span>
                             {isBuyMode && (
-                                <span className="currency-rate">
+                                <span className="currency-rate light">
                                     {formatRate(getCurrentRateForDisplay())} ₽
                                 </span>
                             )}
@@ -829,36 +751,22 @@ function Home({ navigateTo }) {
                     </div>
 
                     <button
-                        ref={swapButtonRef}
-                        className={`swap-center-button ${swapAnimation ? 'rotating' : ''} ${isSwapDisabled ? 'disabled' : ''}`}
+                        className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
                         onClick={handleSwap}
-                        disabled={isSwapDisabled}
                     >
-                        <div className="swap-inner">
-                            <div className="swap-icon">🔄</div>
-                            <div className="swap-rings">
-                                <div className="ring ring-1"></div>
-                                <div className="ring ring-2"></div>
-                                <div className="ring ring-3"></div>
-                            </div>
-                        </div>
-                        {isSwapDisabled && (
-                            <div className="swap-cooldown">
-                                <div className="cooldown-text">2с</div>
-                            </div>
-                        )}
+                        <svg width="58" height="58" viewBox="0 0 58 58" fill="none">
+                            <circle cx="29" cy="29" r="26.5" fill="#007CFF" stroke="#EFEFF3" strokeWidth="5" />
+                            <path d="M37.3333 17.5423C40.8689 20.1182 43.1666 24.2907 43.1666 29C43.1666 36.824 36.824 43.1666 29 43.1666H28.1666M20.6666 40.4576C17.1311 37.8817 14.8333 33.7092 14.8333 29C14.8333 21.1759 21.1759 14.8333 29 14.8333H29.8333M30.6666 46.3333L27.3333 43L30.6666 39.6666M27.3333 18.3333L30.6666 15L27.3333 11.6666" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                     </button>
 
-                    <div className={`currency-card ${isBuyMode ? 'buy-card' : 'sell-card'}`}>
+                    <div className="currency-card-side right-card">
                         <div className="currency-content">
-                            <div className="currency-header">
-                                <span className="currency-icon">{isBuyMode ? "₿" : "💳"}</span>
-                                <span className="currency-name">
-                                    {isBuyMode ? "USDT" : "RUB"}
-                                </span>
-                            </div>
+                            <span className="currency-name">
+                                {isBuyMode ? "USDT" : "RUB"}
+                            </span>
                             {!isBuyMode && (
-                                <span className="currency-rate">
+                                <span className="currency-rate light">
                                     {formatRate(getCurrentRateForDisplay())} ₽
                                 </span>
                             )}
@@ -866,7 +774,6 @@ function Home({ navigateTo }) {
                     </div>
                 </div>
 
-                {/* Поля ввода суммы */}
                 <div className="amount-input-section">
                     <div className="amount-input-group">
                         <label className="amount-label">Вы отдаете</label>
@@ -919,8 +826,7 @@ function Home({ navigateTo }) {
                                     className="add-payment-button"
                                     onClick={() => setShowAddPayment(true)}
                                 >
-                                    <span className="add-icon">+</span>
-                                    <span>Добавить реквизиты</span>
+                                    + Добавить реквизиты
                                 </button>
                             )}
                         </div>
@@ -1069,8 +975,7 @@ function Home({ navigateTo }) {
                                     className="add-payment-button"
                                     onClick={() => setShowAddCrypto(true)}
                                 >
-                                    <span className="add-icon">+</span>
-                                    <span>Добавить адрес</span>
+                                    + Добавить адрес
                                 </button>
                             )}
                         </div>
@@ -1209,19 +1114,13 @@ function Home({ navigateTo }) {
                 )}
             </div>
 
-            {/* Кнопка обмена */}
             <button
                 className={`exchange-button ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
                 disabled={!isExchangeReady()}
                 onClick={handleExchange}
             >
-                <div className="exchange-button-content">
-                    <span className="exchange-icon">{isBuyMode ? '🛒' : '💰'}</span>
-                    <span className="exchange-text">
-                        {!userInitialized ? '⏳ Загрузка...' : 
-                         (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
-                    </span>
-                </div>
+                {!userInitialized ? '⏳ Загрузка...' : 
+                 (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
             </button>
 
             {showSupportChat && (
@@ -1232,34 +1131,25 @@ function Home({ navigateTo }) {
                 />
             )}
 
-            {/* Навигация */}
             <div className="bottom-nav">
                 <button className="nav-button active" onClick={() => navigateTo('/')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">🏠</span>
-                    </div>
-                    <span className="nav-label">Обмен</span>
+                    <span>🏠</span>
+                    <span>Обмен</span>
                 </button>
 
                 <button className="nav-button" onClick={() => navigateTo('/profile')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">👤</span>
-                    </div>
-                    <span className="nav-label">Профиль</span>
+                    <span>👤</span>
+                    <span>Профиль</span>
                 </button>
 
                 <button className="nav-button" onClick={() => navigateTo('/history')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">📊</span>
-                    </div>
-                    <span className="nav-label">История</span>
+                    <span>📊</span>
+                    <span>История</span>
                 </button>
 
                 <button className="nav-button" onClick={() => navigateTo('/help')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">❓</span>
-                    </div>
-                    <span className="nav-label">Справка</span>
+                    <span>❓</span>
+                    <span>Справка</span>
                 </button>
             </div>
         </div>

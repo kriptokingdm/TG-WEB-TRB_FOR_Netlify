@@ -1,1374 +1,1405 @@
-/* Home.css - НОВЫЙ ДИЗАЙН СО СТАРОЙ СТРУКТУРОЙ */
-
-/* ====================== */
-/* CSS ПЕРЕМЕННЫЕ */
-/* ====================== */
-
-:root {
-    /* Цвета светлой темы */
-    --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-secondary: rgba(255, 255, 255, 0.95);
-    --bg-card: rgba(255, 255, 255, 0.9);
-    --text-primary: #2d3748;
-    --text-secondary: #718096;
-    --text-white: #ffffff;
-    --accent-blue: #4f46e5;
-    --accent-purple: #7c3aed;
-    --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --border-color: rgba(255, 255, 255, 0.3);
-    --shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 30px 90px rgba(0, 0, 0, 0.2);
-    --glow-green: 0 0 30px rgba(16, 185, 129, 0.4);
-    --glow-red: 0 0 30px rgba(239, 68, 68, 0.4);
-    --glow-blue: 0 0 30px rgba(79, 70, 229, 0.4);
-}
-
-[data-theme="dark"] {
-    --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    --bg-secondary: rgba(30, 41, 59, 0.95);
-    --bg-card: rgba(30, 41, 59, 0.9);
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 30px 90px rgba(0, 0, 0, 0.5);
-}
-
-/* ====================== */
-/* БАЗОВЫЕ СТИЛИ */
-/* ====================== */
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-/* ====================== */
-/* АНИМАЦИИ */
-/* ====================== */
-
-@keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes glow {
-    0%, 100% { box-shadow: 0 0 20px var(--glow-blue); }
-    50% { box-shadow: 0 0 40px var(--glow-blue); }
-}
-
-@keyframes sparkle {
-    0% { transform: scale(0) rotate(0deg); }
-    50% { transform: scale(1) rotate(180deg); }
-    100% { transform: scale(0) rotate(360deg); }
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
+    /* Home.css - Объединенная версия с анимацией и улучшениями */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version */
+        -webkit-tap-highlight-color: transparent;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    
+    :root {
+        /* Цвета светлой темы (по умолчанию) */
+        --bg-primary: #f5f5f7;
+        --bg-secondary: #ffffff;
+        --text-primary: #1d1d1f;
+        --text-secondary: #666666;
+        --text-tertiary: #8e8e93;
+        --accent-color: #007CFF;
+        --accent-color-hover: #0066cc;
+        --success-color: #00a86b;
+        --error-color: #ff4444;
+        --warning-color: #ff9500;
+        --border-color: #e1e1e1;
+        --shadow-color: rgba(0, 0, 0, 0.1);
     }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* ====================== */
-/* КОНТЕЙНЕР И БЭКГРАУНД */
-/* ====================== */
-
-.home-container {
-    min-height: 100vh;
-    background: var(--bg-primary);
-    padding: 20px;
-    padding-bottom: 100px;
-    position: relative;
-    animation: fadeIn 0.5s ease;
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-}
-
-/* Анимированный фон */
-.gradient-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    background: var(--bg-primary);
-    transition: all 0.5s ease;
-}
-
-.gradient-bg.buy-mode {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.gradient-bg.sell-mode {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-/* Орбиты */
-.orbit {
-    position: fixed;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: -1;
-}
-
-.orbit-1 {
-    width: 300px;
-    height: 300px;
-    top: -150px;
-    right: -150px;
-    animation: rotate 20s linear infinite;
-}
-
-.orbit-2 {
-    width: 200px;
-    height: 200px;
-    bottom: -100px;
-    left: -100px;
-    animation: rotate 15s linear infinite reverse;
-}
-
-.orbit-3 {
-    width: 150px;
-    height: 150px;
-    top: 50%;
-    right: 20%;
-    animation: rotate 10s linear infinite;
-}
-
-/* Частицы */
-.particle {
-    position: fixed;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.7;
-    animation: float 1s ease-in-out forwards;
-}
-
-/* ====================== */
-/* ЗАГРУЗКА */
-/* ====================== */
-
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bg-primary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    backdrop-filter: blur(10px);
-}
-
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--bg-card);
-    border-top: 5px solid var(--accent-blue);
-    border-radius: 50%;
-    animation: rotate 1s linear infinite;
-    margin-bottom: 20px;
-}
-
-.loading-overlay p {
-    color: var(--text-primary);
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-/* ====================== */
-/* АКТИВНЫЙ ОРДЕР */
-/* ====================== */
-
-.active-order-warning {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    animation: slideInUp 0.5s ease;
-    color: white;
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
-}
-
-.warning-content {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.warning-icon {
-    font-size: 32px;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.warning-text {
-    flex: 1;
-}
-
-.warning-text strong {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 5px;
-}
-
-.warning-text span {
-    font-size: 14px;
-    opacity: 0.9;
-}
-
-.warning-button {
-    background: white;
-    color: #f59e0b;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-}
-
-.warning-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* ====================== */
-/* ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ */
-/* ====================== */
-
-.mode-switcher {
-    display: flex;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 4px;
-    margin-bottom: 30px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-}
-
-.mode-button {
-    flex: 1;
-    padding: 16px 24px;
-    border: none;
-    background: transparent;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.mode-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-}
-
-.mode-button.active .mode-content {
-    transform: scale(1.05);
-}
-
-.mode-icon {
-    font-size: 20px;
-    transition: all 0.3s ease;
-}
-
-.mode-text {
-    font-size: 15px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.mode-button.buy {
-    color: var(--text-secondary);
-}
-
-.mode-button.buy.active {
-    color: var(--accent-green);
-}
-
-.mode-button.sell {
-    color: var(--text-secondary);
-}
-
-.mode-button.sell.active {
-    color: var(--accent-red);
-}
-
-/* ====================== */
-/* КАРТОЧКИ ВАЛЮТ */
-/* ====================== */
-
-.currency-cards-horizontal {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    position: relative;
-    gap: 20px;
-    animation: slideInUp 0.6s ease;
-}
-
-.currency-card {
-    flex: 1;
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 25px;
-    box-shadow: var(--shadow);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid var(--border-color);
-    position: relative;
-    overflow: hidden;
-}
-
-.currency-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.currency-card:hover::before {
-    opacity: 1;
-}
-
-.currency-card.buy-card:hover {
-    box-shadow: var(--glow-green), var(--shadow-hover);
-    transform: translateY(-5px) scale(1.02);
-}
-
-.currency-card.sell-card:hover {
-    box-shadow: var(--glow-red), var(--shadow-hover);
-    transform: translateY(-5px) scale(1.02);
-}
-
-.currency-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.currency-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.currency-icon {
-    font-size: 32px;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.currency-name {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.5px;
-}
-
-.currency-rate {
-    font-size: 18px;
-    color: var(--text-secondary);
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 12px;
-}
-
-/* ====================== */
-/* КНОПКА СВАПА */
-/* ====================== */
-
-.swap-center-button {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);
-    z-index: 10;
-    animation: glow 2s ease-in-out infinite;
-}
-
-.swap-center-button:hover:not(.disabled) {
-    transform: translate(-50%, -50%) scale(1.1) rotate(180deg);
-    box-shadow: 0 20px 40px rgba(79, 70, 229, 0.5);
-}
-
-.swap-center-button.rotating {
-    animation: rotate 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.swap-center-button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    animation: none;
-}
-
-.swap-inner {
-    position: relative;
-    z-index: 2;
-}
-
-.swap-icon {
-    font-size: 24px;
-    color: white;
-    animation: float 2s ease-in-out infinite;
-}
-
-.swap-rings {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.ring {
-    position: absolute;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    animation: rotate 3s linear infinite;
-}
-
-.ring-1 {
-    width: 80px;
-    height: 80px;
-    animation-delay: 0s;
-}
-
-.ring-2 {
-    width: 90px;
-    height: 90px;
-    animation-delay: 0.2s;
-    animation-direction: reverse;
-}
-
-.ring-3 {
-    width: 100px;
-    height: 100px;
-    animation-delay: 0.4s;
-}
-
-.swap-cooldown {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 3;
-}
-
-.cooldown-text {
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    animation: pulse 1s ease-in-out infinite;
-}
-
-/* ====================== */
-/* ПОЛЯ ВВОДА СУММЫ */
-/* ====================== */
-
-.amount-input-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 30px;
-    width: 100%;
-    animation: slideInUp 0.7s ease;
-}
-
-.amount-input-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.amount-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.amount-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.amount-input {
-    width: 100%;
-    padding: 20px;
-    border: 2px solid var(--border-color);
-    border-radius: 16px;
-    font-size: 24px;
-    font-weight: 700;
-    outline: none;
-    background: var(--bg-card);
-    color: var(--text-primary);
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.amount-input:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.amount-input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.amount-currency {
-    position: absolute;
-    right: 20px;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    pointer-events: none;
-}
-
-.min-limit-hint {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
-    border-radius: 8px;
-    display: inline-block;
-}
-
-.error-message {
-    color: var(--accent-red);
-    font-size: 12px;
-    margin-top: 8px;
-    font-weight: 600;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* ====================== */
-/* СЕКЦИИ ОПЛАТЫ */
-/* ====================== */
-
-.payment-section {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-    animation: slideInUp 0.8s ease;
-    border: 1px solid var(--border-color);
-    position: relative;
-    overflow: hidden;
-}
-
-.payment-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-}
-
-.payment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.payment-header h3 {
-    margin: 0;
-    font-size: 18px;
-    color: var(--text-primary);
-    font-weight: 700;
-    flex: 1;
-}
-
-.add-payment-button {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    border: none;
-    padding: 12px 24px;
-    border-radius: 12px;
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
-}
-
-.add-payment-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-}
-
-.add-icon {
-    font-size: 18px;
-    font-weight: 700;
-}
-
-/* Форма добавления */
-.add-payment-form {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border-color);
-    animation: slideInUp 0.3s ease;
-}
-
-.form-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.form-header h4 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.close-form {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.close-form:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--text-primary);
-}
-
-.form-input-group {
-    margin-bottom: 20px;
-}
-
-.input-label {
-    display: block;
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.bank-select-container {
-    position: relative;
-}
-
-.bank-select {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--bg-card);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: var(--text-primary);
-    font-size: 15px;
-    transition: all 0.2s ease;
-}
-
-.bank-select.has-value {
-    border-color: var(--accent-blue);
-}
-
-.bank-select:hover {
-    border-color: var(--accent-blue);
-}
-
-.dropdown-arrow {
-    color: var(--text-secondary);
-    font-size: 12px;
-    transition: transform 0.2s ease;
-}
-
-.bank-select.open .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-.bank-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-top: 4px;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 100;
-    box-shadow: var(--shadow);
-}
-
-.bank-option {
-    padding: 12px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.bank-option:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.bank-option:last-child {
-    border-bottom: none;
-}
-
-.payment-input {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 15px;
-    outline: none;
-    background: var(--bg-card);
-    color: var(--text-primary);
-    transition: all 0.2s ease;
-}
-
-.payment-input:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.payment-input.error {
-    border-color: var(--accent-red);
-}
-
-.payment-input::placeholder {
-    color: var(--text-secondary);
-}
-
-.input-error {
-    color: var(--accent-red);
-    font-size: 12px;
-    margin-top: 6px;
-    font-weight: 500;
-}
-
-.network-select-container {
-    position: relative;
-}
-
-.network-select {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--bg-card);
-    font-size: 15px;
-    color: var(--text-primary);
-    cursor: pointer;
-    appearance: none;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.network-select:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-.save-payment-button {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    border: none;
-    padding: 16px;
-    border-radius: 12px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.save-payment-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-}
-
-.save-payment-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Список методов оплаты */
-.payment-methods {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.payment-method-item {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid transparent;
-    border-radius: 16px;
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.payment-method-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.payment-method-item:hover::before {
-    opacity: 1;
-}
-
-.payment-method-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.payment-method-item.selected {
-    border-color: var(--accent-blue);
-    background: rgba(79, 70, 229, 0.1);
-}
-
-.payment-method-item.sbp {
-    border-left: 4px solid var(--accent-green);
-}
-
-.payment-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.payment-header-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.payment-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.sbp-badge {
-    background: var(--accent-green);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.payment-number {
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-family: 'SF Mono', Monaco, Consolas, monospace;
-}
-
-.crypto-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.crypto-network {
-    font-size: 12px;
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.crypto-address {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-family: 'SF Mono', Monaco, Consolas, monospace;
-}
-
-.copy-address {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.copy-address:hover {
-    background: rgba(79, 70, 229, 0.2);
-    color: var(--accent-blue);
-}
-
-.delete-payment {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.delete-payment:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--accent-red);
-}
-
-.no-payments-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-secondary);
-}
-
-.no-payments-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.no-payments-message p {
-    font-size: 14px;
-    max-width: 200px;
-    margin: 0 auto;
-    line-height: 1.5;
-}
-
-/* ====================== */
-/* КНОПКА ОБМЕНА */
-/* ====================== */
-
-.exchange-button {
-    width: 100%;
-    background: linear-gradient(135deg, #10b981, #059669);
-    border: none;
-    padding: 0;
-    border-radius: 20px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    margin: 30px 0;
-    animation: slideInUp 0.9s ease;
-    transition: all 0.3s ease;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-}
-
-.exchange-button.buy {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.exchange-button.sell {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.exchange-button:hover:not(.disabled) {
-    transform: translateY(-5px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-}
-
-.exchange-button:active:not(.disabled) {
-    transform: translateY(-2px);
-}
-
-.exchange-button.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.exchange-button-content {
-    padding: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    position: relative;
-    z-index: 2;
-}
-
-.exchange-icon {
-    font-size: 24px;
-    animation: float 2s ease-in-out infinite;
-}
-
-.exchange-text {
-    font-size: 18px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: 0.5px;
-}
-
-/* ====================== */
-/* НАВИГАЦИЯ */
-/* ====================== */
-
-.bottom-nav {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow);
-    z-index: 1000;
-    border: 1px solid var(--border-color);
-    animation: slideInUp 1s ease;
-}
-
-.nav-button {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    color: var(--text-secondary);
-}
-
-.nav-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.nav-button.active {
-    color: var(--accent-blue);
-    background: rgba(79, 70, 229, 0.1);
-}
-
-.nav-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.nav-button.active .nav-icon-wrapper {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-}
-
-.nav-icon {
-    font-size: 20px;
-    transition: all 0.3s ease;
-}
-
-.nav-button.active .nav-icon {
-    color: white;
-    transform: scale(1.1);
-}
-
-.nav-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* ====================== */
-/* ФОРМА ОТКЛЮЧЕНА */
-/* ====================== */
-
-.form-disabled {
-    position: relative;
-}
-
-.form-disabled::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    border-radius: 20px;
-    z-index: 10;
-}
-
-/* ====================== */
-/* АДАПТИВНОСТЬ */
-/* ====================== */
-
-@media (max-width: 768px) {
+    
+    [data-theme="dark"] {
+        /* Цвета темной темы */
+        --bg-primary: #121212;
+        --bg-secondary: #2d2d2d;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --text-tertiary: #888888;
+        --accent-color: #007CFF;
+        --accent-color-hover: #0066cc;
+        --success-color: #00ff88;
+        --error-color: #ff4444;
+        --warning-color: #ffcc00;
+        --border-color: #404040;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+    html, body {
+        touch-action: manipulation; /* Отключаем двойной тап для зумирования */
+        overscroll-behavior: contain;
+    }
+    
     .home-container {
+        max-width: 100%;
+        min-height: 100vh;
+        background: #f5f5f7;
+        padding: 16px;
+        padding-bottom: 80px;
+        overflow-x: hidden;
+    }
+    .home-container {
+        background: var(--bg-secondary);
+        /* вместо #ffffff */
+    }
+
+    .currency-card-side {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .mode-switcher {
+        background: var(--bg-secondary);
+    }
+
+    .mode-button {
+        color: var(--text-secondary);
+    }
+
+    .mode-button.active {
+        background: var(--accent-color);
+        color: white;
+    }
+    /* Отключаем зум на мобильных устройствах */
+    @media screen and (max-width: 768px) {
+        body {
+        touch-action: pan-x pan-y; /* Разрешаем только скролл */
+        }
+        
+        input, textarea, select {
+        font-size: 16px !important; /* Предотвращает увеличение на iOS */
+        }
+        
+        /* Отключаем масштабирование */
+        @viewport {
+        width: device-width;
+        zoom: 1.0;
+        max-zoom: 1.0;
+        min-zoom: 1.0;
+        user-zoom: fixed;
+        }
+        
+        @-ms-viewport {
+        width: device-width;
+        zoom: 1.0;
+        max-zoom: 1.0;
+        min-zoom: 1.0;
+        user-zoom: fixed;
+        }
+    }
+    
+    /* Баннер активного ордера */
+    .active-order-warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 12px;
         padding: 15px;
-        padding-bottom: 120px;
+        margin-bottom: 20px;
     }
     
-    .currency-cards-horizontal {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .currency-card {
-        width: 100%;
-    }
-    
-    .swap-center-button {
-        position: relative;
-        top: 0;
-        left: 0;
-        transform: none;
-        margin: 20px auto;
-        order: 3;
-    }
-    
-    .amount-input-section {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .amount-input {
-        font-size: 20px;
-        padding: 18px;
-    }
-    
-    .payment-header {
-        flex-direction: column;
-        align-items: stretch;
+    .warning-content {
+        display: flex;
+        align-items: center;
         gap: 12px;
     }
     
-    .add-payment-button {
-        align-self: stretch;
-        text-align: center;
+    .warning-icon {
+        font-size: 24px;
+        flex-shrink: 0;
     }
     
-    .exchange-button {
-        padding: 0;
+    .warning-text {
+        flex: 1;
     }
     
-    .exchange-button-content {
-        padding: 20px;
+    .warning-text strong {
+        display: block;
+        color: #856404;
+        margin-bottom: 4px;
     }
     
-    .bottom-nav {
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        padding: 12px;
+    .warning-text span {
+        color: #856404;
+        font-size: 14px;
     }
     
-    .nav-button {
-        padding: 8px;
+    .warning-button {
+        background: #007cff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
     }
     
-    .nav-icon-wrapper {
-        width: 36px;
-        height: 36px;
+    .warning-button:hover {
+        background: #0066cc;
     }
     
-    .nav-icon {
-        font-size: 18px;
-    }
-    
-    .nav-label {
-        font-size: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .currency-name {
-        font-size: 20px;
-    }
-    
-    .currency-rate {
-        font-size: 16px;
-    }
-    
-    .amount-input {
-        font-size: 18px;
-        padding: 16px;
-    }
-    
-    .amount-currency {
-        font-size: 16px;
-        right: 16px;
-    }
-    
-    .payment-section {
-        padding: 20px;
+    /* Переключатель режимов - ИСПРАВЛЕННЫЙ */
+    .mode-switcher {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 30px;
+        width: 100%;
     }
     
     .mode-button {
-        padding: 12px 16px;
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        background: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        color: #666;
     }
     
-    .mode-text {
+    .mode-button.active {
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .mode-button.buy.active {
+        color: #00a86b !important;
+        background: rgba(0, 168, 107, 0.1) !important;
+    }
+    
+    .mode-button.sell.active {
+        color: #ff4444 !important;
+        background: rgba(255, 68, 68, 0.1) !important;
+    }
+    
+    /* Карточки валют - УВЕЛИЧЕННЫЕ И УЛУЧШЕННЫЕ */
+    .currency-cards-horizontal {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px; /* Увеличил отступ */
+        position: relative;
+    }
+    
+    .currency-card-side {
+        flex: 1;
+        background: #ffffff;
+        border-radius: 20px; /* Увеличил скругление */
+        padding: 30px 25px; /* Увеличил padding */
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Более мягкая тень */
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        min-height: 120px; /* Минимальная высота */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .currency-card-side:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .left-card {
+        margin-right: 10px;
+        border-color: #e1e5e9;
+    }
+    
+    .right-card {
+        margin-left: 10px;
+        border-color: #e1e5e9;
+    }
+    
+    .currency-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .currency-name {
+        font-size: 28px; /* Увеличил шрифт */
+        font-weight: 800; /* Жирнее */
+        color: #1d1d1f;
+        letter-spacing: -0.5px;
+    }
+    
+    .currency-rate {
+        font-size: 18px; /* Увеличил шрифт */
+        color: #8e8e93;
+        font-weight: 600;
+    }
+    
+    .currency-rate.light {
+        color: #999;
+    }
+    
+    /* Кнопка обмена - С АНИМАЦИЕЙ ПОВОРОТА */
+    .swap-center-button {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 68px; /* Увеличил размер */
+        height: 68px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        z-index: 10;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
+    }
+    
+    .swap-center-button.rotated {
+        transform: translate(-50%, -50%) rotate(180deg); /* Поворот на 180 градусов */
+    }
+    
+    /* SVG внутри кнопки свапа - УВЕЛИЧЕННЫЙ */
+    .swap-center-button svg {
+        width: 68px;
+        height: 68px;
+        transition: all 0.3s ease;
+    }
+    
+    .swap-center-button svg circle {
+        fill: #007CFF;
+        stroke: #EFEFF3;
+        stroke-width: 5;
+        transition: all 0.3s ease;
+    }
+    
+    .swap-center-button:hover svg circle {
+        fill: #0066cc;
+        stroke-width: 6;
+    }
+    
+    .swap-center-button svg path {
+        stroke: white;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: all 0.3s ease;
+    }
+    
+    .swap-center-button:active {
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+    
+    /* Поля ввода суммы */
+    .amount-input-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+    
+    .amount-input-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .amount-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    
+    .amount-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    
+    .amount-input {
+        width: 100%;
+        padding: 16px;
+        border: 2px solid #e1e1e1;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        outline: none;
+        background: white;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    .amount-input:focus {
+        border-color: #007cff;
+    }
+    
+    .amount-currency {
+        position: absolute;
+        right: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    .min-limit-hint {
+        font-size: 12px;
+        color: #999;
+        margin-top: 6px;
+    }
+    
+    .error-message {
+        color: #ff4444;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+    
+    /* Секции оплаты */
+    .payment-section {
+        background: white;
+        border: 1px solid #e1e1e1;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+    
+    .payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .payment-header h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #333;
+    }
+    
+    .add-payment-button {
+        background: #007cff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .add-payment-button:hover {
+        background: #0066cc;
+    }
+    
+    /* Форма добавления платежа */
+    .add-payment-form {
+        background: #f8f9fa;
+        border: 1px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .form-header h4 {
+        margin: 0;
+        color: #333;
+    }
+    
+    .close-form {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #666;
+    }
+    
+    .form-input-group {
+        margin-bottom: 15px;
+    }
+    
+    .input-label {
+        display: block;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+    
+    .bank-select-container {
+        position: relative;
+    }
+    
+    .bank-select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .bank-select.has-value {
+        border-color: #007cff;
+    }
+    
+    .dropdown-arrow {
+        color: #666;
+    }
+    
+    .bank-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e1e1e1;
+        border-radius: 8px;
+        margin-top: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .bank-option {
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s;
+    }
+    
+    .bank-option:hover {
+        background: #f8f9fa;
+    }
+    
+    .bank-option:last-child {
+        border-bottom: none;
+    }
+    
+    .payment-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        background: white;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    .payment-input:focus {
+        border-color: #007cff;
+    }
+    
+    .payment-input.error {
+        border-color: #ff4444;
+    }
+    
+    .input-error {
+        color: #ff4444;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    
+    .save-payment-button {
+        width: 100%;
+        background: #007cff;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .save-payment-button:hover:not(:disabled) {
+        background: #0066cc;
+    }
+    
+    .save-payment-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+    
+    /* Список методов оплаты */
+    .payment-methods {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .payment-method-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .payment-method-item:hover {
+        border-color: #007cff;
+        background: #f0f7ff;
+    }
+    
+    .payment-method-item.selected {
+        border-color: #007cff;
+        background: #e7f3ff;
+    }
+    
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .payment-name {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .payment-number {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .crypto-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .crypto-network {
+        font-size: 12px;
+        color: #666;
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    .crypto-address {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #666;
         font-size: 13px;
+        font-family: monospace;
+    }
+    
+    .copy-address {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #007cff;
+    }
+    
+    .delete-payment {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #ff4444;
+        font-size: 16px;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+    
+    .delete-payment:hover {
+        background: #ffe6e6;
+    }
+    
+    .no-payments-message {
+        text-align: center;
+        padding: 30px 20px;
+        color: #666;
+    }
+    
+    .no-payments-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #007CFF;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading-overlay p {
+        color: #333;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    /* Кнопка обмена */
+    .exchange-button {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    .exchange-button.buy {
+        background: #00a86b;
+        color: white;
+    }
+    
+    .exchange-button.sell {
+        background: #ff4444;
+        color: white;
+    }
+    
+    .exchange-button:hover:not(.disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .exchange-button.buy:hover:not(.disabled) {
+        background: #009658;
+    }
+    
+    .exchange-button.sell:hover:not(.disabled) {
+        background: #e63939;
+    }
+    
+    .exchange-button.disabled {
+        background: #ccc;
+        color: #666;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Форма отключена при активном ордере */
+    .form-disabled {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    /* НАВИГАЦИЯ - ФИКСИРОВАННАЯ */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid #e1e1e1;
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 0;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        max-width: 100%;
+    }
+    
+    .nav-button {
+        background: none;
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: #858589;
+        font-size: 12px;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        min-width: 60px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+    
+    .nav-button:hover {
+        background: #f8f9fa;
+    }
+    
+    .nav-button.active {
+        color: #007cff;
+    }
+    
+    .nav-button span:first-child {
+        font-size: 20px;
+    }
+    
+    .nav-button span:last-child {
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    /* Специальные стили для SBP */
+    .sbp-phone-input {
+        margin-top: 10px;
+    }
+    
+    .payment-method-item.sbp {
+        border-left: 3px solid #28a745;
+    }
+    
+    .sbp-badge {
+        background: #28a745;
+        color: white;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+    
+    /* Адаптивность для Telegram Web App */
+    @media screen and (max-width: 600px) {
+        .home-container {
+        padding: 16px;
+        padding-bottom: 70px;
+        }
+        
+        .currency-cards-horizontal {
+        gap: 10px;
+        margin-bottom: 24px;
+        }
+        
+        .currency-card-side {
+        padding: 24px 20px;
+        min-height: 100px;
+        border-radius: 18px;
+        }
+        
+        .currency-name {
+        font-size: 24px;
+        }
+        
+        .swap-center-button {
+        width: 60px;
+        height: 60px;
+        }
+        
+        .swap-center-button svg {
+        width: 60px;
+        height: 60px;
+        }
+        
+        .amount-input-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        }
+        
+        .amount-input {
+        font-size: 16px;
+        padding: 14px;
+        }
+        
+        .payment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        }
+        
+        .add-payment-button {
+        align-self: flex-start;
+        }
+        
+        .bottom-nav {
+        padding: 10px 0;
+        }
+        
+        .nav-button {
+        padding: 6px 12px;
+        min-width: 50px;
+        }
+        
+        .nav-button span:first-child {
+        font-size: 18px;
+        }
+        
+        .nav-button span:last-child {
+        font-size: 10px;
+        }
+    }
+    
+    @media screen and (max-width: 400px) {
+        .currency-name {
+        font-size: 22px;
+        }
+        
+        .currency-card-side {
+        padding: 20px 16px;
+        min-height: 90px;
+        }
+        
+        .swap-center-button {
+        width: 55px;
+        height: 55px;
+        }
+        
+        .swap-center-button svg {
+        width: 55px;
+        height: 55px;
+        }
+        
+        .nav-button {
+        padding: 5px 8px;
+        min-width: 45px;
+        }
+        
+        .nav-button span:first-child {
+        font-size: 16px;
+        }
+        
+        .nav-button span:last-child {
+        font-size: 9px;
+        }
+    }
+    
+    /* Телефонный ввод для СБП */
+    input[type="tel"] {
+        font-size: 16px;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Иконки сетей */
+    .network-icon {
+        margin-right: 6px;
+        font-size: 14px;
+    }
+    
+    /* Выбор сети */
+    .network-select-container {
+        position: relative;
+    }
+    
+    .network-select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        background: white;
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+    }
+    
+    .network-select:focus {
+        outline: none;
+        border-color: #007cff;
+    }
+    
+    /* Кнопка копирования */
+    .copy-address {
+        transition: all 0.2s ease;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    .copy-address:hover {
+        background: #f0f7ff;
+        color: #0066cc;
+    }
+
+    /* НОВЫЕ СТИЛИ ДЛЯ ГОРИЗОНТАЛЬНОЙ СЕТКИ СТАТИСТИКИ */
+    .stats-grid-horizontal {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 16px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .stats-grid-horizontal::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .stats-grid-horizontal::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+    }
+
+    .stats-grid-horizontal::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .stat-card-horizontal {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        min-width: 150px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-horizontal:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-icon-horizontal {
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+
+    .stat-content-horizontal {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-value-horizontal {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 4px;
+        line-height: 1;
+    }
+
+    .stat-label-horizontal {
+        font-size: 13px;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Убираем старые стили stats-grid если есть */
+    .stats-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 16px;
+        flex-wrap: nowrap; /* Теперь не переносится */
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 20px;
+        min-width: 120px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        text-align: center;
+        flex: 1;
+        min-width: 150px; /* Увеличиваем минимальную ширину */
+    }
+
+    /* Header без вопросительного знака */
+    .header-title::before {
+        content: ''; /* Убираем вопрос */
+    }
+    
+    /* Мета-тег в HTML для отключения масштабирования */
+    /* Добавь в public/index.html: */
+    /* <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"> */
+
+    /* ====================== */
+/* ТЕМНАЯ ТЕМА ДЛЯ HOME */
+/* ====================== */
+
+[data-theme="dark"] .home-container {
+    background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+}
+
+[data-theme="dark"] .currency-card-side {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .currency-name {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .currency-rate.light {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .mode-switcher {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .mode-button {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .mode-button.active {
+    background: #007CFF;
+    color: white;
+}
+
+[data-theme="dark"] .mode-button.buy.active {
+    color: #00ff88 !important;
+    background: rgba(0, 255, 136, 0.15) !important;
+}
+
+[data-theme="dark"] .mode-button.sell.active {
+    color: #ff4444 !important;
+    background: rgba(255, 68, 68, 0.15) !important;
+}
+
+/* Кнопка обмена в темной теме */
+[data-theme="dark"] .swap-center-button svg circle {
+    fill: #007CFF;
+    stroke: #404040;
+}
+
+[data-theme="dark"] .swap-center-button:hover svg circle {
+    fill: #0066cc;
+}
+
+/* Поля ввода в темной теме */
+[data-theme="dark"] .amount-input {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .amount-input:focus {
+    border-color: #007CFF;
+}
+
+[data-theme="dark"] .amount-currency {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .amount-label {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .min-limit-hint {
+    color: #888;
+}
+
+/* Секции оплаты в темной теме */
+[data-theme="dark"] .payment-section {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .payment-header h3 {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .payment-method-item {
+    background: #363636;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .payment-method-item:hover {
+    background: #404040;
+    border-color: #007CFF;
+}
+
+[data-theme="dark"] .payment-method-item.selected {
+    background: rgba(0, 124, 255, 0.2);
+    border-color: #007CFF;
+}
+
+[data-theme="dark"] .payment-name {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .payment-number {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .crypto-network {
+    background: #404040;
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .crypto-address {
+    color: #b0b0b0;
+}
+
+/* Формы в темной теме */
+[data-theme="dark"] .add-payment-form {
+    background: #363636;
+    border-color: #404040;
+}
+
+[data-theme="dark"] .form-header h4 {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .bank-select {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .bank-select.has-value {
+    border-color: #007CFF;
+}
+
+[data-theme="dark"] .bank-dropdown {
+    background: #2d2d2d;
+    border-color: #404040;
+}
+
+[data-theme="dark"] .bank-option {
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .bank-option:hover {
+    background: #363636;
+}
+
+[data-theme="dark"] .payment-input {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .payment-input:focus {
+    border-color: #007CFF;
+}
+
+[data-theme="dark"] .network-select {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #ffffff;
+}
+
+/* Кнопки в темной теме */
+[data-theme="dark"] .add-payment-button {
+    background: #007CFF;
+    color: white;
+}
+
+[data-theme="dark"] .add-payment-button:hover {
+    background: #0066cc;
+}
+
+[data-theme="dark"] .save-payment-button {
+    background: #007CFF;
+    color: white;
+}
+
+[data-theme="dark"] .save-payment-button:hover:not(:disabled) {
+    background: #0066cc;
+}
+
+[data-theme="dark"] .save-payment-button:disabled {
+    background: #555;
+    color: #888;
+}
+
+/* Активный ордер в темной теме */
+[data-theme="dark"] .active-order-warning {
+    background: #332b00;
+    border-color: #665c00;
+}
+
+[data-theme="dark"] .warning-text strong {
+    color: #ffcc00;
+}
+
+[data-theme="dark"] .warning-text span {
+    color: #ffcc00;
+}
+
+[data-theme="dark"] .warning-button {
+    background: #007CFF;
+    color: white;
+}
+
+/* No payments message в темной теме */
+[data-theme="dark"] .no-payments-message {
+    color: #b0b0b0;
+}
+
+/* Кнопка обмена в темной теме */
+[data-theme="dark"] .exchange-button.buy {
+    background: linear-gradient(135deg, #00a86b, #008b5a);
+}
+
+[data-theme="dark"] .exchange-button.sell {
+    background: linear-gradient(135deg, #ff4444, #e63939);
+}
+
+[data-theme="dark"] .exchange-button.disabled {
+    background: #555;
+    color: #888;
+}
+
+/* Навигация в темной теме */
+[data-theme="dark"] .bottom-nav {
+    background: #2d2d2d;
+    border-top-color: #404040;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nav-button {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .nav-button:hover {
+    background: #363636;
+}
+
+[data-theme="dark"] .nav-button.active {
+    color: #007CFF;
+}
+
+/* Сообщение "Нет платежных методов" */
+[data-theme="dark"] .no-payments-message p {
+    color: #b0b0b0;
+}
+
+/* Плейсхолдеры */
+[data-theme="dark"] ::placeholder {
+    color: #777;
+}
+
+/* Скреллбар для темной темы */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #555;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+/* Улучшенная анимация для темной темы */
+[data-theme="dark"] * {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                transform 0.3s ease,
+                opacity 0.3s ease;
+}
+
+/* Для мобильных устройств */
+@media screen and (max-width: 600px) {
+    [data-theme="dark"] .home-container {
+        background: linear-gradient(135deg, #0f0f0f 0%, #151515 100%);
+    }
+    
+    [data-theme="dark"] .currency-card-side {
+        background: #252525;
+    }
+    
+    [data-theme="dark"] .payment-section {
+        background: #252525;
     }
 }
 
-/* ====================== */
-/* СКРОЛЛБАР */
-/* ====================== */
-
-::-webkit-scrollbar {
-    width: 8px;
+/* Особые состояния для темной темы */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+    box-shadow: 0 0 0 2px rgba(0, 124, 255, 0.3);
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+/* Состояние disabled в темной теме */
+[data-theme="dark"] .form-disabled {
+    opacity: 0.5;
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    border-radius: 4px;
+[data-theme="dark"] .form-disabled * {
+    cursor: not-allowed;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
+/* Loading overlay в темной теме */
+[data-theme="dark"] .loading-overlay {
+    background: rgba(18, 18, 18, 0.95);
+}
+
+[data-theme="dark"] .loading-spinner {
+    border-color: #333;
+    border-top-color: #007CFF;
+}
+
+[data-theme="dark"] .loading-overlay p {
+    color: #ffffff;
 }

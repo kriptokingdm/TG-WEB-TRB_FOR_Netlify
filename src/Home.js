@@ -70,6 +70,17 @@ function Home({ navigateTo }) {
     // Состояние инициализации пользователя
     const [userInitialized, setUserInitialized] = useState(false);
 
+    // ====================== //
+    // ФУНКЦИИ НАВИГАЦИИ С АНИМАЦИЯМИ
+    // ====================== //
+
+    const handleNavigation = (path) => {
+        // Небольшая задержка для визуальной обратной связи
+        setTimeout(() => {
+            navigateTo(path);
+        }, 50);
+    };
+
     // Функция для расчета конвертированной суммы
     const calculateConvertedAmount = () => {
         if (!amount) return '';
@@ -716,7 +727,7 @@ function Home({ navigateTo }) {
                             </div>
                             <button
                                 className="warning-button"
-                                onClick={() => navigateTo('/history')}
+                                onClick={() => handleNavigation('/history')}
                             >
                                 Перейти
                             </button>
@@ -747,7 +758,7 @@ function Home({ navigateTo }) {
                                 fetchExchangeRates();
                             }}
                         >
-                            <span className="mode-simple-text">ПокупкаB</span>
+                            <span className="mode-simple-text">USDT → RUB</span>
                         </button>
                         <button
                             className={`mode-simple-button ${!isBuyMode ? 'active' : ''}`}
@@ -759,7 +770,7 @@ function Home({ navigateTo }) {
                                 fetchExchangeRates();
                             }}
                         >
-                            <span className="mode-simple-text">Продажа</span>
+                            <span className="mode-simple-text">RUB → USDT</span>
                         </button>
                     </div>
 
@@ -1218,7 +1229,7 @@ function Home({ navigateTo }) {
                     <span className="nav-label">Обмен</span>
                 </button>
                 
-                <button className="nav-item" onClick={() => navigateTo('/profile')}>
+                <button className="nav-item" onClick={() => handleNavigation('/profile')}>
                     <span className="nav-icon-svg">
                         <svg width="101" height="53" viewBox="0 0 101 53" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fillRule="evenodd" clipRule="evenodd" d="M37.25 18C37.25 10.8203 43.0703 5 50.25 5C57.4297 5 63.25 10.8203 63.25 18C63.25 25.1797 57.4297 31 50.25 31C43.0703 31 37.25 25.1797 37.25 18ZM48.2451 10.9443C48.552 11.2512 48.552 11.7488 48.2451 12.0557L46.6322 13.6686H55.3712C55.8052 13.6686 56.1571 14.0205 56.1571 14.4545C56.1571 14.8886 55.8052 15.2405 55.3712 15.2405H46.6322L48.2451 16.8534C48.552 17.1603 48.552 17.6579 48.2451 17.9648C47.9382 18.2717 47.4406 18.2717 47.1336 17.9648L44.1791 15.0103C44.0317 14.8629 43.9489 14.663 43.9489 14.4545C43.9489 14.2461 44.0317 14.0462 44.1791 13.8988L47.1336 10.9443C47.4406 10.6374 47.9382 10.6374 48.2451 10.9443ZM52.4479 19.1466C52.141 18.8397 52.141 18.3421 52.4479 18.0352C52.7548 17.7283 53.2524 17.7283 53.5594 18.0352L56.5139 20.9897C56.6613 21.1371 56.7441 21.337 56.7441 21.5455C56.7441 21.7539 56.6613 21.9538 56.5139 22.1012L53.5594 25.0557C53.2524 25.3626 52.7548 25.3626 52.4479 25.0557C52.141 24.7488 52.141 24.2512 52.4479 23.9443L54.0608 22.3314H45.3218C44.8878 22.3314 44.5359 21.9795 44.5359 21.5455C44.5359 21.1114 44.8878 20.7595 45.3218 20.7595H54.0608L52.4479 19.1466Z" fill="#64748b"/>
@@ -1228,7 +1239,7 @@ function Home({ navigateTo }) {
                     <span className="nav-label">Профиль</span>
                 </button>
 
-                <button className="nav-item" onClick={() => navigateTo('/history')}>
+                <button className="nav-item" onClick={() => handleNavigation('/history')}>
                     <span className="nav-icon-svg">
                         <svg width="101" height="53" viewBox="0 0 101 53" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fillRule="evenodd" clipRule="evenodd" d="M50.25 31C57.4297 31 63.25 25.1797 63.25 18C63.25 10.8203 57.4297 5 50.25 5C43.0703 5 37.25 10.8203 37.25 18C37.25 25.1797 43.0703 31 50.25 31ZM51.1955 9.72727C51.1955 9.20511 50.7722 8.78182 50.25 8.78182C49.7278 8.78182 49.3045 9.20511 49.3045 9.72727V18.2364H43.1591C42.6369 18.2364 42.2136 18.6597 42.2136 19.1818C42.2136 19.704 42.6369 20.1273 43.1591 20.1273H50.25C50.7722 20.1273 51.1955 19.704 51.1955 19.1818V9.72727Z" fill="#64748b"/>
@@ -1238,7 +1249,7 @@ function Home({ navigateTo }) {
                     <span className="nav-label">История</span>
                 </button>
                
-                <button className="nav-item" onClick={() => navigateTo('/help')}>
+                <button className="nav-item" onClick={() => handleNavigation('/help')}>
                     <span className="nav-icon-svg">
                         <svg width="101" height="53" viewBox="0 0 101 53" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fillRule="evenodd" clipRule="evenodd" d="M37.25 18C37.25 10.8203 43.0703 5 50.25 5C57.4297 5 63.25 10.8203 63.25 18C63.25 25.1797 57.4297 31 50.25 31C43.0703 31 37.25 25.1797 37.25 18ZM45.9167 18C45.9167 19.0833 44.8333 20.1667 43.75 20.1667C42.6667 20.1667 41.5833 19.0833 41.5833 18C41.5833 16.9167 42.6667 15.8333 43.75 15.8333C44.8333 15.8333 45.9167 16.9167 45.9167 18ZM52.4167 18C52.4167 19.0833 51.3333 20.1667 50.25 20.1667C49.1667 20.1667 48.0833 19.0833 48.0833 18C48.0833 16.9167 49.1667 15.8333 50.25 15.8333C51.3333 15.8333 52.4167 16.9167 52.4167 18ZM56.75 20.1667C57.8333 20.1667 58.9167 19.0833 58.9167 18C58.9167 16.9167 57.8333 15.8333 56.75 15.8333C55.6667 15.8333 54.5833 16.9167 54.5833 18C54.5833 19.0833 55.6667 20.1667 56.75 20.1667Z" fill="#64748b"/>

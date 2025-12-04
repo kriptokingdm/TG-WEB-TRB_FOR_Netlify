@@ -1,148 +1,111 @@
-import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import './App.css';
 import Home from './Home';
-import History from './History';
 import Profile from './Profile';
+import History from './History';
 import Help from './Help';
-
-function NavigationWrapper() {
-  const navigate = useNavigate();
-
-  return (
-    <Routes>
-      <Route path="/" element={<Home navigateTo={navigate} />} />
-      <Route path="/history" element={<History navigateTo={navigate} />} />
-      <Route path="/profile" element={<Profile navigateTo={navigate} />} />
-      <Route path="/help" element={<Help navigateTo={navigate} />} />
-      <Route path="*" element={<Home navigateTo={navigate} />} />
-    </Routes>
-  );
-}
+import TransitionWrapper from './TransitionWrapper';
 
 function App() {
-  useEffect(() => {
-    // Функция для применения темной темы
-    const applyDarkTheme = () => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      document.body.classList.add('dark-theme');
-      
-      // Добавляем кастомные переменные для темной темы
-      document.documentElement.style.setProperty('--tg-bg-color', '#0f0f0f');
-      document.documentElement.style.setProperty('--tg-text-color', '#ffffff');
-      document.documentElement.style.setProperty('--tg-secondary-bg', '#1a1a1a');
-      document.documentElement.style.setProperty('--tg-border-color', '#333333');
-      document.documentElement.style.setProperty('--tg-primary-color', '#3f51b5');
-      
-      console.log('🌙 Применена темная тема Telegram');
-    };
+    const [currentView, setCurrentView] = useState('/');
+    const [transitionDirection, setTransitionDirection] = useState('');
 
-    // Функция для применения светлой темы
-    const applyLightTheme = () => {
-      document.documentElement.setAttribute('data-theme', 'light');
-      document.body.classList.remove('dark-theme');
-      
-      // Возвращаем стандартные переменные
-      document.documentElement.style.setProperty('--tg-bg-color', '#ffffff');
-      document.documentElement.style.setProperty('--tg-text-color', '#000000');
-      document.documentElement.style.setProperty('--tg-secondary-bg', '#f5f5f5');
-      document.documentElement.style.setProperty('--tg-border-color', '#e0e0e0');
-      document.documentElement.style.setProperty('--tg-primary-color', '#007cff');
-      
-      console.log('☀️ Применена светлая тема Telegram');
-    };
-
-    // Проверяем разные варианты Telegram API
-    const initTelegram = () => {
-      if (window.Telegram && window.Telegram.WebApp) {
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    // Определяем направление перехода
+    const navigateTo = (view) => {
+        const views = ['/', '/profile', '/history', '/help'];
+        const currentIndex = views.indexOf(currentView);
+        const nextIndex = views.indexOf(view);
         
-        console.log('Telegram WebApp initialized');
-        console.log('Theme params:', tg.themeParams);
-        
-        // Определяем и применяем тему Telegram
-        if (tg.colorScheme === 'dark') {
-          applyDarkTheme();
+        if (nextIndex > currentIndex) {
+            setTransitionDirection('slide-left');
+        } else if (nextIndex < currentIndex) {
+            setTransitionDirection('slide-right');
         } else {
-          applyLightTheme();
+            setTransitionDirection('');
         }
         
-        // Подписываемся на изменение темы
-        tg.onEvent('themeChanged', () => {
-          console.log('Theme changed:', tg.colorScheme);
-          if (tg.colorScheme === 'dark') {
-            applyDarkTheme();
-          } else {
-            applyLightTheme();
-          }
+        setCurrentView(view);
+        
+        // Прокрутка вверх при смене страницы
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
         });
+    };
+
+    const renderView = () => {
+        const pageProps = { navigateTo };
         
-        // Используем цвета из Telegram если доступны
-        if (tg.themeParams?.bg_color) {
-          document.documentElement.style.setProperty('--tg-bg-color', tg.themeParams.bg_color);
+        switch (currentView) {
+            case '/':
+                return <Home {...pageProps} />;
+            case '/profile':
+                return <Profile {...pageProps} />;
+            case '/history':
+                return <History {...pageProps} />;
+            case '/help':
+                return <Help {...pageProps} />;
+            default:
+                return <Home {...pageProps} />;
         }
-        if (tg.themeParams?.text_color) {
-          document.documentElement.style.setProperty('--tg-text-color', tg.themeParams.text_color);
-        }
-        if (tg.themeParams?.secondary_bg_color) {
-          document.documentElement.style.setProperty('--tg-secondary-bg', tg.themeParams.secondary_bg_color);
-        }
+    };
+
+    // Инициализация Telegram WebApp
+    useEffect(() => {
+        const initTelegram = () => {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+                tg.enableClosingConfirmation();
+                
+                // Устанавливаем цвет фона
+                tg.setBackgroundColor('#f8fafc');
+                tg.setHeaderColor('secondary_bg_color');
+                
+                console.log('🤖 Telegram WebApp инициализирован');
+                
+                // Устанавливаем тему в зависимости от Telegram
+                if (tg.colorScheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    tg.setBackgroundColor('#0f172a');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                
+                // Слушаем изменения темы
+                tg.onEvent('themeChanged', () => {
+                    if (tg.colorScheme === 'dark') {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        tg.setBackgroundColor('#0f172a');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        tg.setBackgroundColor('#f8fafc');
+                    }
+                });
+            } else {
+                console.log('⚠️ Telegram WebApp не найден, работаем в браузере');
+            }
+        };
+
+        initTelegram();
         
-      } else if (window.TelegramWebviewProxy) {
-        console.log('Telegram Webview Proxy detected');
-        // Для Webview проверяем prefers-color-scheme
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          applyDarkTheme();
+        // Проверяем сохраненную тему
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
         }
-      } else if (window.TelegramGameProxy) {
-        console.log('Telegram Game Proxy detected');
-      } else {
-        console.log('Running in browser mode');
-        // Для браузера проверяем системную тему
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          applyDarkTheme();
-        }
-      }
-    };
+    }, []);
 
-    // Слушатель изменения системной темы (для браузера)
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleSystemThemeChange = (e) => {
-      if (!window.Telegram?.WebApp) { // Только если не в Telegram
-        if (e.matches) {
-          applyDarkTheme();
-        } else {
-          applyLightTheme();
-        }
-      }
-    };
-
-    // Инициализируем
-    initTelegram();
-    
-    // Подписываемся на изменение системной темы
-    if (darkModeMediaQuery.addEventListener) {
-      darkModeMediaQuery.addEventListener('change', handleSystemThemeChange);
-    } else { // Для старых браузеров
-      darkModeMediaQuery.addListener(handleSystemThemeChange);
-    }
-
-    // Очистка при размонтировании
-    return () => {
-      if (darkModeMediaQuery.removeEventListener) {
-        darkModeMediaQuery.removeEventListener('change', handleSystemThemeChange);
-      } else if (darkModeMediaQuery.removeListener) {
-        darkModeMediaQuery.removeListener(handleSystemThemeChange);
-      }
-    };
-  }, []);
-
-  return (
-    <Router>
-      <NavigationWrapper />
-    </Router>
-  );
+    return (
+        <div className="App">
+            <TransitionWrapper location={currentView}>
+                <div className={`page-content ${transitionDirection}`}>
+                    {renderView()}
+                </div>
+            </TransitionWrapper>
+        </div>
+    );
 }
 
 export default App;

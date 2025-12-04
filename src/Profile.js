@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './Profile.css';
 
 // Базовый URL твоего API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://87.242.106.114:3001';
+const API_BASE_URL = 'https://87.242.106.114:3001';
 
 function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);

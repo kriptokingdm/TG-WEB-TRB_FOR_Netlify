@@ -747,7 +747,7 @@ function Home({ navigateTo }) {
                                 fetchExchangeRates();
                             }}
                         >
-                            <span className="mode-simple-text">USDT → RUB</span>
+                            <span className="mode-simple-text">ПокупкаB</span>
                         </button>
                         <button
                             className={`mode-simple-button ${!isBuyMode ? 'active' : ''}`}
@@ -759,7 +759,7 @@ function Home({ navigateTo }) {
                                 fetchExchangeRates();
                             }}
                         >
-                            <span className="mode-simple-text">RUB → USDT</span>
+                            <span className="mode-simple-text">Продажа</span>
                         </button>
                     </div>
 

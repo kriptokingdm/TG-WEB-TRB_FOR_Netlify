@@ -1294,3 +1294,393 @@
         text-align: center;
     }
 }
+
+/* ====================== */
+/* НОВЫЕ СТИЛИ ДЛЯ СИСТЕМЫ НАЧИСЛЕНИЙ */
+/* ====================== */
+
+/* Детальная статистика заработка */
+.detailed-earnings-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.detailed-earnings-section h4 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+.earnings-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.earning-source {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.earning-source.total {
+    border-left-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.earning-icon {
+    font-size: 24px;
+    margin-right: 12px;
+    width: 40px;
+    text-align: center;
+}
+
+.earning-details {
+    flex: 1;
+}
+
+.earning-title {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.earning-amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.earning-source.total .earning-amount {
+    color: #4CAF50;
+}
+
+.earning-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* История транзакций */
+.transactions-history-section {
+    margin: 20px 0;
+}
+
+.transactions-history-section h4 {
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s;
+}
+
+.transaction-item:hover {
+    transform: translateX(5px);
+    border-color: var(--primary-color);
+}
+
+.transaction-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.transaction-amount {
+    font-weight: bold;
+    color: #4CAF50;
+    font-size: 16px;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Тестовая сделка */
+.test-transaction-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    text-align: center;
+}
+
+.test-transaction-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto 10px;
+    transition: all 0.3s ease;
+}
+
+.test-transaction-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.test-transaction-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ====================== */
+/* ОБНОВЛЕННАЯ РЕФЕРАЛЬНАЯ СТАТИСТИКА */
+/* ====================== */
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .referral-stats {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.referral-stat-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.referral-stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #667eea;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+[data-theme="dark"] .referral-stat-value {
+    color: #818cf8;
+}
+
+.referral-stat-label {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+[data-theme="dark"] .referral-stat-label {
+    color: #94a3b8;
+}
+
+/* ====================== */
+/* ОПАСНАЯ ЗОНА (уже есть, но на всякий случай) */
+/* ====================== */
+
+.danger-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.danger-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+}
+
+.danger-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* ====================== */
+/* АДАПТИВНОСТЬ ДЛЯ НОВЫХ ЭЛЕМЕНТОВ */
+/* ====================== */
+
+@media (max-width: 768px) {
+    .referral-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .referral-stat-value {
+        font-size: 16px;
+    }
+    
+    .referral-stat-label {
+        font-size: 9px;
+    }
+    
+    .detailed-earnings-section {
+        padding: 12px;
+    }
+    
+    .earning-source {
+        padding: 10px;
+    }
+    
+    .earning-amount {
+        font-size: 16px;
+    }
+    
+    .test-transaction-btn {
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+    
+    .transaction-item {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .transaction-amount {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .referral-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .earnings-breakdown {
+        gap: 8px;
+    }
+    
+    .earning-source {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 10px;
+    }
+    
+    .earning-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .earning-title {
+        font-size: 14px;
+    }
+    
+    .earning-amount {
+        font-size: 18px;
+    }
+    
+    .test-transaction-btn {
+        width: 100%;
+        font-size: 12px;
+    }
+    
+    .transaction-item {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+/* ====================== */
+/* ПЕРЕМЕННЫЕ ДЛЯ ТЕМ (добавь в начало файла если нет) */
+/* ====================== */
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #48BB78;
+    --danger-color: #ff6b6b;
+    --warning-color: #F6AD55;
+    --bg-color: #ffffff;
+    --card-bg: #ffffff;
+    --text-color: #2d3748;
+    --text-secondary: #64748b;
+    --text-tertiary: #94a3b8;
+    --border-color: #e2e8f0;
+}
+
+[data-theme="dark"] {
+    --primary-color: #818cf8;
+    --secondary-color: #7c3aed;
+    --success-color: #10B981;
+    --danger-color: #F87171;
+    --warning-color: #FBBF24;
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --border-color: #334155;
+}
+
+/* ====================== */
+/* АНИМАЦИИ */
+/* ====================== */
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.detailed-earnings-section,
+.transactions-history-section,
+.test-transaction-section {
+    animation: fadeIn 0.5s ease;
+}

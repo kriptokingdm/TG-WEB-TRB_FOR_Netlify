@@ -1,6 +1,36 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
+
+const [testTransactionAmount, setTestTransactionAmount] = useState('10000');
+const testReferralTransaction = async () => {
+    try {
+        const userId = getUserId();
+        const amount = parseFloat(testTransactionAmount) || 10000;
+
+        const response = await fetch(`${API_BASE_URL}/api/transaction/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                amount: amount,
+                currency: 'RUB',
+                type: 'exchange'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(`✅ Сделка зарегистрирована!\nВаш реферер получил: ${data.data.commission?.amount || 0} ₽ (0.5%)`);
+            // Обновляем статистику
+            loadReferralStats();
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка регистрации сделки');
+    }
+};
 // Базовый URL твоего API
 const API_BASE_URL = 'http://87.242.106.114';
 
@@ -598,6 +628,7 @@ function Profile({ navigateTo }) {
                         </div>
                     </div>
 
+                    // Заменить блок referral-stats на:
                     <div className="referral-stats">
                         <div className="referral-stat-item">
                             <div className="referral-stat-value">{referralStats.totalReferrals}</div>
@@ -817,11 +848,8 @@ function Profile({ navigateTo }) {
                             <div className="referral-info">
                                 <div className="info-icon">💡</div>
                                 <div className="info-text">
-                                    <strong>Как это работает:</strong>
-                                    <br />1. Приглашайте друзей по вашей ссылке
-                                    <br />2. Они делают обмены USDT/RUB
-                                    <br />3. Вы получаете 0.5% от каждой их сделки
-                                    <br />4. Выводите заработанные средства
+                                    <strong>Как это работает:</strong> Приглашайте друзей по ссылке.
+                                    Вы получаете <strong>0.5%</strong> от суммы каждой сделки ваших рефералов.
                                 </div>
                             </div>
 
@@ -847,12 +875,12 @@ function Profile({ navigateTo }) {
                 </div>
 
                 {/* Настройки */}
-                
+
 
                 {/* Опасная зона */}
             </div>
 
-           
+
 
             {/* Навигация */}
             <div className="bottom-nav">

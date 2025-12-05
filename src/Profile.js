@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './Profile.css';
 
 // Базовый URL API - ИСПРАВЛЕННЫЙ URL
-const API_BASE_URL = 'http://87.242.106.114'; // Или https:// если настроить SSL
+const API_BASE_URL = 'https://87.242.106.114'; // Или https:// если настроить SSL
 
 function Profile({ navigateTo }) {
     console.log('🚀 Profile компонент загружен, API URL:', API_BASE_URL);

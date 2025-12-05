@@ -1427,3 +1427,119 @@ text
 [data-theme="dark"] .currency-card-side {
 background: rgba(102, 126, 234, 0.15);
 }
+
+/* Примеры курсов */
+.rate-examples-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.examples-title {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.examples-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.examples-header {
+    font-size: 13px;
+    color: #475569;
+    font-weight: 600;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.example-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.example-amount {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.example-rate {
+    font-size: 13px;
+    font-weight: 600;
+    color: #007CFF;
+}
+
+.examples-note {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Информация о курсе */
+.rate-info-section {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rate-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.rate-label {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.rate-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #007CFF;
+}
+
+.rate-info-item.discount .rate-value {
+    color: #10b981;
+}
+
+.rate-info-item.premium .rate-value {
+    color: #f59e0b;
+}
+
+/* Тема dark */
+[data-theme="dark"] .rate-examples-section {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(71, 85, 105, 0.3);
+}
+
+[data-theme="dark"] .examples-header {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .example-amount {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .rate-info-section {
+    background: rgba(30, 41, 59, 0.3);
+    border-color: rgba(71, 85, 105, 0.2);
+}

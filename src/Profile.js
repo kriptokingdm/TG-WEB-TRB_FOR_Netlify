@@ -179,10 +179,9 @@ function Profile({ navigateTo }) {
             const testAmount = 10000;
             
             showMessage('info', `Регистрирую тестовую сделку на ${testAmount} ₽...`);
-            
             const response = await fetch(`${API_BASE_URL}/api/transaction/register`, {
                 method: 'POST',
-                headers: { 'Content-Type: 'application/json' },
+                headers: { 'Content-Type': 'application/json' }, // ← здесь исправить
                 body: JSON.stringify({
                     userId: userId,
                     amount: testAmount,
@@ -190,7 +189,6 @@ function Profile({ navigateTo }) {
                     type: 'exchange'
                 })
             });
-            
             const data = await response.json();
             
             if (data.success) {

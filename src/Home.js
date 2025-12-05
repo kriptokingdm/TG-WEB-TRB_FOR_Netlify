@@ -4,15 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Конфигурация URL
-const getServerUrl = () => {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://87.242.106.114';
-  } else {
-    return 'http://87.242.106.114';
-  }
-};
-
-const serverUrl = getServerUrl();
+const serverUrl = 'http://87.242.106.114';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -20,26 +12,10 @@ function Home({ navigateTo }) {
     const [amount, setAmount] = useState('');
     const [error, setError] = useState('');
     
-    // Состояния для динамических курсов
-    const [ratesData, setRatesData] = useState({
-        buy_rate: 92.50,
-        sell_rate: 93.50,
-        base_buy: 92.50,
-        base_sell: 93.50,
-        adjustment_buy: 0,
-        adjustment_sell: 0,
-        examples: {
-            buy: [
-                { amount: 10, rate: 92.03 },
-                { amount: 100, rate: 91.11 },
-                { amount: 1000, rate: 89.73 }
-            ],
-            sell: [
-                { amount: 10, rate: 93.78 },
-                { amount: 100, rate: 94.44 },
-                { amount: 1000, rate: 95.37 }
-            ]
-        }
+    // ПРОСТЫЕ КУРСЫ
+    const [rates, setRates] = useState({
+        buy: 92.50,
+        sell: 93.50
     });
 
     // Состояния для чата
@@ -97,12 +73,9 @@ function Home({ navigateTo }) {
     // Состояние инициализации пользователя
     const [userInitialized, setUserInitialized] = useState(false);
 
-    // ====================== //
-    // ФУНКЦИИ НАВИГАЦИИ С АНИМАЦИЯМИ
-    // ====================== //
+    // ====================== ФУНКЦИИ ======================
 
     const handleNavigation = (path) => {
-        // Небольшая задержка для визуальной обратной связи
         setTimeout(() => {
             navigateTo(path);
         }, 50);
@@ -116,11 +89,11 @@ function Home({ navigateTo }) {
 
         if (isBuyMode) {
             // Покупка USDT за RUB: RUB → USDT
-            const rate = ratesData.buy_rate || 92.50;
+            const rate = rates.buy || 92.50;
             return (numAmount / rate).toFixed(2);
         } else {
             // Продажа USDT за RUB: USDT → RUB
-            const rate = ratesData.sell_rate || 93.50;
+            const rate = rates.sell || 93.50;
             return (numAmount * rate).toFixed(2);
         }
     };
@@ -137,7 +110,7 @@ function Home({ navigateTo }) {
         // Инициализируем пользователя
         initializeUser();
         
-        // Загружаем примеры курсов
+        // Загружаем курсы
         fetchExchangeRates();
 
         // Периодическая проверка ордеров
@@ -152,24 +125,6 @@ function Home({ navigateTo }) {
         };
     }, []);
 
-    // Проверяем активные ордеры после инициализации пользователя
-    useEffect(() => {
-        if (userInitialized) {
-            checkActiveOrders();
-        }
-    }, [userInitialized]);
-
-    // Загрузка курсов при изменении суммы
-    useEffect(() => {
-        if (amount && userInitialized && !hasActiveOrder) {
-            const debounceTimer = setTimeout(() => {
-                fetchExchangeRates();
-            }, 300); // Дебаунс 300мс
-                
-            return () => clearTimeout(debounceTimer);
-        }
-    }, [amount, isBuyMode, userInitialized, hasActiveOrder]);
-
     const showMessage = (type, text) => {
         setMessage({ type, text });
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
@@ -181,13 +136,11 @@ function Home({ navigateTo }) {
             const savedPayments = localStorage.getItem('userPaymentMethods');
             if (savedPayments) {
                 setPaymentMethods(JSON.parse(savedPayments));
-                console.log('✅ Реквизиты загружены');
             }
 
             const savedCryptoAddresses = localStorage.getItem('userCryptoAddresses');
             if (savedCryptoAddresses) {
                 setCryptoAddresses(JSON.parse(savedCryptoAddresses));
-                console.log('✅ Адреса загружены');
             }
 
             const savedSelected = localStorage.getItem('selectedPaymentMethod');
@@ -208,7 +161,6 @@ function Home({ navigateTo }) {
     const initializeUser = () => {
         console.log('🔧 Инициализация пользователя Telegram...');
         
-        // Проверяем Telegram WebApp
         if (window.Telegram?.WebApp) {
             console.log('🤖 Telegram WebApp доступен');
             const tg = window.Telegram.WebApp;
@@ -216,18 +168,14 @@ function Home({ navigateTo }) {
             tg.ready();
             tg.expand();
             
-            // Пробуем получить пользователя
             const telegramUser = tg.initDataUnsafe?.user;
             if (telegramUser) {
                 console.log('✅ Telegram пользователь найден:', telegramUser);
                 saveUserData(telegramUser);
                 return;
             }
-            
-            console.log('⚠️ Telegram пользователь не найден в initDataUnsafe');
         }
         
-        // Проверяем сохраненные данные
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             try {
@@ -240,7 +188,6 @@ function Home({ navigateTo }) {
             }
         }
         
-        // Создаем тестового пользователя
         console.log('⚠️ Создаем тестового пользователя');
         const testUser = {
             id: 7879866656,
@@ -255,10 +202,8 @@ function Home({ navigateTo }) {
     const saveUserData = (telegramUser) => {
         console.log('💾 Сохранение пользователя:', telegramUser);
         
-        // Сохраняем Telegram данные
         localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
         
-        // Создаем пользователя для приложения
         const appUser = {
             id: `user_${telegramUser.id}`,
             telegramId: telegramUser.id,
@@ -276,81 +221,12 @@ function Home({ navigateTo }) {
         setUserInitialized(true);
     };
 
-    // Функция проверки активных ордеров
-    const checkActiveOrders = async () => {
-        if (!userInitialized) {
-            console.log('⏳ Пользователь не инициализирован, пропускаем проверку');
-            return;
-        }
-
-        try {
-            const userData = JSON.parse(localStorage.getItem('currentUser'));
-            if (!userData || !userData.id) {
-                console.log('❌ Данные пользователя не найдены');
-                return;
-            }
-
-            const userId = userData.id;
-            console.log('🔍 Проверяем активные ордеры для:', userId);
-
-            const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('📦 Данные ордеров:', data);
-                
-                // Проверяем разные форматы ответа
-                let ordersList = [];
-                if (data.orders) {
-                    ordersList = data.orders;
-                } else if (Array.isArray(data)) {
-                    ordersList = data;
-                }
-                
-                const activeOrders = ordersList.filter(order =>
-                    order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
-                );
-
-                console.log('🔥 Активных ордеров:', activeOrders.length);
-                setActiveOrdersCount(activeOrders.length);
-                setHasActiveOrder(activeOrders.length > 0);
-            } else {
-                console.log('ℹ️ Нет активных ордеров или ошибка сервера:', response.status);
-                setHasActiveOrder(false);
-                setActiveOrdersCount(0);
-            }
-        } catch (error) {
-            console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
-            // Не блокируем пользователя при ошибке сети
-            setHasActiveOrder(false);
-        }
-    };
-
     // Загрузка курсов с бекенда
     const fetchExchangeRates = async () => {
         try {
-            // Определяем сумму для запроса
-            let requestAmount = amount ? parseFloat(amount) : 0;
+            console.log('📡 Запрашиваем курсы...');
             
-            // Для покупки конвертируем RUB в USDT для расчета
-            if (isBuyMode && amount) {
-                requestAmount = parseFloat(amount) / 92.50;
-            }
-            
-            // Запрашиваем курсы
-            const url = amount && requestAmount > 0
-                ? `${serverUrl}/api/rates?amount=${requestAmount}`
-                : `${serverUrl}/api/rates/examples`;
-            
-            console.log('📡 Запрашиваем курсы по URL:', url);
-            
-            const response = await fetch(url, {
+            const response = await fetch(`${serverUrl}/api/exchange-rate`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -363,33 +239,16 @@ function Home({ navigateTo }) {
                 console.log('✅ Курсы получены:', data);
                 
                 if (data.success) {
-                    // Если запросили курсы для конкретной суммы
-                    if (amount && requestAmount > 0) {
-                        const dynamicRate = data.data['USDT/RUB'];
-                        setRatesData({
-                            buy_rate: dynamicRate.buy_rate,
-                            sell_rate: dynamicRate.sell_rate,
-                            base_buy: dynamicRate.base_buy,
-                            base_sell: dynamicRate.base_sell,
-                            adjustment_buy: dynamicRate.adjustment_buy,
-                            adjustment_sell: dynamicRate.adjustment_sell,
-                            examples: data.data['USDT/RUB']?.examples || ratesData.examples
-                        });
-                    } else {
-                        // Если запросили примеры
-                        setRatesData(prev => ({
-                            ...prev,
-                            examples: data.data['USDT/RUB']
-                        }));
-                    }
+                    setRates({
+                        buy: data.buy,
+                        sell: data.sell
+                    });
                 }
             } else {
-                console.log('⚠️ API недоступен, используем статические курсы');
-                // Fallback на статические курсы
+                console.log('⚠️ Используем стандартные курсы');
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки курсов:', error.message);
-            // Fallback на статические курсы
         }
     };
 
@@ -432,7 +291,7 @@ function Home({ navigateTo }) {
     };
 
     const getCurrentRateForDisplay = () => {
-        return isBuyMode ? ratesData.buy_rate : ratesData.sell_rate;
+        return isBuyMode ? rates.buy : rates.sell;
     };
 
     const formatRate = (rate) => {
@@ -455,7 +314,6 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 16) value = value.slice(0, 16);
         
-        // Форматируем как 0000 0000 0000 0000
         let formatted = '';
         for (let i = 0; i < value.length; i++) {
             if (i > 0 && i % 4 === 0) {
@@ -464,7 +322,6 @@ function Home({ navigateTo }) {
             formatted += value[i];
         }
 
-        // Валидация номера карты
         let cardNumberError = '';
         if (value.length > 0 && value.length < 16) {
             cardNumberError = 'Номер карты должен содержать 16 цифр';
@@ -481,7 +338,6 @@ function Home({ navigateTo }) {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);
         
-        // Форматируем как +7 (XXX) XXX-XX-XX
         let formatted = value;
         if (value.length > 0) {
             formatted = '+7';
@@ -499,7 +355,6 @@ function Home({ navigateTo }) {
             }
         }
 
-        // Валидация номера телефона
         let cardNumberError = '';
         if (value.length > 0 && value.length < 11) {
             cardNumberError = 'Введите полный номер телефона (11 цифр)';
@@ -513,7 +368,6 @@ function Home({ navigateTo }) {
     };
 
     const handleAddPayment = () => {
-        // Определяем тип реквизитов
         const isSBP = newPayment.bankName === 'СБП (Система быстрых платежей)';
         const number = isSBP ? 
             newPayment.phoneNumber.replace(/\D/g, '') : 
@@ -541,7 +395,6 @@ function Home({ navigateTo }) {
         setSelectedPayment(newPaymentMethod);
         showMessage('success', '✅ Реквизиты добавлены');
         
-        // Сбрасываем форму
         setNewPayment({
             bankName: '',
             cardNumber: '',
@@ -565,7 +418,6 @@ function Home({ navigateTo }) {
     };
 
     const handleAddCryptoAddress = () => {
-        // Простая валидация адреса
         if (!newCryptoAddress.address || newCryptoAddress.address.length < 10) {
             setNewCryptoAddress(prev => ({
                 ...prev,
@@ -585,7 +437,6 @@ function Home({ navigateTo }) {
         setSelectedCryptoAddress(newAddress);
         showMessage('success', '✅ Адрес кошелька добавлен');
         
-        // Сбрасываем форму
         setNewCryptoAddress({
             address: '',
             network: 'ERC20',
@@ -676,7 +527,7 @@ function Home({ navigateTo }) {
             const exchangeData = {
                 type: isBuyMode ? 'buy' : 'sell',
                 amount: parseFloat(amount),
-                rate: isBuyMode ? ratesData.buy_rate : ratesData.sell_rate,
+                rate: isBuyMode ? rates.buy : rates.sell,
                 userId: userData.id,
                 telegramId: telegramUser.id || userData.telegramId,
                 username: telegramUser.username || userData.username || 'Пользователь',
@@ -734,6 +585,60 @@ function Home({ navigateTo }) {
         } catch (error) {
             console.error('❌ Ошибка обмена:', error);
             showMessage('error', '❌ Ошибка при выполнении обмена. Проверьте подключение к серверу.');
+        }
+    };
+
+    // Функция проверки активных ордеров
+    const checkActiveOrders = async () => {
+        if (!userInitialized) {
+            console.log('⏳ Пользователь не инициализирован, пропускаем проверку');
+            return;
+        }
+
+        try {
+            const userData = JSON.parse(localStorage.getItem('currentUser'));
+            if (!userData || !userData.id) {
+                console.log('❌ Данные пользователя не найдены');
+                return;
+            }
+
+            const userId = userData.id;
+            console.log('🔍 Проверяем активные ордеры для:', userId);
+
+            const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📦 Данные ордеров:', data);
+                
+                let ordersList = [];
+                if (data.orders) {
+                    ordersList = data.orders;
+                } else if (Array.isArray(data)) {
+                    ordersList = data;
+                }
+                
+                const activeOrders = ordersList.filter(order =>
+                    order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
+                );
+
+                console.log('🔥 Активных ордеров:', activeOrders.length);
+                setActiveOrdersCount(activeOrders.length);
+                setHasActiveOrder(activeOrders.length > 0);
+            } else {
+                console.log('ℹ️ Нет активных ордеров или ошибка сервера:', response.status);
+                setHasActiveOrder(false);
+                setActiveOrdersCount(0);
+            }
+        } catch (error) {
+            console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
+            setHasActiveOrder(false);
         }
     };
 
@@ -912,52 +817,15 @@ function Home({ navigateTo }) {
                             </div>
                         </div>
 
-                        {/* Примеры курсов */}
-                        <div className="rate-examples-section">
-                            <h4 className="examples-title">📊 Примеры курсов:</h4>
-                            <div className="examples-grid">
-                                <div className="examples-column">
-                                    <div className="examples-header">Покупка USDT</div>
-                                    {ratesData.examples?.buy?.map((item, index) => (
-                                        <div key={index} className="example-item">
-                                            <span className="example-amount">{item.amount}$</span>
-                                            <span className="example-rate">{item.rate} ₽</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="examples-column">
-                                    <div className="examples-header">Продажа USDT</div>
-                                    {ratesData.examples?.sell?.map((item, index) => (
-                                        <div key={index} className="example-item">
-                                            <span className="example-amount">{item.amount}$</span>
-                                            <span className="example-rate">{item.rate} ₽</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="examples-note">
-                                * Курс зависит от суммы сделки. Чем больше сумма — выгоднее курс.
-                            </div>
-                        </div>
-
-                        {/* Информация о текущем курсе */}
+                        {/* Информация о курсе */}
                         <div className="rate-info-section">
                             <div className="rate-info-item">
                                 <span className="rate-label">Текущий курс:</span>
                                 <span className="rate-value">{formatRate(getCurrentRateForDisplay())} ₽</span>
                             </div>
-                            {amount && ratesData.adjustment_buy > 0 && isBuyMode && (
-                                <div className="rate-info-item discount">
-                                    <span className="rate-label">Ваша скидка:</span>
-                                    <span className="rate-value">-{(ratesData.adjustment_buy * 100).toFixed(1)}%</span>
-                                </div>
-                            )}
-                            {amount && ratesData.adjustment_sell > 0 && !isBuyMode && (
-                                <div className="rate-info-item premium">
-                                    <span className="rate-label">Ваша надбавка:</span>
-                                    <span className="rate-value">+{(ratesData.adjustment_sell * 100).toFixed(1)}%</span>
-                                </div>
-                            )}
+                            <div className="rate-info-note">
+                                Курс обновляется администратором в реальном времени
+                            </div>
                         </div>
                     </div>
 

@@ -3,9 +3,8 @@ import './Profile.css';
 
 // Базовый URL API - ИСПРАВЛЕННЫЙ URL
 // ИЛИ если хочешь переключаться между локальной разработкой и продакшеном:
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://87.242.106.114' 
-  : 'https://corsproxy.io/?http://87.242.106.114'; // Или https:// если настроить SSL
+const API_BASE_URL = 'https://api.allorigins.win/raw?url=http://87.242.106.114';
+
 
 function Profile({ navigateTo }) {
     console.log('🚀 Profile компонент загружен, API URL:', API_BASE_URL);

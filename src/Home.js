@@ -4,7 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Конфигурация URL
-const serverUrl = 'http://87.242.106.114';
+const serverUrl = 'https://api.allorigins.win/raw?url=https://87.242.106.114';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -80,6 +80,16 @@ function Home({ navigateTo }) {
             navigateTo(path);
         }, 50);
     };
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!userInitialized) {
+                console.log('⏳ Telegram не ответил, создаем пользователя принудительно');
+                createTestUser();
+            }
+        }, 3000); // 3 секунды ждем Telegram
+        
+        return () => clearTimeout(timer);
+    }, [userInitialized]);
 
     // Функция для расчета конвертированной суммы
     const calculateConvertedAmount = () => {
@@ -158,45 +168,66 @@ function Home({ navigateTo }) {
     };
 
     // Инициализация пользователя Telegram
-    const initializeUser = () => {
-        console.log('🔧 Инициализация пользователя Telegram...');
+    // Инициализация пользователя Telegram
+const initializeUser = () => {
+    console.log('🔧 Инициализация пользователя Telegram...');
+    
+    // Сначала пробуем Telegram WebApp
+    if (window.Telegram?.WebApp) {
+        console.log('🤖 Telegram WebApp доступен');
+        const tg = window.Telegram.WebApp;
         
-        if (window.Telegram?.WebApp) {
-            console.log('🤖 Telegram WebApp доступен');
-            const tg = window.Telegram.WebApp;
-            
-            tg.ready();
-            tg.expand();
-            
+        tg.ready();
+        tg.expand();
+        
+        // Даем время на инициализацию
+        setTimeout(() => {
             const telegramUser = tg.initDataUnsafe?.user;
             if (telegramUser) {
                 console.log('✅ Telegram пользователь найден:', telegramUser);
                 saveUserData(telegramUser);
-                return;
-            }
-        }
-        
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            try {
-                const userData = JSON.parse(savedUser);
-                console.log('✅ Пользователь из localStorage:', userData);
                 setUserInitialized(true);
                 return;
-            } catch (e) {
-                console.error('❌ Ошибка парсинга localStorage:', e);
             }
-        }
+            
+            // Если Telegram не дал данные, используем тестовые
+            console.log('⚠️ Telegram данные не получены, используем тестового');
+            createTestUser();
+        }, 500);
         
-        console.log('⚠️ Создаем тестового пользователя');
-        const testUser = {
-            id: 7879866656,
-            username: 'TERBCEO',
-            first_name: 'G',
-            last_name: ''
-        };
-        saveUserData(testUser);
+        return;
+    }
+    
+    // Пробуем localStorage
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const userData = JSON.parse(savedUser);
+            console.log('✅ Пользователь из localStorage:', userData);
+            setUserInitialized(true);
+            return;
+        } catch (e) {
+            console.error('❌ Ошибка парсинга localStorage:', e);
+        }
+    }
+    
+    // Создаем тестового пользователя
+    createTestUser();
+};
+
+// ДОБАВЬ ЭТУ ФУНКЦИЮ ПОСЛЕ initializeUser:
+const createTestUser = () => {
+    console.log('⚠️ Создаем тестового пользователя');
+    const testUser = {
+        id: 7879866656,
+        username: 'TERBCEO',
+        first_name: 'G',
+        last_name: ''
     };
+    
+    saveUserData(testUser);
+    setUserInitialized(true);
+};
 
     // Сохранение данных пользователя
     const saveUserData = (telegramUser) => {
@@ -226,7 +257,7 @@ function Home({ navigateTo }) {
         try {
             console.log('📡 Запрашиваем курсы...');
             
-            const response = await fetch(`${serverUrl}/api/exchange-rate`, {
+            const response = await fetch('https://api.allorigins.win/raw?url=https://87.242.106.114/api/exchange-rate', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -470,39 +501,95 @@ function Home({ navigateTo }) {
     };
 
     // Проверка готовности к обмену
-    const isExchangeReady = () => {
-        if (!userInitialized) {
-            console.log('⚠️ Пользователь не инициализирован');
-            return false;
-        }
+    // Проверка готовности к обмену
+const isExchangeReady = () => {
+    console.log('🔍 Проверка готовности к обмену...');
+    console.log('• userInitialized:', userInitialized);
+    console.log('• amount:', amount);
+    console.log('• error:', error);
+    console.log('• isBuyMode:', isBuyMode);
+    console.log('• selectedPayment:', selectedPayment);
+    console.log('• selectedCryptoAddress:', selectedCryptoAddress);
+    
+    // Если пользователь не инициализирован
+    if (!userInitialized) {
+        console.log('⏳ Пользователь не инициализирован, создаем тестового...');
         
-        if (!amount || error) {
-            console.log('⚠️ Неверная сумма или ошибка');
+        // Создаем тестового пользователя сразу
+        createTestUser();
+        
+        // Возвращаем false, но пользователь уже создан
+        // В следующем клике будет true
+        return false;
+    }
+    
+    // Проверяем сумму
+    if (!amount || error) {
+        console.log('⚠️ Неверная сумма или ошибка ввода');
+        return false;
+    }
+
+    // Проверяем корректность суммы
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount)) {
+        console.log('⚠️ Сумма не является числом');
+        return false;
+    }
+
+    // Проверяем лимиты в зависимости от режима
+    if (isBuyMode) {
+        if (numAmount < MIN_RUB) {
+            console.log(`⚠️ Сумма меньше минимальной: ${numAmount} < ${MIN_RUB}`);
             return false;
         }
-
-        const numAmount = parseFloat(amount);
-        if (isBuyMode) {
-            if (numAmount < MIN_RUB || numAmount > MAX_RUB) return false;
-        } else {
-            if (numAmount < MIN_USDT || numAmount > MAX_USDT) return false;
+        if (numAmount > MAX_RUB) {
+            console.log(`⚠️ Сумма больше максимальной: ${numAmount} > ${MAX_RUB}`);
+            return false;
         }
-
-        if (isBuyMode) {
-            if (!selectedCryptoAddress) {
-                console.log('⚠️ Не выбран крипто-адрес');
-                return false;
-            }
-        } else {
-            if (!selectedPayment) {
-                console.log('⚠️ Не выбран платежный метод');
-                return false;
-            }
+    } else {
+        if (numAmount < MIN_USDT) {
+            console.log(`⚠️ Сумма меньше минимальной: ${numAmount} < ${MIN_USDT}`);
+            return false;
         }
+        if (numAmount > MAX_USDT) {
+            console.log(`⚠️ Сумма больше максимальной: ${numAmount} > ${MAX_USDT}`);
+            return false;
+        }
+    }
 
-        console.log('✅ Все готово к обмену');
-        return true;
-    };
+    // Проверяем реквизиты в зависимости от режима
+    if (isBuyMode) {
+        if (!selectedCryptoAddress) {
+            console.log('⚠️ Не выбран крипто-адрес для получения USDT');
+            return false;
+        }
+    } else {
+        if (!selectedPayment) {
+            console.log('⚠️ Не выбран платежный метод для получения RUB');
+            return false;
+        }
+    }
+
+    // Проверяем наличие активных ордеров
+    if (hasActiveOrder) {
+        console.log('⚠️ Есть активный ордер, нельзя создать новый');
+        return false;
+    }
+
+    // Проверяем наличие реквизитов
+    if (isBuyMode && cryptoAddresses.length === 0) {
+        console.log('⚠️ Нет добавленных крипто-адресов');
+        return false;
+    }
+
+    if (!isBuyMode && paymentMethods.length === 0) {
+        console.log('⚠️ Нет добавленных платежных методов');
+        return false;
+    }
+
+    console.log('✅ Все проверки пройдены, обмен возможен!');
+    return true;
+};
 
     // Обработчик обмена
     const handleExchange = async () => {
@@ -540,7 +627,7 @@ function Home({ navigateTo }) {
 
             console.log('📋 Данные заявки:', exchangeData);
 
-            const response = await fetch(`${serverUrl}/api/create-order`, {
+            const response = await fetch(`https://api.allorigins.win/raw?url=https://87.242.106.114/api/create-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -605,7 +692,7 @@ function Home({ navigateTo }) {
             const userId = userData.id;
             console.log('🔍 Проверяем активные ордеры для:', userId);
 
-            const response = await fetch(`${serverUrl}/api/user-orders/${userId}`, {
+            const response = await fetch(`https://api.allorigins.win/raw?url=https://87.242.106.114/api/user-orders/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',

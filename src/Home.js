@@ -4,7 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Конфигурация URL
-const serverUrl = 'https://api.allorigins.win/raw?url=https://87.242.106.114';
+const serverUrl = 'https://87.242.106.114';
 
 function Home({ navigateTo }) {
     const [isBuyMode, setIsBuyMode] = useState(true);

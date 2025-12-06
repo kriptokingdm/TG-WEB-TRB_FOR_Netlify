@@ -190,14 +190,14 @@ function Profile({ navigateTo }) {
 
             // Тестовые данные для демонстрации
             setReferralStats({
-                totalReferrals: 6,
-                activeReferrals: 5,
-                earned: 2800,
-                pendingEarned: 2240,
+                totalReferrals: 0,
+                activeReferrals: 0,
+                earned: 0,
+                pendingEarned: 0,
                 referralLink: getReferralLink(),
                 referralCode: getReferralCode(),
-                referral_transactions: 2,
-                referral_total_amount: 60000,
+                referral_transactions: 0,
+                referral_total_amount: 0,
                 commission_percent: 0.5
             });
         }

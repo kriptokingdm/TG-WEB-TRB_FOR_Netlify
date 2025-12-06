@@ -304,8 +304,9 @@ const fetchExchangeRates = async () => {
     const handleAmountChange = (e) => {
         const value = e.target.value;
         setAmount(value);
-
-        if (value) {
+    
+        // ПРОСТАЯ ПРОВЕРКА
+        if (value && value.trim() !== '') {
             const numAmount = parseFloat(value);
             if (!isNaN(numAmount)) {
                 if (isBuyMode) {
@@ -327,7 +328,7 @@ const fetchExchangeRates = async () => {
                 }
             }
         } else {
-            setError('');
+            setError(''); // Очищаем ошибку если поле пустое
         }
     };
 
@@ -512,93 +513,29 @@ const fetchExchangeRates = async () => {
 
     // Проверка готовности к обмену
     // Проверка готовности к обмену
+// Упрощенная проверка готовности к обмену
 const isExchangeReady = () => {
-    console.log('🔍 Проверка готовности к обмену...');
-    console.log('• userInitialized:', userInitialized);
-    console.log('• amount:', amount);
-    console.log('• error:', error);
-    console.log('• isBuyMode:', isBuyMode);
-    console.log('• selectedPayment:', selectedPayment);
-    console.log('• selectedCryptoAddress:', selectedCryptoAddress);
-    
-    // Если пользователь не инициализирован
+    // Быстрая проверка без лишнего логирования
     if (!userInitialized) {
-        console.log('⏳ Пользователь не инициализирован, создаем тестового...');
-        
-        // Создаем тестового пользователя сразу
-        createTestUser();
-        
-        // Возвращаем false, но пользователь уже создан
-        // В следующем клике будет true
+        console.log('⏳ Пользователь не инициализирован');
         return false;
     }
     
-    // Проверяем сумму
-    if (!amount || error) {
-        console.log('⚠️ Неверная сумма или ошибка ввода');
-        return false;
-    }
-
-    // Проверяем корректность суммы
+    if (!amount || error) return false;
+    
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount)) {
-        console.log('⚠️ Сумма не является числом');
-        return false;
-    }
-
-    // Проверяем лимиты в зависимости от режима
+    if (isNaN(numAmount)) return false;
+    
+    // Проверяем лимиты
     if (isBuyMode) {
-        if (numAmount < MIN_RUB) {
-            console.log(`⚠️ Сумма меньше минимальной: ${numAmount} < ${MIN_RUB}`);
-            return false;
-        }
-        if (numAmount > MAX_RUB) {
-            console.log(`⚠️ Сумма больше максимальной: ${numAmount} > ${MAX_RUB}`);
-            return false;
-        }
+        if (numAmount < MIN_RUB || numAmount > MAX_RUB) return false;
+        if (!selectedCryptoAddress) return false;
     } else {
-        if (numAmount < MIN_USDT) {
-            console.log(`⚠️ Сумма меньше минимальной: ${numAmount} < ${MIN_USDT}`);
-            return false;
-        }
-        if (numAmount > MAX_USDT) {
-            console.log(`⚠️ Сумма больше максимальной: ${numAmount} > ${MAX_USDT}`);
-            return false;
-        }
+        if (numAmount < MIN_USDT || numAmount > MAX_USDT) return false;
+        if (!selectedPayment) return false;
     }
-
-    // Проверяем реквизиты в зависимости от режима
-    if (isBuyMode) {
-        if (!selectedCryptoAddress) {
-            console.log('⚠️ Не выбран крипто-адрес для получения USDT');
-            return false;
-        }
-    } else {
-        if (!selectedPayment) {
-            console.log('⚠️ Не выбран платежный метод для получения RUB');
-            return false;
-        }
-    }
-
-    // Проверяем наличие активных ордеров
-    if (hasActiveOrder) {
-        console.log('⚠️ Есть активный ордер, нельзя создать новый');
-        return false;
-    }
-
-    // Проверяем наличие реквизитов
-    if (isBuyMode && cryptoAddresses.length === 0) {
-        console.log('⚠️ Нет добавленных крипто-адресов');
-        return false;
-    }
-
-    if (!isBuyMode && paymentMethods.length === 0) {
-        console.log('⚠️ Нет добавленных платежных методов');
-        return false;
-    }
-
-    console.log('✅ Все проверки пройдены, обмен возможен!');
-    return true;
+    
+    return !hasActiveOrder;
 };
 
     // Обработчик обмена

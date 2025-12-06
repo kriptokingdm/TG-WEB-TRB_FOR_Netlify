@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Help.css';
 
 function Help({ navigateTo }) {
@@ -7,6 +7,7 @@ function Help({ navigateTo }) {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [filteredFaqItems, setFilteredFaqItems] = useState([]);
 
     const toggleSection = (section) => {
         setActiveSection(activeSection === section ? null : section);
@@ -74,7 +75,7 @@ function Help({ navigateTo }) {
             id: 'rules-2',
             category: 'rules',
             question: "Правила проведения обменов",
-            answer: "1. Сумма к получению фиксируется при создании заявки\n2. Средства отправляются только после поступления оплаты\n3. Время выполнения: до 30 минут\n4. Курс может измениться при долгом ожидании оплаты\n5. Отмена заявки возможна в течение 5 минут"
+            answer: "1. Сумма к получению фиксируется при создании заявки\n2. Средства отправляются только после поступления оплаты\n3. Время выполнения: до 30 минут\n4. Курс может измениться при долгом ожидании оплата\n5. Отмена заявки возможна в течение 5 минут"
         },
         {
             id: 'rules-3',
@@ -152,32 +153,38 @@ function Help({ navigateTo }) {
         "Как обратиться в поддержку?"
     ];
 
-    const handleSearch = (query) => {
-        setSearchQuery(query);
-        
-        if (query.trim() === '') {
+    // Фильтрация FAQ по выбранной категории
+    useEffect(() => {
+        if (selectedCategory === 'all') {
+            setFilteredFaqItems(faqItems);
+        } else {
+            setFilteredFaqItems(faqItems.filter(item => item.category === selectedCategory));
+        }
+    }, [selectedCategory]);
+
+    // Поиск при изменении запроса
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
             setSearchResults([]);
             setShowSearchResults(false);
             return;
         }
 
-        const lowerQuery = query.toLowerCase();
+        const lowerQuery = searchQuery.toLowerCase();
         const results = [];
 
-        // Поиск по FAQ и правилам
+        // Поиск по FAQ
         faqItems.forEach((item, index) => {
-            if (item.category === selectedCategory || selectedCategory === 'all') {
-                if (item.question.toLowerCase().includes(lowerQuery) || 
-                    item.answer.toLowerCase().includes(lowerQuery)) {
-                    results.push({
-                        type: 'faq',
-                        title: item.question,
-                        content: item.answer,
-                        section: 'faq',
-                        index,
-                        category: item.category
-                    });
-                }
+            if (item.question.toLowerCase().includes(lowerQuery) || 
+                item.answer.toLowerCase().includes(lowerQuery)) {
+                results.push({
+                    type: 'faq',
+                    title: item.question,
+                    content: item.answer,
+                    section: 'faq',
+                    id: `faq-${index}`,
+                    category: item.category
+                });
             }
         });
 
@@ -190,13 +197,17 @@ function Help({ navigateTo }) {
                     title: item.title,
                     content: item.content,
                     section: 'rules',
-                    index
+                    id: `rules-${index}`
                 });
             }
         });
 
         setSearchResults(results);
         setShowSearchResults(results.length > 0);
+    }, [searchQuery]);
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
     };
 
     const handleResultClick = (result) => {
@@ -205,7 +216,7 @@ function Help({ navigateTo }) {
         setShowSearchResults(false);
         
         setTimeout(() => {
-            const element = document.getElementById(result.type === 'faq' ? `faq-${result.index}` : `rules-${result.index}`);
+            const element = document.getElementById(result.id);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.style.backgroundColor = '#f0f7ff';
@@ -216,9 +227,18 @@ function Help({ navigateTo }) {
         }, 100);
     };
 
-    const filteredFaqItems = selectedCategory === 'all' 
-        ? faqItems 
-        : faqItems.filter(item => item.category === selectedCategory);
+    const handleCategoryClick = (categoryId) => {
+        setSelectedCategory(categoryId);
+        setActiveSection('faq');
+        setSearchQuery('');
+        setShowSearchResults(false);
+    };
+
+    const handlePopularQuestionClick = (question) => {
+        setSearchQuery(question);
+        setActiveSection('faq');
+        setSelectedCategory('all');
+    };
 
     return (
         <div className="help-container">
@@ -295,7 +315,7 @@ function Help({ navigateTo }) {
                                         <button
                                             key={category.id}
                                             className={`category-tab ${selectedCategory === category.id ? 'active' : ''}`}
-                                            onClick={() => setSelectedCategory(category.id)}
+                                            onClick={() => handleCategoryClick(category.id)}
                                         >
                                             <span className="tab-icon">{category.icon}</span>
                                             <span className="tab-name">{category.name}</span>
@@ -307,13 +327,14 @@ function Help({ navigateTo }) {
                                     <h3>Популярные вопросы</h3>
                                     <div className="questions-grid">
                                         {popularQuestions.map((question, index) => (
-                                            <div
+                                            <button
                                                 key={index}
                                                 className="question-chip"
-                                                onClick={() => handleSearch(question)}
+                                                onClick={() => handlePopularQuestionClick(question)}
+                                                type="button"
                                             >
                                                 {question}
-                                            </div>
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
@@ -330,8 +351,7 @@ function Help({ navigateTo }) {
                     <div className="section-header" onClick={() => toggleSection('faq')}>
                         <div className="section-title">
                             <span className="section-icon">❓</span>
-                            <h3>Часто задаваемые вопросы</h3>
-                            <span className="items-count">({filteredFaqItems.length})</span>
+                            <h3>Часто задаваемые вопросы ({filteredFaqItems.length})</h3>
                         </div>
                         <span className="toggle-icon">{activeSection === 'faq' ? '−' : '+'}</span>
                     </div>
@@ -368,7 +388,7 @@ function Help({ navigateTo }) {
                     <div className="section-header" onClick={() => toggleSection('rules')}>
                         <div className="section-title">
                             <span className="section-icon">📋</span>
-                            <h3>Правила использования TetherRabbit</h3>
+                            <h3>Правила использования TetherRabbit ({rulesContent.length})</h3>
                         </div>
                         <span className="toggle-icon">{activeSection === 'rules' ? '−' : '+'}</span>
                     </div>
@@ -407,6 +427,7 @@ function Help({ navigateTo }) {
                                     📢 Официальный канал
                                 </a>
                             </div>
+                            <p className="support-note">Время ответа: 5-15 минут</p>
                         </div>
                     </div>
                 </div>

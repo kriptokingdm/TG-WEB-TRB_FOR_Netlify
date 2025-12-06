@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-
 const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://87.242.106.114:3002'
     : 'https://87.242.106.114';
@@ -13,6 +12,7 @@ console.log('🔗 API URL:', API_BASE_URL);
 function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);
     const [telegramData, setTelegramData] = useState(null);
+    const [userPhoto, setUserPhoto] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showReferral, setShowReferral] = useState(false);
@@ -33,6 +33,7 @@ function Profile({ navigateTo }) {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [earningsHistory, setEarningsHistory] = useState([]);
     const [testTransactionAmount, setTestTransactionAmount] = useState('10000');
+    const [photoError, setPhotoError] = useState(false);
 
     useEffect(() => {
         // Тестовый запрос при загрузке
@@ -71,23 +72,42 @@ function Profile({ navigateTo }) {
                     };
                     localStorage.setItem('currentUser', JSON.stringify(appUser));
                     setUserData(appUser);
+                    
+                    // Сохраняем фото если есть
+                    if (tgUser.photo_url) {
+                        setUserPhoto(tgUser.photo_url);
+                        console.log('📸 Telegram фото:', tgUser.photo_url);
+                        setPhotoError(false);
+                    }
                 }
             }
             
             // 2. Загружаем из localStorage если WebApp не дал данные
             const telegramUser = localStorage.getItem('telegramUser');
-            if (telegramUser && !telegramData) {
+            if (telegramUser) {
                 const parsed = JSON.parse(telegramUser);
                 console.log('📱 Telegram данные из localStorage:', parsed);
                 setTelegramData(parsed);
+                
+                // Пробуем получить фото если есть в сохраненных данных
+                if (parsed.photo_url) {
+                    setUserPhoto(parsed.photo_url);
+                    setPhotoError(false);
+                }
             }
-    
+
             // 3. Загружаем данные приложения
             const savedUser = localStorage.getItem('currentUser');
-            if (savedUser && !userData) {
+            if (savedUser) {
                 const parsed = JSON.parse(savedUser);
                 console.log('👤 Данные приложения:', parsed);
                 setUserData(parsed);
+                
+                // Пробуем получить фото из данных приложения
+                if (parsed.photoUrl && !userPhoto) {
+                    setUserPhoto(parsed.photoUrl);
+                    setPhotoError(false);
+                }
             }
             
             // 4. Если все еще нет данных - создаем тестовые
@@ -113,7 +133,7 @@ function Profile({ navigateTo }) {
                 localStorage.setItem('currentUser', JSON.stringify(appUser));
             }
             
-            console.log('✅ Данные загружены:', { telegramData, userData });
+            console.log('✅ Данные загружены:', { telegramData, userData, userPhoto });
             
         } catch (error) {
             console.error('❌ Ошибка загрузки данных:', error);
@@ -241,15 +261,38 @@ function Profile({ navigateTo }) {
             const userId = getUserId();
             if (!userId || userId === '—') return;
 
+            console.log('💰 Загружаем историю начислений для:', userId);
+            
             const response = await fetch(`${API_BASE_URL}/api/referral/earnings/${userId}`);
+            console.log('📊 Ответ истории:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
-
+            console.log('📈 Данные истории:', data);
+            
             if (data.success) {
                 setEarningsHistory(data.data || []);
+            } else {
+                // Тестовые данные
+                setEarningsHistory([
+                    {
+                        referral_id: "100000001",
+                        transaction_amount: 50000,
+                        currency: "RUB",
+                        your_earnings: 250,
+                        percent: 0.5,
+                        date: new Date().toISOString(),
+                        message: "0.5% от сделки 50000 RUB"
+                    }
+                ]);
             }
         } catch (error) {
-            console.error('Ошибка загрузки истории начислений:', error);
-            // Тестовые данные
+            console.error('❌ Ошибка загрузки истории начислений:', error);
+            
+            // Тестовые данные при ошибке
             setEarningsHistory([
                 {
                     referral_id: "100000001",
@@ -261,7 +304,7 @@ function Profile({ navigateTo }) {
                     message: "0.5% от сделки 50000 RUB"
                 },
                 {
-                    referral_id: "100000001",
+                    referral_id: "100000002",
                     transaction_amount: 10000,
                     currency: "RUB",
                     your_earnings: 50,
@@ -310,9 +353,12 @@ function Profile({ navigateTo }) {
                 );
 
                 // Обновляем данные
-                loadReferralStats();
-                loadEarningsHistory();
-                loadReferralList();
+                setTimeout(() => {
+                    loadReferralStats();
+                    loadEarningsHistory();
+                    loadReferralList();
+                }, 500);
+                
             } else {
                 showMessage('error', data.error || 'Ошибка регистрации сделки');
             }
@@ -373,8 +419,11 @@ function Profile({ navigateTo }) {
                 setPaymentMethod('');
 
                 // Обновляем данные
-                loadReferralStats();
-                loadWithdrawals();
+                setTimeout(() => {
+                    loadReferralStats();
+                    loadWithdrawals();
+                }, 500);
+                
             } else {
                 showMessage('error', data.error || 'Ошибка при запросе выплаты');
             }
@@ -387,7 +436,7 @@ function Profile({ navigateTo }) {
     const toggleTheme = () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
+        
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
@@ -398,36 +447,35 @@ function Profile({ navigateTo }) {
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     };
 
-    // В getUserId() замени:
-const getUserId = () => {
-    // Пробуем Telegram данные из localStorage
-    const savedTelegramUser = localStorage.getItem('telegramUser');
-    if (savedTelegramUser) {
-        try {
-            const telegramUser = JSON.parse(savedTelegramUser);
-            console.log('📱 Telegram user из localStorage:', telegramUser);
-            return telegramUser.id || '7879866656';
-        } catch (e) {
-            console.error('❌ Ошибка парсинга telegramUser:', e);
+    const getUserId = () => {
+        // Пробуем Telegram данные из localStorage
+        const savedTelegramUser = localStorage.getItem('telegramUser');
+        if (savedTelegramUser) {
+            try {
+                const telegramUser = JSON.parse(savedTelegramUser);
+                console.log('📱 Telegram user из localStorage:', telegramUser);
+                return telegramUser.id || '7879866656';
+            } catch (e) {
+                console.error('❌ Ошибка парсинга telegramUser:', e);
+            }
         }
-    }
-    
-    // Пробуем currentUser
-    const savedCurrentUser = localStorage.getItem('currentUser');
-    if (savedCurrentUser) {
-        try {
-            const currentUser = JSON.parse(savedCurrentUser);
-            console.log('👤 Current user из localStorage:', currentUser);
-            return currentUser.telegramId || currentUser.id || '7879866656';
-        } catch (e) {
-            console.error('❌ Ошибка парсинга currentUser:', e);
+        
+        // Пробуем currentUser
+        const savedCurrentUser = localStorage.getItem('currentUser');
+        if (savedCurrentUser) {
+            try {
+                const currentUser = JSON.parse(savedCurrentUser);
+                console.log('👤 Current user из localStorage:', currentUser);
+                return currentUser.telegramId || currentUser.id || '7879866656';
+            } catch (e) {
+                console.error('❌ Ошибка парсинга currentUser:', e);
+            }
         }
-    }
-    
-    // Админ по умолчанию
-    console.log('👑 Использую ID админа');
-    return '7879866656';
-};
+        
+        // Админ по умолчанию
+        console.log('👑 Использую ID админа');
+        return '7879866656';
+    };
 
     const getReferralLink = () => {
         const userId = getUserId();
@@ -445,6 +493,11 @@ const getUserId = () => {
         showMessage('success', `✅ ${label} скопирован`);
     };
 
+    const handlePhotoError = () => {
+        console.log('❌ Ошибка загрузки фото, показываем fallback');
+        setPhotoError(true);
+    };
+
     if (isLoading) {
         return (
             <div className="profile-loading">
@@ -460,7 +513,7 @@ const getUserId = () => {
             <div className="profile-header-new">
                 <div className="header-content">
                     <div className="header-left">
-                        <button
+                        <button 
                             className="back-button"
                             onClick={() => navigateTo && navigateTo('/')}
                         >
@@ -474,26 +527,22 @@ const getUserId = () => {
                 </div>
 
                 {/* Карточка профиля */}
-                {/* Карточка профиля */}
                 <div className="profile-main-card">
                     <div className="profile-avatar-section">
-                        {telegramData?.photo_url ? (
-                            <img
-                                src={telegramData.photo_url}
+                        {userPhoto && !photoError ? (
+                            <img 
+                                src={userPhoto} 
                                 alt="Avatar"
                                 className="profile-avatar-image"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                }}
+                                onError={handlePhotoError}
+                                onLoad={() => console.log('✅ Фото загружено успешно')}
                             />
-                        ) : (
-                            <div className="profile-avatar-fallback">
-                                {telegramData?.first_name?.[0] || '👤'}
-                            </div>
-                        )}
+                        ) : null}
+                        <div className="profile-avatar-fallback" style={{ display: (userPhoto && !photoError) ? 'none' : 'flex' }}>
+                            {telegramData?.first_name?.[0]?.toUpperCase() || telegramData?.username?.[0]?.toUpperCase() || '👤'}
+                        </div>
                     </div>
-
+                    
                     <div className="profile-info-section">
                         <h2 className="profile-display-name">
                             {telegramData?.first_name || userData?.firstName || 'Администратор'}
@@ -502,10 +551,10 @@ const getUserId = () => {
                         <p className="profile-username">
                             @{telegramData?.username || userData?.username || 'TERBCEO'}
                         </p>
-
+                        
                         <div className="profile-id-section">
                             <span className="id-label">Ваш ID:</span>
-                            <button
+                            <button 
                                 className="id-value"
                                 onClick={() => copyToClipboard(getUserId(), 'ID пользователя')}
                             >
@@ -551,7 +600,32 @@ const getUserId = () => {
                         <div className="referral-details">
                             {/* Детальная статистика */}
                             <div className="detailed-earnings-section">
-                                <h4>Детальная статистика</h4>
+                                <div className="refresh-section">
+                                    <h4>Детальная статистика</h4>
+                                    <button 
+                                        className="refresh-btn"
+                                        onClick={() => {
+                                            loadReferralStats();
+                                            loadEarningsHistory();
+                                            loadReferralList();
+                                            showMessage('info', 'Статистика обновляется...');
+                                        }}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            padding: '8px 12px',
+                                            fontSize: '12px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '5px'
+                                        }}
+                                    >
+                                        🔄 Обновить
+                                    </button>
+                                </div>
                                 <div className="earnings-breakdown">
                                     <div className="earning-source">
                                         <div className="earning-icon">💰</div>
@@ -561,7 +635,7 @@ const getUserId = () => {
                                             <div className="earning-note">0.5% от сделок ваших рефералов</div>
                                         </div>
                                     </div>
-
+                                    
                                     <div className="earning-source">
                                         <div className="earning-icon">📊</div>
                                         <div className="earning-details">
@@ -570,7 +644,7 @@ const getUserId = () => {
                                             <div className="earning-note">Общая сумма: {referralStats.referral_total_amount || 0} ₽</div>
                                         </div>
                                     </div>
-
+                                    
                                     <div className="earning-source total">
                                         <div className="earning-icon">💳</div>
                                         <div className="earning-details">
@@ -592,7 +666,7 @@ const getUserId = () => {
                                         readOnly
                                         className="referral-input"
                                     />
-                                    <button
+                                    <button 
                                         className="referral-copy-btn"
                                         onClick={() => copyToClipboard(getReferralLink(), 'Реферальная ссылка')}
                                     >
@@ -603,7 +677,7 @@ const getUserId = () => {
 
                             {/* Тестовая сделка */}
                             <div className="test-transaction-section">
-                                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                <div style={{display: 'flex', gap: '10px', marginBottom: '10px'}}>
                                     <input
                                         type="number"
                                         value={testTransactionAmount}
@@ -616,7 +690,7 @@ const getUserId = () => {
                                             borderRadius: '8px'
                                         }}
                                     />
-                                    <button
+                                    <button 
                                         className="test-transaction-btn"
                                         onClick={testReferralTransaction}
                                     >
@@ -631,7 +705,7 @@ const getUserId = () => {
                             {/* История начислений */}
                             {earningsHistory.length > 0 && (
                                 <div className="transactions-history-section">
-                                    <h4>История начислений</h4>
+                                    <h4>История начислений ({earningsHistory.length})</h4>
                                     <div className="transactions-list">
                                         {earningsHistory.slice(0, 5).map((earning, index) => (
                                             <div key={index} className="transaction-item">
@@ -642,11 +716,43 @@ const getUserId = () => {
                                                     +{earning.your_earnings} ₽
                                                 </div>
                                                 <div className="transaction-date">
-                                                    {new Date(earning.date).toLocaleDateString()}
+                                                    {new Date(earning.date).toLocaleDateString('ru-RU')}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
+                                    {earningsHistory.length > 5 && (
+                                        <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '10px' }}>
+                                            ... и еще {earningsHistory.length - 5} начислений
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Список рефералов */}
+                            {referralList.length > 0 && (
+                                <div className="referrals-list-section">
+                                    <h4>Ваши рефералы ({referralList.length})</h4>
+                                    <div className="referrals-list">
+                                        {referralList.slice(0, 3).map((referral, index) => (
+                                            <div key={index} className="referral-item">
+                                                <span className="referral-id">
+                                                    ID: {referral.referred_id}
+                                                </span>
+                                                <span className={`referral-status ${referral.status}`}>
+                                                    {referral.status === 'active' ? '✅ Активен' : '⏳ Ожидание'}
+                                                </span>
+                                                <span className="referral-earned">
+                                                    +{referral.your_earnings} ₽
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {referralList.length > 3 && (
+                                        <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', marginTop: '10px' }}>
+                                            ... и еще {referralList.length - 3} рефералов
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
@@ -670,12 +776,27 @@ const getUserId = () => {
                                             placeholder="Сумма для вывода"
                                             min="100"
                                             step="1"
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '8px',
+                                                fontSize: '14px'
+                                            }}
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <select
-                                            value={paymentMethod}
+                                        <select 
+                                            value={paymentMethod} 
                                             onChange={(e) => setPaymentMethod(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                backgroundColor: 'white'
+                                            }}
                                         >
                                             <option value="">Выберите способ</option>
                                             <option value="bank_card">Банковская карта</option>
@@ -684,10 +805,23 @@ const getUserId = () => {
                                             <option value="crypto">Криптовалюта</option>
                                         </select>
                                     </div>
-                                    <button
+                                    <button 
                                         className="withdraw-button"
                                         onClick={handleWithdraw}
                                         disabled={!withdrawAmount || !paymentMethod || parseFloat(withdrawAmount) < 100}
+                                        style={{
+                                            width: '100%',
+                                            padding: '15px',
+                                            background: 'white',
+                                            color: '#f5576c',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease',
+                                            opacity: (!withdrawAmount || !paymentMethod || parseFloat(withdrawAmount) < 100) ? 0.5 : 1
+                                        }}
                                     >
                                         Запросить вывод
                                     </button>
@@ -698,15 +832,15 @@ const getUserId = () => {
                             <div className="referral-info">
                                 <div className="info-icon">💡</div>
                                 <div className="info-text">
-                                    <strong>Как это работает:</strong>
-                                    <br />1. Приглашайте друзей по вашей ссылке
-                                    <br />2. Когда они делают обмен USDT/RUB
-                                    <br />3. Вы получаете 0.5% от суммы каждой их сделки
-                                    <br />4. Выводите заработанные средства
+                                    <strong>Как это работает:</strong> 
+                                    <br/>1. Приглашайте друзей по вашей ссылке
+                                    <br/>2. Когда они делают обмен USDT/RUB
+                                    <br/>3. Вы получаете 0.5% от суммы каждой их сделки
+                                    <br/>4. Выводите заработанные средства
                                 </div>
                             </div>
 
-                            <button
+                            <button 
                                 className="referral-hide-btn"
                                 onClick={() => setShowReferral(false)}
                             >
@@ -714,9 +848,13 @@ const getUserId = () => {
                             </button>
                         </div>
                     ) : (
-                        <button
+                        <button 
                             className="referral-show-btn"
-                            onClick={() => setShowReferral(true)}
+                            onClick={() => {
+                                setShowReferral(true);
+                                loadEarningsHistory();
+                                loadReferralList();
+                            }}
                         >
                             <span className="btn-icon">🔗</span>
                             <span>Показать реферальную ссылку</span>
@@ -731,7 +869,7 @@ const getUserId = () => {
                 <div className="profile-card-new">
                     <h3 className="section-title-profile">Настройки</h3>
                     <div className="settings-grid">
-                        <button
+                        <button 
                             className="settings-item-profile"
                             onClick={toggleTheme}
                         >
@@ -756,8 +894,8 @@ const getUserId = () => {
             {message.text && (
                 <div className={`message-toast-new message-${message.type}`}>
                     <span className="toast-icon">
-                        {message.type === 'success' ? '✅' :
-                            message.type === 'error' ? '❌' : '⚠️'}
+                        {message.type === 'success' ? '✅' : 
+                         message.type === 'error' ? '❌' : '⚠️'}
                     </span>
                     <span className="toast-text">{message.text}</span>
                 </div>

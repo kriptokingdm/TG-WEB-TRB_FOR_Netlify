@@ -1706,3 +1706,103 @@
 .test-transaction-section {
     animation: fadeIn 0.5s ease;
 }
+
+/* Добавь в конец файла */
+
+/* Стили для фото профиля */
+.profile-avatar-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Улучшенный fallback для аватара */
+.profile-avatar-fallback {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: 800;
+    color: white;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для темной темы фото */
+[data-theme="dark"] .profile-avatar-image {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .profile-avatar-fallback {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+}
+
+/* Стили для имени пользователя */
+.profile-display-name {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.profile-username {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 20px 0;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* Стили для кнопки обновления */
+.refresh-btn {
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+/* Адаптивность для фото */
+@media (max-width: 768px) {
+    .profile-avatar-image,
+    .profile-avatar-fallback {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+    
+    .profile-display-name {
+        font-size: 24px;
+    }
+    
+    .profile-username {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-avatar-image,
+    .profile-avatar-fallback {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+    
+    .profile-display-name {
+        font-size: 22px;
+    }
+}

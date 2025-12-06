@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-// Функция для определения URL API
-const getApiBaseUrl = () => {
-  // Если на localhost - используй порт 3002 для отладки
-  if (window.location.hostname === 'localhost') {
-    return 'http://87.242.106.114:3002';
-  }
-  // Для продакшена (Netlify/Telegram) используй HTTPS
-  return 'https://87.242.106.114';
-};
 
-const API_BASE_URL = getApiBaseUrl();
+const getApiBaseUrl = () => {
+    if (window.location.hostname === 'localhost') {
+      return 'http://localhost:3002'; // для локальной разработки
+    }
+    return 'https://87.242.106.114'; // для продакшена
+  };
+  
+  const API_BASE_URL = getApiBaseUrl();
 
 // Отладка
 console.log('🌐 Текущий хост:', window.location.hostname);

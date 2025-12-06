@@ -50,50 +50,73 @@ function Profile({ navigateTo }) {
 
     const loadUserData = () => {
         try {
-            // Загружаем Telegram данные
-            const telegramUser = localStorage.getItem('telegramUser');
-            if (telegramUser) {
-                const parsed = JSON.parse(telegramUser);
-                setTelegramData(parsed);
-                console.log('📱 Telegram данные:', parsed);
-
-                // Пробуем получить фото если есть
-                if (parsed.photo_url) {
-                    console.log('📸 Telegram фото:', parsed.photo_url);
-                    // В Telegram Mini App photo_url может быть недоступен
-                }
-            }
-
-            // Загружаем данные приложения
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                setUserData(JSON.parse(savedUser));
-            }
-
-            // Проверяем реальные данные Telegram WebApp
+            console.log('🔄 Загрузка данных пользователя...');
+            
+            // 1. Пробуем Telegram WebApp (если доступно)
             if (window.Telegram?.WebApp) {
                 const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
                 if (tgUser) {
-                    console.log('🔄 Актуальные Telegram данные:', tgUser);
+                    console.log('🤖 Telegram WebApp данные:', tgUser);
                     setTelegramData(tgUser);
-
-                    // Сохраняем актуальные данные
                     localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-
-                    // Обновляем currentUser
+                    
+                    // Сохраняем в currentUser формат
                     const appUser = {
                         id: `user_${tgUser.id}`,
                         telegramId: tgUser.id,
                         username: tgUser.username || `user_${tgUser.id}`,
                         firstName: tgUser.first_name || 'Пользователь',
                         lastName: tgUser.last_name || '',
-                        photoUrl: tgUser.photo_url // Может быть undefined
+                        photoUrl: tgUser.photo_url
                     };
                     localStorage.setItem('currentUser', JSON.stringify(appUser));
+                    setUserData(appUser);
                 }
             }
+            
+            // 2. Загружаем из localStorage если WebApp не дал данные
+            const telegramUser = localStorage.getItem('telegramUser');
+            if (telegramUser && !telegramData) {
+                const parsed = JSON.parse(telegramUser);
+                console.log('📱 Telegram данные из localStorage:', parsed);
+                setTelegramData(parsed);
+            }
+    
+            // 3. Загружаем данные приложения
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser && !userData) {
+                const parsed = JSON.parse(savedUser);
+                console.log('👤 Данные приложения:', parsed);
+                setUserData(parsed);
+            }
+            
+            // 4. Если все еще нет данных - создаем тестовые
+            if (!telegramData && !userData) {
+                console.log('⚠️ Данных нет, создаю тестовые');
+                const testUser = {
+                    id: 7879866656,
+                    username: 'TERBCEO',
+                    first_name: 'G',
+                    last_name: ''
+                };
+                setTelegramData(testUser);
+                localStorage.setItem('telegramUser', JSON.stringify(testUser));
+                
+                const appUser = {
+                    id: 'user_7879866656',
+                    telegramId: 7879866656,
+                    username: 'TERBCEO',
+                    firstName: 'G',
+                    lastName: ''
+                };
+                setUserData(appUser);
+                localStorage.setItem('currentUser', JSON.stringify(appUser));
+            }
+            
+            console.log('✅ Данные загружены:', { telegramData, userData });
+            
         } catch (error) {
-            console.error('Ошибка загрузки данных:', error);
+            console.error('❌ Ошибка загрузки данных:', error);
         } finally {
             setIsLoading(false);
         }
@@ -375,14 +398,36 @@ function Profile({ navigateTo }) {
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     };
 
-    const getUserId = () => {
-        // Пробуем Telegram данные
-        const telegramId = telegramData?.id;
-        // Для теста используем ID админа
-        const result = telegramId || '7879866656';
-        console.log('🆔 Определен ID пользователя:', result);
-        return result;
-    };
+    // В getUserId() замени:
+const getUserId = () => {
+    // Пробуем Telegram данные из localStorage
+    const savedTelegramUser = localStorage.getItem('telegramUser');
+    if (savedTelegramUser) {
+        try {
+            const telegramUser = JSON.parse(savedTelegramUser);
+            console.log('📱 Telegram user из localStorage:', telegramUser);
+            return telegramUser.id || '7879866656';
+        } catch (e) {
+            console.error('❌ Ошибка парсинга telegramUser:', e);
+        }
+    }
+    
+    // Пробуем currentUser
+    const savedCurrentUser = localStorage.getItem('currentUser');
+    if (savedCurrentUser) {
+        try {
+            const currentUser = JSON.parse(savedCurrentUser);
+            console.log('👤 Current user из localStorage:', currentUser);
+            return currentUser.telegramId || currentUser.id || '7879866656';
+        } catch (e) {
+            console.error('❌ Ошибка парсинга currentUser:', e);
+        }
+    }
+    
+    // Админ по умолчанию
+    console.log('👑 Использую ID админа');
+    return '7879866656';
+};
 
     const getReferralLink = () => {
         const userId = getUserId();

@@ -253,35 +253,45 @@ const createTestUser = () => {
     };
 
     // Загрузка курсов с бекенда
-    const fetchExchangeRates = async () => {
-        try {
-            console.log('📡 Запрашиваем курсы...');
-            
-            const response = await fetch('https://api.allorigins.win/raw?url=https://87.242.106.114/api/exchange-rate', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Курсы получены:', data);
-                
-                if (data.success) {
-                    setRates({
-                        buy: data.buy,
-                        sell: data.sell
-                    });
-                }
-            } else {
-                console.log('⚠️ Используем стандартные курсы');
+   // В Home.js в функции fetchExchangeRates замени URL:
+const fetchExchangeRates = async () => {
+    try {
+        console.log('📡 Запрашиваем курсы...');
+        
+        // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ
+        const response = await fetch('https://87.242.106.114/api/exchange-rate', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
             }
-        } catch (error) {
-            console.error('❌ Ошибка загрузки курсов:', error.message);
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Курсы получены:', data);
+            
+            if (data.success) {
+                setRates({
+                    buy: data.data.buy || 92.50,
+                    sell: data.data.sell || 93.50
+                });
+            }
+        } else {
+            console.log('⚠️ Используем стандартные курсы');
+            setRates({
+                buy: 92.50,
+                sell: 93.50
+            });
         }
-    };
+    } catch (error) {
+        console.error('❌ Ошибка загрузки курсов:', error.message);
+        // Fallback курсы
+        setRates({
+            buy: 92.50,
+            sell: 93.50
+        });
+    }
+};
 
     const handleSwap = () => {
         setIsSwapped(!isSwapped);

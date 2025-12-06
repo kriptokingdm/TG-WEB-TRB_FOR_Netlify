@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-// Базовый URL API - ИСПРАВЛЕННЫЙ URL
-// ИЛИ если хочешь переключаться между локальной разработкой и продакшеном:
-const API_BASE_URL = 'https://api.allorigins.win/raw?url=http://87.242.106.114';
+// Функция для определения URL API
+const getApiBaseUrl = () => {
+  // Если на localhost - используй порт 3002 для отладки
+  if (window.location.hostname === 'localhost') {
+    return 'http://87.242.106.114:3002';
+  }
+  // Для продакшена (Netlify/Telegram) используй HTTPS
+  return 'https://87.242.106.114';
+};
 
+const API_BASE_URL = getApiBaseUrl();
+
+// Отладка
+console.log('🌐 Текущий хост:', window.location.hostname);
+console.log('🔗 API URL:', API_BASE_URL);
 
 function Profile({ navigateTo }) {
-    console.log('🚀 Profile компонент загружен, API URL:', API_BASE_URL);
-
     const [userData, setUserData] = useState(null);
     const [telegramData, setTelegramData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -33,12 +42,15 @@ function Profile({ navigateTo }) {
     const [testTransactionAmount, setTestTransactionAmount] = useState('10000');
 
     useEffect(() => {
+        // Тестовый запрос при загрузке
+        fetch(`${API_BASE_URL}/health`)
+            .then(r => r.json())
+            .then(data => console.log('✅ API подключен:', data))
+            .catch(err => console.error('❌ Ошибка API:', err));
+
         loadUserData();
         loadReferralStats();
-        loadReferralList();
-        loadWithdrawals();
-        loadEarningsHistory();
-
+        
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     }, []);
@@ -70,24 +82,24 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             console.log('📊 Загрузка статистики для ID:', userId);
-
+            
             if (!userId || userId === '—') {
                 console.warn('ID пользователя не найден');
                 return;
             }
-
+            
             console.log('🌐 Запрос к:', `${API_BASE_URL}/api/referral/stats/${userId}`);
-
+            
             const response = await fetch(`${API_BASE_URL}/api/referral/stats/${userId}`);
             console.log('✅ Ответ сервера:', response.status);
-
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
+            
             const data = await response.json();
             console.log('📈 Данные статистики:', data);
-
+            
             if (data.success) {
                 const newStats = {
                     totalReferrals: data.data.total_referrals || 0,
@@ -100,7 +112,7 @@ function Profile({ navigateTo }) {
                     referral_total_amount: data.data.referral_total_amount || 0,
                     commission_percent: data.data.commission_percent || 0.5
                 };
-
+                
                 console.log('✅ Обновлена статистика:', newStats);
                 setReferralStats(newStats);
             } else {
@@ -110,17 +122,17 @@ function Profile({ navigateTo }) {
         } catch (error) {
             console.error('❌ Ошибка загрузки статистики:', error);
             showMessage('error', 'Ошибка подключения к серверу');
-
+            
             // Тестовые данные для демонстрации
             setReferralStats({
                 totalReferrals: 6,
                 activeReferrals: 5,
-                earned: 2750,
-                pendingEarned: 2200,
+                earned: 2800,
+                pendingEarned: 2240,
                 referralLink: getReferralLink(),
                 referralCode: getReferralCode(),
-                referral_transactions: 1,
-                referral_total_amount: 50000,
+                referral_transactions: 2,
+                referral_total_amount: 60000,
                 commission_percent: 0.5
             });
         }
@@ -131,10 +143,10 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             if (!userId || userId === '—') return;
-
+            
             const response = await fetch(`${API_BASE_URL}/api/referral/list/${userId}`);
             const data = await response.json();
-
+            
             if (data.success) {
                 console.log('👥 Список рефералов:', data.data);
                 setReferralList(data.data || []);
@@ -166,10 +178,10 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             if (!userId || userId === '—') return;
-
+            
             const response = await fetch(`${API_BASE_URL}/api/referral/withdrawals/${userId}`);
             const data = await response.json();
-
+            
             if (data.success) {
                 setWithdrawals(data.data || []);
             }
@@ -183,10 +195,10 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             if (!userId || userId === '—') return;
-
+            
             const response = await fetch(`${API_BASE_URL}/api/referral/earnings/${userId}`);
             const data = await response.json();
-
+            
             if (data.success) {
                 setEarningsHistory(data.data || []);
             }
@@ -202,6 +214,15 @@ function Profile({ navigateTo }) {
                     percent: 0.5,
                     date: new Date().toISOString(),
                     message: "0.5% от сделки 50000 RUB"
+                },
+                {
+                    referral_id: "100000001",
+                    transaction_amount: 10000,
+                    currency: "RUB",
+                    your_earnings: 50,
+                    percent: 0.5,
+                    date: new Date().toISOString(),
+                    message: "0.5% от сделки 10000 RUB"
                 }
             ]);
         }
@@ -212,12 +233,12 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             const amount = parseFloat(testTransactionAmount) || 10000;
-
+            
             showMessage('info', `Регистрирую тестовую сделку на ${amount} ₽...`);
-
+            
             const response = await fetch(`${API_BASE_URL}/api/transaction/register`, {
                 method: 'POST',
-                headers: {
+                headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
@@ -228,21 +249,21 @@ function Profile({ navigateTo }) {
                     type: 'exchange'
                 })
             });
-
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
+            
             const data = await response.json();
             console.log('✅ Ответ регистрации сделки:', data);
-
+            
             if (data.success) {
-                showMessage('success',
-                    data.data.commission
-                        ? `✅ Ваш реферер получил ${data.data.commission.amount} ₽ (0.5%)`
-                        : '✅ Сделка зарегистрирована (нет реферера)'
+                showMessage('success', 
+                    data.data.commission 
+                    ? `✅ Ваш реферер получил ${data.data.commission.amount} ₽ (0.5%)`
+                    : '✅ Сделка зарегистрирована (нет реферера)'
                 );
-
+                
                 // Обновляем данные
                 loadReferralStats();
                 loadEarningsHistory();
@@ -283,7 +304,7 @@ function Profile({ navigateTo }) {
 
             const response = await fetch(`${API_BASE_URL}/api/referral/withdraw`, {
                 method: 'POST',
-                headers: {
+                headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
@@ -293,19 +314,19 @@ function Profile({ navigateTo }) {
                     paymentMethod: paymentMethod
                 })
             });
-
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
             console.log('✅ Ответ вывода:', data);
-
+            
             if (data.success) {
                 showMessage('success', 'Запрос на вывод успешно отправлен!');
                 setWithdrawAmount('');
                 setPaymentMethod('');
-
+                
                 // Обновляем данные
                 loadReferralStats();
                 loadWithdrawals();
@@ -321,7 +342,7 @@ function Profile({ navigateTo }) {
     const toggleTheme = () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
+        
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
@@ -333,12 +354,10 @@ function Profile({ navigateTo }) {
     };
 
     const getUserId = () => {
-        // Пробуем разные варианты
+        // Пробуем Telegram данные
         const telegramId = telegramData?.id;
-        const userId = userData?.id;
-
         // Для теста используем ID админа
-        const result = telegramId || userId || '7879866656';
+        const result = telegramId || '7879866656';
         console.log('🆔 Определен ID пользователя:', result);
         return result;
     };
@@ -374,9 +393,9 @@ function Profile({ navigateTo }) {
             <div className="profile-header-new">
                 <div className="header-content">
                     <div className="header-left">
-                        <button
+                        <button 
                             className="back-button"
-                            onClick={() => navigateTo('/')}
+                            onClick={() => navigateTo && navigateTo('/')}
                         >
                             ←
                         </button>
@@ -394,14 +413,16 @@ function Profile({ navigateTo }) {
                             👤
                         </div>
                     </div>
-
+                    
                     <div className="profile-info-section">
-                        <h2 className="profile-display-name">Администратор</h2>
-                        {/* <p className="profile-username">ID: {getUserId()}</p> */}
-
+                        <h2 className="profile-display-name">
+                            {telegramData?.first_name || 'Администратор'}
+                        </h2>
+                        <p className="profile-username">ID: {getUserId()}</p>
+                        
                         <div className="profile-id-section">
                             <span className="id-label">Ваш ID:</span>
-                            <button
+                            <button 
                                 className="id-value"
                                 onClick={() => copyToClipboard(getUserId(), 'ID пользователя')}
                             >
@@ -457,7 +478,7 @@ function Profile({ navigateTo }) {
                                             <div className="earning-note">0.5% от сделок ваших рефералов</div>
                                         </div>
                                     </div>
-
+                                    
                                     <div className="earning-source">
                                         <div className="earning-icon">📊</div>
                                         <div className="earning-details">
@@ -466,7 +487,7 @@ function Profile({ navigateTo }) {
                                             <div className="earning-note">Общая сумма: {referralStats.referral_total_amount || 0} ₽</div>
                                         </div>
                                     </div>
-
+                                    
                                     <div className="earning-source total">
                                         <div className="earning-icon">💳</div>
                                         <div className="earning-details">
@@ -488,7 +509,7 @@ function Profile({ navigateTo }) {
                                         readOnly
                                         className="referral-input"
                                     />
-                                    <button
+                                    <button 
                                         className="referral-copy-btn"
                                         onClick={() => copyToClipboard(getReferralLink(), 'Реферальная ссылка')}
                                     >
@@ -499,7 +520,7 @@ function Profile({ navigateTo }) {
 
                             {/* Тестовая сделка */}
                             <div className="test-transaction-section">
-                                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                <div style={{display: 'flex', gap: '10px', marginBottom: '10px'}}>
                                     <input
                                         type="number"
                                         value={testTransactionAmount}
@@ -512,7 +533,7 @@ function Profile({ navigateTo }) {
                                             borderRadius: '8px'
                                         }}
                                     />
-                                    <button
+                                    <button 
                                         className="test-transaction-btn"
                                         onClick={testReferralTransaction}
                                     >
@@ -569,8 +590,8 @@ function Profile({ navigateTo }) {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <select
-                                            value={paymentMethod}
+                                        <select 
+                                            value={paymentMethod} 
                                             onChange={(e) => setPaymentMethod(e.target.value)}
                                         >
                                             <option value="">Выберите способ</option>
@@ -580,7 +601,7 @@ function Profile({ navigateTo }) {
                                             <option value="crypto">Криптовалюта</option>
                                         </select>
                                     </div>
-                                    <button
+                                    <button 
                                         className="withdraw-button"
                                         onClick={handleWithdraw}
                                         disabled={!withdrawAmount || !paymentMethod || parseFloat(withdrawAmount) < 100}
@@ -594,15 +615,15 @@ function Profile({ navigateTo }) {
                             <div className="referral-info">
                                 <div className="info-icon">💡</div>
                                 <div className="info-text">
-                                    <strong>Как это работает:</strong>
-                                    <br />1. Приглашайте друзей по вашей ссылке
-                                    <br />2. Когда они делают обмен USDT/RUB
-                                    <br />3. Вы получаете 0.5% от суммы каждой их сделки
-                                    <br />4. Выводите заработанные средства
+                                    <strong>Как это работает:</strong> 
+                                    <br/>1. Приглашайте друзей по вашей ссылке
+                                    <br/>2. Когда они делают обмен USDT/RUB
+                                    <br/>3. Вы получаете 0.5% от суммы каждой их сделки
+                                    <br/>4. Выводите заработанные средства
                                 </div>
                             </div>
 
-                            <button
+                            <button 
                                 className="referral-hide-btn"
                                 onClick={() => setShowReferral(false)}
                             >
@@ -610,7 +631,7 @@ function Profile({ navigateTo }) {
                             </button>
                         </div>
                     ) : (
-                        <button
+                        <button 
                             className="referral-show-btn"
                             onClick={() => setShowReferral(true)}
                         >
@@ -626,9 +647,8 @@ function Profile({ navigateTo }) {
                 {/* Настройки */}
                 <div className="profile-card-new">
                     <h3 className="section-title-profile">Настройки</h3>
-                    <h1> </h1>
                     <div className="settings-grid">
-                        <button
+                        <button 
                             className="settings-item-profile"
                             onClick={toggleTheme}
                         >
@@ -648,40 +668,18 @@ function Profile({ navigateTo }) {
                     </div>
                 </div>
             </div>
-            {/* Навигация */}
-            <div className="bottom-nav">
-                <button className="nav-item active">
-                    <span className="nav-icon">💸</span>
-                    <span className="nav-label">Обмен</span>
-                </button>
 
-                <button className="nav-item" onClick={() => navigateTo('/profile')}>
-                    <span className="nav-icon">👤</span>
-                    <span className="nav-label">Профиль</span>
-                </button>
-
-                <button className="nav-item" onClick={() => navigateTo('/history')}>
-                    <span className="nav-icon">📊</span>
-                    <span className="nav-label">История</span>
-                </button>
-
-                <button className="nav-item" onClick={() => navigateTo('/help')}>
-                    <span className="nav-icon">❓</span>
-                    <span className="nav-label">Помощь</span>
-                </button>
-            </div>
             {/* Toast сообщения */}
             {message.text && (
                 <div className={`message-toast-new message-${message.type}`}>
                     <span className="toast-icon">
-                        {message.type === 'success' ? '✅' :
-                            message.type === 'error' ? '❌' : '⚠️'}
+                        {message.type === 'success' ? '✅' : 
+                         message.type === 'error' ? '❌' : '⚠️'}
                     </span>
                     <span className="toast-text">{message.text}</span>
                 </div>
             )}
         </div>
-
     );
 }
 

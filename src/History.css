@@ -29,8 +29,13 @@
 }
 
 [data-theme="dark"] .history-header-new {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .view-tab-new.active {
+    background: #0f172a;
 }
 
 .header-content {
@@ -350,6 +355,11 @@
 [data-theme="dark"] .empty-subtitle-new {
     color: #cbd5e1;
 }
+[data-theme="dark"] .exchange-btn-new{
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
+}
+
 
 .exchange-btn-new {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -430,11 +440,9 @@
     flex-direction: column;
     gap: 8px;
     min-width: 0;
-    flex: 1;
 }
 
 .order-type-badge-new {
-    display: inline-flex;
     align-items: center;
     gap: 6px;
     background: rgba(102, 126, 234, 0.1);
@@ -491,6 +499,8 @@
 [data-theme="dark"] .order-id-new:hover {
     background: #334155;
 }
+
+
 
 .order-status-new {
     display: inline-flex;
@@ -692,7 +702,7 @@
     flex: 1;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    padding: 12px 16px;
+    padding: 12px 40px;
     border-radius: 12px;
     color: #64748b;
     font-size: 14px;

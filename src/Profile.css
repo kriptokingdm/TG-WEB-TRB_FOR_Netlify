@@ -62,8 +62,29 @@
 }
 
 [data-theme="dark"] .profile-header-new {
-    background: linear-gradient(135deg, #3730a3 0%, #5b21b6 100%);
+    background: linear-gradient(
+135deg, #30a353 0%, #5b21b6 100%);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .referral-show-btn{
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
+}
+
+[data-theme="dark"] .referral-icon{
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
+}
+
+[data-theme="dark"] .referral-copy-btn {
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
+}
+
+[data-theme="dark"] .withdrawal-section {
+    background: linear-gradient(
+        135deg, #30a353 0%, #5b21b6 100%);
 }
 
 .header-content {
@@ -336,6 +357,7 @@
 }
 
 .section-title-profile {
+    padding: inherit;
     font-size: 20px;
     font-weight: 700;
     color: #2d3748;

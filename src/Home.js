@@ -670,8 +670,8 @@ function Home({ navigateTo }) {
                 <div className="header-content">
                     <div className="header-left">
                         <div className="header-titles">
-                            <h1 className="header-title-new">Обмен валют</h1>
-                            <p className="header-subtitle">Быстрый и безопасный обмен RUB/USDT</p>
+                            <h1 className="header-title-new">TetherRabbit 🥕</h1>
+                            <p className="header-subtitle"> Быстрый и безопасный обмен c нами !</p>
                         </div>
                     </div>
                 </div>
@@ -814,17 +814,6 @@ function Home({ navigateTo }) {
                                         {isBuyMode ? "USDT" : "RUB"}
                                     </span>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Информация о курсе */}
-                        <div className="rate-info-section">
-                            <div className="rate-info-item">
-                                <span className="rate-label">Текущий курс:</span>
-                                <span className="rate-value">{formatRate(getCurrentRateForDisplay())} ₽</span>
-                            </div>
-                            <div className="rate-info-note">
-                                Курс обновляется администратором в реальном времени
                             </div>
                         </div>
                     </div>
@@ -1146,8 +1135,8 @@ function Home({ navigateTo }) {
                 <div className="security-info">
                     <div className="security-icon">🔒</div>
                     <div className="security-text">
-                        <strong>Безопасная сделка:</strong> Все транзакции защищены системой гаранта. 
-                        Средства замораживаются до подтверждения получения.
+                        <strong>Безопасная сделка:</strong> Все транзакции защищены системой TetherRabbit. 
+                        Средства замораживаются у трейдера до подтверждения получения.
                     </div>
                 </div>
             </div>

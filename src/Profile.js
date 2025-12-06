@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-
-// Отладка API подключения
-console.log('🌐 Текущий хост:', window.location.hostname);
-console.log('🔗 API URL:', API_BASE_URL);
-
-
-
-  const API_BASE_URL = 'https://87.242.106.114';
+// Базовый URL API - ИСПРАВЛЕННЫЙ URL
+// ИЛИ если хочешь переключаться между локальной разработкой и продакшеном:
+const API_BASE_URL = 'https://api.allorigins.win/raw?url=http://87.242.106.114';
 
 
 function Profile({ navigateTo }) {

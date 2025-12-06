@@ -2,14 +2,7 @@ import { useState, useEffect } from 'react';
 import './Profile.css';
 
 
-const getApiBaseUrl = () => {
-    if (window.location.hostname === 'localhost') {
-      return 'http://localhost:3002'; // для локальной разработки
-    }
-    return 'https://87.242.106.114'; // для продакшена
-  };
-  
-  const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = 'https://api.allorigins.win/raw?url=https://87.242.106.114';
 
 // Отладка
 console.log('🌐 Текущий хост:', window.location.hostname);

@@ -1,9 +1,29 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
+
+// Отладка API подключения
+console.log('🌐 Текущий хост:', window.location.hostname);
+console.log('🔗 API URL:', API_BASE_URL);
+
+// Тестовый запрос при загрузке
+fetch(`${API_BASE_URL}/health`)
+  .then(r => r.json())
+  .then(data => console.log('✅ API подключен:', data))
+  .catch(err => console.error('❌ Ошибка API:', err));
 // Базовый URL API - ИСПРАВЛЕННЫЙ URL
 // ИЛИ если хочешь переключаться между локальной разработкой и продакшеном:
-const API_BASE_URL = 'https://api.allorigins.win/raw?url=http://87.242.106.114';
+const getApiBaseUrl = () => {
+    // Если на localhost - используй порт 3002 для отладки
+    if (window.location.hostname === 'localhost') {
+      return 'http://87.242.106.114:3002';
+    }
+    // Для продакшена (Netlify/Telegram) используй HTTPS
+    return 'https://87.242.106.114';
+  };
+
+  
+  const API_BASE_URL = getApiBaseUrl();
 
 
 function Profile({ navigateTo }) {

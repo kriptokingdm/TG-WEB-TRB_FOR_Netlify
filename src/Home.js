@@ -557,12 +557,12 @@ function Home({ navigateTo, telegramUser }) {
             showMessage('error', '❌ Пользователь не инициализирован');
             return;
         }
-
+    
         if (!isExchangeReady()) {
             showMessage('error', '❌ Заполните все поля правильно');
             return;
         }
-
+    
         try {
             const userData = JSON.parse(localStorage.getItem('currentUser'));
             const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
@@ -572,7 +572,7 @@ function Home({ navigateTo, telegramUser }) {
             const exchangeData = {
                 type: isBuyMode ? 'buy' : 'sell',
                 amount: parseFloat(amount),
-                rate: isBuyMode ? rates.buy : rates.sell,
+                rate: rates[isBuyMode ? 'buy' : 'sell'],
                 userId: userData.id,
                 telegramId: telegramUser.id || userData.telegramId,
                 username: telegramUser.username || userData.username || 'Пользователь',
@@ -582,29 +582,30 @@ function Home({ navigateTo, telegramUser }) {
                 paymentMethod: isBuyMode ? null : selectedPayment,
                 cryptoAddress: isBuyMode ? selectedCryptoAddress : null
             };
-
-            console.log('📋 Данные заявки:', exchangeData);
-
-            const response = await fetch(`https://api.allorigins.win/raw?url=https://87.242.106.114/api/create-order`, {
+    
+            console.log('📋 Отправляем данные ордера:', exchangeData);
+    
+            // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ - используем твой сервер
+            const response = await fetch('http://87.242.106.114:3002/api/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(exchangeData)
             });
-
+    
             console.log('📡 Ответ сервера:', response.status);
-
+    
             if (response.ok) {
                 const result = await response.json();
                 console.log('📦 Данные ответа:', result);
-
+    
                 if (result.success) {
-                    console.log('✅ Заявка создана:', result.order);
-
+                    console.log('✅ Ордер создан:', result.order);
+    
                     setHasActiveOrder(true);
                     setActiveOrdersCount(prev => prev + 1);
-
+    
                     setCurrentOrderId(result.order.id);
                     setCurrentExchangeData({
                         type: exchangeData.type,
@@ -612,24 +613,33 @@ function Home({ navigateTo, telegramUser }) {
                         rate: exchangeData.rate,
                         convertedAmount: calculateConvertedAmount()
                     });
-
+    
                     setShowSupportChat(true);
                     
-                    showMessage('success', '✅ Заявка создана! Уведомления отправлены в Telegram.');
+                    showMessage('success', '✅ Ордер создан! Уведомление отправлено оператору.');
                     
+                    // Очищаем форму
+                    setAmount('');
+                    setError('');
+                    
+                    // Обновляем список ордеров через 2 секунды
+                    setTimeout(() => {
+                        checkActiveOrders();
+                    }, 2000);
+    
                 } else {
-                    console.error('❌ Ошибка при создании заявки:', result.error);
+                    console.error('❌ Ошибка при создании ордера:', result.error);
                     showMessage('error', `❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
                 }
             } else {
                 const errorText = await response.text();
-                console.error('❌ Ошибка HTTP:', response.status, errorText);
+                console.error('❌ HTTP ошибка:', response.status, errorText);
                 showMessage('error', `❌ Ошибка сервера: ${response.status}`);
             }
-
+    
         } catch (error) {
             console.error('❌ Ошибка обмена:', error);
-            showMessage('error', '❌ Ошибка при выполнении обмена. Проверьте подключение к серверу.');
+            showMessage('error', '❌ Ошибка при создании ордера. Проверьте подключение.');
         }
     };
 

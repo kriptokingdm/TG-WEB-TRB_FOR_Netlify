@@ -10,7 +10,7 @@ function History({ navigateTo }) {
     const [viewMode, setViewMode] = useState('active');
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    const serverUrl = 'https://87.242.106.114.sslip.io';
+    const serverUrl = 'http://87.242.106.114:3002';
 
     useEffect(() => {
         fetchUserOrders();

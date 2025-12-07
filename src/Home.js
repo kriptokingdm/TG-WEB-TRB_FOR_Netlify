@@ -4,7 +4,10 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Конфигурация URL
-const API_URL = 'http://87.242.106.114:3002/api';
+// В самом начале Home.js после импортов добавь:
+const API_BASE_URL = 'http://87.242.106.114:3002';
+const API_URL = `${API_BASE_URL}/api`;
+
 
 function Home({ navigateTo, telegramUser }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -582,15 +585,15 @@ function Home({ navigateTo, telegramUser }) {
     
             console.log('📋 Отправляем ордер:', exchangeData);
     
-            // ПРЯМОЙ ЗАПРОС К НАШЕМУ API
-            const API_URL = 'http://87.242.106.114:3002/api';
+            // ПРЯМОЙ ЗАПРОС К API
             const response = await fetch(`${API_URL}/create-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(exchangeData)
+                body: JSON.stringify(exchangeData),
+                mode: 'cors'  // Явно указываем режим CORS
             });
     
             console.log('📡 Ответ сервера:', response.status, response.statusText);
@@ -630,7 +633,76 @@ function Home({ navigateTo, telegramUser }) {
     
         } catch (error) {
             console.error('❌ Ошибка обмена:', error);
-            showMessage('error', `❌ Ошибка при создании ордера: ${error.message}`);
+            
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                // Пробуем через proxy
+                console.log('🔄 Пробуем через proxy...');
+                await tryWithProxy(exchangeData);
+            } else {
+                showMessage('error', `❌ Ошибка при создании ордера: ${error.message}`);
+            }
+        }
+    };
+    
+    // Добавь новую функцию для proxy:
+    const tryWithProxy = async (exchangeData) => {
+        try {
+            // Пробуем разные прокси
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(`${API_URL}/create-order`)}`,
+                `https://corsproxy.io/?${encodeURIComponent(`${API_URL}/create-order`)}`,
+                `https://thingproxy.freeboard.io/fetch/${API_URL}/create-order`,
+                `https://cors-anywhere.herokuapp.com/${API_URL}/create-order`
+            ];
+            
+            for (const proxyUrl of proxies) {
+                try {
+                    console.log(`🔄 Пробуем прокси: ${proxyUrl}`);
+                    const response = await fetch(proxyUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(exchangeData)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage('success', '✅ Ордер создан через proxy! Уведомление отправлено.');
+                            setHasActiveOrder(true);
+                            setAmount('');
+                            
+                            setTimeout(() => {
+                                checkActiveOrders();
+                            }, 2000);
+                            return;
+                        }
+                    }
+                } catch (proxyError) {
+                    console.log(`❌ Прокси не сработал:`, proxyError.message);
+                }
+            }
+            
+            // Если все прокси не работают
+            showMessage('error', `
+    ❌ Не удалось подключиться к серверу.
+    
+    Возможные решения:
+    1. Проверьте подключение к интернету
+    2. Обновите страницу (F5)
+    3. Обратитесь к администратору
+    
+    Техническая информация:
+    API: ${API_URL}/create-order
+    Пользователь: ${exchangeData.telegramId}
+    Сумма: ${exchangeData.amount}
+            `);
+            
+        } catch (error) {
+            console.error('❌ Proxy ошибка:', error);
+            showMessage('error', `❌ Proxy ошибка: ${error.message}`);
         }
     };
 

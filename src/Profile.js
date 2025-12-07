@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-// Временный фикс - используй cors-anywhere для обхода Mixed Content
-const API_BASE_URL = 'https://cors-anywhere.herokuapp.com/http://87.242.106.114:3002';
+
+const API_BASE_URL = 'http://87.242.106.114:3002';
+const API_URL = `${API_BASE_URL}/api`;
 
 
 console.log('🌐 API URL:', API_BASE_URL);

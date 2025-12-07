@@ -612,7 +612,11 @@ function Home({ navigateTo, telegramUser }) {
                 setAmount('');
                 setError('');
                 
-                showMessage('success', '✅ Ордер создан! Уведомление отправлено оператору.');
+                const notificationMsg = result.notification_sent 
+                    ? '✅ Ордер создан! Уведомление отправлено оператору.'
+                    : '✅ Ордер создан! (Уведомление не отправлено)';
+                
+                showMessage('success', notificationMsg);
                 
                 // Обновляем список ордеров
                 setTimeout(() => {

@@ -1,8 +1,17 @@
 [build]
-  command = "npm run build"
   publish = "build"
+  command = "npm run build"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "http://87.242.106.114:3002/api/:splat"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/health"
+  to = "http://87.242.106.114:3002/health"
+  status = 200
+
+[functions]
+  directory = "netlify/functions"

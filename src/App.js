@@ -1,3 +1,4 @@
+// App.js - Убери лишний useEffect и оставь только один
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Home from './Home';
@@ -9,6 +10,144 @@ import TransitionWrapper from './TransitionWrapper';
 function App() {
     const [currentView, setCurrentView] = useState('/');
     const [transitionDirection, setTransitionDirection] = useState('');
+    const [telegramUser, setTelegramUser] = useState(null);
+
+    // Только ОДИН useEffect для инициализации
+    useEffect(() => {
+        const initTelegram = () => {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                
+                // Инициализация
+                tg.ready();
+                tg.expand(); // Важно! Расширяем приложение
+                
+                console.log('🤖 Telegram WebApp инициализирован');
+                console.log('👤 User данные:', tg.initDataUnsafe?.user);
+                console.log('📋 InitData:', tg.initData);
+                console.log('📱 Telegram версия:', tg.version);
+                
+                // Пробуем получить пользователя
+                let userData = null;
+                
+                // 1. Прямо из initDataUnsafe
+                if (tg.initDataUnsafe?.user) {
+                    userData = tg.initDataUnsafe.user;
+                    console.log('✅ Пользователь из initDataUnsafe:', userData);
+                } 
+                // 2. Пробуем распарсить initData
+                else if (tg.initData) {
+                    try {
+                        const params = new URLSearchParams(tg.initData);
+                        const userStr = params.get('user');
+                        if (userStr) {
+                            userData = JSON.parse(userStr);
+                            console.log('✅ Пользователь из initData:', userData);
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка парсинга initData:', e);
+                    }
+                }
+                
+                // 3. Из localStorage
+                if (!userData) {
+                    const savedUser = localStorage.getItem('telegramUser');
+                    if (savedUser) {
+                        try {
+                            userData = JSON.parse(savedUser);
+                            console.log('📱 Пользователь из localStorage:', userData);
+                        } catch (e) {
+                            console.error('❌ Ошибка парсинга localStorage:', e);
+                        }
+                    }
+                }
+                
+                // Сохраняем пользователя
+                if (userData) {
+                    setTelegramUser(userData);
+                    
+                    // Сохраняем в localStorage
+                    localStorage.setItem('telegramUser', JSON.stringify(userData));
+                    
+                    // Сохраняем в формат currentUser
+                    const appUser = {
+                        id: `user_${userData.id}`,
+                        telegramId: userData.id,
+                        username: userData.username || `user_${userData.id}`,
+                        firstName: userData.first_name || 'Пользователь',
+                        lastName: userData.last_name || '',
+                        photoUrl: userData.photo_url || null
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(appUser));
+                } else {
+                    console.log('⚠️ Пользователь не найден, создаем тестового');
+                    
+                    // Тестовый пользователь
+                    const testUser = {
+                        id: 7879866656,
+                        username: 'TERBCEO',
+                        first_name: 'G',
+                        last_name: ''
+                    };
+                    
+                    setTelegramUser(testUser);
+                    localStorage.setItem('telegramUser', JSON.stringify(testUser));
+                    
+                    const appUser = {
+                        id: 'user_7879866656',
+                        telegramId: 7879866656,
+                        username: 'TERBCEO',
+                        firstName: 'G',
+                        lastName: ''
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(appUser));
+                }
+                
+                // Устанавливаем цвета (если версия поддерживает)
+                try {
+                    if (parseFloat(tg.version) >= 6.1) {
+                        tg.setHeaderColor('#2E2E2E');
+                        tg.setBackgroundColor('#121212');
+                    }
+                } catch (e) {
+                    console.log('⚠️ Цвета не поддерживаются в версии', tg.version);
+                }
+                
+                // Устанавливаем тему
+                if (tg.colorScheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    try {
+                        if (parseFloat(tg.version) >= 6.1) {
+                            tg.setBackgroundColor('#0f172a');
+                        }
+                    } catch (e) {}
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+                
+            } else {
+                console.log('⚠️ Telegram WebApp не найден, работаем в браузере');
+                
+                // Проверяем сохраненного пользователя
+                const savedUser = localStorage.getItem('telegramUser');
+                if (savedUser) {
+                    try {
+                        setTelegramUser(JSON.parse(savedUser));
+                    } catch (e) {
+                        console.error('❌ Ошибка загрузки пользователя:', e);
+                    }
+                }
+            }
+        };
+
+        initTelegram();
+        
+        // Проверяем сохраненную тему
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    }, []);
 
     // Определяем направление перехода
     const navigateTo = (view) => {
@@ -34,7 +173,10 @@ function App() {
     };
 
     const renderView = () => {
-        const pageProps = { navigateTo };
+        const pageProps = { 
+            navigateTo,
+            telegramUser // Передаем пользователя в компоненты
+        };
         
         switch (currentView) {
             case '/':
@@ -49,53 +191,6 @@ function App() {
                 return <Home {...pageProps} />;
         }
     };
-
-    // Инициализация Telegram WebApp
-    useEffect(() => {
-        const initTelegram = () => {
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.ready();
-                tg.expand();
-                tg.enableClosingConfirmation();
-                
-                // Устанавливаем цвет фона
-                tg.setBackgroundColor('#f8fafc');
-                tg.setHeaderColor('secondary_bg_color');
-                
-                console.log('🤖 Telegram WebApp инициализирован');
-                
-                // Устанавливаем тему в зависимости от Telegram
-                if (tg.colorScheme === 'dark') {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    tg.setBackgroundColor('#0f172a');
-                } else {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                }
-                
-                // Слушаем изменения темы
-                tg.onEvent('themeChanged', () => {
-                    if (tg.colorScheme === 'dark') {
-                        document.documentElement.setAttribute('data-theme', 'dark');
-                        tg.setBackgroundColor('#0f172a');
-                    } else {
-                        document.documentElement.setAttribute('data-theme', 'light');
-                        tg.setBackgroundColor('#f8fafc');
-                    }
-                });
-            } else {
-                console.log('⚠️ Telegram WebApp не найден, работаем в браузере');
-            }
-        };
-
-        initTelegram();
-        
-        // Проверяем сохраненную тему
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-    }, []);
 
     return (
         <div className="App">

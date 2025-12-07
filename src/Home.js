@@ -6,11 +6,14 @@ import SupportChat from './SupportChat';
 // Конфигурация URL
 const serverUrl = 'https://87.242.106.114';
 
-function Home({ navigateTo }) {
+function Home({ navigateTo, telegramUser }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
     const [isSwapped, setIsSwapped] = useState(false);
     const [amount, setAmount] = useState('');
     const [error, setError] = useState('');
+    
+    // ДОБАВЬТЕ ЭТУ СТРОКУ:
+    const [userData, setUserData] = useState(null);
     
     // ПРОСТЫЕ КУРСЫ
     const [rates, setRates] = useState({
@@ -80,16 +83,26 @@ function Home({ navigateTo }) {
             navigateTo(path);
         }, 50);
     };
+
+    // Обновите этот useEffect:
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (!userInitialized) {
-                console.log('⏳ Telegram не ответил, создаем пользователя принудительно');
-                createTestUser();
-            }
-        }, 3000); // 3 секунды ждем Telegram
+        console.log('👤 Telegram User в Home:', telegramUser);
         
-        return () => clearTimeout(timer);
-    }, [userInitialized]);
+        if (telegramUser) {
+            const newUserData = {
+                id: `user_${telegramUser.id}`,
+                telegramId: telegramUser.id,
+                username: telegramUser.username || `user_${telegramUser.id}`,
+                firstName: telegramUser.first_name || 'Пользователь',
+                lastName: telegramUser.last_name || '',
+                photoUrl: telegramUser.photo_url || null
+            };
+            setUserData(newUserData);
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('currentUser', JSON.stringify(newUserData));
+        }
+    }, [telegramUser]);
 
     // Функция для расчета конвертированной суммы
     const calculateConvertedAmount = () => {
@@ -168,66 +181,66 @@ function Home({ navigateTo }) {
     };
 
     // Инициализация пользователя Telegram
-    // Инициализация пользователя Telegram
-const initializeUser = () => {
-    console.log('🔧 Инициализация пользователя Telegram...');
-    
-    // Сначала пробуем Telegram WebApp
-    if (window.Telegram?.WebApp) {
-        console.log('🤖 Telegram WebApp доступен');
-        const tg = window.Telegram.WebApp;
+    const initializeUser = () => {
+        console.log('🔧 Инициализация пользователя Telegram...');
         
-        tg.ready();
-        tg.expand();
+        // Сначала пробуем Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            console.log('🤖 Telegram WebApp доступен');
+            const tg = window.Telegram.WebApp;
+            
+            tg.ready();
+            tg.expand();
+            
+            // Даем время на инициализацию
+            setTimeout(() => {
+                const telegramUser = tg.initDataUnsafe?.user;
+                if (telegramUser) {
+                    console.log('✅ Telegram пользователь найден:', telegramUser);
+                    saveUserData(telegramUser);
+                    setUserInitialized(true);
+                    return;
+                }
+                
+                // Если Telegram не дал данные, используем тестовые
+                console.log('⚠️ Telegram данные не получены, используем тестового');
+                createTestUser();
+            }, 500);
+            
+            return;
+        }
         
-        // Даем время на инициализацию
-        setTimeout(() => {
-            const telegramUser = tg.initDataUnsafe?.user;
-            if (telegramUser) {
-                console.log('✅ Telegram пользователь найден:', telegramUser);
-                saveUserData(telegramUser);
+        // Пробуем localStorage
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            try {
+                const userData = JSON.parse(savedUser);
+                console.log('✅ Пользователь из localStorage:', userData);
+                setUserData(userData);
                 setUserInitialized(true);
                 return;
+            } catch (e) {
+                console.error('❌ Ошибка парсинга localStorage:', e);
             }
-            
-            // Если Telegram не дал данные, используем тестовые
-            console.log('⚠️ Telegram данные не получены, используем тестового');
-            createTestUser();
-        }, 500);
-        
-        return;
-    }
-    
-    // Пробуем localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            const userData = JSON.parse(savedUser);
-            console.log('✅ Пользователь из localStorage:', userData);
-            setUserInitialized(true);
-            return;
-        } catch (e) {
-            console.error('❌ Ошибка парсинга localStorage:', e);
         }
-    }
-    
-    // Создаем тестового пользователя
-    createTestUser();
-};
-
-// ДОБАВЬ ЭТУ ФУНКЦИЮ ПОСЛЕ initializeUser:
-const createTestUser = () => {
-    console.log('⚠️ Создаем тестового пользователя');
-    const testUser = {
-        id: 7879866656,
-        username: 'TERBCEO',
-        first_name: 'G',
-        last_name: ''
+        
+        // Создаем тестового пользователя
+        createTestUser();
     };
-    
-    saveUserData(testUser);
-    setUserInitialized(true);
-};
+
+    // ДОБАВЬТЕ ЭТУ ФУНКЦИЮ ПОСЛЕ initializeUser:
+    const createTestUser = () => {
+        console.log('⚠️ Создаем тестового пользователя');
+        const testUser = {
+            id: 7879866656,
+            username: 'TERBCEO',
+            first_name: 'G',
+            last_name: ''
+        };
+        
+        saveUserData(testUser);
+        setUserInitialized(true);
+    };
 
     // Сохранение данных пользователя
     const saveUserData = (telegramUser) => {
@@ -244,6 +257,7 @@ const createTestUser = () => {
             chatId: telegramUser.id
         };
         
+        setUserData(appUser);
         localStorage.setItem('currentUser', JSON.stringify(appUser));
         localStorage.setItem('user', JSON.stringify(appUser));
         localStorage.setItem('token', `tg_${telegramUser.id}_${Date.now()}`);
@@ -253,45 +267,44 @@ const createTestUser = () => {
     };
 
     // Загрузка курсов с бекенда
-   // В Home.js в функции fetchExchangeRates замени URL:
-const fetchExchangeRates = async () => {
-    try {
-        console.log('📡 Запрашиваем курсы...');
-        
-        // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ
-        const response = await fetch('https://87.242.106.114/api/exchange-rate', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ Курсы получены:', data);
+    const fetchExchangeRates = async () => {
+        try {
+            console.log('📡 Запрашиваем курсы...');
             
-            if (data.success) {
+            // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ
+            const response = await fetch('https://87.242.106.114/api/exchange-rate', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Курсы получены:', data);
+                
+                if (data.success) {
+                    setRates({
+                        buy: data.data.buy || 92.50,
+                        sell: data.data.sell || 93.50
+                    });
+                }
+            } else {
+                console.log('⚠️ Используем стандартные курсы');
                 setRates({
-                    buy: data.data.buy || 92.50,
-                    sell: data.data.sell || 93.50
+                    buy: 92.50,
+                    sell: 93.50
                 });
             }
-        } else {
-            console.log('⚠️ Используем стандартные курсы');
+        } catch (error) {
+            console.error('❌ Ошибка загрузки курсов:', error.message);
+            // Fallback курсы
             setRates({
                 buy: 92.50,
                 sell: 93.50
             });
         }
-    } catch (error) {
-        console.error('❌ Ошибка загрузки курсов:', error.message);
-        // Fallback курсы
-        setRates({
-            buy: 92.50,
-            sell: 93.50
-        });
-    }
-};
+    };
 
     const handleSwap = () => {
         setIsSwapped(!isSwapped);
@@ -512,31 +525,29 @@ const fetchExchangeRates = async () => {
     };
 
     // Проверка готовности к обмену
-    // Проверка готовности к обмену
-// Упрощенная проверка готовности к обмену
-const isExchangeReady = () => {
-    // Быстрая проверка без лишнего логирования
-    if (!userInitialized) {
-        console.log('⏳ Пользователь не инициализирован');
-        return false;
-    }
-    
-    if (!amount || error) return false;
-    
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount)) return false;
-    
-    // Проверяем лимиты
-    if (isBuyMode) {
-        if (numAmount < MIN_RUB || numAmount > MAX_RUB) return false;
-        if (!selectedCryptoAddress) return false;
-    } else {
-        if (numAmount < MIN_USDT || numAmount > MAX_USDT) return false;
-        if (!selectedPayment) return false;
-    }
-    
-    return !hasActiveOrder;
-};
+    const isExchangeReady = () => {
+        // Быстрая проверка без лишнего логирования
+        if (!userInitialized) {
+            console.log('⏳ Пользователь не инициализирован');
+            return false;
+        }
+        
+        if (!amount || error) return false;
+        
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount)) return false;
+        
+        // Проверяем лимиты
+        if (isBuyMode) {
+            if (numAmount < MIN_RUB || numAmount > MAX_RUB) return false;
+            if (!selectedCryptoAddress) return false;
+        } else {
+            if (numAmount < MIN_USDT || numAmount > MAX_USDT) return false;
+            if (!selectedPayment) return false;
+        }
+        
+        return !hasActiveOrder;
+    };
 
     // Обработчик обмена
     const handleExchange = async () => {

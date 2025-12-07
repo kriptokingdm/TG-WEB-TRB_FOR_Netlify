@@ -4,7 +4,7 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // Конфигурация URL
-const serverUrl = 'https://87.242.106.114';
+const API_URL = 'http://87.242.106.114:3002/api';
 
 function Home({ navigateTo, telegramUser }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
@@ -549,7 +549,7 @@ function Home({ navigateTo, telegramUser }) {
         return !hasActiveOrder;
     };
 
-    // Обработчик обмена
+    // Обработчик обмена - ИСПРАВЛЕННАЯ ВЕРСИЯ
     const handleExchange = async () => {
         console.log('🔄 Начало создания заявки');
         
@@ -573,7 +573,6 @@ function Home({ navigateTo, telegramUser }) {
                 type: isBuyMode ? 'buy' : 'sell',
                 amount: parseFloat(amount),
                 rate: rates[isBuyMode ? 'buy' : 'sell'],
-                userId: userData.id,
                 telegramId: telegramUser.id || userData.telegramId,
                 username: telegramUser.username || userData.username || 'Пользователь',
                 firstName: userData.firstName,
@@ -583,8 +582,9 @@ function Home({ navigateTo, telegramUser }) {
     
             console.log('📋 Отправляем ордер:', exchangeData);
     
-            // ПРЯМОЙ ЗАПРОС к нашему API
-            const response = await fetch('http://87.242.106.114:3002/api/create-order', {
+            // ПРЯМОЙ ЗАПРОС К НАШЕМУ API
+            const API_URL = 'http://87.242.106.114:3002/api';
+            const response = await fetch(`${API_URL}/create-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -593,7 +593,13 @@ function Home({ navigateTo, telegramUser }) {
                 body: JSON.stringify(exchangeData)
             });
     
-            console.log('📡 Ответ сервера:', response.status);
+            console.log('📡 Ответ сервера:', response.status, response.statusText);
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ HTTP ошибка:', response.status, errorText);
+                throw new Error(`HTTP ошибка ${response.status}: ${errorText}`);
+            }
     
             const result = await response.json();
             console.log('📦 Данные ответа:', result);
@@ -620,7 +626,7 @@ function Home({ navigateTo, telegramUser }) {
     
         } catch (error) {
             console.error('❌ Ошибка обмена:', error);
-            showMessage('error', '❌ Ошибка при создании ордера. Проверьте подключение.');
+            showMessage('error', `❌ Ошибка при создании ордера: ${error.message}`);
         }
     };
 
@@ -641,7 +647,7 @@ function Home({ navigateTo, telegramUser }) {
             const userId = userData.id;
             console.log('🔍 Проверяем активные ордеры для:', userId);
 
-            const response = await fetch(`https://api.allorigins.win/raw?url=https://87.242.106.114/api/user-orders/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/user-orders/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',

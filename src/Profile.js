@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-const API_BASE_URL = window.location.hostname === 'localhost'
-    ? 'http://87.242.106.114:3002'
-    : 'https://87.242.106.114';
+const API_BASE_URL = 'http://87.242.106.114:3002';
+
+console.log('🌐 API URL:', API_BASE_URL);
 
 // Отладка
 console.log('🌐 Текущий хост:', window.location.hostname);
@@ -147,58 +147,43 @@ function Profile({ navigateTo }) {
         try {
             const userId = getUserId();
             console.log('📊 Загрузка статистики для ID:', userId);
-
-            if (!userId || userId === '—') {
-                console.warn('ID пользователя не найден');
-                return;
-            }
-
-            console.log('🌐 Запрос к:', `${API_BASE_URL}/api/referral/stats/${userId}`);
-
-            const response = await fetch(`${API_BASE_URL}/api/referral/stats/${userId}`);
+            
+            // Протестируем соединение
+            const testUrl = `${API_BASE_URL}/health`;
+            console.log('🏥 Тест API:', testUrl);
+            
+            const testResponse = await fetch(testUrl);
+            console.log('✅ API подключен:', testResponse.status);
+            
+            const realUrl = `${API_BASE_URL}/api/referral/stats/${userId}`;
+            console.log('🌐 Запрос статистики:', realUrl);
+            
+            const response = await fetch(realUrl);
             console.log('✅ Ответ сервера:', response.status);
-
+            
             if (!response.ok) {
+                console.error('❌ HTTP ошибка:', response.status);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
+            
             const data = await response.json();
             console.log('📈 Данные статистики:', data);
-
+            
             if (data.success) {
-                const newStats = {
+                setReferralStats({
                     totalReferrals: data.data.total_referrals || 0,
                     activeReferrals: data.data.active_referrals || 0,
                     earned: data.data.earned || 0,
                     pendingEarned: data.data.pending_earned || 0,
                     referralLink: data.data.referral_link || getReferralLink(),
                     referralCode: data.data.referral_code || getReferralCode(),
-                    referral_transactions: data.data.referral_transactions || 0,
-                    referral_total_amount: data.data.referral_total_amount || 0,
                     commission_percent: data.data.commission_percent || 0.5
-                };
-
-                console.log('✅ Обновлена статистика:', newStats);
-                setReferralStats(newStats);
-            } else {
-                console.error('❌ API вернул success: false', data);
-                showMessage('error', 'Ошибка загрузки статистики');
+                });
+                console.log('✅ Статистика обновлена');
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки статистики:', error);
             showMessage('error', 'Ошибка подключения к серверу');
-
-            setReferralStats({
-                totalReferrals: 0,
-                activeReferrals: 0,
-                earned: 0,
-                pendingEarned: 0,
-                referralLink: getReferralLink(),
-                referralCode: getReferralCode(),
-                referral_transactions: 0,
-                referral_total_amount: 0,
-                commission_percent: 0.5
-            });
         }
     };
 

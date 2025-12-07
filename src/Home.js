@@ -577,64 +577,45 @@ function Home({ navigateTo, telegramUser }) {
                 telegramId: telegramUser.id || userData.telegramId,
                 username: telegramUser.username || userData.username || 'Пользователь',
                 firstName: userData.firstName,
-                lastName: userData.lastName,
-                chatId: userData.chatId || userData.telegramId,
                 paymentMethod: isBuyMode ? null : selectedPayment,
                 cryptoAddress: isBuyMode ? selectedCryptoAddress : null
             };
     
-            console.log('📋 Отправляем данные ордера:', exchangeData);
+            console.log('📋 Отправляем ордер:', exchangeData);
     
-            // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ - используем твой сервер
+            // ПРЯМОЙ ЗАПРОС к нашему API
             const response = await fetch('http://87.242.106.114:3002/api/create-order', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(exchangeData)
             });
     
             console.log('📡 Ответ сервера:', response.status);
     
-            if (response.ok) {
-                const result = await response.json();
-                console.log('📦 Данные ответа:', result);
+            const result = await response.json();
+            console.log('📦 Данные ответа:', result);
     
-                if (result.success) {
-                    console.log('✅ Ордер создан:', result.order);
+            if (result.success) {
+                console.log('✅ Ордер создан:', result.order);
     
-                    setHasActiveOrder(true);
-                    setActiveOrdersCount(prev => prev + 1);
+                setHasActiveOrder(true);
+                setActiveOrdersCount(prev => prev + 1);
+                setAmount('');
+                setError('');
+                
+                showMessage('success', '✅ Ордер создан! Уведомление отправлено оператору.');
+                
+                // Обновляем список ордеров
+                setTimeout(() => {
+                    checkActiveOrders();
+                }, 2000);
     
-                    setCurrentOrderId(result.order.id);
-                    setCurrentExchangeData({
-                        type: exchangeData.type,
-                        amount: exchangeData.amount,
-                        rate: exchangeData.rate,
-                        convertedAmount: calculateConvertedAmount()
-                    });
-    
-                    setShowSupportChat(true);
-                    
-                    showMessage('success', '✅ Ордер создан! Уведомление отправлено оператору.');
-                    
-                    // Очищаем форму
-                    setAmount('');
-                    setError('');
-                    
-                    // Обновляем список ордеров через 2 секунды
-                    setTimeout(() => {
-                        checkActiveOrders();
-                    }, 2000);
-    
-                } else {
-                    console.error('❌ Ошибка при создании ордера:', result.error);
-                    showMessage('error', `❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
-                }
             } else {
-                const errorText = await response.text();
-                console.error('❌ HTTP ошибка:', response.status, errorText);
-                showMessage('error', `❌ Ошибка сервера: ${response.status}`);
+                console.error('❌ Ошибка при создании ордера:', result.error);
+                showMessage('error', `❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
             }
     
         } catch (error) {

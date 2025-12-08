@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import './Profile.css';
 
 
-const API_BASE_URL = 'http://87.242.106.114:3002';
+const API_BASE_URL = 'https://87.242.106.114';
 const API_URL = `${API_BASE_URL}/api`;
 
 // Production API endpoints

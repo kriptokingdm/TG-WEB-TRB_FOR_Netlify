@@ -2,59 +2,34 @@ import { useState, useEffect } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
 
+// API работает на HTTP порту 3002
+const API_URL = 'http://87.242.106.114:3002';
 
-// Production API endpoints
-const API_ENDPOINTS = [
-    'https://tethrab.shop/api',      // Основной домен (уже работает!)
-    'https://87.242.106.114/api',    // IP как fallback
-    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
-];
-
-// Умный fetch
-const apiFetch = async (path, options = {}) => {
-    let lastError = '';
+// Простая функция fetch
+const simpleFetch = async (endpoint) => {
+    const url = `${API_URL}${endpoint}`;
+    console.log('📡 Запрос истории:', url);
     
-    for (const baseUrl of API_ENDPOINTS) {
-        try {
-            const url = `${baseUrl}${path}`;
-            console.log(`🌐 Пробуем: ${url}`);
-            
-            const response = await fetch(url, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log(`✅ Успех с ${baseUrl}`);
-                return data;
-            }
-            
-            lastError = `HTTP ${response.status}`;
-            console.log(`⚠️ ${url}: ${lastError}`);
-            
-        } catch (error) {
-            lastError = error.message;
-            console.log(`❌ ${baseUrl}: ${lastError}`);
-        }
-    }
-    
-    throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
-};
-
-// Тест подключения
-const testConnection = async () => {
     try {
-        const result = await apiFetch('/health');
-        console.log('✅ API работает:', result);
-        return true;
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Ответ истории:', data);
+            return data;
+        }
+        
+        console.error(`❌ HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}`);
+        
     } catch (error) {
-        console.error('❌ API не доступен:', error);
-        return false;
+        console.error('❌ Ошибка:', error.message);
+        throw error;
     }
 };
 
@@ -66,67 +41,15 @@ function History({ navigateTo }) {
     const [viewMode, setViewMode] = useState('active');
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    // Используем HTTPS прокси для обхода Mixed Content
-    const getProxyUrl = (path) => {
-        const baseUrl = 'https://87.242.106.114/api';
-        const encodedUrl = encodeURIComponent(`${baseUrl}${path}`);
-        
-        // Пробуем разные прокси
-        const proxies = [
-            `https://api.allorigins.win/raw?url=${encodedUrl}`,
-            `https://corsproxy.io/?${encodedUrl}`,
-            `https://thingproxy.freeboard.io/fetch/${baseUrl}${path}`,
-            `https://cors-anywhere.herokuapp.com/${baseUrl}${path}`
-        ];
-        
-        // Возвращаем первый прокси (можно сделать логику выбора лучшего)
-        return proxies[0];
-    };
-
-    const fetchWithProxy = async (url, options = {}) => {
-        const proxyUrl = getProxyUrl(url);
-        
-        try {
-            console.log(`🔄 Запрос через прокси: ${proxyUrl}`);
-            
-            const response = await fetch(proxyUrl, {
-                ...options,
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    ...options.headers
-                }
-            });
-            
-            console.log(`📡 Ответ прокси: ${response.status}`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                return { success: true, data };
-            } else {
-                const errorText = await response.text();
-                console.error(`❌ Ошибка прокси ${response.status}:`, errorText);
-                return { 
-                    success: false, 
-                    error: `HTTP ${response.status}` 
-                };
-            }
-            
-        } catch (error) {
-            console.error('❌ Ошибка прокси:', error);
-            return { 
-                success: false, 
-                error: error.message 
-            };
-        }
-    };
-
     useEffect(() => {
         fetchUserOrders();
             
+        // Обновляем каждые 30 секунд если есть активные ордера
         const intervalId = setInterval(() => {
-            if (!isLoading && orders.length > 0) {
+            const hasActiveOrders = orders.some(order => 
+                order.status === 'pending' || order.status === 'processing'
+            );
+            if (hasActiveOrders) {
                 fetchUserOrders();
             }
         }, 30000);
@@ -134,104 +57,105 @@ function History({ navigateTo }) {
         return () => clearInterval(intervalId);
     }, []);
 
+    // Основная функция загрузки ордеров
     const fetchUserOrders = async () => {
         try {
             setIsLoading(true);
-            const userData = JSON.parse(localStorage.getItem('currentUser'));
-
-            if (!userData || !userData.id) {
-                setError('Требуется авторизация');
-                setIsLoading(false);
-                return;
+            
+            // Получаем пользователя из localStorage
+            const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
+            
+            console.log('👤 Текущий пользователь:', userData);
+            
+            // Если нет user.id, пробуем использовать telegramUser.id
+            let userId = userData.id;
+            if (!userId && telegramUser.id) {
+                userId = `user_${telegramUser.id}`;
+                console.log('📝 Используем telegram ID для user_id:', userId);
+            }
+            
+            if (!userId) {
+                console.log('⚠️ Пользователь не найден в localStorage');
+                // Используем тестового пользователя
+                userId = 'user_7879866656';
+                console.log('📝 Используем тестового пользователя:', userId);
             }
 
-            const result = await fetchWithProxy(`/api/user-orders/${userData.id}`, {
-                method: 'GET'
-            });
-
+            console.log('🔍 Запрашиваем ордера для:', userId);
+            
+            // Делаем запрос к API
+            const result = await simpleFetch(`/user-orders/${userId}`);
+            
             if (result.success) {
-                const data = result.data;
-                let ordersData = [];
-
-                if (data.success && Array.isArray(data.orders)) {
-                    ordersData = data.orders;
-                } else if (data.orders && typeof data.orders === 'object') {
-                    ordersData = Object.values(data.orders);
-                } else if (Array.isArray(data)) {
-                    ordersData = data;
-                }
-
+                // Обрабатываем данные
+                let ordersData = result.orders || [];
+                
+                console.log(`📊 Получено ордеров: ${ordersData.length}`);
+                
+                // Сортируем по дате (новые сверху)
                 const sortedOrders = ordersData.sort((a, b) => {
-                    const dateA = new Date(a.createdAt || a.timestamp || Date.now());
-                    const dateB = new Date(b.createdAt || b.timestamp || Date.now());
+                    const dateA = new Date(a.created_at || a.createdAt || Date.now());
+                    const dateB = new Date(b.created_at || b.createdAt || Date.now());
                     return dateB - dateA;
                 });
-
+                
                 setOrders(sortedOrders);
                 setError('');
-                showMessage('success', '✅ История обновлена');
                 
+                // Сохраняем в localStorage для офлайн режима
                 localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
-            } else {
-                // Пробуем прямой запрос как fallback
-                try {
-                    const directResponse = await fetch(`https://87.242.106.114/api/user-orders/${userData.id}`, {
-                        method: 'GET',
-                        headers: { 
-                            'Accept': 'application/json', 
-                            'Content-Type': 'application/json' 
-                        }
-                    });
-
-                    if (directResponse.ok) {
-                        const data = await directResponse.json();
-                        let ordersData = [];
-
-                        if (data.success && Array.isArray(data.orders)) {
-                            ordersData = data.orders;
-                        } else if (data.orders && typeof data.orders === 'object') {
-                            ordersData = Object.values(data.orders);
-                        } else if (Array.isArray(data)) {
-                            ordersData = data;
-                        }
-
-                        const sortedOrders = ordersData.sort((a, b) => {
-                            const dateA = new Date(a.createdAt || a.timestamp || Date.now());
-                            const dateB = new Date(b.createdAt || b.timestamp || Date.now());
-                            return dateB - dateA;
-                        });
-
-                        setOrders(sortedOrders);
-                        localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
-                        showMessage('success', '✅ История загружена (прямое подключение)');
-                    } else {
-                        throw new Error('Direct request failed');
-                    }
-                } catch (directError) {
-                    // Используем локальные данные
-                    const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-                    if (localOrders.length > 0) {
-                        setOrders(localOrders);
-                        setError('⚠️ Используем локальные данные');
-                        showMessage('warning', '⚠️ Используем кэшированные данные');
-                    } else {
-                        setError('Ошибка загрузки данных');
-                        showMessage('error', '❌ Ошибка загрузки');
-                    }
+                
+                if (sortedOrders.length > 0) {
+                    showMessage('success', '✅ История загружена');
+                } else {
+                    showMessage('info', '📭 История пуста');
                 }
+                
+            } else {
+                throw new Error(result.error || 'Ошибка сервера');
             }
+            
         } catch (error) {
             console.error('❌ Ошибка загрузки:', error);
-            const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-            if (localOrders.length > 0) {
-                setOrders(localOrders);
-                showMessage('warning', '⚠️ Используем кэшированные данные');
-            } else {
-                setError('Ошибка соединения');
+            
+            // Пробуем загрузить из localStorage
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                if (localOrders.length > 0) {
+                    console.log('📂 Используем локальные данные:', localOrders.length);
+                    setOrders(localOrders);
+                    setError('⚠️ Используем кэшированные данные');
+                    showMessage('warning', '⚠️ Используем сохраненные данные');
+                } else {
+                    setError('Не удалось загрузить историю');
+                    showMessage('error', '❌ Ошибка загрузки');
+                }
+            } catch (localError) {
+                console.error('❌ Ошибка загрузки локальных данных:', localError);
+                setError('Ошибка соединения с сервером');
                 showMessage('error', '❌ Ошибка сети');
             }
+            
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Тест подключения
+    const testConnection = async () => {
+        try {
+            showMessage('info', '🔄 Тестируем подключение...');
+            
+            const response = await fetch(`${API_URL}/health`);
+            if (response.ok) {
+                const data = await response.json();
+                showMessage('success', `✅ API работает! Статус: ${data.status}`);
+            } else {
+                showMessage('error', `❌ HTTP ${response.status}`);
+            }
+        } catch (error) {
+            showMessage('error', `❌ Ошибка сети: ${error.message}`);
         }
     };
 
@@ -252,12 +176,14 @@ function History({ navigateTo }) {
     const getStatusInfo = (status) => {
         switch (status?.toLowerCase()) {
             case 'completed':
+            case 'success':
                 return { class: 'status-completed', text: 'Завершено', icon: '✅' };
             case 'pending':
                 return { class: 'status-pending', text: 'Ожидание', icon: '⏳' };
             case 'processing':
                 return { class: 'status-processing', text: 'В работе', icon: '⚡' };
             case 'cancelled':
+            case 'failed':
                 return { class: 'status-cancelled', text: 'Отменено', icon: '❌' };
             default:
                 return { class: 'status-pending', text: status || 'Неизвестно', icon: '❓' };
@@ -266,7 +192,7 @@ function History({ navigateTo }) {
 
     const calculateTotal = (order) => {
         if (!order || !order.amount || !order.rate) return '—';
-        if (order.type === 'buy') {
+        if (order.type === 'buy' || order.operation_type === 'buy') {
             return (order.amount / order.rate).toFixed(2) + ' USDT';
         } else {
             return (order.amount * order.rate).toFixed(2) + ' RUB';
@@ -276,7 +202,10 @@ function History({ navigateTo }) {
     const formatDate = (dateString) => {
         if (!dateString) return '—';
         try {
-            return new Date(dateString).toLocaleDateString('ru-RU', {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '—';
+            
+            return date.toLocaleDateString('ru-RU', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
@@ -284,27 +213,9 @@ function History({ navigateTo }) {
                 minute: '2-digit'
             });
         } catch (e) {
+            console.log('Ошибка форматирования даты:', e);
             return '—';
         }
-    };
-
-    const canOpenChat = (order) => {
-        if (!order || !order.status) return false;
-        return order.status === 'pending' || order.status === 'processing';
-    };
-
-    const openOrderChat = (order) => {
-        if (!canOpenChat(order)) {
-            showMessage('error', `❌ Чат недоступен для статуса "${order.status}"`);
-            return;
-        }
-
-        if (!order.assignedTo && order.status === 'pending') {
-            showMessage('warning', '⏳ Ожидайте, оператор скоро свяжется');
-            return;
-        }
-
-        setActiveChat({ orderId: order.id });
     };
 
     const copyOrderId = (orderId) => {
@@ -316,7 +227,9 @@ function History({ navigateTo }) {
         const activeOrders = orders.filter(order =>
             order.status === 'pending' || order.status === 'processing'
         );
-        const completedOrders = orders.filter(order => order.status === 'completed');
+        const completedOrders = orders.filter(order => 
+            order.status === 'completed' || order.status === 'success'
+        );
 
         return {
             total: orders.length,
@@ -325,32 +238,12 @@ function History({ navigateTo }) {
         };
     };
 
-    // Добавим тестовую кнопку для проверки прокси
-    const testProxyConnection = async () => {
-        showMessage('info', '🔄 Тестируем подключение...');
-        
-        try {
-            const result = await fetchWithProxy('/health', { method: 'GET' });
-            
-            if (result.success) {
-                showMessage('success', `✅ Подключение работает! Статус: ${result.data.status}`);
-                return true;
-            } else {
-                showMessage('error', `❌ Прокси ошибка: ${result.error}`);
-                return false;
-            }
-        } catch (error) {
-            showMessage('error', `❌ Ошибка теста: ${error.message}`);
-            return false;
-        }
-    };
-
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
 
     return (
         <div className="history-container">
-            {/* Новый хедер */}
+            {/* Хедер */}
             <div className="history-header-new">
                 <div className="header-content">
                     <div className="header-left">
@@ -362,21 +255,21 @@ function History({ navigateTo }) {
                         </button>
                         <div className="header-titles">
                             <h1 className="header-title-new">История операций</h1>
-                            <p className="header-subtitle">Все ваши транзакции и обмены</p>
+                            <p className="header-subtitle">Все ваши транзакции</p>
                         </div>
                     </div>
                     
                     {/* Кнопка теста подключения */}
                     <button 
                         className="test-connection-btn"
-                        onClick={testProxyConnection}
+                        onClick={testConnection}
                         title="Тест подключения к серверу"
                     >
                         🌐
                     </button>
                 </div>
 
-                {/* Статистика в виде карточек */}
+                {/* Статистика */}
                 <div className="stats-cards">
                     <div className="stat-card-new">
                         <div className="stat-icon-container">
@@ -467,19 +360,11 @@ function History({ navigateTo }) {
                             }
                         </p>
                         
-                        {/* Информация об ошибке подключения */}
-                        {error && error.includes('Ошибка') && (
+                        {/* Информация об ошибке */}
+                        {error && (
                             <div className="connection-error-info">
-                                <p className="error-title">⚠️ Проблема с подключением</p>
-                                <p className="error-message">{error}</p>
-                                <div className="error-solutions">
-                                    <p>Возможные решения:</p>
-                                    <ul>
-                                        <li>Проверьте интернет-соединение</li>
-                                        <li>Обновите страницу (F5)</li>
-                                        <li>Нажмите кнопку "Обновить" выше</li>
-                                    </ul>
-                                </div>
+                                <p className="error-title">⚠️ {error}</p>
+                                <p className="error-message">Попробуйте обновить страницу</p>
                             </div>
                         )}
                         
@@ -493,16 +378,13 @@ function History({ navigateTo }) {
                     </div>
                 ) : (
                     <div className="orders-list-new">
-                        {filteredOrders.map((order) => {
+                        {filteredOrders.map((order, index) => {
                             const statusInfo = getStatusInfo(order.status);
-                            const isBuy = order.type === 'buy';
-                            const canChat = canOpenChat(order);
-                            const hasNotifications = order.notifications && order.notifications.length > 0;
-                            const unreadCount = hasNotifications ? 
-                                order.notifications.filter(n => !n.read).length : 0;
+                            const isBuy = order.type === 'buy' || order.operation_type === 'buy';
+                            const orderType = isBuy ? 'buy' : 'sell';
 
                             return (
-                                <div key={order.id} className="order-card-new">
+                                <div key={order.id || index} className="order-card-new">
                                     <div className="order-card-header">
                                         <div className="order-header-left">
                                             <div className="order-type-badge-new">
@@ -518,7 +400,7 @@ function History({ navigateTo }) {
                                                 onClick={() => copyOrderId(order.id)}
                                                 title="Копировать ID"
                                             >
-                                                #{order.id.slice(0, 8)}...
+                                                #{order.id ? order.id.slice(0, 8) : 'N/A'}...
                                             </button>
                                         </div>
                                         <div className={`order-status-new ${statusInfo.class}`}>
@@ -549,23 +431,12 @@ function History({ navigateTo }) {
                                         <div className="order-detail">
                                             <span className="detail-label">Дата</span>
                                             <span className="detail-value date">
-                                                {formatDate(order.createdAt)}
+                                                {formatDate(order.created_at || order.createdAt)}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="order-actions">
-                                        <button 
-                                            className={`chat-btn-new ${!canChat ? 'disabled' : ''}`}
-                                            onClick={() => openOrderChat(order)}
-                                            disabled={!canChat}
-                                        >
-                                            <span className="chat-icon">💬</span>
-                                            <span>Чат с оператором</span>
-                                            {hasNotifications && unreadCount > 0 && (
-                                                <span className="notification-badge">{unreadCount}</span>
-                                            )}
-                                        </button>
                                         <button 
                                             className="copy-btn-new"
                                             onClick={() => copyOrderId(order.id)}
@@ -581,7 +452,7 @@ function History({ navigateTo }) {
                 )}
             </div>
 
-            {/* Toast сообщения (теперь сверху справа) */}
+            {/* Toast сообщения */}
             {message.text && (
                 <div className={`message-toast-new message-${message.type}`}>
                     <span className="toast-icon">

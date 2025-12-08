@@ -175,7 +175,7 @@ function History({ navigateTo }) {
             } else {
                 // Пробуем прямой запрос как fallback
                 try {
-                    const directResponse = await fetch(`http://87.242.106.114:3002/api/user-orders/${userData.id}`, {
+                    const directResponse = await fetch(`https://87.242.106.114/api/user-orders/${userData.id}`, {
                         method: 'GET',
                         headers: { 
                             'Accept': 'application/json', 

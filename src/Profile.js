@@ -5,6 +5,60 @@ import './Profile.css';
 const API_BASE_URL = 'http://87.242.106.114:3002';
 const API_URL = `${API_BASE_URL}/api`;
 
+// Production API endpoints
+const API_ENDPOINTS = [
+    'https://tethrab.shop/api',      // Основной домен (уже работает!)
+    'https://87.242.106.114/api',    // IP как fallback
+    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
+];
+
+// Умный fetch
+const apiFetch = async (path, options = {}) => {
+    let lastError = '';
+    
+    for (const baseUrl of API_ENDPOINTS) {
+        try {
+            const url = `${baseUrl}${path}`;
+            console.log(`🌐 Пробуем: ${url}`);
+            
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ Успех с ${baseUrl}`);
+                return data;
+            }
+            
+            lastError = `HTTP ${response.status}`;
+            console.log(`⚠️ ${url}: ${lastError}`);
+            
+        } catch (error) {
+            lastError = error.message;
+            console.log(`❌ ${baseUrl}: ${lastError}`);
+        }
+    }
+    
+    throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
+};
+
+// Тест подключения
+const testConnection = async () => {
+    try {
+        const result = await apiFetch('/health');
+        console.log('✅ API работает:', result);
+        return true;
+    } catch (error) {
+        console.error('❌ API не доступен:', error);
+        return false;
+    }
+};
 
 console.log('🌐 API URL:', API_BASE_URL);
 console.log('🌐 Текущий хост:', window.location.hostname);

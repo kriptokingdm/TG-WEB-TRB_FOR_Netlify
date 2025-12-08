@@ -5,8 +5,59 @@ import SupportChat from './SupportChat';
 
 // Конфигурация URL
 // В самом начале Home.js после импортов добавь:
+const API_ENDPOINTS = [
+    'https://tethrab.shop/api',      // Основной домен (уже работает!)
+    'https://87.242.106.114/api',    // IP как fallback
+    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
+];
 const API_BASE_URL = 'http://87.242.106.114:3002';
 const API_URL = `${API_BASE_URL}/api`;
+
+const apiFetch = async (path, options = {}) => {
+    let lastError = '';
+    
+    for (const baseUrl of API_ENDPOINTS) {
+        try {
+            const url = `${baseUrl}${path}`;
+            console.log(`🌐 Пробуем: ${url}`);
+            
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ Успех с ${baseUrl}`);
+                return data;
+            }
+            
+            lastError = `HTTP ${response.status}`;
+            console.log(`⚠️ ${url}: ${lastError}`);
+            
+        } catch (error) {
+            lastError = error.message;
+            console.log(`❌ ${baseUrl}: ${lastError}`);
+        }
+    }
+    
+    throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
+};
+// Тест подключения
+const testConnection = async () => {
+    try {
+        const result = await apiFetch('/health');
+        console.log('✅ API работает:', result);
+        return true;
+    } catch (error) {
+        console.error('❌ API не доступен:', error);
+        return false;
+    }
+};
 
 
 function Home({ navigateTo, telegramUser }) {
@@ -554,93 +605,29 @@ function Home({ navigateTo, telegramUser }) {
 
     // Обработчик обмена - ИСПРАВЛЕННАЯ ВЕРСИЯ
     const handleExchange = async () => {
-        console.log('🔄 Начало создания заявки');
+        console.log('🔄 Создание ордера...');
         
-        if (!userInitialized) {
-            showMessage('error', '❌ Пользователь не инициализирован');
+        // Сначала тестируем подключение
+        const isConnected = await testConnection();
+        if (!isConnected) {
+            showMessage('error', '❌ Нет подключения к серверу');
             return;
         }
-    
-        if (!isExchangeReady()) {
-            showMessage('error', '❌ Заполните все поля правильно');
-            return;
-        }
-    
+        
         try {
-            const userData = JSON.parse(localStorage.getItem('currentUser'));
-            const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
-            
-            console.log('👤 Данные для заявки:', { userData, telegramUser });
-            
-            const exchangeData = {
-                type: isBuyMode ? 'buy' : 'sell',
-                amount: parseFloat(amount),
-                rate: rates[isBuyMode ? 'buy' : 'sell'],
-                telegramId: telegramUser.id || userData.telegramId,
-                username: telegramUser.username || userData.username || 'Пользователь',
-                firstName: userData.firstName,
-                paymentMethod: isBuyMode ? null : selectedPayment,
-                cryptoAddress: isBuyMode ? selectedCryptoAddress : null
-            };
-    
-            console.log('📋 Отправляем ордер:', exchangeData);
-    
-            // ПРЯМОЙ ЗАПРОС К API
-            const response = await fetch(`${API_URL}/create-order`, {
+            const result = await apiFetch('/create-order', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(exchangeData),
-                mode: 'cors'  // Явно указываем режим CORS
+                body: JSON.stringify(exchangeData)
             });
-    
-            console.log('📡 Ответ сервера:', response.status, response.statusText);
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ HTTP ошибка:', response.status, errorText);
-                throw new Error(`HTTP ошибка ${response.status}: ${errorText}`);
-            }
-    
-            const result = await response.json();
-            console.log('📦 Данные ответа:', result);
-    
-            if (result.success) {
-                console.log('✅ Ордер создан:', result.order);
-    
-                setHasActiveOrder(true);
-                setActiveOrdersCount(prev => prev + 1);
-                setAmount('');
-                setError('');
-                
-                const notificationMsg = result.notification_sent 
-                    ? '✅ Ордер создан! Уведомление отправлено оператору.'
-                    : '✅ Ордер создан! (Уведомление не отправлено)';
-                
-                showMessage('success', notificationMsg);
-                
-                // Обновляем список ордеров
-                setTimeout(() => {
-                    checkActiveOrders();
-                }, 2000);
-    
-            } else {
-                console.error('❌ Ошибка при создании ордера:', result.error);
-                showMessage('error', `❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
-            }
-    
-        } catch (error) {
-            console.error('❌ Ошибка обмена:', error);
             
-            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                // Пробуем через proxy
-                console.log('🔄 Пробуем через proxy...');
-                await tryWithProxy(exchangeData);
+            if (result.success) {
+                showMessage('success', '✅ Ордер создан! Уведомление отправлено.');
+                // Обновляем список ордеров и т.д.
             } else {
-                showMessage('error', `❌ Ошибка при создании ордера: ${error.message}`);
+                showMessage('error', `❌ Ошибка API: ${result.error}`);
             }
+        } catch (error) {
+            showMessage('error', `❌ Ошибка сети: ${error.message}`);
         }
     };
     

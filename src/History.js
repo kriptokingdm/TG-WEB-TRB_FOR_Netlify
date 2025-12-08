@@ -2,6 +2,62 @@ import { useState, useEffect } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
 
+
+// Production API endpoints
+const API_ENDPOINTS = [
+    'https://tethrab.shop/api',      // Основной домен (уже работает!)
+    'https://87.242.106.114/api',    // IP как fallback
+    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
+];
+
+// Умный fetch
+const apiFetch = async (path, options = {}) => {
+    let lastError = '';
+    
+    for (const baseUrl of API_ENDPOINTS) {
+        try {
+            const url = `${baseUrl}${path}`;
+            console.log(`🌐 Пробуем: ${url}`);
+            
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ Успех с ${baseUrl}`);
+                return data;
+            }
+            
+            lastError = `HTTP ${response.status}`;
+            console.log(`⚠️ ${url}: ${lastError}`);
+            
+        } catch (error) {
+            lastError = error.message;
+            console.log(`❌ ${baseUrl}: ${lastError}`);
+        }
+    }
+    
+    throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
+};
+
+// Тест подключения
+const testConnection = async () => {
+    try {
+        const result = await apiFetch('/health');
+        console.log('✅ API работает:', result);
+        return true;
+    } catch (error) {
+        console.error('❌ API не доступен:', error);
+        return false;
+    }
+};
+
 function History({ navigateTo }) {
     const [orders, setOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -10,11 +66,65 @@ function History({ navigateTo }) {
     const [viewMode, setViewMode] = useState('active');
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    const serverUrl = 'http://87.242.106.114:3002';
+    // Используем HTTPS прокси для обхода Mixed Content
+    const getProxyUrl = (path) => {
+        const baseUrl = 'http://87.242.106.114:3002';
+        const encodedUrl = encodeURIComponent(`${baseUrl}${path}`);
+        
+        // Пробуем разные прокси
+        const proxies = [
+            `https://api.allorigins.win/raw?url=${encodedUrl}`,
+            `https://corsproxy.io/?${encodedUrl}`,
+            `https://thingproxy.freeboard.io/fetch/${baseUrl}${path}`,
+            `https://cors-anywhere.herokuapp.com/${baseUrl}${path}`
+        ];
+        
+        // Возвращаем первый прокси (можно сделать логику выбора лучшего)
+        return proxies[0];
+    };
+
+    const fetchWithProxy = async (url, options = {}) => {
+        const proxyUrl = getProxyUrl(url);
+        
+        try {
+            console.log(`🔄 Запрос через прокси: ${proxyUrl}`);
+            
+            const response = await fetch(proxyUrl, {
+                ...options,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...options.headers
+                }
+            });
+            
+            console.log(`📡 Ответ прокси: ${response.status}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                return { success: true, data };
+            } else {
+                const errorText = await response.text();
+                console.error(`❌ Ошибка прокси ${response.status}:`, errorText);
+                return { 
+                    success: false, 
+                    error: `HTTP ${response.status}` 
+                };
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка прокси:', error);
+            return { 
+                success: false, 
+                error: error.message 
+            };
+        }
+    };
 
     useEffect(() => {
         fetchUserOrders();
-        
+            
         const intervalId = setInterval(() => {
             if (!isLoading && orders.length > 0) {
                 fetchUserOrders();
@@ -35,13 +145,12 @@ function History({ navigateTo }) {
                 return;
             }
 
-            const response = await fetch(`${serverUrl}/api/user-orders/${userData.id}`, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+            const result = await fetchWithProxy(`/api/user-orders/${userData.id}`, {
+                method: 'GET'
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (result.success) {
+                const data = result.data;
                 let ordersData = [];
 
                 if (data.success && Array.isArray(data.orders)) {
@@ -64,14 +173,51 @@ function History({ navigateTo }) {
                 
                 localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
             } else {
-                const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-                if (localOrders.length > 0) {
-                    setOrders(localOrders);
-                    setError('⚠️ Используем локальные данные');
-                    showMessage('warning', '⚠️ Используем кэшированные данные');
-                } else {
-                    setError('Ошибка загрузки данных');
-                    showMessage('error', '❌ Ошибка загрузки');
+                // Пробуем прямой запрос как fallback
+                try {
+                    const directResponse = await fetch(`http://87.242.106.114:3002/api/user-orders/${userData.id}`, {
+                        method: 'GET',
+                        headers: { 
+                            'Accept': 'application/json', 
+                            'Content-Type': 'application/json' 
+                        }
+                    });
+
+                    if (directResponse.ok) {
+                        const data = await directResponse.json();
+                        let ordersData = [];
+
+                        if (data.success && Array.isArray(data.orders)) {
+                            ordersData = data.orders;
+                        } else if (data.orders && typeof data.orders === 'object') {
+                            ordersData = Object.values(data.orders);
+                        } else if (Array.isArray(data)) {
+                            ordersData = data;
+                        }
+
+                        const sortedOrders = ordersData.sort((a, b) => {
+                            const dateA = new Date(a.createdAt || a.timestamp || Date.now());
+                            const dateB = new Date(b.createdAt || b.timestamp || Date.now());
+                            return dateB - dateA;
+                        });
+
+                        setOrders(sortedOrders);
+                        localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
+                        showMessage('success', '✅ История загружена (прямое подключение)');
+                    } else {
+                        throw new Error('Direct request failed');
+                    }
+                } catch (directError) {
+                    // Используем локальные данные
+                    const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                    if (localOrders.length > 0) {
+                        setOrders(localOrders);
+                        setError('⚠️ Используем локальные данные');
+                        showMessage('warning', '⚠️ Используем кэшированные данные');
+                    } else {
+                        setError('Ошибка загрузки данных');
+                        showMessage('error', '❌ Ошибка загрузки');
+                    }
                 }
             }
         } catch (error) {
@@ -179,6 +325,26 @@ function History({ navigateTo }) {
         };
     };
 
+    // Добавим тестовую кнопку для проверки прокси
+    const testProxyConnection = async () => {
+        showMessage('info', '🔄 Тестируем подключение...');
+        
+        try {
+            const result = await fetchWithProxy('/health', { method: 'GET' });
+            
+            if (result.success) {
+                showMessage('success', `✅ Подключение работает! Статус: ${result.data.status}`);
+                return true;
+            } else {
+                showMessage('error', `❌ Прокси ошибка: ${result.error}`);
+                return false;
+            }
+        } catch (error) {
+            showMessage('error', `❌ Ошибка теста: ${error.message}`);
+            return false;
+        }
+    };
+
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
 
@@ -199,6 +365,15 @@ function History({ navigateTo }) {
                             <p className="header-subtitle">Все ваши транзакции и обмены</p>
                         </div>
                     </div>
+                    
+                    {/* Кнопка теста подключения */}
+                    <button 
+                        className="test-connection-btn"
+                        onClick={testProxyConnection}
+                        title="Тест подключения к серверу"
+                    >
+                        🌐
+                    </button>
                 </div>
 
                 {/* Статистика в виде карточек */}
@@ -256,6 +431,17 @@ function History({ navigateTo }) {
                             <span className="tab-badge">{stats.total}</span>
                         )}
                     </button>
+                    
+                    {/* Кнопка обновления */}
+                    <button
+                        className="refresh-btn"
+                        onClick={fetchUserOrders}
+                        disabled={isLoading}
+                        title="Обновить историю"
+                    >
+                        <span className="refresh-icon">🔄</span>
+                        <span className="refresh-text">{isLoading ? 'Обновление...' : 'Обновить'}</span>
+                    </button>
                 </div>
             </div>
 
@@ -280,6 +466,23 @@ function History({ navigateTo }) {
                                 : 'Совершите первую операцию обмена'
                             }
                         </p>
+                        
+                        {/* Информация об ошибке подключения */}
+                        {error && error.includes('Ошибка') && (
+                            <div className="connection-error-info">
+                                <p className="error-title">⚠️ Проблема с подключением</p>
+                                <p className="error-message">{error}</p>
+                                <div className="error-solutions">
+                                    <p>Возможные решения:</p>
+                                    <ul>
+                                        <li>Проверьте интернет-соединение</li>
+                                        <li>Обновите страницу (F5)</li>
+                                        <li>Нажмите кнопку "Обновить" выше</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+                        
                         <button 
                             className="exchange-btn-new"
                             onClick={() => navigateTo('/')}

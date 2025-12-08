@@ -3,20 +3,17 @@ import { useState, useEffect } from 'react';
 import './Home.css';
 import SupportChat from './SupportChat';
 
-// Конфигурация URL
-// В самом начале Home.js после импортов добавь:
-const API_ENDPOINTS = [
-    'https://tethrab.shop/api',      // Основной домен (уже работает!)
-    'https://87.242.106.114/api',    // IP как fallback
-    `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
-];
-const API_BASE_URL = 'http://87.242.106.114:3002';
-const API_URL = `${API_BASE_URL}/api`;
-
+// Умная функция fetch для работы с self-signed SSL и CORS
 const apiFetch = async (path, options = {}) => {
+    const baseUrls = [
+        'https://tethrab.shop/api',      // Основной домен
+        'https://87.242.106.114/api',    // IP как fallback
+        `https://api.allorigins.win/raw?url=${encodeURIComponent('https://tethrab.shop/api')}`  // CORS proxy
+    ];
+    
     let lastError = '';
     
-    for (const baseUrl of API_ENDPOINTS) {
+    for (const baseUrl of baseUrls) {
         try {
             const url = `${baseUrl}${path}`;
             console.log(`🌐 Пробуем: ${url}`);
@@ -27,7 +24,9 @@ const apiFetch = async (path, options = {}) => {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     ...options.headers
-                }
+                },
+                mode: 'cors',
+                credentials: 'omit'
             });
             
             if (response.ok) {
@@ -47,6 +46,7 @@ const apiFetch = async (path, options = {}) => {
     
     throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
 };
+
 // Тест подключения
 const testConnection = async () => {
     try {
@@ -59,14 +59,11 @@ const testConnection = async () => {
     }
 };
 
-
 function Home({ navigateTo, telegramUser }) {
     const [isBuyMode, setIsBuyMode] = useState(true);
     const [isSwapped, setIsSwapped] = useState(false);
     const [amount, setAmount] = useState('');
     const [error, setError] = useState('');
-    
-    // ДОБАВЬТЕ ЭТУ СТРОКУ:
     const [userData, setUserData] = useState(null);
     
     // ПРОСТЫЕ КУРСЫ
@@ -189,6 +186,11 @@ function Home({ navigateTo, telegramUser }) {
         
         // Загружаем курсы
         fetchExchangeRates();
+
+        // Тестируем подключение
+        setTimeout(() => {
+            testConnection();
+        }, 2000);
 
         // Периодическая проверка ордеров
         const interval = setInterval(() => {
@@ -320,29 +322,20 @@ function Home({ navigateTo, telegramUser }) {
         setUserInitialized(true);
     };
 
-    // Загрузка курсов с бекенда
+    // Загрузка курсов с бекенда - ИСПРАВЛЕННАЯ ВЕРСИЯ
     const fetchExchangeRates = async () => {
         try {
             console.log('📡 Запрашиваем курсы...');
             
-            // ПРЯМОЙ ЗАПРОС БЕЗ ПРОКСИ
-            const response = await fetch('https://87.242.106.114/api/exchange-rate', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
+            // Используем нашу умную функцию fetch
+            const result = await apiFetch('/exchange-rate');
             
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Курсы получены:', data);
-                
-                if (data.success) {
-                    setRates({
-                        buy: data.data.buy || 92.50,
-                        sell: data.data.sell || 93.50
-                    });
-                }
+            if (result.success) {
+                console.log('✅ Курсы получены:', result.data);
+                setRates({
+                    buy: result.data.buy || 92.50,
+                    sell: result.data.sell || 93.50
+                });
             } else {
                 console.log('⚠️ Используем стандартные курсы');
                 setRates({
@@ -351,12 +344,15 @@ function Home({ navigateTo, telegramUser }) {
                 });
             }
         } catch (error) {
-            console.error('❌ Ошибка загрузки курсов:', error.message);
+            console.error('❌ Ошибка загрузки курсов:', error);
             // Fallback курсы
             setRates({
                 buy: 92.50,
                 sell: 93.50
             });
+            
+            // Показываем пользователю, но не блокируем
+            showMessage('warning', '⚠️ Используем кэшированные курсы');
         }
     };
 
@@ -603,97 +599,7 @@ function Home({ navigateTo, telegramUser }) {
         return !hasActiveOrder;
     };
 
-    // Обработчик обмена - ИСПРАВЛЕННАЯ ВЕРСИЯ
-    const handleExchange = async () => {
-        console.log('🔄 Создание ордера...');
-        
-        // Сначала тестируем подключение
-        const isConnected = await testConnection();
-        if (!isConnected) {
-            showMessage('error', '❌ Нет подключения к серверу');
-            return;
-        }
-        
-        try {
-            const result = await apiFetch('/create-order', {
-                method: 'POST',
-                body: JSON.stringify(exchangeData)
-            });
-            
-            if (result.success) {
-                showMessage('success', '✅ Ордер создан! Уведомление отправлено.');
-                // Обновляем список ордеров и т.д.
-            } else {
-                showMessage('error', `❌ Ошибка API: ${result.error}`);
-            }
-        } catch (error) {
-            showMessage('error', `❌ Ошибка сети: ${error.message}`);
-        }
-    };
-    
-    // Добавь новую функцию для proxy:
-    const tryWithProxy = async (exchangeData) => {
-        try {
-            // Пробуем разные прокси
-            const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(`${API_URL}/create-order`)}`,
-                `https://corsproxy.io/?${encodeURIComponent(`${API_URL}/create-order`)}`,
-                `https://thingproxy.freeboard.io/fetch/${API_URL}/create-order`,
-                `https://cors-anywhere.herokuapp.com/${API_URL}/create-order`
-            ];
-            
-            for (const proxyUrl of proxies) {
-                try {
-                    console.log(`🔄 Пробуем прокси: ${proxyUrl}`);
-                    const response = await fetch(proxyUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(exchangeData)
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            showMessage('success', '✅ Ордер создан через proxy! Уведомление отправлено.');
-                            setHasActiveOrder(true);
-                            setAmount('');
-                            
-                            setTimeout(() => {
-                                checkActiveOrders();
-                            }, 2000);
-                            return;
-                        }
-                    }
-                } catch (proxyError) {
-                    console.log(`❌ Прокси не сработал:`, proxyError.message);
-                }
-            }
-            
-            // Если все прокси не работают
-            showMessage('error', `
-    ❌ Не удалось подключиться к серверу.
-    
-    Возможные решения:
-    1. Проверьте подключение к интернету
-    2. Обновите страницу (F5)
-    3. Обратитесь к администратору
-    
-    Техническая информация:
-    API: ${API_URL}/create-order
-    Пользователь: ${exchangeData.telegramId}
-    Сумма: ${exchangeData.amount}
-            `);
-            
-        } catch (error) {
-            console.error('❌ Proxy ошибка:', error);
-            showMessage('error', `❌ Proxy ошибка: ${error.message}`);
-        }
-    };
-
-    // Функция проверки активных ордеров
+    // Функция проверки активных ордеров - ИСПРАВЛЕННАЯ
     const checkActiveOrders = async () => {
         if (!userInitialized) {
             console.log('⏳ Пользователь не инициализирован, пропускаем проверку');
@@ -710,40 +616,94 @@ function Home({ navigateTo, telegramUser }) {
             const userId = userData.id;
             console.log('🔍 Проверяем активные ордеры для:', userId);
 
-            const response = await fetch(`${API_BASE_URL}/api/user-orders/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            // Используем нашу умную функцию fetch
+            const data = await apiFetch(`/user-orders/${userId}`);
+
+            let ordersList = [];
+            if (data.orders) {
+                ordersList = data.orders;
+            } else if (Array.isArray(data)) {
+                ordersList = data;
+            }
+            
+            const activeOrders = ordersList.filter(order =>
+                order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
+            );
+
+            console.log('🔥 Активных ордеров:', activeOrders.length);
+            setActiveOrdersCount(activeOrders.length);
+            setHasActiveOrder(activeOrders.length > 0);
+            
+        } catch (error) {
+            console.log('⚠️ Ошибка проверки активных ордеров:', error.message);
+            setHasActiveOrder(false);
+            setActiveOrdersCount(0);
+        }
+    };
+
+    // Обработчик обмена - ФИНАЛЬНАЯ ИСПРАВЛЕННАЯ ВЕРСИЯ
+    const handleExchange = async () => {
+        console.log('🔄 Создание ордера...');
+        
+        if (!userInitialized) {
+            showMessage('error', '❌ Пользователь не инициализирован');
+            return;
+        }
+
+        if (!isExchangeReady()) {
+            showMessage('error', '❌ Заполните все поля правильно');
+            return;
+        }
+
+        try {
+            const userData = JSON.parse(localStorage.getItem('currentUser'));
+            const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
+            
+            const exchangeData = {
+                type: isBuyMode ? 'buy' : 'sell',
+                amount: parseFloat(amount),
+                rate: rates[isBuyMode ? 'buy' : 'sell'],
+                telegramId: telegramUser.id || userData.telegramId,
+                username: telegramUser.username || userData.username || 'Пользователь',
+                firstName: userData.firstName,
+                paymentMethod: isBuyMode ? null : selectedPayment,
+                cryptoAddress: isBuyMode ? selectedCryptoAddress : null
+            };
+
+            console.log('📋 Данные ордера:', exchangeData);
+
+            // Используем нашу умную функцию fetch
+            const result = await apiFetch('/create-order', {
+                method: 'POST',
+                body: JSON.stringify(exchangeData)
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log('📦 Данные ордеров:', data);
-                
-                let ordersList = [];
-                if (data.orders) {
-                    ordersList = data.orders;
-                } else if (Array.isArray(data)) {
-                    ordersList = data;
-                }
-                
-                const activeOrders = ordersList.filter(order =>
-                    order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
-                );
+            console.log('📦 Ответ сервера:', result);
 
-                console.log('🔥 Активных ордеров:', activeOrders.length);
-                setActiveOrdersCount(activeOrders.length);
-                setHasActiveOrder(activeOrders.length > 0);
+            if (result.success) {
+                setHasActiveOrder(true);
+                setActiveOrdersCount(prev => prev + 1);
+                setAmount('');
+                setError('');
+                
+                const notificationMsg = result.notification_sent 
+                    ? '✅ Ордер создан! Уведомление отправлено оператору.'
+                    : '✅ Ордер создан! (Уведомление не отправлено)';
+                
+                showMessage('success', notificationMsg);
+                
+                // Обновляем список ордеров
+                setTimeout(() => {
+                    checkActiveOrders();
+                }, 2000);
+
             } else {
-                console.log('ℹ️ Нет активных ордеров или ошибка сервера:', response.status);
-                setHasActiveOrder(false);
-                setActiveOrdersCount(0);
+                showMessage('error', `❌ Ошибка API: ${result.error || 'Неизвестная ошибка'}`);
             }
+
         } catch (error) {
-            console.log('⚠️ Ошибка проверки активных ордеров (может быть CORS или сеть):', error.message);
-            setHasActiveOrder(false);
+            console.error('❌ Ошибка обмена:', error);
+            showMessage('error', `❌ Ошибка сети: ${error.message}`);
         }
     };
 
@@ -779,6 +739,21 @@ function Home({ navigateTo, telegramUser }) {
                             <p className="header-subtitle"> Быстрый и безопасный обмен c нами !</p>
                         </div>
                     </div>
+                    {/* Кнопка теста подключения */}
+                    <button 
+                        className="test-connection-btn"
+                        onClick={testConnection}
+                        title="Тест подключения к серверу"
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '20px',
+                            cursor: 'pointer',
+                            padding: '8px'
+                        }}
+                    >
+                        🌐
+                    </button>
                 </div>
 
                 {/* Активные операции */}

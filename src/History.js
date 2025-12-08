@@ -68,7 +68,7 @@ function History({ navigateTo }) {
 
     // Используем HTTPS прокси для обхода Mixed Content
     const getProxyUrl = (path) => {
-        const baseUrl = 'http://87.242.106.114:3002';
+        const baseUrl = 'https://87.242.106.114/api';
         const encodedUrl = encodeURIComponent(`${baseUrl}${path}`);
         
         // Пробуем разные прокси

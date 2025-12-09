@@ -202,5 +202,26 @@ function App() {
         </div>
     );
 }
-
+{process.env.NODE_ENV === 'development' && telegramData && (
+  <div className="debug-panel" style={{
+    position: 'fixed',
+    bottom: '10px',
+    right: '10px',
+    background: '#fff',
+    border: '1px solid #ccc',
+    padding: '10px',
+    borderRadius: '5px',
+    fontSize: '12px',
+    zIndex: 9999,
+    maxWidth: '300px'
+  }}>
+    <button onClick={() => {
+      console.log('📊 Telegram данные для отладки:', telegramData);
+      console.log('👤 Telegram User:', telegramUser);
+      alert('Данные в консоли');
+    }}>
+      🔧 Отладка
+    </button>
+  </div>
+)}
 export default App;

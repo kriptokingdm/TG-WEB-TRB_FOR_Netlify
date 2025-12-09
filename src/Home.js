@@ -17,28 +17,48 @@ const simpleFetch = async (endpoint, data = null) => {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            mode: 'cors',
-            cache: 'no-cache'
+            }
         };
         
         if (data) {
             options.body = JSON.stringify(data);
         }
         
+        console.log('🔧 Опции запроса:', options);
+        
         const response = await fetch(url, options);
         
+        console.log('📊 Ответ сервера:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
+        
+        // Пробуем прочитать ответ как текст для отладки
+        const responseText = await response.text();
+        console.log('📝 Ответ текст:', responseText);
+        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const result = await response.json();
+        // Пробуем парсить JSON
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Ошибка парсинга JSON:', parseError);
+            throw new Error('Неверный формат ответа сервера');
+        }
         
         console.log('✅ Ответ API:', result);
         return result;
         
     } catch (error) {
-        console.log('❌ Ошибка сети:', error.message);
+        console.error('❌ Ошибка запроса:', {
+            message: error.message,
+            stack: error.stack
+        });
         return { 
             success: false, 
             error: error.message 

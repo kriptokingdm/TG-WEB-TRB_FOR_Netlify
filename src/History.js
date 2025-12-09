@@ -1,35 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
 
-// API работает на HTTP порту 3002
-const API_URL = 'http://87.242.106.114:3002';
+// API работает на HTTPS
+const API_URL = 'https://87.242.106.114';
 
 // Простая функция fetch
-const simpleFetch = async (endpoint) => {
+const simpleFetch = async (endpoint, data = null) => {
     const url = `${API_URL}${endpoint}`;
-    console.log('📡 Запрос истории:', url);
+    console.log('📡 Запрос к HTTPS API:', url);
     
     try {
-        const response = await fetch(url, {
+        const options = {
+            method: data ? 'POST' : 'GET',
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
+        };
         
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ Ответ истории:', data);
-            return data;
+        if (data) {
+            options.body = JSON.stringify(data);
         }
         
-        console.error(`❌ HTTP ${response.status}`);
-        throw new Error(`HTTP ${response.status}`);
+        const response = await fetch(url, options);
+        const result = await response.json();
+        
+        console.log('✅ Ответ сервера:', result);
+        return result;
         
     } catch (error) {
-        console.error('❌ Ошибка:', error.message);
-        throw error;
+        console.log('❌ Ошибка запроса:', error.message);
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 };
 
@@ -40,25 +46,23 @@ function History({ navigateTo }) {
     const [activeChat, setActiveChat] = useState(null);
     const [viewMode, setViewMode] = useState('active');
     const [message, setMessage] = useState({ type: '', text: '' });
-
-    useEffect(() => {
-        fetchUserOrders();
-            
-        // Обновляем каждые 30 секунд если есть активные ордера
-        const intervalId = setInterval(() => {
-            const hasActiveOrders = orders.some(order => 
-                order.status === 'pending' || order.status === 'processing'
-            );
-            if (hasActiveOrders) {
-                fetchUserOrders();
-            }
-        }, 30000);
-
-        return () => clearInterval(intervalId);
-    }, []);
+    
+    // Refs для предотвращения бесконечного цикла
+    const isInitialMount = useRef(true);
+    const refreshIntervalRef = useRef(null);
+    const lastUpdateRef = useRef(null);
 
     // Основная функция загрузки ордеров
     const fetchUserOrders = async () => {
+        // Предотвращаем слишком частые запросы
+        const now = Date.now();
+        if (lastUpdateRef.current && (now - lastUpdateRef.current < 5000)) {
+            console.log('⏳ Слишком частый запрос, пропускаем');
+            return;
+        }
+        
+        lastUpdateRef.current = now;
+        
         try {
             setIsLoading(true);
             
@@ -106,10 +110,13 @@ function History({ navigateTo }) {
                 // Сохраняем в localStorage для офлайн режима
                 localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
                 
-                if (sortedOrders.length > 0) {
-                    showMessage('success', '✅ История загружена');
-                } else {
-                    showMessage('info', '📭 История пуста');
+                if (isInitialMount.current) {
+                    if (sortedOrders.length > 0) {
+                        showMessage('success', '✅ История загружена');
+                    } else {
+                        showMessage('info', '📭 История пуста');
+                    }
+                    isInitialMount.current = false;
                 }
                 
             } else {
@@ -141,6 +148,30 @@ function History({ navigateTo }) {
             setIsLoading(false);
         }
     };
+
+    // Инициализация при загрузке компонента
+    useEffect(() => {
+        console.log('🚀 History компонент загружен');
+        fetchUserOrders();
+            
+        // Обновляем каждые 30 секунд если есть активные ордера
+        refreshIntervalRef.current = setInterval(() => {
+            const hasActiveOrders = orders.some(order => 
+                order.status === 'pending' || order.status === 'processing'
+            );
+            if (hasActiveOrders) {
+                console.log('🔄 Периодическое обновление активных ордеров');
+                fetchUserOrders();
+            }
+        }, 30000); // 30 секунд
+
+        return () => {
+            console.log('🧹 Очистка History компонента');
+            if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+            }
+        };
+    }, []); // Пустой массив зависимостей - только при монтировании
 
     // Тест подключения
     const testConnection = async () => {
@@ -192,7 +223,11 @@ function History({ navigateTo }) {
 
     const calculateTotal = (order) => {
         if (!order || !order.amount || !order.rate) return '—';
-        if (order.type === 'buy' || order.operation_type === 'buy') {
+        
+        // Определяем тип операции
+        const isBuy = order.type === 'buy' || order.operation_type === 'buy';
+        
+        if (isBuy) {
             return (order.amount / order.rate).toFixed(2) + ' USDT';
         } else {
             return (order.amount * order.rate).toFixed(2) + ' RUB';
@@ -381,7 +416,6 @@ function History({ navigateTo }) {
                         {filteredOrders.map((order, index) => {
                             const statusInfo = getStatusInfo(order.status);
                             const isBuy = order.type === 'buy' || order.operation_type === 'buy';
-                            const orderType = isBuy ? 'buy' : 'sell';
 
                             return (
                                 <div key={order.id || index} className="order-card-new">
@@ -444,6 +478,25 @@ function History({ navigateTo }) {
                                             <span className="copy-icon-new">📋</span>
                                             <span>Копировать ID</span>
                                         </button>
+                                        
+                                        {/* Кнопка чата для активных ордеров */}
+                                        {(order.status === 'pending' || order.status === 'processing') && (
+                                            <button 
+                                                className="chat-btn-new"
+                                                onClick={() => setActiveChat({ orderId: order.id })}
+                                            >
+                                                <span className="chat-icon-new">💬</span>
+                                                <span>Чат с оператором</span>
+                                            </button>
+                                        )}
+                                        
+                                        {/* Информация об операторе если есть */}
+                                        {order.assigned_name && (
+                                            <div className="operator-info">
+                                                <span className="operator-label">Оператор:</span>
+                                                <span className="operator-name">{order.assigned_name}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );

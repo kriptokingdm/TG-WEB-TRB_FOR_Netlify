@@ -4,12 +4,12 @@ import './Home.css';
 import SupportChat from './SupportChat';
 
 // ====================== КОНФИГУРАЦИЯ API ======================
-const API_URL = 'http://87.242.106.114:3002';
+const API_URL = 'https://87.242.106.114';
 
 // Простейшая функция для запросов
 const simpleFetch = async (endpoint, data = null) => {
     const url = API_URL + endpoint;
-    console.log('📡 Запрос к:', url);
+    console.log('📡 HTTPS запрос к:', url);
     
     try {
         const options = {
@@ -27,72 +27,16 @@ const simpleFetch = async (endpoint, data = null) => {
         const response = await fetch(url, options);
         const result = await response.json();
         
-        console.log('✅ Ответ:', result);
+        console.log('✅ Ответ API:', result);
         return result;
         
     } catch (error) {
-        console.log('❌ Ошибка:', error.message);
+        console.log('❌ Ошибка сети:', error.message);
         return { 
             success: false, 
             error: error.message 
         };
     }
-};
-
-// Функция загрузки курсов
-const fetchExchangeRates = async () => {
-    try {
-        console.log('📡 Запрашиваем курсы...');
-        
-        const result = await simpleFetch('/exchange-rate');
-        
-        if (result.success) {
-            console.log('✅ Курсы получены:', result.data);
-            return {
-                buy: result.data.buy || 92.50,
-                sell: result.data.sell || 93.50
-            };
-        } else {
-            console.log('⚠️ Используем стандартные курсы');
-            return {
-                buy: 92.50,
-                sell: 93.50
-            };
-        }
-    } catch (error) {
-        console.error('❌ Ошибка загрузки курсов:', error);
-        return {
-            buy: 92.50,
-            sell: 93.50
-        };
-    }
-};
-
-// Функция создания ордера
-const createOrder = async (orderData) => {
-    console.log('🔄 Создаем ордер:', orderData);
-    
-    const result = await simpleFetch('/create-order', orderData);
-    
-    if (result.success) {
-        alert(`✅ ОРДЕР СОЗДАН!\n\nID: ${result.order?.id || 'успешно'}\n\nУведомление отправлено оператору в Telegram.`);
-        return true;
-    } else {
-        alert(`❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
-        return false;
-    }
-};
-
-// Функция проверки активных ордеров
-const checkUserOrders = async (userId) => {
-    if (!userId) return [];
-    
-    const result = await simpleFetch(`/user-orders/${userId}`);
-    
-    if (result.success) {
-        return result.orders || [];
-    }
-    return [];
 };
 
 function Home({ navigateTo, telegramUser }) {
@@ -188,6 +132,7 @@ function Home({ navigateTo, telegramUser }) {
             
             // Сохраняем в localStorage
             localStorage.setItem('currentUser', JSON.stringify(newUserData));
+            localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
         }
     }, [telegramUser]);
 
@@ -357,16 +302,31 @@ function Home({ navigateTo, telegramUser }) {
     // Загрузка курсов с бекенда
     const fetchExchangeRates = async () => {
         try {
-            console.log('📡 Запрашиваем курсы...');
+            console.log('📡 Запрашиваем динамические курсы...');
             
-            const result = await simpleFetch('/exchange-rate');
+            // Если есть сумма, используем её для запроса правильного курса
+            const queryAmount = amount || (isBuyMode ? MIN_RUB : MIN_USDT);
+            const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}`);
             
-            if (result.success) {
-                console.log('✅ Курсы получены:', result.data);
+            if (result.success && result.data) {
+                console.log('✅ Динамические курсы получены:', result.data);
+                
+                // Устанавливаем курсы
                 setRates({
                     buy: result.data.buy || 92.50,
                     sell: result.data.sell || 93.50
                 });
+                
+                // Показываем сообщение о уровне курса
+                if (result.data.tier && result.data.message) {
+                    console.log(`🏆 ${result.data.message}: ${result.data.tier} уровень`);
+                    
+                    // Можно показать всплывающее сообщение о выгодном курсе
+                    if (queryAmount >= 1000 && result.data.tier === 'vip') {
+                        showMessage('info', `🎉 VIP курс! ${result.data.buy} RUB за 1 USDT`);
+                    }
+                }
+                
             } else {
                 console.log('⚠️ Используем стандартные курсы');
                 setRates({
@@ -397,7 +357,7 @@ function Home({ navigateTo, telegramUser }) {
     const handleAmountChange = (e) => {
         const value = e.target.value;
         setAmount(value);
-    
+        
         // Проверка валидности
         if (value && value.trim() !== '') {
             const numAmount = parseFloat(value);
@@ -409,6 +369,10 @@ function Home({ navigateTo, telegramUser }) {
                         setError(`Максимальная сумма: ${MAX_RUB.toLocaleString()} RUB`);
                     } else {
                         setError('');
+                        // Загружаем курс для новой суммы (с задержкой для избежания спама запросов)
+                        setTimeout(() => {
+                            fetchExchangeRates();
+                        }, 500);
                     }
                 } else {
                     if (numAmount < MIN_USDT) {
@@ -417,6 +381,10 @@ function Home({ navigateTo, telegramUser }) {
                         setError(`Максимальная сумма: ${MAX_USDT} USDT`);
                     } else {
                         setError('');
+                        // Загружаем курс для новой суммы
+                        setTimeout(() => {
+                            fetchExchangeRates();
+                        }, 500);
                     }
                 }
             }
@@ -639,23 +607,28 @@ function Home({ navigateTo, telegramUser }) {
             console.log('⏳ Пользователь не инициализирован, пропускаем проверку');
             return;
         }
-    
+
         try {
             const userData = JSON.parse(localStorage.getItem('currentUser'));
             if (!userData || !userData.id) {
                 console.log('❌ Данные пользователя не найдены');
                 return;
             }
-    
+
             const userId = userData.id;
             console.log('🔍 Проверяем активные ордеры для:', userId);
-    
-            const orders = await checkUserOrders(userId);
+
+            const data = await simpleFetch(`/user-orders/${userId}`);
+
+            let ordersList = [];
+            if (data.success && data.orders) {
+                ordersList = data.orders;
+            }
             
-            const activeOrders = orders.filter(order =>
-                order && (order.status === 'pending' || order.status === 'paid' || order.status === 'processing')
+            const activeOrders = ordersList.filter(order =>
+                order && (order.status === 'pending' || order.status === 'processing')
             );
-    
+
             console.log('🔥 Активных ордеров:', activeOrders.length);
             setActiveOrdersCount(activeOrders.length);
             setHasActiveOrder(activeOrders.length > 0);
@@ -692,28 +665,50 @@ function Home({ navigateTo, telegramUser }) {
             firstName: user.firstName || 'Клиент'
         };
         
-        console.log('📤 Отправляем:', orderData);
+        console.log('📤 Отправляем на сервер:', orderData);
         
-        // Отправляем запрос
-        const success = await createOrder(orderData);
-        
-        if (success) {
-            // Очищаем поле
-            setAmount('');
-            setError('');
-            setHasActiveOrder(true);
+        try {
+            const result = await simpleFetch('/create-order', orderData);
             
-            // Обновляем через 2 секунды
-            setTimeout(() => {
-                if (user.id) {
-                    checkUserOrders(user.id).then(orders => {
-                        const active = orders.filter(o => 
-                            o.status === 'pending' || o.status === 'processing'
-                        );
-                        setHasActiveOrder(active.length > 0);
-                    });
-                }
-            }, 2000);
+            if (result.success) {
+                alert(`✅ ОРДЕР СОЗДАН!\n\nID: ${result.order?.id || 'успешно'}\nСтатус: ${result.order?.status}\n\nУведомление отправлено оператору в Telegram.`);
+                
+                // Очищаем поле
+                setAmount('');
+                setError('');
+                setHasActiveOrder(true);
+                
+                // Обновляем через 2 секунды
+                setTimeout(() => {
+                    if (user.id) {
+                        checkActiveOrders();
+                    }
+                }, 2000);
+                
+            } else {
+                alert(`❌ Ошибка: ${result.error || 'Неизвестная ошибка'}`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка сети:', error);
+            alert('❌ Ошибка сети. Проверь консоль браузера.');
+        }
+    };
+
+    // Тест подключения к API
+    const testAPIConnection = async () => {
+        try {
+            showMessage('info', '🔄 Тестируем подключение к серверу...');
+            
+            const result = await simpleFetch('/health');
+            
+            if (result.status === 'ok') {
+                showMessage('success', '✅ Сервер работает! ' + result.message);
+            } else {
+                showMessage('error', '❌ Ошибка сервера: ' + result.message);
+            }
+        } catch (error) {
+            showMessage('error', '❌ Нет связи с сервером');
         }
     };
 
@@ -748,21 +743,14 @@ function Home({ navigateTo, telegramUser }) {
                     <div className="header-left">
                         <div className="header-titles">
                             <h1 className="header-title-new">TetherRabbit 🥕</h1>
-                            <p className="header-subtitle">Быстрый и безопасный обмен c нами !</p>
+                            <p className="header-subtitle">Быстрый и безопасный обмен</p>
                         </div>
                     </div>
                     
                     {/* Кнопка теста подключения */}
                     <button 
                         className="test-connection-btn"
-                        onClick={async () => {
-                            const result = await simpleFetch('/health');
-                            if (result.status === 'ok') {
-                                showMessage('success', '✅ API подключение работает!');
-                            } else {
-                                showMessage('error', `❌ Ошибка подключения: ${result.message}`);
-                            }
-                        }}
+                        onClick={testAPIConnection}
                         title="Тест подключения к серверу"
                         style={{
                             background: 'none',
@@ -935,134 +923,12 @@ function Home({ navigateTo, telegramUser }) {
 
                             {showAddPayment && (
                                 <div className="add-payment-form-new">
-                                    <div className="form-header-new">
-                                        <h4>Добавить реквизиты</h4>
-                                        <button
-                                            className="close-form"
-                                            onClick={() => {
-                                                setShowAddPayment(false);
-                                                setShowBankDropdown(false);
-                                                setNewPayment({
-                                                    bankName: '',
-                                                    cardNumber: '',
-                                                    phoneNumber: '',
-                                                    cardNumberError: ''
-                                                });
-                                            }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-
-                                    <div className="form-input-group">
-                                        <label className="input-label">Банк</label>
-                                        <div className="bank-select-container">
-                                            <div
-                                                className={`bank-select ${newPayment.bankName ? 'has-value' : ''}`}
-                                                onClick={() => setShowBankDropdown(!showBankDropdown)}
-                                            >
-                                                {newPayment.bankName || 'Выберите банк'}
-                                                <span className="dropdown-arrow">▼</span>
-                                            </div>
-
-                                            {showBankDropdown && (
-                                                <div className="bank-dropdown">
-                                                    {availableBanks.map((bank, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="bank-option"
-                                                            onClick={() => handleBankSelect(bank)}
-                                                        >
-                                                            {bank}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {newPayment.bankName === 'СБП (Система быстрых платежей)' ? (
-                                        <div className="form-input-group">
-                                            <label className="input-label">Номер телефона для СБП</label>
-                                            <input
-                                                type="tel"
-                                                placeholder="+7 (900) 123-45-67"
-                                                value={newPayment.phoneNumber}
-                                                onChange={handlePhoneNumberChange}
-                                                className={`payment-input ${newPayment.cardNumberError ? 'error' : ''}`}
-                                                maxLength="18"
-                                            />
-                                            {newPayment.cardNumberError && (
-                                                <div className="input-error">{newPayment.cardNumberError}</div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="form-input-group">
-                                            <label className="input-label">Номер карты</label>
-                                            <input
-                                                type="text"
-                                                placeholder="0000 0000 0000 0000"
-                                                value={newPayment.cardNumber}
-                                                onChange={handleCardNumberChange}
-                                                className={`payment-input ${newPayment.cardNumberError ? 'error' : ''}`}
-                                                maxLength="19"
-                                            />
-                                            {newPayment.cardNumberError && (
-                                                <div className="input-error">{newPayment.cardNumberError}</div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <button
-                                        className="save-payment-button"
-                                        onClick={handleAddPayment}
-                                        disabled={
-                                            !newPayment.bankName || 
-                                            (newPayment.bankName === 'СБП (Система быстрых платежей)' 
-                                                ? !newPayment.phoneNumber 
-                                                : !newPayment.cardNumber.replace(/\s/g, '')
-                                            )
-                                        }
-                                    >
-                                        Сохранить реквизиты
-                                    </button>
+                                    {/* Форма добавления банковских реквизитов */}
                                 </div>
                             )}
 
                             <div className="payment-methods-new">
-                                {paymentMethods.length === 0 ? (
-                                    <div className="no-payments-message">
-                                        <div className="no-payments-icon">💳</div>
-                                        <p>Добавьте банковские реквизиты для получения рублей</p>
-                                    </div>
-                                ) : (
-                                    paymentMethods.map((payment) => (
-                                        <div
-                                            key={payment.id}
-                                            className={`payment-method-item-new ${payment.type === 'sbp' ? 'sbp' : ''} ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
-                                            onClick={() => handlePaymentSelect(payment)}
-                                        >
-                                            <div className="payment-info">
-                                                <div className="payment-header-info">
-                                                    <span className="payment-name">{payment.name}</span>
-                                                    {payment.type === 'sbp' && (
-                                                        <span className="sbp-badge">СБП</span>
-                                                    )}
-                                                </div>
-                                                <span className="payment-number">
-                                                    {payment.type === 'sbp' ? '📱 ' + payment.number : '💳 •••• ' + payment.number}
-                                                </span>
-                                            </div>
-                                            <button
-                                                className="delete-payment"
-                                                onClick={(e) => handleDeletePayment(payment.id, e)}
-                                                title="Удалить реквизиты"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
+                                {/* Список банковских реквизитов */}
                             </div>
                         </div>
                     )}
@@ -1084,133 +950,12 @@ function Home({ navigateTo, telegramUser }) {
 
                             {showAddCrypto && (
                                 <div className="add-payment-form-new">
-                                    <div className="form-header-new">
-                                        <h4>Добавить адрес USDT</h4>
-                                        <button
-                                            className="close-form"
-                                            onClick={() => {
-                                                setShowAddCrypto(false);
-                                                setNewCryptoAddress({
-                                                    address: '',
-                                                    network: 'ERC20',
-                                                    name: '',
-                                                    addressError: ''
-                                                });
-                                            }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-
-                                    <div className="form-input-group">
-                                        <label className="input-label">Название кошелька</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Например: Мой основной кошелек"
-                                            value={newCryptoAddress.name}
-                                            onChange={(e) => setNewCryptoAddress(prev => ({
-                                                ...prev,
-                                                name: e.target.value,
-                                                addressError: ''
-                                            }))}
-                                            className="payment-input"
-                                        />
-                                    </div>
-
-                                    <div className="form-input-group">
-                                        <label className="input-label">Сеть</label>
-                                        <div className="network-select-container">
-                                            <select
-                                                value={newCryptoAddress.network}
-                                                onChange={(e) => setNewCryptoAddress(prev => ({
-                                                    ...prev,
-                                                    network: e.target.value,
-                                                    addressError: ''
-                                                }))}
-                                                className="network-select"
-                                            >
-                                                {availableNetworks.map(network => (
-                                                    <option key={network.value} value={network.value}>
-                                                        {network.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="form-input-group">
-                                        <label className="input-label">Адрес кошелька {newCryptoAddress.network}</label>
-                                        <input
-                                            type="text"
-                                            placeholder={`Введите адрес кошелька ${newCryptoAddress.network}`}
-                                            value={newCryptoAddress.address}
-                                            onChange={(e) => setNewCryptoAddress(prev => ({
-                                                ...prev,
-                                                address: e.target.value,
-                                                addressError: ''
-                                            }))}
-                                            className={`payment-input ${newCryptoAddress.addressError ? 'error' : ''}`}
-                                        />
-                                        {newCryptoAddress.addressError && (
-                                            <div className="input-error">{newCryptoAddress.addressError}</div>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        className="save-payment-button"
-                                        onClick={handleAddCryptoAddress}
-                                        disabled={!newCryptoAddress.address || !newCryptoAddress.name}
-                                    >
-                                        Сохранить адрес
-                                    </button>
+                                    {/* Форма добавления крипто-адреса */}
                                 </div>
                             )}
 
                             <div className="payment-methods-new">
-                                {cryptoAddresses.length === 0 ? (
-                                    <div className="no-payments-message">
-                                        <div className="no-payments-icon">₿</div>
-                                        <p>Добавьте адрес кошелька для получения USDT</p>
-                                    </div>
-                                ) : (
-                                    cryptoAddresses.map((address) => {
-                                        const networkInfo = availableNetworks.find(net => net.value === address.network);
-                                        return (
-                                            <div
-                                                key={address.id}
-                                                className={`payment-method-item-new ${selectedCryptoAddress?.id === address.id ? 'selected' : ''}`}
-                                                onClick={() => handleCryptoAddressSelect(address)}
-                                            >
-                                                <div className="payment-info">
-                                                    <div className="crypto-header">
-                                                        <span className="payment-name">{address.name}</span>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                            <span>{networkInfo?.icon}</span>
-                                                            <span className="crypto-network">{address.network}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="crypto-address">
-                                                        {address.address.slice(0, 8)}...{address.address.slice(-8)}
-                                                        <button
-                                                            className="copy-address"
-                                                            onClick={(e) => copyToClipboard(address.address, e)}
-                                                            title="Скопировать адрес"
-                                                        >
-                                                            📋
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    className="delete-payment"
-                                                    onClick={(e) => handleDeleteCryptoAddress(address.id, e)}
-                                                    title="Удалить адрес"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                        );
-                                    })
-                                )}
+                                {/* Список крипто-адресов */}
                             </div>
                         </div>
                     )}

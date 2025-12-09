@@ -1,5 +1,5 @@
-// SupportChat.js - БЕЗ Material UI
-import React, { useState, useEffect } from 'react';
+// Обновленный SupportChat.js
+import React, { useState, useEffect, useRef } from 'react';
 import './SupportChat.css';
 
 const SupportChat = ({ orderId, onClose }) => {
@@ -7,110 +7,141 @@ const SupportChat = ({ orderId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const serverUrl = 'https://87.242.106.114.sslip.io';
+  const messagesEndRef = useRef(null);
+  const updateIntervalRef = useRef(null);
+  const isMountedRef = useRef(true);
+  
+  const API_URL = 'https://87.242.106.114';
 
-  useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        setLoading(true);
-        
-        // 1. Сначала пробуем загрузить из API чата
-        const chatResponse = await fetch(`${serverUrl}/api/chat/messages/${orderId}`);
-        if (chatResponse.ok) {
-          const chatData = await chatResponse.json();
-          if (chatData.success && Array.isArray(chatData.messages)) {
-            const formattedMessages = chatData.messages.map(msg => ({
-              id: msg.id,
-              text: msg.text,
-              sender: msg.isAdmin ? 'operator' : 'user',
-              timestamp: msg.timestamp,
-              operator: msg.isAdmin ? msg.senderName : null,
-              isAdmin: msg.isAdmin
-            }));
-            setMessages(formattedMessages);
-            return;
-          }
+  // Функция для загрузки сообщений
+  const loadMessages = async () => {
+    if (!isMountedRef.current || !orderId) return;
+    
+    try {
+      setLoading(true);
+      
+      const response = await fetch(`${API_URL}/chat/messages/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         }
-        
-        // 2. Если API чата не работает, пробуем через уведомления
-        const userData = JSON.parse(localStorage.getItem('currentUser'));
-        if (userData && userData.id) {
-          const ordersResponse = await fetch(`${serverUrl}/api/user-orders/${userData.id}`);
-          if (ordersResponse.ok) {
-            const ordersData = await ordersResponse.json();
-            if (ordersData.success && Array.isArray(ordersData.orders)) {
-              const order = ordersData.orders.find(o => o.id === orderId);
-              if (order && order.notifications && Array.isArray(order.notifications)) {
-                const notificationMessages = order.notifications.map(notif => ({
-                  id: notif.id,
-                  text: notif.text,
-                  sender: 'operator',
-                  timestamp: notif.timestamp,
-                  operator: notif.from,
-                  isAdmin: true
-                }));
-                setMessages(notificationMessages);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error('❌ Ошибка загрузки сообщений:', error);
-      } finally {
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessages(data.messages || []);
+      } else {
+        console.error('Ошибка загрузки сообщений:', data.error);
+      }
+      
+    } catch (error) {
+      console.error('❌ Ошибка загрузки сообщений:', error.message);
+      
+      // При ошибке показываем пустой список
+      setMessages([]);
+    } finally {
+      if (isMountedRef.current) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    loadMessages();
+  // Инициализация
+  useEffect(() => {
+    isMountedRef.current = true;
     
-    // Обновляем сообщения каждые 10 секунд
-    const intervalId = setInterval(loadMessages, 10000);
-    return () => clearInterval(intervalId);
+    if (orderId) {
+      loadMessages();
+      
+      // Обновляем сообщения каждые 15 секунд
+      updateIntervalRef.current = setInterval(loadMessages, 15000);
+    }
+    
+    return () => {
+      isMountedRef.current = false;
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
+    };
   }, [orderId]);
 
+  // Автопрокрутка к последнему сообщению
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [messages]);
+
   const sendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !orderId) return;
     
-    setLoading(true);
+    const text = message.trim();
+    setMessage('');
     setIsTyping(true);
     
     try {
-      const userData = JSON.parse(localStorage.getItem('currentUser'));
-      const userId = userData?.id || 'anonymous';
-      const username = userData?.username || 'Пользователь';
+      const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
       
-      const response = await fetch(`${serverUrl}/api/chat/send`, {
+      const userId = userData?.id || `user_${telegramUser.id || 'anonymous'}`;
+      const username = userData?.username || telegramUser.username || 'Пользователь';
+      
+      const response = await fetch(`${API_URL}/chat/send`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           orderId: orderId,
-          message: message.trim(),
+          message: text,
           senderId: userId,
           senderName: username
         })
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          const newMsg = {
-            id: Date.now(),
-            text: message.trim(),
-            sender: 'user',
-            timestamp: new Date().toISOString(),
-            isAdmin: false
-          };
-          
-          setMessages(prev => [...prev, newMsg]);
-          setMessage('');
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Добавляем сообщение в локальный список
+        const newMsg = {
+          id: data.messageId || Date.now(),
+          text: text,
+          senderName: username,
+          isAdmin: false,
+          timestamp: data.timestamp || new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, newMsg]);
+        
+        // Обновляем сообщения через 2 секунды
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            loadMessages();
+          }
+        }, 2000);
+      } else {
+        console.error('Ошибка отправки:', data.error);
+        alert('Ошибка отправки сообщения: ' + (data.error || 'Неизвестная ошибка'));
+        setMessage(text);
       }
     } catch (error) {
       console.error('❌ Ошибка отправки:', error);
+      alert('Ошибка сети при отправке сообщения');
+      setMessage(text);
     } finally {
-      setLoading(false);
       setIsTyping(false);
     }
   };
@@ -124,7 +155,9 @@ const SupportChat = ({ orderId, onClose }) => {
 
   const formatTime = (timestamp) => {
     try {
-      return new Date(timestamp).toLocaleTimeString('ru-RU', { 
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return '';
+      return date.toLocaleTimeString('ru-RU', { 
         hour: '2-digit', 
         minute: '2-digit' 
       });
@@ -135,7 +168,9 @@ const SupportChat = ({ orderId, onClose }) => {
 
   const formatDate = (timestamp) => {
     try {
-      return new Date(timestamp).toLocaleDateString('ru-RU', {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('ru-RU', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
@@ -151,15 +186,15 @@ const SupportChat = ({ orderId, onClose }) => {
       <div className="chat-header">
         <div className="chat-header-left">
           <button className="chat-back-btn" onClick={onClose}>
-            ←
+            ← Назад
           </button>
           <div className="chat-title">
-            <div className="chat-order-id">Заявка #{orderId}</div>
+            <div className="chat-order-id">Ордер #{orderId}</div>
             <div className="chat-subtitle">Чат с оператором</div>
           </div>
         </div>
         <button className="chat-close-btn" onClick={onClose}>
-          ✕
+          ✕ Закрыть
         </button>
       </div>
 
@@ -181,36 +216,35 @@ const SupportChat = ({ orderId, onClose }) => {
         ) : (
           <div className="chat-messages">
             {messages.map((msg, index) => {
-              const isUser = msg.sender === 'user';
+              const isAdmin = msg.isAdmin;
               const prevMsg = index > 0 ? messages[index - 1] : null;
               const showDate = !prevMsg || 
                 formatDate(prevMsg.timestamp) !== formatDate(msg.timestamp);
               
               return (
-                <React.Fragment key={msg.id}>
+                <React.Fragment key={msg.id || index}>
                   {showDate && (
                     <div className="chat-date-divider">
                       <span>{formatDate(msg.timestamp)}</span>
                     </div>
                   )}
                   
-                  <div className={`chat-message ${isUser ? 'user-message' : 'operator-message'}`}>
+                  <div className={`chat-message ${isAdmin ? 'operator-message' : 'user-message'}`}>
                     <div className="message-content">
-                      <div className="message-text">{msg.text}</div>
-                      <div className="message-meta">
-                        {!isUser && msg.operator && (
-                          <span className="message-operator">@ {msg.operator}</span>
-                        )}
-                        <span className="message-time">{formatTime(msg.timestamp)}</span>
+                      <div className="message-sender">
+                        {isAdmin ? (msg.senderName || 'Оператор') : (msg.senderName || 'Вы')}
                       </div>
+                      <div className="message-text">{msg.text}</div>
+                      <div className="message-time">{formatTime(msg.timestamp)}</div>
                     </div>
-                    <div className={`message-avatar ${isUser ? 'user-avatar' : 'operator-avatar'}`}>
-                      {isUser ? '👤' : '👷'}
+                    <div className={`message-avatar ${isAdmin ? 'operator-avatar' : 'user-avatar'}`}>
+                      {isAdmin ? '👷' : '👤'}
                     </div>
                   </div>
                 </React.Fragment>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
         )}
         
@@ -221,7 +255,7 @@ const SupportChat = ({ orderId, onClose }) => {
               <span></span>
               <span></span>
             </div>
-            <div className="typing-text">Оператор печатает...</div>
+            <div className="typing-text">Отправка...</div>
           </div>
         )}
       </div>

@@ -2,19 +2,20 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
 
-const API_URL = 'https://87.242.106.114'; 
+const API_URL = 'https://87.242.106.114'
 
 const simpleFetch = async (endpoint, data = null) => {
-    // Используем HTTP вместо HTTPS для тестирования
-    const url = 'http://87.242.106.114:3002' + endpoint;
-    console.log('🔗 HTTP запрос к:', url);
+    const url = API_URL + endpoint;
+    console.log('🔗 Запрос к HTTPS:', url);
     
     try {
         const options = {
             method: data ? 'POST' : 'GET',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            mode: 'cors',  // Важно для CORS
+            credentials: 'omit'
         };
         
         if (data) {
@@ -24,7 +25,7 @@ const simpleFetch = async (endpoint, data = null) => {
         const response = await fetch(url, options);
         
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}`);
         }
         
         const result = await response.json();
@@ -34,7 +35,7 @@ const simpleFetch = async (endpoint, data = null) => {
     } catch (error) {
         console.error('❌ Ошибка запроса:', error.message);
         
-        // Фолбэк для курсов
+        // Фолбэк данные для курсов
         if (endpoint === '/exchange-rate') {
             return { 
                 success: true, 
@@ -58,9 +59,17 @@ const simpleFetch = async (endpoint, data = null) => {
             };
         }
         
+        // Фолбэк для получения ордеров
+        if (endpoint.includes('/user-orders/')) {
+            return {
+                success: true,
+                orders: []
+            };
+        }
+        
         return { 
             success: false, 
-            error: error.message
+            error: error.message 
         };
     }
 };

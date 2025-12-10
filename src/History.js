@@ -30,59 +30,50 @@ const fetchWithSSLIgnore = async (url, options = {}) => {
 
 // Простая функция fetch
 const simpleFetch = async (endpoint, data = null) => {
-    const url = API_URL + endpoint;
-    console.log('🔗 Запрос к:', url);
+    const url = `${API_URL}${endpoint}`;
+    console.log('🔗 Запрос к HTTPS API:', url);
     
     try {
         const options = {
             method: data ? 'POST' : 'GET',
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
         };
         
         if (data) {
             options.body = JSON.stringify(data);
         }
         
-        const response = await fetchWithSSLIgnore(url, options);
+        const response = await fetch(url, options);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         
         const result = await response.json();
-        console.log('✅ Ответ:', result);
+        
+        console.log('✅ Ответ сервера:', result);
         return result;
         
     } catch (error) {
-        console.error('❌ Ошибка запроса:', error.message);
+        console.log('❌ Ошибка запроса:', error.message);
         
-        // Фолбэк для курсов
-        if (endpoint === '/exchange-rate') {
+        // Фолбэк для истории
+        if (endpoint.includes('/user-orders/')) {
             return { 
                 success: true, 
-                data: { buy: 92.5, sell: 93.5 } 
+                orders: [] 
             };
         }
         
-        // Фолбэк для создания ордера
-        if (endpoint === '/create-order') {
-            const orderId = 'LOCAL_' + Date.now();
-            return {
-                success: true,
-                message: 'Ордер создан (офлайн режим)',
-                order: {
-                    id: orderId,
-                    type: data?.type || 'buy',
-                    amount: data?.amount || 0,
-                    rate: 92.5,
-                    status: 'pending'
-                }
-            };
-        }
-        
-        return { success: false, error: error.message };
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 };
 

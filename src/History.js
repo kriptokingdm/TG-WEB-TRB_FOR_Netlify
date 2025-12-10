@@ -29,50 +29,49 @@ const fetchWithSSLIgnore = async (url, options = {}) => {
 };
 
 // Простая функция fetch
-const simpleFetch = async (endpoint, data = null) => {
-    const url = `${API_URL}${endpoint}`;
+// History.js - исправленная функция simpleFetch
+const simpleFetch = async (endpoint) => {
+    const url = API_URL + endpoint;
     console.log('🔗 Запрос к HTTPS API:', url);
     
     try {
-        const options = {
-            method: data ? 'POST' : 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+        const response = await fetch(url, {
             mode: 'cors',
             credentials: 'omit'
-        };
-        
-        if (data) {
-            options.body = JSON.stringify(data);
-        }
-        
-        const response = await fetch(url, options);
+        });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         
         const result = await response.json();
-        
         console.log('✅ Ответ сервера:', result);
         return result;
         
     } catch (error) {
         console.log('❌ Ошибка запроса:', error.message);
         
-        // Фолбэк для истории
+        // Фолбэк на локальные данные
         if (endpoint.includes('/user-orders/')) {
-            return { 
-                success: true, 
-                orders: [] 
-            };
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                console.log('📂 Используем локальные данные:', localOrders.length);
+                return {
+                    success: true,
+                    orders: localOrders
+                };
+            } catch (localError) {
+                console.error('❌ Ошибка загрузки локальных данных:', localError);
+                return {
+                    success: true,
+                    orders: []
+                };
+            }
         }
         
-        return { 
-            success: false, 
-            error: error.message 
+        return {
+            success: false,
+            error: error.message
         };
     }
 };

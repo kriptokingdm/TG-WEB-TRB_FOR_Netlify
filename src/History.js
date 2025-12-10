@@ -3,7 +3,7 @@ import './History.css';
 import SupportChat from './SupportChat';
 
 // В начало Home.js после API_URL
-const API_URL = 'https://87.242.106.114';
+const API_URL = 'https://tethrab.shop';
 const fetchWithSSLIgnore = async (url, options = {}) => {
     // Для браузера: добавляем mode 'no-cors' или просто пробуем
     const newOptions = {

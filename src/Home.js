@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
 
-const API_URL = 'https://87.242.106.114'
+const API_URL = 'https://tethrab.shop'
 
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);

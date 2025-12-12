@@ -4,9 +4,7 @@ import SupportChat from './SupportChat';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // ДОЛЖНО БЫТЬ в начале файла History.js:
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:3002'  // Для локальной разработки
-  : 'https://tethrab.shop:3002'; // Для продакшена
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://tethrab.shop:3002';
 
 // SVG иконки
 const LoadingSVG = () => (

@@ -33,6 +33,44 @@ const getStatusClass = (status) => {
   return statusMap[status?.toLowerCase()] || 'status-pending';
 };
 
+// Функция с retry логикой
+const fetchWithRetry = async (url, retries = 3, delay = 2000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      console.log(`🔄 Попытка ${i + 1}/${retries}: ${url}`);
+      
+      // Создаем AbortController для таймаута
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+      
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Успех на попытке ${i + 1}`);
+      return data;
+    } catch (error) {
+      console.log(`❌ Попытка ${i + 1}/${retries} не удалась:`, error.message);
+      
+      if (i === retries - 1) throw error;
+      
+      // Ждем перед следующей попыткой
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Увеличиваем задержку
+    }
+  }
+};
+
 function History({ navigateTo }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +82,12 @@ function History({ navigateTo }) {
 
   const isInitialMount = useRef(true);
   const refreshIntervalRef = useRef(null);
+  const lastUpdateRef = useRef(0);
+  const retryCountRef = useRef(0);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 5000; // 5 секунд
+  const REFRESH_INTERVAL = 60000; // 60 секунд для автообновления
+  const MIN_REQUEST_INTERVAL = 3000; // Минимум 3 секунды между запросами
 
   // Показать сообщение
   const showMessage = (type, text) => {
@@ -51,41 +95,77 @@ function History({ navigateTo }) {
     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
 
-  // Загрузка ордеров
-  const fetchUserOrders = async (showLoading = true) => {
+  // Получение ID пользователя
+  const getUserId = () => {
+    try {
+      // 1. Telegram Web App
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        const tgUser = tg.initDataUnsafe?.user;
+        if (tgUser?.id) {
+          return `user_${tgUser.id}`;
+        }
+      }
+      
+      // 2. localStorage
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        return parsed.id || parsed.telegramId;
+      }
+      
+      const savedTelegramUser = localStorage.getItem('telegramUser');
+      if (savedTelegramUser) {
+        const parsed = JSON.parse(savedTelegramUser);
+        return `user_${parsed.id}`;
+      }
+      
+    } catch (error) {
+      console.error('❌ Ошибка получения ID:', error);
+    }
+    
+    return null;
+  };
+
+  // Основная функция загрузки ордеров
+  const fetchUserOrders = async (showLoading = true, force = false) => {
+    const now = Date.now();
+    
+    // Защита от слишком частых запросов
+    if (!force && lastUpdateRef.current && (now - lastUpdateRef.current < MIN_REQUEST_INTERVAL)) {
+      console.log('⏳ Слишком частый запрос, пропускаем');
+      if (showLoading) setIsLoading(false);
+      return;
+    }
+    
+    lastUpdateRef.current = now;
+
     if (showLoading) {
       setIsLoading(true);
     }
+    
     setRefreshing(true);
+    console.log('📥 Начинаем загрузку ордеров...');
 
     try {
-      // Получаем пользователя
-      const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const telegramUser = JSON.parse(localStorage.getItem('telegramUser') || '{}');
-
-      let userId = userData.id || `user_${telegramUser.id}`;
+      const userId = getUserId();
+      
       if (!userId) {
-        userId = 'user_7879866656'; // Тестовый пользователь
+        console.log('⚠️ Пользователь не найден');
+        setError('Пользователь не определен');
+        setIsLoading(false);
+        setRefreshing(false);
+        return;
       }
 
-      console.log('📥 Загружаем ордера для:', userId);
+      console.log('👤 Загружаем ордера для:', userId);
 
-      // Запрос к API
-      const response = await fetch(`${API_URL}/user-orders/${userId}`, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-
+      // Используем fetch с retry
+      const result = await fetchWithRetry(`${API_URL}/user-orders/${userId}`);
+      
       if (result.success) {
         const ordersData = result.orders || [];
+        console.log(`📊 Получено ордеров: ${ordersData.length}`);
 
         // Сортируем по дате (новые сверху)
         const sortedOrders = ordersData.sort((a, b) => {
@@ -96,6 +176,7 @@ function History({ navigateTo }) {
 
         setOrders(sortedOrders);
         setError('');
+        retryCountRef.current = 0; // Сбрасываем счетчик ошибок
 
         // Сохраняем в localStorage
         localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
@@ -110,47 +191,72 @@ function History({ navigateTo }) {
       }
 
     } catch (error) {
-      console.error('❌ Ошибка загрузки:', error);
+      console.error('❌ Ошибка загрузки:', error.message);
       
-      // Пробуем загрузить из localStorage
-      try {
-        const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-        if (localOrders.length > 0) {
-          console.log('📂 Используем локальные данные');
-          setOrders(localOrders);
-          setError('⚠️ Используем кэшированные данные');
-        } else {
-          setError('Не удалось загрузить историю');
+      // Увеличиваем счетчик ошибок
+      retryCountRef.current++;
+      
+      if (retryCountRef.current >= MAX_RETRIES) {
+        // После 3 ошибок показываем локальные данные
+        try {
+          const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+          if (localOrders.length > 0) {
+            console.log('📂 Используем локальные данные:', localOrders.length);
+            setOrders(localOrders);
+            setError('⚠️ Используем кэшированные данные');
+            showMessage('warning', '⚠️ Используем сохраненные данные');
+          } else {
+            setError('Не удалось загрузить историю');
+            showMessage('error', '❌ Ошибка загрузки данных');
+          }
+        } catch (localError) {
+          console.error('❌ Ошибка локальных данных:', localError);
+          setError('Ошибка соединения с сервером');
+          showMessage('error', '❌ Ошибка сети');
         }
-      } catch (localError) {
-        console.error('❌ Ошибка локальных данных:', localError);
-        setError('Ошибка соединения с сервером');
+      } else {
+        // Пробуем снова через RETRY_DELAY
+        const nextDelay = RETRY_DELAY * retryCountRef.current;
+        console.log(`🔄 Повтор через ${nextDelay/1000} сек... (${retryCountRef.current}/${MAX_RETRIES})`);
+        
+        setError(`Ошибка подключения. Повтор через ${nextDelay/1000} сек...`);
+        
+        setTimeout(() => {
+          fetchUserOrders(false, true); // Форсируем повтор
+        }, nextDelay);
       }
       
-      showMessage('error', '❌ Ошибка загрузки данных');
-
     } finally {
       setIsLoading(false);
       setRefreshing(false);
     }
   };
 
-  // Автоматическое обновление каждые 30 секунд
+  // Автоматическое обновление
   const startAutoRefresh = () => {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
     }
 
-    refreshIntervalRef.current = setInterval(() => {
-      const hasActiveOrders = orders.some(order => 
-        ['pending', 'processing', 'accepted'].includes(order.admin_status?.toLowerCase() || order.status?.toLowerCase())
-      );
+    // Обновляем только если есть активные ордера
+    const hasActiveOrders = orders.some(order => {
+      const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
+      return ['pending', 'processing', 'accepted'].includes(status);
+    });
+    
+    if (hasActiveOrders) {
+      console.log('🔄 Запускаем автообновление (есть активные ордера)');
       
-      if (hasActiveOrders) {
-        console.log('🔄 Автообновление активных ордеров');
-        fetchUserOrders(false);
-      }
-    }, 30000); // 30 секунд
+      refreshIntervalRef.current = setInterval(() => {
+        const now = Date.now();
+        if (now - lastUpdateRef.current > REFRESH_INTERVAL) {
+          console.log('🔄 Автообновление активных ордеров');
+          fetchUserOrders(false);
+        }
+      }, REFRESH_INTERVAL);
+    } else {
+      console.log('⏸️ Нет активных ордеров, автообновление остановлено');
+    }
   };
 
   // Инициализация
@@ -166,16 +272,19 @@ function History({ navigateTo }) {
     };
   }, []);
 
-  // Запуск автообновления при изменении ордеров
+  // Обновляем автообновление при изменении ордеров
   useEffect(() => {
-    startAutoRefresh();
+    if (orders.length > 0) {
+      console.log('📊 Ордеры обновлены, проверяем автообновление');
+      startAutoRefresh();
+    }
   }, [orders]);
 
   // Тест подключения
   const testConnection = async () => {
     try {
       showMessage('info', '🔄 Тестируем подключение...');
-      const response = await fetch(`${API_URL}/health`);
+      const response = await fetch(`${API_URL}/health`, { timeout: 5000 });
       
       if (response.ok) {
         showMessage('success', '✅ API работает!');
@@ -265,7 +374,8 @@ function History({ navigateTo }) {
   // Ручное обновление
   const handleRefresh = () => {
     if (!refreshing) {
-      fetchUserOrders();
+      console.log('🔄 Ручное обновление');
+      fetchUserOrders(true, true);
     }
   };
 
@@ -278,9 +388,6 @@ function History({ navigateTo }) {
       <div className="history-header-new">
         <div className="header-content">
           <div className="header-left">
-            {/* <button className="back-button" onClick={() => navigateTo('/')}>
-              ←
-            </button> */}
             <div className="header-titles">
               <h1 className="header-title-new">История операций</h1>
               <p className="header-subtitle">Все ваши транзакции</p>
@@ -339,7 +446,7 @@ function History({ navigateTo }) {
           </div>
         </div>
 
-        {/* Переключатель вью */}
+        {/* Переключатель вью и кнопка обновления */}
         <div className="view-tabs">
           <button
             className={`view-tab-new ${viewMode === 'active' ? 'active' : ''}`}
@@ -362,8 +469,7 @@ function History({ navigateTo }) {
             )}
           </button>
 
-          {/* Кнопка обновления */}
-          {/* <button
+          <button
             className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
             disabled={refreshing}
@@ -375,7 +481,7 @@ function History({ navigateTo }) {
             <span className="refresh-text">
               {refreshing ? 'Обновление...' : 'Обновить'}
             </span>
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -410,7 +516,7 @@ function History({ navigateTo }) {
 
             <button
               className="exchange-btn-new"
-              onClick={() => navigateTo('/')}
+              onClick={() => navigateTo('home')}
             >
               <span className="exchange-icon">💰</span>
               <span>Начать обмен</span>
@@ -538,49 +644,28 @@ function History({ navigateTo }) {
       )}
 
       {/* Навигация */}
-      {/* <div className="bottom-nav">
-        <button className="nav-item" onClick={() => navigateTo('/')}>
-          <span className="nav-icon">💸</span>
-          <span className="nav-label">Обмен</span>
-        </button>
-
-        <button className="nav-item" onClick={() => navigateTo('/profile')}>
-          <span className="nav-icon">👤</span>
+      <div className="bottom-nav-new">
+        <button className="nav-item-new" onClick={() => navigateTo('profile')}>
+          <div className="nav-icon-wrapper">
+            <span className="nav-icon">👤</span>
+          </div>
           <span className="nav-label">Профиль</span>
         </button>
-
-        <button className="nav-item active">
-          <span className="nav-icon">📊</span>
+        
+        <button className="nav-center-item" onClick={() => navigateTo('home')}>
+          <div className="nav-center-circle">
+            <span className="nav-center-icon">💸</span>
+          </div>
+          <span className="nav-center-label">Обмен</span>
+        </button>
+        
+        <button className="nav-item-new" onClick={() => navigateTo('history')}>
+          <div className="nav-icon-wrapper">
+            <span className="nav-icon">📊</span>
+          </div>
           <span className="nav-label">История</span>
         </button>
-
-        <button className="nav-item" onClick={() => navigateTo('/help')}>
-          <span className="nav-icon">❓</span>
-          <span className="nav-label">Помощь</span>
-        </button>
-      </div> */}
-      <div className="bottom-nav-new">
-                <button className="nav-item-new" onClick={() => navigateTo('profile')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">👤</span>
-                    </div>
-                    <span className="nav-label">Профиль</span>
-                </button>
-                
-                <button className="nav-center-item" onClick={() => navigateTo('home')}>
-                    <div className="nav-center-circle">
-                        <span className="nav-center-icon">💸</span>
-                    </div>
-                    <span className="nav-center-label">Обмен</span>
-                </button>
-                
-                <button className="nav-item-new" onClick={() => navigateTo('history')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">📊</span>
-                    </div>
-                    <span className="nav-label">История</span>
-                </button>
-            </div>
+      </div>
     </div>
   );
 }

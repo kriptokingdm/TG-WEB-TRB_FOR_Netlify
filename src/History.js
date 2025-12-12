@@ -53,45 +53,57 @@ function History({ navigateTo }) {
   };
 
   // Получение ID пользователя - УПРОЩЕННАЯ версия
-  const getUserId = () => {
+  // Получение ID пользователя - СТАНДАРТИЗИРОВАННАЯ версия
+const getUserId = () => {
     try {
-      console.log('🔍 Получаем ID пользователя...');
-      
-      // 1. Пробуем получить из localStorage (созданный при регистрации/логине)
-      const savedUser = localStorage.getItem('currentUser');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        console.log('📱 Из currentUser:', parsed.id || parsed.telegramId);
-        return parsed.id || parsed.telegramId;
-      }
-      
-      // 2. Пробуем из telegramUser
-      const savedTelegramUser = localStorage.getItem('telegramUser');
-      if (savedTelegramUser) {
-        const parsed = JSON.parse(savedTelegramUser);
-        console.log('🤖 Из telegramUser:', parsed.id);
-        return parsed.id || `user_${parsed.id}`;
-      }
-      
-      // 3. Telegram WebApp
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const tgUser = tg.initDataUnsafe?.user;
-        if (tgUser?.id) {
-          console.log('📲 Из Telegram WebApp:', tgUser.id);
-          return `user_${tgUser.id}`;
+        console.log('🔍 Получаем ID пользователя...');
+        
+        // 1. Пробуем получить из localStorage (созданный при регистрации/логине)
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            const parsed = JSON.parse(savedUser);
+            const userId = parsed.id || parsed.telegramId;
+            console.log('📱 Из currentUser:', userId);
+            
+            // Приводим к стандартному формату user_XXX
+            if (userId && !userId.startsWith('user_')) {
+                return 'user_' + userId;
+            }
+            return userId;
         }
-      }
-      
-      // 4. Если ничего не нашли, пробуем тестовый ID
-      console.log('⚠️ ID не найден, пробуем тестовый');
-      return '7879866656'; // Тестовый ID
-      
+        
+        // 2. Пробуем из telegramUser
+        const savedTelegramUser = localStorage.getItem('telegramUser');
+        if (savedTelegramUser) {
+            const parsed = JSON.parse(savedTelegramUser);
+            const userId = parsed.id || `user_${parsed.id}`;
+            console.log('🤖 Из telegramUser:', userId);
+            
+            if (userId && !userId.startsWith('user_')) {
+                return 'user_' + userId;
+            }
+            return userId;
+        }
+        
+        // 3. Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            const tg = window.Telegram.WebApp;
+            const tgUser = tg.initDataUnsafe?.user;
+            if (tgUser?.id) {
+                console.log('📲 Из Telegram WebApp:', tgUser.id);
+                return `user_${tgUser.id}`;
+            }
+        }
+        
+        // 4. Если ничего не нашли, используем тестовый ID
+        console.log('⚠️ ID не найден, используем тестовый');
+        return 'user_7879866656'; // Тестовый ID в правильном формате
+        
     } catch (error) {
-      console.error('❌ Ошибка получения ID:', error);
-      return '7879866656'; // Тестовый ID при ошибке
+        console.error('❌ Ошибка получения ID:', error);
+        return 'user_7879866656'; // Тестовый ID при ошибке
     }
-  };
+};
 
   // Основная функция загрузки ордеров - УПРОЩЕННАЯ
   const fetchUserOrders = async (showLoading = true) => {

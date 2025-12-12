@@ -37,71 +37,69 @@ function App() {
 
     // 1. Проверяем есть ли Telegram WebApp
     // В App.js замените блок получения пользователя Telegram:
+// В useEffect в App.js:
 if (window.Telegram && window.Telegram.WebApp) {
   console.log('🤖 Telegram WebApp найден');
   const tg = window.Telegram.WebApp;
   
-  // Инициализируем WebApp
   tg.ready();
   tg.expand();
   
-  try {
-    tg.enableClosingConfirmation();
-  } catch (e) {
-    console.log('ℹ️ Closing confirmation не поддерживается');
-  }
+  // Показываем всю информацию для отладки
+  console.log('Telegram WebApp объект:', tg);
+  console.log('Init Data Raw:', tg.initData);
+  console.log('Init Data Unsafe:', tg.initDataUnsafe);
+  console.log('Platform:', tg.platform);
+  console.log('Color Scheme:', tg.colorScheme);
   
-  console.log('📱 Telegram версия:', tg.version);
-  console.log('📊 Init Data:', tg.initData);
-  console.log('👤 Init Data Unsafe:', tg.initDataUnsafe);
-  
-  // Пробуем разные способы получить пользователя
-  let user = null;
-  
-  // Способ 1: Из initDataUnsafe
-  if (tg.initDataUnsafe?.user) {
-    user = tg.initDataUnsafe.user;
-    console.log('✅ Пользователь из initDataUnsafe');
-  }
-  
-  // Способ 2: Парсим initData если есть
-  if (!user && tg.initData) {
-    try {
-      const initData = new URLSearchParams(tg.initData);
-      const userStr = initData.get('user');
-      if (userStr) {
-        user = JSON.parse(decodeURIComponent(userStr));
-        console.log('✅ Пользователь из парсинга initData');
-      }
-    } catch (parseError) {
-      console.error('❌ Ошибка парсинга initData:', parseError);
-    }
-  }
-  
-  if (user) {
-    console.log('👤 Telegram User:', user);
+  // Получаем пользователя
+  if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    const tgUser = tg.initDataUnsafe.user;
+    console.log('✅ Telegram User найден:', tgUser);
+    
     const userData = {
-      id: user.id.toString(),
-      telegramId: user.id,
-      username: user.username || `user_${user.id}`,
-      firstName: user.first_name || 'Пользователь',
-      lastName: user.last_name || '',
-      languageCode: user.language_code || 'ru',
-      isPremium: user.is_premium || false,
-      photoUrl: user.photo_url || null
+      id: tgUser.id.toString(),
+      telegramId: tgUser.id,
+      username: tgUser.username || `user_${tgUser.id}`,
+      firstName: tgUser.first_name || 'Пользователь',
+      lastName: tgUser.last_name || '',
+      languageCode: tgUser.language_code || 'ru',
+      isPremium: tgUser.is_premium || false,
+      photoUrl: tgUser.photo_url || null
     };
+    
+    console.log('📱 Подготовленные данные:', userData);
     setTelegramUser(userData);
     
-    // Сохраняем в localStorage
+    // Сохраняем
     localStorage.setItem('telegramUser', JSON.stringify(userData));
     localStorage.setItem('currentUser', JSON.stringify(userData));
     
+    // Также сохраняем raw данные для отладки
+    localStorage.setItem('telegramRawData', JSON.stringify(tg.initDataUnsafe));
   } else {
-    console.log('⚠️ Пользователь не найден, проверяем localStorage');
+    console.log('❌ Пользователь не найден в initDataUnsafe');
+    console.log('Проверяем query параметры...');
+    
+    // Пробуем получить из URL параметров (для тестирования)
+    const urlParams = new URLSearchParams(window.location.search);
+    const testUserId = urlParams.get('test_user_id');
+    
+    if (testUserId) {
+      console.log('🧪 Тестовый пользователь из URL:', testUserId);
+      const testUser = {
+        id: testUserId,
+        telegramId: parseInt(testUserId),
+        username: `test_${testUserId}`,
+        firstName: 'Тестовый',
+        lastName: 'Пользователь'
+      };
+      setTelegramUser(testUser);
+      localStorage.setItem('telegramUser', JSON.stringify(testUser));
+    }
   }
-  
 } else {
-  console.log('⚠️ Telegram WebApp не найден, используем тестового пользователя');
+  console.log('⚠️ Telegram WebApp не найден');
 }
     
     // 2. Проверяем localStorage

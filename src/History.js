@@ -54,54 +54,62 @@ function History({ navigateTo }) {
 
   // Получение ID пользователя - УПРОЩЕННАЯ версия
   // Получение ID пользователя - СТАНДАРТИЗИРОВАННАЯ версия
+// Получение ID пользователя - ФИНАЛЬНАЯ версия
 const getUserId = () => {
     try {
         console.log('🔍 Получаем ID пользователя...');
         
-        // 1. Пробуем получить из localStorage (созданный при регистрации/логине)
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            const parsed = JSON.parse(savedUser);
-            const userId = parsed.id || parsed.telegramId;
-            console.log('📱 Из currentUser:', userId);
-            
-            // Приводим к стандартному формату user_XXX
-            if (userId && !userId.startsWith('user_')) {
-                return 'user_' + userId;
-            }
-            return userId;
-        }
+        let userId = null;
         
-        // 2. Пробуем из telegramUser
-        const savedTelegramUser = localStorage.getItem('telegramUser');
-        if (savedTelegramUser) {
-            const parsed = JSON.parse(savedTelegramUser);
-            const userId = parsed.id || `user_${parsed.id}`;
-            console.log('🤖 Из telegramUser:', userId);
-            
-            if (userId && !userId.startsWith('user_')) {
-                return 'user_' + userId;
-            }
-            return userId;
-        }
-        
-        // 3. Telegram WebApp
+        // 1. Telegram WebApp (самый приоритетный)
         if (window.Telegram?.WebApp) {
             const tg = window.Telegram.WebApp;
             const tgUser = tg.initDataUnsafe?.user;
             if (tgUser?.id) {
-                console.log('📲 Из Telegram WebApp:', tgUser.id);
-                return `user_${tgUser.id}`;
+                userId = tgUser.id;
+                console.log('📲 Из Telegram WebApp:', userId);
             }
+        }
+        
+        // 2. Пробуем получить из localStorage
+        if (!userId) {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const parsed = JSON.parse(savedUser);
+                userId = parsed.id || parsed.telegramId;
+                if (userId) {
+                    console.log('📱 Из currentUser:', userId);
+                }
+            }
+        }
+        
+        // 3. Пробуем из telegramUser
+        if (!userId) {
+            const savedTelegramUser = localStorage.getItem('telegramUser');
+            if (savedTelegramUser) {
+                const parsed = JSON.parse(savedTelegramUser);
+                userId = parsed.id;
+                if (userId) {
+                    console.log('🤖 Из telegramUser:', userId);
+                }
+            }
+        }
+        
+        // Приводим к единому формату
+        if (userId) {
+            // Убираем возможный префикс user_
+            userId = userId.toString().replace(/^user_/, '');
+            // Добавляем правильный префикс
+            return 'user_' + userId;
         }
         
         // 4. Если ничего не нашли, используем тестовый ID
         console.log('⚠️ ID не найден, используем тестовый');
-        return 'user_7879866656'; // Тестовый ID в правильном формате
+        return 'user_7879866656';
         
     } catch (error) {
         console.error('❌ Ошибка получения ID:', error);
-        return 'user_7879866656'; // Тестовый ID при ошибке
+        return 'user_7879866656';
     }
 };
 

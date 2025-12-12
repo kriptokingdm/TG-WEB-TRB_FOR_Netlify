@@ -160,31 +160,81 @@ function Home({ navigateTo, telegramUser }) {
         { value: 'BASE', name: 'Base', icon: '🏢', popular: false }
     ];
 
+    // Функция для получения пользователя из Telegram Web App
+const getTelegramUser = () => {
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        const tgUser = tg.initDataUnsafe?.user;
+        
+        if (tgUser) {
+            return {
+                id: tgUser.id.toString(),
+                username: tgUser.username || `user_${tgUser.id}`,
+                first_name: tgUser.first_name || 'Пользователь',
+                last_name: tgUser.last_name || '',
+                photo_url: tgUser.photo_url
+            };
+        }
+    }
+    return null;
+};
+
     // Фильтр популярных сетей
     const popularNetworks = availableNetworks.filter(n => n.popular);
 
     // Инициализация пользователя
-    useEffect(() => {
-        console.log('👤 Telegram User:', telegramUser);
+    // Инициализация пользователя
+useEffect(() => {
+    console.log('🏠 Home компонент загружен');
+    
+    // Пробуем получить пользователя из Telegram Web App
+    const tgUser = getTelegramUser();
+    
+    if (tgUser) {
+        console.log('🤖 Telegram Web App User:', tgUser);
         
-        if (telegramUser) {
-            const userData = {
-                id: `user_${telegramUser.id}`,
-                telegramId: telegramUser.id,
-                username: telegramUser.username || `user_${telegramUser.id}`,
-                firstName: telegramUser.first_name || 'Пользователь'
-            };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
+        const userData = {
+            id: tgUser.id.toString(),
+            telegramId: tgUser.id,
+            username: tgUser.username || `user_${tgUser.id}`,
+            firstName: tgUser.first_name || 'Пользователь',
+            lastName: tgUser.last_name || '',
+            photoUrl: tgUser.photo_url
+        };
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+        
+        console.log('✅ Пользователь сохранен:', userData);
+    } else if (telegramUser) {
+        // Если пользователь передан через props (старый способ)
+        console.log('👤 Telegram User из props:', telegramUser);
+        
+        const userData = {
+            id: `user_${telegramUser.id}`,
+            telegramId: telegramUser.id,
+            username: telegramUser.username || `user_${telegramUser.id}`,
+            firstName: telegramUser.first_name || 'Пользователь'
+        };
+        
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
+    } else {
+        // Пробуем загрузить из localStorage
+        const savedUser = localStorage.getItem('currentUser');
+        if (!savedUser) {
+            console.log('⚠️ Пользователь не найден. Будет определен при создании ордера.');
         }
-        
-        // Загружаем сохраненные реквизиты
-        loadSavedData();
-        
-        // Загружаем курсы
-        fetchExchangeRates();
-        
-    }, [telegramUser]);
+    }
+    
+    // Загружаем сохраненные реквизиты
+    loadSavedData();
+    
+    // Загружаем курсы
+    fetchExchangeRates();
+    
+}, [telegramUser]);
 
     // Загрузка сохраненных данных
     const loadSavedData = () => {
@@ -431,65 +481,204 @@ function Home({ navigateTo, telegramUser }) {
     };
 
     // Создание ордера
-    const handleExchange = async () => {
-        console.log('🎯 Создание ордера');
-        
-        if (!amount || parseFloat(amount) < MIN_RUB) {
-            showMessage(`❌ Введите сумму от ${MIN_RUB.toLocaleString()} RUB`);
-            return;
-        }
-        
-        if (isBuyMode && !selectedCrypto) {
-            showMessage('❌ Добавьте адрес для получения USDT');
-            return;
-        }
-        
-        if (!isBuyMode && !selectedPayment) {
-            showMessage('❌ Добавьте реквизиты для получения RUB');
-            return;
-        }
-        
-        // Получаем пользователя
-        const userStr = localStorage.getItem('currentUser') || '{}';
-        const user = JSON.parse(userStr);
-        
-        // Формируем данные
-        const orderData = {
-            type: isBuyMode ? 'buy' : 'sell',
-            amount: parseFloat(amount),
-            telegramId: user.telegramId || 7879866656,
-            username: user.username || 'Пользователь',
-            firstName: user.firstName || 'Клиент'
-        };
-        
-        console.log('📤 Отправляем:', orderData);
-        
+    // Создание ордера
+const handleExchange = async () => {
+    console.log('🎯 Создание ордера');
+    
+    if (!amount || parseFloat(amount) < MIN_RUB) {
+        showMessage(`❌ Введите сумму от ${MIN_RUB.toLocaleString()} RUB`);
+        return;
+    }
+    
+    if (isBuyMode && !selectedCrypto) {
+        showMessage('❌ Добавьте адрес для получения USDT');
+        return;
+    }
+    
+    if (!isBuyMode && !selectedPayment) {
+        showMessage('❌ Добавьте реквизиты для получения RUB');
+        return;
+    }
+    
+    // ВАЖНО: Получаем реальный ID пользователя
+    const getRealUserId = () => {
         try {
-            setIsLoading(true);
-            showMessage('🔄 Создание ордера...');
-            
-            const result = await simpleFetch('/create-order', orderData);
-            
-            if (result.success) {
-                showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
-                setAmount('');
+            // 1. Пробуем получить из Telegram Web App
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const tgUser = tg.initDataUnsafe?.user;
                 
-                // Переход в историю через 2 секунды
-                setTimeout(() => {
-                    navigateTo('history');
-                }, 2000);
-                
-            } else {
-                showMessage(`❌ Ошибка: ${result.error}`);
+                if (tgUser?.id) {
+                    console.log('🤖 Telegram Web App ID:', tgUser.id);
+                    return tgUser.id.toString();
+                }
+            }
+            
+            // 2. Пробуем получить из URL параметров (для тестирования)
+            const urlParams = new URLSearchParams(window.location.search);
+            const testUserId = urlParams.get('test_user_id');
+            if (testUserId) {
+                console.log('🧪 Тестовый ID из URL:', testUserId);
+                return testUserId;
+            }
+            
+            // 3. Пробуем получить из localStorage (если уже сохраняли)
+            const savedTelegramUser = localStorage.getItem('telegramUser');
+            if (savedTelegramUser) {
+                const parsed = JSON.parse(savedTelegramUser);
+                if (parsed?.id) {
+                    return parsed.id.toString();
+                }
+            }
+            
+            // 4. Пробуем получить из currentUser
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const parsed = JSON.parse(savedUser);
+                if (parsed?.telegramId) {
+                    return parsed.telegramId.toString();
+                }
+                if (parsed?.id) {
+                    return parsed.id.toString();
+                }
+            }
+            
+            // 5. Если telegramUser передан как prop (для React компонента)
+            if (telegramUser?.id) {
+                return telegramUser.id.toString();
             }
             
         } catch (error) {
-            console.error('❌ Ошибка сети:', error);
-            showMessage('❌ Ошибка сети');
-        } finally {
-            setIsLoading(false);
+            console.error('❌ Ошибка получения ID:', error);
         }
+        
+        // 6. Фоллбэк - показываем ошибку
+        console.error('⚠️ Не удалось определить ID пользователя');
+        return null;
     };
+    
+    // Получаем реальный ID
+    const userId = getRealUserId();
+    
+    if (!userId) {
+        showMessage('❌ Не удалось определить ID пользователя. Обновите страницу.');
+        return;
+    }
+    
+    // Получаем данные пользователя
+    const getUserData = () => {
+        try {
+            // Пробуем Telegram Web App
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const tgUser = tg.initDataUnsafe?.user;
+                
+                if (tgUser) {
+                    return {
+                        username: tgUser.username || `user_${tgUser.id}`,
+                        firstName: tgUser.first_name || 'Клиент',
+                        lastName: tgUser.last_name || ''
+                    };
+                }
+            }
+            
+            // Пробуем localStorage
+            const savedTelegramUser = localStorage.getItem('telegramUser');
+            if (savedTelegramUser) {
+                const parsed = JSON.parse(savedTelegramUser);
+                return {
+                    username: parsed.username || `user_${userId}`,
+                    firstName: parsed.first_name || 'Клиент'
+                };
+            }
+            
+            // Пробуем currentUser
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const parsed = JSON.parse(savedUser);
+                return {
+                    username: parsed.username || `user_${userId}`,
+                    firstName: parsed.firstName || 'Клиент'
+                };
+            }
+            
+        } catch (error) {
+            console.error('❌ Ошибка получения данных:', error);
+        }
+        
+        // Дефолтные значения
+        return {
+            username: `user_${userId}`,
+            firstName: 'Клиент'
+        };
+    };
+    
+    const userData = getUserData();
+    
+    // Формируем данные для отправки
+    const orderData = {
+        type: isBuyMode ? 'buy' : 'sell',
+        amount: parseFloat(amount),
+        userId: userId, // ВАЖНО: передаем userId
+        telegramId: userId, // И telegramId тоже
+        username: userData.username,
+        firstName: userData.firstName,
+        lastName: userData.lastName || ''
+    };
+    
+    console.log('📤 Отправляем ордер:', {
+        ...orderData,
+        amount: `${orderData.amount} ${isBuyMode ? 'RUB' : 'USDT'}`,
+        userId: userId,
+        userData: userData
+    });
+    
+    try {
+        setIsLoading(true);
+        showMessage('🔄 Создание ордера...');
+        
+        const result = await simpleFetch('/create-order', orderData);
+        
+        if (result.success) {
+            showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
+            setAmount('');
+            
+            // Сохраняем пользователя в localStorage для дальнейшего использования
+            const fullUserData = {
+                id: userId,
+                telegramId: userId,
+                username: userData.username,
+                firstName: userData.firstName,
+                lastName: userData.lastName || ''
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(fullUserData));
+            
+            // Сохраняем Telegram данные если есть
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const tgUser = tg.initDataUnsafe?.user;
+                if (tgUser) {
+                    localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+                }
+            }
+            
+            // Переход в историю через 2 секунды
+            setTimeout(() => {
+                navigateTo('history');
+            }, 2000);
+            
+        } else {
+            showMessage(`❌ Ошибка: ${result.error}`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сети:', error);
+        showMessage('❌ Ошибка сети');
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     // Проверка готовности
     const isExchangeReady = () => {

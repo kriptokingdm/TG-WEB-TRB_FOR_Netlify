@@ -13,6 +13,207 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* App.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+html, body {
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Предотвращение масштабирования */
+body {
+  touch-action: pan-x pan-y;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+.app {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  max-width: 100vw;
+  overflow: hidden;
+  background: var(--tg-bg-color, #ffffff);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  touch-action: pan-y;
+}
+
+.app-content {
+  height: 100vh;
+  height: -webkit-fill-available;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Анимации переходов */
+.page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.8;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0.8;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0.8;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Лоадер */
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.loading-subtext {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Метатеги для мобильного вида (добавьте в index.html) */
+/*
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+*/
+
+/* Исправляем высоту для мобильных браузеров */
+@supports (-webkit-touch-callout: none) {
+  .app {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Запрещаем выделение текста */
+input, textarea {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Улучшаем скролл */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Исправления для iOS */
+@supports (-webkit-touch-callout: none) {
+  input, textarea {
+    font-size: 16px !important; /* Предотвращает увеличение шрифта в iOS */
+  }
+}
+
+/* Адаптация для больших экранов */
+@media (min-width: 768px) {
+  .app {
+    max-width: 768px;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+  }
+  
+  .app-content {
+    border-left: 1px solid var(--tg-border, #e6e6e6);
+    border-right: 1px solid var(--tg-border, #e6e6e6);
+  }
+}
+
 .app {
   width: 100%;
   max-width: 430px;
@@ -123,4 +324,29 @@ body {
   .app {
     max-width: 100%;
   }
+}
+
+
+.app {
+  display: block !important;
+  background: #f5f5f7 !important;
+}
+
+
+
+/* В конец App.css */
+.app-content {
+  overflow-y: auto !important;
+  height: 100vh !important;
+}
+
+.page-container {
+  overflow-y: visible !important;
+  min-height: 100vh !important;
+}
+
+/* Отключи fixed позиционирование для тестирования */
+.app {
+  position: relative !important;
+  overflow-y: auto !important;
 }

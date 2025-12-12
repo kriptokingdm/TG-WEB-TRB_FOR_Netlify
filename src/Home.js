@@ -1,15 +1,16 @@
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
-
-const API_URL = 'https://tethrab.shop'
+import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
+    
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tethrab.shop:3002';
 
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
-    
+
     try {
         // Используем fetch с игнорированием SSL ошибок через прокси подход
-        const url = API_URL + endpoint;
+        const url = API_BASE_URL + endpoint;
         const options = {
             method: data ? 'POST' : 'GET',
             headers: {
@@ -19,25 +20,25 @@ const simpleFetch = async (endpoint, data = null) => {
             mode: 'cors', // Важно для CORS
             credentials: 'omit'
         };
-        
+
         if (data) {
             options.body = JSON.stringify(data);
         }
-        
+
         // Пробуем обычный fetch (если браузер позволяет)
         const response = await fetch(url, options);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
+
         const result = await response.json();
         console.log('✅ Ответ:', result);
         return result;
-        
+
     } catch (error) {
         console.error('❌ Ошибка запроса:', error.message);
-        
+
         // Для курсов возвращаем фиксированные значения
         if (endpoint === '/exchange-rate') {
             return {
@@ -49,7 +50,7 @@ const simpleFetch = async (endpoint, data = null) => {
                 }
             };
         }
-        
+
         // Для создания ордера - фолбэк на локальное сохранение
         if (endpoint === '/create-order') {
             const orderId = 'TRB' + Date.now();
@@ -61,7 +62,7 @@ const simpleFetch = async (endpoint, data = null) => {
                 status: 'pending',
                 createdAt: new Date().toISOString()
             };
-            
+
             // Сохраняем локально
             try {
                 const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
@@ -70,14 +71,14 @@ const simpleFetch = async (endpoint, data = null) => {
             } catch (e) {
                 console.log('❌ Ошибка сохранения локально:', e);
             }
-            
+
             return {
                 success: true,
                 message: 'Ордер создан (локальный режим)',
                 order: order
             };
         }
-        
+
         // Для других эндпоинтов
         return {
             success: false,
@@ -88,7 +89,7 @@ const simpleFetch = async (endpoint, data = null) => {
 
 function Home({ navigateTo, telegramUser }) {
     console.log('🏠 Home загружен');
-    
+
     const [isBuyMode, setIsBuyMode] = useState(true);
     const [isSwapped, setIsSwapped] = useState(false);
     const [amount, setAmount] = useState('');
@@ -119,28 +120,28 @@ function Home({ navigateTo, telegramUser }) {
     // Список популярных банков для продажи USDT (СБП первым)
     const availableBanks = [
         'СБП (Система быстрых платежей)',
-        'Сбербанк', 
+        'Сбербанк',
         'Тинькофф',
-        'ВТБ', 
-        'Альфа-Банк', 
-        'Газпромбанк', 
+        'ВТБ',
+        'Альфа-Банк',
+        'Газпромбанк',
         'Райффайзен Банк',
-        'СовкомБанк', 
-        'Россельхоз', 
-        'МТС Банк', 
+        'СовкомБанк',
+        'Россельхоз',
+        'МТС Банк',
         'Почта Банк',
-        'Озон Банк', 
-        'ОТП Банк', 
+        'Озон Банк',
+        'ОТП Банк',
         'Банк Уралсиб',
-        'Кредит Европа Банк', 
-        'Хоум Кредит', 
+        'Кредит Европа Банк',
+        'Хоум Кредит',
         'Ренессанс Кредит',
-        'Банк Русский Стандарт', 
-        'Банк Санкт-Петербург', 
+        'Банк Русский Стандарт',
+        'Банк Санкт-Петербург',
         'МКБ',
-        'Промсвязьбанк', 
-        'Росбанк', 
-        'Ак Барс', 
+        'Промсвязьбанк',
+        'Росбанк',
+        'Ак Барс',
         'Бинбанк',
         'ЮМани (Яндекс Деньги)',
         'Т-Банк'
@@ -161,80 +162,80 @@ function Home({ navigateTo, telegramUser }) {
     ];
 
     // Функция для получения пользователя из Telegram Web App
-const getTelegramUser = () => {
-    if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const tgUser = tg.initDataUnsafe?.user;
-        
-        if (tgUser) {
-            return {
-                id: tgUser.id.toString(),
-                username: tgUser.username || `user_${tgUser.id}`,
-                first_name: tgUser.first_name || 'Пользователь',
-                last_name: tgUser.last_name || '',
-                photo_url: tgUser.photo_url
-            };
+    const getTelegramUser = () => {
+        if (window.Telegram?.WebApp) {
+            const tg = window.Telegram.WebApp;
+            const tgUser = tg.initDataUnsafe?.user;
+
+            if (tgUser) {
+                return {
+                    id: tgUser.id.toString(),
+                    username: tgUser.username || `user_${tgUser.id}`,
+                    first_name: tgUser.first_name || 'Пользователь',
+                    last_name: tgUser.last_name || '',
+                    photo_url: tgUser.photo_url
+                };
+            }
         }
-    }
-    return null;
-};
+        return null;
+    };
 
     // Фильтр популярных сетей
     const popularNetworks = availableNetworks.filter(n => n.popular);
 
     // Инициализация пользователя
     // Инициализация пользователя
-useEffect(() => {
-    console.log('🏠 Home компонент загружен');
-    
-    // Пробуем получить пользователя из Telegram Web App
-    const tgUser = getTelegramUser();
-    
-    if (tgUser) {
-        console.log('🤖 Telegram Web App User:', tgUser);
-        
-        const userData = {
-            id: tgUser.id.toString(),
-            telegramId: tgUser.id,
-            username: tgUser.username || `user_${tgUser.id}`,
-            firstName: tgUser.first_name || 'Пользователь',
-            lastName: tgUser.last_name || '',
-            photoUrl: tgUser.photo_url
-        };
-        
-        // Сохраняем в localStorage
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-        
-        console.log('✅ Пользователь сохранен:', userData);
-    } else if (telegramUser) {
-        // Если пользователь передан через props (старый способ)
-        console.log('👤 Telegram User из props:', telegramUser);
-        
-        const userData = {
-            id: `user_${telegramUser.id}`,
-            telegramId: telegramUser.id,
-            username: telegramUser.username || `user_${telegramUser.id}`,
-            firstName: telegramUser.first_name || 'Пользователь'
-        };
-        
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
-    } else {
-        // Пробуем загрузить из localStorage
-        const savedUser = localStorage.getItem('currentUser');
-        if (!savedUser) {
-            console.log('⚠️ Пользователь не найден. Будет определен при создании ордера.');
+    useEffect(() => {
+        console.log('🏠 Home компонент загружен');
+
+        // Пробуем получить пользователя из Telegram Web App
+        const tgUser = getTelegramUser();
+
+        if (tgUser) {
+            console.log('🤖 Telegram Web App User:', tgUser);
+
+            const userData = {
+                id: tgUser.id.toString(),
+                telegramId: tgUser.id,
+                username: tgUser.username || `user_${tgUser.id}`,
+                firstName: tgUser.first_name || 'Пользователь',
+                lastName: tgUser.last_name || '',
+                photoUrl: tgUser.photo_url
+            };
+
+            // Сохраняем в localStorage
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+
+            console.log('✅ Пользователь сохранен:', userData);
+        } else if (telegramUser) {
+            // Если пользователь передан через props (старый способ)
+            console.log('👤 Telegram User из props:', telegramUser);
+
+            const userData = {
+                id: `user_${telegramUser.id}`,
+                telegramId: telegramUser.id,
+                username: telegramUser.username || `user_${telegramUser.id}`,
+                firstName: telegramUser.first_name || 'Пользователь'
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
+        } else {
+            // Пробуем загрузить из localStorage
+            const savedUser = localStorage.getItem('currentUser');
+            if (!savedUser) {
+                console.log('⚠️ Пользователь не найден. Будет определен при создании ордера.');
+            }
         }
-    }
-    
-    // Загружаем сохраненные реквизиты
-    loadSavedData();
-    
-    // Загружаем курсы
-    fetchExchangeRates();
-    
-}, [telegramUser]);
+
+        // Загружаем сохраненные реквизиты
+        loadSavedData();
+
+        // Загружаем курсы
+        fetchExchangeRates();
+
+    }, [telegramUser]);
 
     // Загрузка сохраненных данных
     const loadSavedData = () => {
@@ -274,7 +275,7 @@ useEffect(() => {
         if (isNaN(numAmount)) return '';
 
         const rate = isBuyMode ? rates.buy : rates.sell;
-        const converted = isBuyMode 
+        const converted = isBuyMode
             ? (numAmount / rate).toFixed(2)
             : (numAmount * rate).toFixed(2);
         return converted;
@@ -291,7 +292,7 @@ useEffect(() => {
         try {
             const queryAmount = amount || MIN_RUB;
             const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}`);
-            
+
             if (result.success && result.data) {
                 setRates({
                     buy: result.data.buy || 92.50,
@@ -307,7 +308,7 @@ useEffect(() => {
     const handleAmountChange = (e) => {
         const value = e.target.value;
         setAmount(value);
-        
+
         if (value && value.trim() !== '') {
             const numAmount = parseFloat(value);
             if (!isNaN(numAmount)) {
@@ -348,7 +349,7 @@ useEffect(() => {
     // Добавление банковской карты/СБП
     const handleAddPayment = () => {
         const isSBP = bankName === 'СБП (Система быстрых платежей)';
-        
+
         if (isSBP) {
             // Проверка номера телефона для СБП
             const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -370,8 +371,8 @@ useEffect(() => {
             bankName,
             type: isSBP ? 'sbp' : 'card',
             number: isSBP ? phoneNumber : cardNumber,
-            formattedNumber: isSBP ? 
-                formatPhoneNumber(phoneNumber) : 
+            formattedNumber: isSBP ?
+                formatPhoneNumber(phoneNumber) :
                 formatCardNumber(cardNumber)
         };
 
@@ -388,7 +389,7 @@ useEffect(() => {
     const formatPhoneNumber = (phone) => {
         const cleaned = phone.replace(/\D/g, '');
         if (cleaned.length === 11) {
-            return `+7 (${cleaned.slice(1,4)}) ${cleaned.slice(4,7)}-${cleaned.slice(7,9)}-${cleaned.slice(9)}`;
+            return `+7 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9)}`;
         }
         return phone;
     };
@@ -403,7 +404,7 @@ useEffect(() => {
     const handlePhoneChange = (e) => {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);
-        
+
         let formatted = '';
         if (value.length > 0) {
             formatted = '+7';
@@ -420,7 +421,7 @@ useEffect(() => {
                 }
             }
         }
-        
+
         setPhoneNumber(formatted);
     };
 
@@ -428,7 +429,7 @@ useEffect(() => {
     const handleCardChange = (e) => {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 16) value = value.slice(0, 16);
-        
+
         const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
         setCardNumber(formatted);
     };
@@ -482,211 +483,211 @@ useEffect(() => {
 
     // Создание ордера
     // Создание ордера
-const handleExchange = async () => {
-    console.log('🎯 Создание ордера');
-    
-    if (!amount || parseFloat(amount) < MIN_RUB) {
-        showMessage(`❌ Введите сумму от ${MIN_RUB.toLocaleString()} RUB`);
-        return;
-    }
-    
-    if (isBuyMode && !selectedCrypto) {
-        showMessage('❌ Добавьте адрес для получения USDT');
-        return;
-    }
-    
-    if (!isBuyMode && !selectedPayment) {
-        showMessage('❌ Добавьте реквизиты для получения RUB');
-        return;
-    }
-    
-    // ВАЖНО: Получаем реальный ID пользователя
-    const getRealUserId = () => {
-        try {
-            // 1. Пробуем получить из Telegram Web App
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                const tgUser = tg.initDataUnsafe?.user;
-                
-                if (tgUser?.id) {
-                    console.log('🤖 Telegram Web App ID:', tgUser.id);
-                    return tgUser.id.toString();
-                }
-            }
-            
-            // 2. Пробуем получить из URL параметров (для тестирования)
-            const urlParams = new URLSearchParams(window.location.search);
-            const testUserId = urlParams.get('test_user_id');
-            if (testUserId) {
-                console.log('🧪 Тестовый ID из URL:', testUserId);
-                return testUserId;
-            }
-            
-            // 3. Пробуем получить из localStorage (если уже сохраняли)
-            const savedTelegramUser = localStorage.getItem('telegramUser');
-            if (savedTelegramUser) {
-                const parsed = JSON.parse(savedTelegramUser);
-                if (parsed?.id) {
-                    return parsed.id.toString();
-                }
-            }
-            
-            // 4. Пробуем получить из currentUser
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                const parsed = JSON.parse(savedUser);
-                if (parsed?.telegramId) {
-                    return parsed.telegramId.toString();
-                }
-                if (parsed?.id) {
-                    return parsed.id.toString();
-                }
-            }
-            
-            // 5. Если telegramUser передан как prop (для React компонента)
-            if (telegramUser?.id) {
-                return telegramUser.id.toString();
-            }
-            
-        } catch (error) {
-            console.error('❌ Ошибка получения ID:', error);
+    const handleExchange = async () => {
+        console.log('🎯 Создание ордера');
+
+        if (!amount || parseFloat(amount) < MIN_RUB) {
+            showMessage(`❌ Введите сумму от ${MIN_RUB.toLocaleString()} RUB`);
+            return;
         }
-        
-        // 6. Фоллбэк - показываем ошибку
-        console.error('⚠️ Не удалось определить ID пользователя');
-        return null;
-    };
-    
-    // Получаем реальный ID
-    const userId = getRealUserId();
-    
-    if (!userId) {
-        showMessage('❌ Не удалось определить ID пользователя. Обновите страницу.');
-        return;
-    }
-    
-    // Получаем данные пользователя
-    const getUserData = () => {
-        try {
-            // Пробуем Telegram Web App
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                const tgUser = tg.initDataUnsafe?.user;
-                
-                if (tgUser) {
+
+        if (isBuyMode && !selectedCrypto) {
+            showMessage('❌ Добавьте адрес для получения USDT');
+            return;
+        }
+
+        if (!isBuyMode && !selectedPayment) {
+            showMessage('❌ Добавьте реквизиты для получения RUB');
+            return;
+        }
+
+        // ВАЖНО: Получаем реальный ID пользователя
+        const getRealUserId = () => {
+            try {
+                // 1. Пробуем получить из Telegram Web App
+                if (window.Telegram?.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    const tgUser = tg.initDataUnsafe?.user;
+
+                    if (tgUser?.id) {
+                        console.log('🤖 Telegram Web App ID:', tgUser.id);
+                        return tgUser.id.toString();
+                    }
+                }
+
+                // 2. Пробуем получить из URL параметров (для тестирования)
+                const urlParams = new URLSearchParams(window.location.search);
+                const testUserId = urlParams.get('test_user_id');
+                if (testUserId) {
+                    console.log('🧪 Тестовый ID из URL:', testUserId);
+                    return testUserId;
+                }
+
+                // 3. Пробуем получить из localStorage (если уже сохраняли)
+                const savedTelegramUser = localStorage.getItem('telegramUser');
+                if (savedTelegramUser) {
+                    const parsed = JSON.parse(savedTelegramUser);
+                    if (parsed?.id) {
+                        return parsed.id.toString();
+                    }
+                }
+
+                // 4. Пробуем получить из currentUser
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    const parsed = JSON.parse(savedUser);
+                    if (parsed?.telegramId) {
+                        return parsed.telegramId.toString();
+                    }
+                    if (parsed?.id) {
+                        return parsed.id.toString();
+                    }
+                }
+
+                // 5. Если telegramUser передан как prop (для React компонента)
+                if (telegramUser?.id) {
+                    return telegramUser.id.toString();
+                }
+
+            } catch (error) {
+                console.error('❌ Ошибка получения ID:', error);
+            }
+
+            // 6. Фоллбэк - показываем ошибку
+            console.error('⚠️ Не удалось определить ID пользователя');
+            return null;
+        };
+
+        // Получаем реальный ID
+        const userId = getRealUserId();
+
+        if (!userId) {
+            showMessage('❌ Не удалось определить ID пользователя. Обновите страницу.');
+            return;
+        }
+
+        // Получаем данные пользователя
+        const getUserData = () => {
+            try {
+                // Пробуем Telegram Web App
+                if (window.Telegram?.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    const tgUser = tg.initDataUnsafe?.user;
+
+                    if (tgUser) {
+                        return {
+                            username: tgUser.username || `user_${tgUser.id}`,
+                            firstName: tgUser.first_name || 'Клиент',
+                            lastName: tgUser.last_name || ''
+                        };
+                    }
+                }
+
+                // Пробуем localStorage
+                const savedTelegramUser = localStorage.getItem('telegramUser');
+                if (savedTelegramUser) {
+                    const parsed = JSON.parse(savedTelegramUser);
                     return {
-                        username: tgUser.username || `user_${tgUser.id}`,
-                        firstName: tgUser.first_name || 'Клиент',
-                        lastName: tgUser.last_name || ''
+                        username: parsed.username || `user_${userId}`,
+                        firstName: parsed.first_name || 'Клиент'
                     };
                 }
-            }
-            
-            // Пробуем localStorage
-            const savedTelegramUser = localStorage.getItem('telegramUser');
-            if (savedTelegramUser) {
-                const parsed = JSON.parse(savedTelegramUser);
-                return {
-                    username: parsed.username || `user_${userId}`,
-                    firstName: parsed.first_name || 'Клиент'
-                };
-            }
-            
-            // Пробуем currentUser
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                const parsed = JSON.parse(savedUser);
-                return {
-                    username: parsed.username || `user_${userId}`,
-                    firstName: parsed.firstName || 'Клиент'
-                };
-            }
-            
-        } catch (error) {
-            console.error('❌ Ошибка получения данных:', error);
-        }
-        
-        // Дефолтные значения
-        return {
-            username: `user_${userId}`,
-            firstName: 'Клиент'
-        };
-    };
-    
-    const userData = getUserData();
-    
-    // Формируем данные для отправки
-    const orderData = {
-        type: isBuyMode ? 'buy' : 'sell',
-        amount: parseFloat(amount),
-        userId: userId, // ВАЖНО: передаем userId
-        telegramId: userId, // И telegramId тоже
-        username: userData.username,
-        firstName: userData.firstName,
-        lastName: userData.lastName || ''
-    };
-    
-    console.log('📤 Отправляем ордер:', {
-        ...orderData,
-        amount: `${orderData.amount} ${isBuyMode ? 'RUB' : 'USDT'}`,
-        userId: userId,
-        userData: userData
-    });
-    
-    try {
-        setIsLoading(true);
-        showMessage('🔄 Создание ордера...');
-        
-        const result = await simpleFetch('/create-order', orderData);
-        
-        if (result.success) {
-            showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
-            setAmount('');
-            
-            // Сохраняем пользователя в localStorage для дальнейшего использования
-            const fullUserData = {
-                id: userId,
-                telegramId: userId,
-                username: userData.username,
-                firstName: userData.firstName,
-                lastName: userData.lastName || ''
-            };
-            
-            localStorage.setItem('currentUser', JSON.stringify(fullUserData));
-            
-            // Сохраняем Telegram данные если есть
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                const tgUser = tg.initDataUnsafe?.user;
-                if (tgUser) {
-                    localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+
+                // Пробуем currentUser
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    const parsed = JSON.parse(savedUser);
+                    return {
+                        username: parsed.username || `user_${userId}`,
+                        firstName: parsed.firstName || 'Клиент'
+                    };
                 }
+
+            } catch (error) {
+                console.error('❌ Ошибка получения данных:', error);
             }
-            
-            // Переход в историю через 2 секунды
-            setTimeout(() => {
-                navigateTo('history');
-            }, 2000);
-            
-        } else {
-            showMessage(`❌ Ошибка: ${result.error}`);
+
+            // Дефолтные значения
+            return {
+                username: `user_${userId}`,
+                firstName: 'Клиент'
+            };
+        };
+
+        const userData = getUserData();
+
+        // Формируем данные для отправки
+        const orderData = {
+            type: isBuyMode ? 'buy' : 'sell',
+            amount: parseFloat(amount),
+            userId: userId, // ВАЖНО: передаем userId
+            telegramId: userId, // И telegramId тоже
+            username: userData.username,
+            firstName: userData.firstName,
+            lastName: userData.lastName || ''
+        };
+
+        console.log('📤 Отправляем ордер:', {
+            ...orderData,
+            amount: `${orderData.amount} ${isBuyMode ? 'RUB' : 'USDT'}`,
+            userId: userId,
+            userData: userData
+        });
+
+        try {
+            setIsLoading(true);
+            showMessage('🔄 Создание ордера...');
+
+            const result = await simpleFetch('/create-order', orderData);
+
+            if (result.success) {
+                showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
+                setAmount('');
+
+                // Сохраняем пользователя в localStorage для дальнейшего использования
+                const fullUserData = {
+                    id: userId,
+                    telegramId: userId,
+                    username: userData.username,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName || ''
+                };
+
+                localStorage.setItem('currentUser', JSON.stringify(fullUserData));
+
+                // Сохраняем Telegram данные если есть
+                if (window.Telegram?.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    const tgUser = tg.initDataUnsafe?.user;
+                    if (tgUser) {
+                        localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+                    }
+                }
+
+                // Переход в историю через 2 секунды
+                setTimeout(() => {
+                    navigateTo('history');
+                }, 2000);
+
+            } else {
+                showMessage(`❌ Ошибка: ${result.error}`);
+            }
+
+        } catch (error) {
+            console.error('❌ Ошибка сети:', error);
+            showMessage('❌ Ошибка сети');
+        } finally {
+            setIsLoading(false);
         }
-        
-    } catch (error) {
-        console.error('❌ Ошибка сети:', error);
-        showMessage('❌ Ошибка сети');
-    } finally {
-        setIsLoading(false);
-    }
-};
+    };
 
     // Проверка готовности
     const isExchangeReady = () => {
         if (!amount || error) return false;
-        
+
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount)) return false;
-        
+
         if (isBuyMode) {
             if (numAmount < MIN_RUB || numAmount > MAX_RUB) return false;
             if (!selectedCrypto) return false;
@@ -694,7 +695,7 @@ const handleExchange = async () => {
             if (numAmount < MIN_USDT || numAmount > MAX_USDT) return false;
             if (!selectedPayment) return false;
         }
-        
+
         return true;
     };
 
@@ -736,8 +737,8 @@ const handleExchange = async () => {
                             onClick={handleSwap}
                         >
                             <svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="29" cy="29" r="26.5" fill="#007CFF" stroke="#EFEFF3" strokeWidth="5"/>
-                                <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="29" cy="29" r="26.5" fill="#007CFF" stroke="#EFEFF3" strokeWidth="5" />
+                                <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
 
@@ -773,7 +774,7 @@ const handleExchange = async () => {
                                 </span>
                             </div>
                             <div className="min-limit-hint">
-                                {isBuyMode 
+                                {isBuyMode
                                     ? `${MIN_RUB.toLocaleString()} - ${MAX_RUB.toLocaleString()} RUB`
                                     : `${MIN_USDT} - ${MAX_USDT} USDT`
                                 }
@@ -808,7 +809,7 @@ const handleExchange = async () => {
 
                         {/* Добавление адреса */}
                         <div className="add-form">
-                            <select 
+                            <select
                                 value={cryptoNetwork}
                                 onChange={(e) => setCryptoNetwork(e.target.value)}
                                 className="network-select"
@@ -820,7 +821,7 @@ const handleExchange = async () => {
                                     </option>
                                 ))}
                             </select>
-                            
+
                             <input
                                 type="text"
                                 placeholder="Введите адрес кошелька"
@@ -828,8 +829,8 @@ const handleExchange = async () => {
                                 onChange={(e) => setCryptoAddress(e.target.value)}
                                 className="address-input"
                             />
-                            
-                            <button 
+
+                            <button
                                 onClick={handleAddCryptoAddress}
                                 className="add-button"
                             >
@@ -842,8 +843,8 @@ const handleExchange = async () => {
                             <div className="crypto-list">
                                 <h4>Ваши адреса:</h4>
                                 {cryptoAddresses.map((crypto) => (
-                                    <div 
-                                        key={crypto.id} 
+                                    <div
+                                        key={crypto.id}
                                         className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
                                         onClick={() => setSelectedCrypto(crypto)}
                                     >
@@ -862,7 +863,7 @@ const handleExchange = async () => {
                                             </div>
                                         </div>
                                         <div className="crypto-actions">
-                                            <button 
+                                            <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     copyToClipboard(crypto.address);
@@ -872,7 +873,7 @@ const handleExchange = async () => {
                                             >
                                                 📋
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDeleteCrypto(crypto.id);
@@ -906,7 +907,7 @@ const handleExchange = async () => {
 
                         {/* Добавление реквизитов */}
                         <div className="add-form">
-                            <select 
+                            <select
                                 value={bankName}
                                 onChange={(e) => setBankName(e.target.value)}
                                 className="bank-select"
@@ -917,7 +918,7 @@ const handleExchange = async () => {
                                     </option>
                                 ))}
                             </select>
-                            
+
                             {isSBPSelected ? (
                                 <input
                                     type="tel"
@@ -936,8 +937,8 @@ const handleExchange = async () => {
                                     maxLength={19}
                                 />
                             )}
-                            
-                            <button 
+
+                            <button
                                 onClick={handleAddPayment}
                                 className="add-button"
                             >
@@ -950,8 +951,8 @@ const handleExchange = async () => {
                             <div className="payments-list">
                                 <h4>Ваши реквизиты:</h4>
                                 {paymentMethods.map((payment) => (
-                                    <div 
-                                        key={payment.id} 
+                                    <div
+                                        key={payment.id}
                                         className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
                                         onClick={() => setSelectedPayment(payment)}
                                     >
@@ -968,7 +969,7 @@ const handleExchange = async () => {
                                                 {payment.formattedNumber}
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDeletePayment(payment.id);
@@ -1002,8 +1003,8 @@ const handleExchange = async () => {
                         {isBuyMode ? '🛒' : '💰'}
                     </span>
                     <span className="exchange-text">
-                        {isLoading ? '🔄 Обработка...' : 
-                         (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
+                        {isLoading ? '🔄 Обработка...' :
+                            (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
                     </span>
                 </button>
 
@@ -1011,7 +1012,7 @@ const handleExchange = async () => {
                 <div className="security-info">
                     <div className="security-icon">🔒</div>
                     <div className="security-text">
-                        <strong>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit 
+                        <strong>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
                     </div>
                 </div>
             </div>
@@ -1023,29 +1024,38 @@ const handleExchange = async () => {
                 </div>
             )}
 
-            {/* Улучшенная навигация */}
-            <div className="bottom-nav-new">
-                <button className="nav-item-new" onClick={() => navigateTo('profile')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">👤</span>
-                    </div>
-                    <span className="nav-label">Профиль</span>
-                </button>
-                
-                <button className="nav-center-item" onClick={() => navigateTo('home')}>
-                    <div className="nav-center-circle">
-                        <span className="nav-center-icon">💸</span>
-                    </div>
-                    <span className="nav-center-label">Обмен</span>
-                </button>
-                
-                <button className="nav-item-new" onClick={() => navigateTo('history')}>
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon">📊</span>
-                    </div>
-                    <span className="nav-label">История</span>
-                </button>
-            </div>
+            {/* Навигация */}
+<div className="bottom-nav-new">
+  <button 
+    className="nav-item-new" 
+    onClick={() => navigateTo('profile')}
+  >
+    <div className="nav-icon-wrapper">
+      <ProfileIcon />
+    </div>
+    <span className="nav-label">Профиль</span>
+  </button>
+  
+  <button 
+    className="nav-center-item active" 
+    onClick={() => navigateTo('home')}
+  >
+    <div className="nav-center-circle">
+      <ExchangeIcon active={true} />
+    </div>
+    <span className="nav-center-label">Обмен</span>
+  </button>
+  
+  <button 
+    className="nav-item-new" 
+    onClick={() => navigateTo('history')}
+  >
+    <div className="nav-icon-wrapper">
+      <HistoryIcon />
+    </div>
+    <span className="nav-label">История</span>
+  </button>
+</div>
         </div>
     );
 }

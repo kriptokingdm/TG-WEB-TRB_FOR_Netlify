@@ -163,7 +163,7 @@
     stroke-linejoin: round;
     fill: none;
   }
-  
+
   .header-title-new {
     font-size: 20px;
     font-weight: 700;
@@ -1311,4 +1311,31 @@
   .card-input:focus,
   .phone-input:focus {
     animation: inputFocus 0.3s ease;
+  }
+
+  /* Исправления для мобильных устройств */
+@media (max-width: 768px) {
+    .bottom-nav-new {
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    
+    .app-content {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+  
+  /* Предотвращение выделения */
+  button, .nav-item-new, .nav-center-item {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Исправление для Safari */
+  @supports (-webkit-touch-callout: none) {
+    .app {
+      height: -webkit-fill-available;
+    }
   }

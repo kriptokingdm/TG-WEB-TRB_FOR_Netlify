@@ -1,41 +1,308 @@
 ﻿<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Tether Rabbit - обмен USDT/RUB" />
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <base href="/">
+<head>
+    <meta charset="UTF-8">
     
+    <!-- Критически важные метатеги для мобильного вида -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#3390ec">
+    <meta name="msapplication-navbutton-color" content="#3390ec">
+    <meta name="apple-mobile-web-app-title" content="TetherRabbit">
+    
+    <!-- Предотвращение кэширования для разработки -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png">
+    
+    <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="%PUBLIC_URL%/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="%PUBLIC_URL%/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="%PUBLIC_URL%/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="%PUBLIC_URL%/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="%PUBLIC_URL%/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="%PUBLIC_URL%/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="%PUBLIC_URL%/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-icon-180x180.png">
+    
+    <!-- Manifest -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     
-    <title>Tether Rabbit</title>
+    <!-- Preconnect для быстрой загрузки -->
+    <link rel="preconnect" href="https://tethrab.shop">
+    <link rel="dns-prefetch" href="https://tethrab.shop">
+    
+    <!-- Заголовок -->
+    <title>TetherRabbit - Обмен USDT/RUB</title>
+    
+    <!-- Мета-описание -->
+    <meta name="description" content="Быстрый и безопасный обмен USDT/RUB. Обменяйте криптовалюту по выгодному курсу.">
+    <meta name="keywords" content="USDT, Tether, RUB, обмен, криптовалюта, Telegram, обменник">
+    
+    <!-- Open Graph метатеги -->
+    <meta property="og:title" content="TetherRabbit - Обмен USDT/RUB">
+    <meta property="og:description" content="Быстрый и безопасный обмен USDT/RUB в Telegram">
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png">
+    <meta property="og:url" content="https://t.me/TetherRabbitBot">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card метатеги -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TetherRabbit - Обмен USDT/RUB">
+    <meta name="twitter:description" content="Быстрый и безопасный обмен USDT/RUB">
+    <meta name="twitter:image" content="%PUBLIC_URL%/twitter-image.png">
     
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Preload scripts -->
-    <link rel="preload" as="script" href="%PUBLIC_URL%/static/js/main.js">
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!-- Предзагрузка критических ресурсов -->
+      <link rel="stylesheet" href="%PUBLIC_URL%/static/css/main.css">
+    <!-- Стартовые стили для предотвращения мерцания -->
+    <style>
+        /* Критические стили для мгновенной отрисовки */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overscroll-behavior: none;
+        }
+        
+        /* Лоадер приложения */
+        #app-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .loading-subtext {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Базовые стили для контейнера */
+        #root {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Исправления для iOS */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                /* Заполнение всего экрана на iOS */
+                min-height: -webkit-fill-available;
+            }
+            
+            #root {
+                min-height: -webkit-fill-available;
+            }
+        }
+        
+        /* Исправления для Android */
+        @media (hover: none) and (pointer: coarse) {
+            input, textarea {
+                font-size: 16px !important;
+            }
+        }
+        
+        /* Скрываем полосу прокрутки */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Запрещаем выделение текста */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Разрешаем выделение в полях ввода */
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- Лоадер приложения (скрывается после загрузки) -->
+    <div id="app-loading">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Загрузка TetherRabbit...</p>
+        <p class="loading-subtext">Инициализация приложения</p>
+    </div>
+    
+    <!-- Основной контейнер React -->
     <div id="root"></div>
     
-    <!-- Fallback for missing JS -->
+    <!-- Фолбэк для случаев, когда JS не работает -->
+    <noscript>
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            z-index: 9999;
+        ">
+            <h1 style="margin-bottom: 20px; font-size: 24px;">TetherRabbit</h1>
+            <p style="margin-bottom: 20px; font-size: 16px;">
+                Для работы приложения требуется включить JavaScript в настройках браузера.
+            </p>
+            <p style="font-size: 14px; opacity: 0.8;">
+                Пожалуйста, включите JavaScript и обновите страницу.
+            </p>
+        </div>
+    </noscript>
+    
+    <!-- Скрипт для скрытия лоадера -->
     <script>
-      setTimeout(() => {
-        if (!document.getElementById('root').hasChildNodes()) {
-          document.body.innerHTML = '<div style="padding: 20px; text-align: center;">' +
-            '<h1>Tether Rabbit</h1>' +
-            '<p>Загрузка приложения...</p>' +
-            '<button onclick="location.reload()">Перезагрузить</button>' +
-            '</div>';
+        // Функция для скрытия лоадера
+        function hideLoader() {
+            var loader = document.getElementById('app-loading');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 300);
+            }
         }
-      }, 3000);
+        
+        // Прячем лоадер после полной загрузки
+        window.addEventListener('load', function() {
+            // Даем время на анимацию загрузки React
+            setTimeout(hideLoader, 500);
+        });
+        
+        // Фолбэк: если через 5 секунд приложение не загрузилось
+        setTimeout(function() {
+            hideLoader();
+            var root = document.getElementById('root');
+            if (root && !root.hasChildNodes()) {
+                root.innerHTML = '<div style="padding: 40px 20px; text-align: center;">' +
+                    '<h1 style="margin-bottom: 20px; color: #3390ec;">TetherRabbit</h1>' +
+                    '<p style="margin-bottom: 30px; color: #666;">Не удалось загрузить приложение</p>' +
+                    '<button onclick="location.reload()" style="' +
+                    'background: #3390ec; color: white; border: none; padding: 12px 30px; ' +
+                    'border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer;">' +
+                    'Попробовать снова</button>' +
+                    '</div>';
+            }
+        }, 10000);
+        
+        // Предотвращаем жесты масштабирования
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Предотвращаем двойной тап для масштабирования
+        var lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Исправляем высоту для мобильных браузеров
+        function fixHeight() {
+            var vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+        }
+        
+        window.addEventListener('resize', fixHeight);
+        window.addEventListener('orientationchange', fixHeight);
+        fixHeight(); // Вызываем сразу
+        
+        // Устанавливаем тему из localStorage или системную
+        function setTheme() {
+            var savedTheme = localStorage.getItem('theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (prefersDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        }
+        
+        // Слушаем изменения системной темы
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', setTheme);
+        setTheme(); // Вызываем сразу
     </script>
-  </body>
+</body>
 </html>

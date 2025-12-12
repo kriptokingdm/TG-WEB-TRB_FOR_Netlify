@@ -1,441 +1,445 @@
 import { useState, useEffect, useRef } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
+import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
-const API_URL = 'https://tethrab.shop';
+// ДОЛЖНО БЫТЬ в начале файла History.js:
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:3002'  // Для локальной разработки
+  : 'https://tethrab.shop:3002'; // Для продакшена
 
 // SVG иконки
 const LoadingSVG = () => (
-  <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path opacity="0.2" d="M28 10C30.3638 10 32.7044 10.4656 34.8883 11.3702C37.0722 12.2748 39.0565 13.6006 40.7279 15.2721C42.3994 16.9435 43.7252 18.9278 44.6298 21.1117C45.5344 23.2956 46 25.6362 46 28C46 30.3638 45.5344 32.7044 44.6298 34.8883C43.7252 37.0722 42.3994 39.0565 40.7279 40.7279C39.0565 42.3994 37.0722 43.7252 34.8883 44.6298C32.7044 45.5344 30.3638 46 28 46C25.6362 46 23.2956 45.5344 21.1117 44.6298C18.9278 43.7252 16.9435 42.3994 15.2721 40.7279C13.6006 39.0565 12.2747 37.0722 11.3702 34.8883C10.4656 32.7044 10 30.3638 10 28C10 25.6362 10.4656 23.2955 11.3702 21.1117C12.2748 18.9278 13.6006 16.9435 15.2721 15.2721C16.9435 13.6006 18.9278 12.2747 21.1117 11.3702C23.2956 10.4656 25.6362 10 28 10L28 10Z" stroke="var(--tg-accent)" strokeOpacity="0.1" strokeWidth="4" strokeLinecap="round"/>
-    <path d="M28 10C31.1288 10 34.2036 10.8156 36.9211 12.3662C39.6386 13.9169 41.9049 16.1492 43.4967 18.8429C45.0884 21.5365 45.9505 24.5986 45.9979 27.727C46.0454 30.8555 45.2765 33.9423 43.7672 36.683C42.258 39.4237 40.0603 41.7236 37.3911 43.356C34.7219 44.9884 31.6733 45.8968 28.5459 45.9917C25.4185 46.0866 22.3204 45.3647 19.5571 43.8971C16.7939 42.4296 14.4608 40.2671 12.7882 37.6229" stroke="var(--tg-accent)" strokeWidth="4" strokeLinecap="round"/>
-  </svg>
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path opacity="0.2" d="M28 10C30.3638 10 32.7044 10.4656 34.8883 11.3702C37.0722 12.2748 39.0565 13.6006 40.7279 15.2721C42.3994 16.9435 43.7252 18.9278 44.6298 21.1117C45.5344 23.2956 46 25.6362 46 28C46 30.3638 45.5344 32.7044 44.6298 34.8883C43.7252 37.0722 42.3994 39.0565 40.7279 40.7279C39.0565 42.3994 37.0722 43.7252 34.8883 44.6298C32.7044 45.5344 30.3638 46 28 46C25.6362 46 23.2956 45.5344 21.1117 44.6298C18.9278 43.7252 16.9435 42.3994 15.2721 40.7279C13.6006 39.0565 12.2747 37.0722 11.3702 34.8883C10.4656 32.7044 10 30.3638 10 28C10 25.6362 10.4656 23.2955 11.3702 21.1117C12.2748 18.9278 13.6006 16.9435 15.2721 15.2721C16.9435 13.6006 18.9278 12.2747 21.1117 11.3702C23.2956 10.4656 25.6362 10 28 10L28 10Z" stroke="var(--tg-accent)" strokeOpacity="0.1" strokeWidth="4" strokeLinecap="round" />
+        <path d="M28 10C31.1288 10 34.2036 10.8156 36.9211 12.3662C39.6386 13.9169 41.9049 16.1492 43.4967 18.8429C45.0884 21.5365 45.9505 24.5986 45.9979 27.727C46.0454 30.8555 45.2765 33.9423 43.7672 36.683C42.258 39.4237 40.0603 41.7236 37.3911 43.356C34.7219 44.9884 31.6733 45.8968 28.5459 45.9917C25.4185 46.0866 22.3204 45.3647 19.5571 43.8971C16.7939 42.4296 14.4608 40.2671 12.7882 37.6229" stroke="var(--tg-accent)" strokeWidth="4" strokeLinecap="round" />
+    </svg>
 );
 
 const CompletedSVG = () => (
-  <svg width="40" height="40" viewBox="0 0 119 119" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M59.115 21C80.1507 21 97.2301 38.0793 97.2301 59.115C97.2301 80.1507 80.1507 97.2301 59.115 97.2301C38.0793 97.2301 21 80.1507 21 59.115C21 38.0793 38.0793 21 59.115 21Z" fill="#54E6B6"/>
-    <path d="M59.1152 10.5C85.9498 10.5001 107.73 32.2806 107.73 59.1152C107.73 85.9498 85.9498 107.73 59.1152 107.73C32.2806 107.73 10.5001 85.9498 10.5 59.1152C10.5 32.2806 32.2806 10.5 59.1152 10.5Z" stroke="url(#paint0_linear_3536_6228)" strokeOpacity="0.13" strokeWidth="21"/>
-    <path d="M43.1182 57.4913L54.0427 68.4158L73.7773 48.6812" stroke="white" strokeWidth="8.45769" strokeLinecap="round"/>
-    <defs>
-      <linearGradient id="paint0_linear_3536_6228" x1="59.115" y1="21" x2="-89" y2="130.5" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#46E66D"/>
-        <stop offset="1" stopColor="#46E66D" stopOpacity="0"/>
-      </linearGradient>
-    </defs>
-  </svg>
+    <svg width="40" height="40" viewBox="0 0 119 119" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M59.115 21C80.1507 21 97.2301 38.0793 97.2301 59.115C97.2301 80.1507 80.1507 97.2301 59.115 97.2301C38.0793 97.2301 21 80.1507 21 59.115C21 38.0793 38.0793 21 59.115 21Z" fill="#54E6B6" />
+        <path d="M59.1152 10.5C85.9498 10.5001 107.73 32.2806 107.73 59.1152C107.73 85.9498 85.9498 107.73 59.1152 107.73C32.2806 107.73 10.5001 85.9498 10.5 59.1152C10.5 32.2806 32.2806 10.5 59.1152 10.5Z" stroke="url(#paint0_linear_3536_6228)" strokeOpacity="0.13" strokeWidth="21" />
+        <path d="M43.1182 57.4913L54.0427 68.4158L73.7773 48.6812" stroke="white" strokeWidth="8.45769" strokeLinecap="round" />
+        <defs>
+            <linearGradient id="paint0_linear_3536_6228" x1="59.115" y1="21" x2="-89" y2="130.5" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#46E66D" />    
+                <stop offset="1" stopColor="#46E66D" stopOpacity="0" />
+            </linearGradient>
+        </defs>
+    </svg>
 );
 
 const CancelledSVG = () => (
-  <svg width="40" height="40" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M30 10C43.2548 10 54 20.7452 54 34C54 47.2548 43.2548 58 30 58C16.7452 58 6 47.2548 6 34C6 20.7452 16.7452 10 30 10Z" fill="#FF3B30"/>
-    <path d="M39.5 24.5L20.5 43.5" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-    <path d="M20.5 24.5L39.5 43.5" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-  </svg>
+    <svg width="40" height="40" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 10C43.2548 10 54 20.7452 54 34C54 47.2548 43.2548 58 30 58C16.7452 58 6 47.2548 6 34C6 20.7452 16.7452 10 30 10Z" fill="#FF3B30" />
+        <path d="M39.5 24.5L20.5 43.5" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <path d="M20.5 24.5L39.5 43.5" stroke="white" strokeWidth="3" strokeLinecap="round" />
+    </svg>
 );
 
 const EmptySVG = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M30 10C43.2548 10 54 20.7452 54 34C54 47.2548 43.2548 58 30 58C16.7452 58 6 47.2548 6 34C6 20.7452 16.7452 10 30 10Z" fill="var(--tg-input-bg)"/>
-    <path d="M25 25L35 35" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M35 25L25 35" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M30 22C28.8954 22 28 22.8954 28 24" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M32 38C30.8954 38 30 38.8954 30 40" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 10C43.2548 10 54 20.7452 54 34C54 47.2548 43.2548 58 30 58C16.7452 58 6 47.2548 6 34C6 20.7452 16.7452 10 30 10Z" fill="var(--tg-input-bg)" />
+        <path d="M25 25L35 35" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M35 25L25 35" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M30 22C28.8954 22 28 22.8954 28 24" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round" />
+        <path d="M32 38C30.8954 38 30 38.8954 30 40" stroke="var(--tg-secondary-text)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
 );
 
 // Утилиты
 const getStatusText = (status) => {
-  const statusMap = {
-    'pending': 'Ожидание',
-    'processing': 'В обработке',
-    'accepted': 'Принят',
-    'rejected': 'Отклонен',
-    'completed': 'Завершен',
-    'success': 'Завершено',
-    'cancelled': 'Отменено',
-    'failed': 'Ошибка'
-  };
-  return statusMap[status?.toLowerCase()] || status || 'Неизвестно';
+    const statusMap = {
+        'pending': 'Ожидание',
+        'processing': 'В обработке',
+        'accepted': 'Принят',
+        'rejected': 'Отклонен',
+        'completed': 'Завершен',
+        'success': 'Завершено',
+        'cancelled': 'Отменено',
+        'failed': 'Ошибка'
+    };
+    return statusMap[status?.toLowerCase()] || status || 'Неизвестно';
 };
 
 const getStatusClass = (status) => {
-  const statusMap = {
-    'pending': 'status-pending',
-    'processing': 'status-processing',
-    'accepted': 'status-accepted',
-    'rejected': 'status-rejected',
-    'completed': 'status-completed',
-    'success': 'status-completed',
-    'cancelled': 'status-cancelled',
-    'failed': 'status-cancelled'
-  };
-  return statusMap[status?.toLowerCase()] || 'status-pending';
+    const statusMap = {
+        'pending': 'status-pending',
+        'processing': 'status-processing',
+        'accepted': 'status-accepted',
+        'rejected': 'status-rejected',
+        'completed': 'status-completed',
+        'success': 'status-completed',
+        'cancelled': 'status-cancelled',
+        'failed': 'status-cancelled'
+    };
+    return statusMap[status?.toLowerCase()] || 'status-pending';
 };
 
 const getStatusIcon = (status) => {
-  const statusMap = {
-    'pending': '🟡',
-    'processing': '🟠',
-    'accepted': '✅',
-    'rejected': '❌',
-    'completed': '🏁',
-    'success': '🏁',
-    'cancelled': '❌',
-    'failed': '❌'
-  };
-  return statusMap[status?.toLowerCase()] || '❓';
+    const statusMap = {
+        'pending': '🟡',
+        'processing': '🟠',
+        'accepted': '✅',
+        'rejected': '❌',
+        'completed': '🏁',
+        'success': '🏁',
+        'cancelled': '❌',
+        'failed': '❌'
+    };
+    return statusMap[status?.toLowerCase()] || '❓';
 };
 
 function History({ navigateTo }) {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeChat, setActiveChat] = useState(null);
-  const [viewMode, setViewMode] = useState('active'); // 'active' или 'all'
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [refreshing, setRefreshing] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [expandedOrderId, setExpandedOrderId] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [activeChat, setActiveChat] = useState(null);
+    const [viewMode, setViewMode] = useState('active'); // 'active' или 'all'
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [refreshing, setRefreshing] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  const isInitialMount = useRef(true);
-  const refreshIntervalRef = useRef(null);
-  const lastUpdateRef = useRef(0);
+    const isInitialMount = useRef(true);
+    const refreshIntervalRef = useRef(null);
+    const lastUpdateRef = useRef(0);
 
-  // Показать сообщение
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-  };
+    // Показать сообщение
+    const showMessage = (type, text) => {
+        setMessage({ type, text });
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    };
 
-  // Получение ID пользователя
-  const getUserId = () => {
-    try {
-      let userId = null;
-      
-      // 1. Telegram WebApp (самый приоритетный)
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const tgUser = tg.initDataUnsafe?.user;
-        if (tgUser?.id) {
-          userId = tgUser.id.toString();
+    // Получение ID пользователя
+    const getUserId = () => {
+        try {
+            let userId = null;
+
+            // 1. Telegram WebApp (самый приоритетный)
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const tgUser = tg.initDataUnsafe?.user;
+                if (tgUser?.id) {
+                    userId = tgUser.id.toString();
+                }
+            }
+
+            // 2. Пробуем получить из localStorage
+            if (!userId) {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    const parsed = JSON.parse(savedUser);
+                    userId = (parsed.id || parsed.telegramId)?.toString();
+                }
+            }
+
+            // Приводим к единому формату
+            if (userId) {
+                // Убираем возможный префикс user_
+                userId = userId.replace(/^user_/, '');
+                // Добавляем правильный префикс
+                return 'user_' + userId;
+            }
+
+            // 3. Если ничего не нашли, используем тестовый ID
+            return 'user_7879866656';
+
+        } catch (error) {
+            console.error('❌ Ошибка получения ID:', error);
+            return 'user_7879866656';
         }
-      }
-      
-      // 2. Пробуем получить из localStorage
-      if (!userId) {
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-          const parsed = JSON.parse(savedUser);
-          userId = (parsed.id || parsed.telegramId)?.toString();
+    };
+
+    // Основная функция загрузки ордеров
+    const fetchUserOrders = async (showLoading = true) => {
+        const now = Date.now();
+
+        // Защита от слишком частых запросов
+        if (lastUpdateRef.current && (now - lastUpdateRef.current < 3000)) {
+            if (showLoading) setIsLoading(false);
+            return;
         }
-      }
-      
-      // Приводим к единому формату
-      if (userId) {
-        // Убираем возможный префикс user_
-        userId = userId.replace(/^user_/, '');
-        // Добавляем правильный префикс
-        return 'user_' + userId;
-      }
-      
-      // 3. Если ничего не нашли, используем тестовый ID
-      return 'user_7879866656';
-      
-    } catch (error) {
-      console.error('❌ Ошибка получения ID:', error);
-      return 'user_7879866656';
-    }
-  };
 
-  // Основная функция загрузки ордеров
-  const fetchUserOrders = async (showLoading = true) => {
-    const now = Date.now();
-    
-    // Защита от слишком частых запросов
-    if (lastUpdateRef.current && (now - lastUpdateRef.current < 3000)) {
-      if (showLoading) setIsLoading(false);
-      return;
-    }
-    
-    lastUpdateRef.current = now;
+        lastUpdateRef.current = now;
 
-    if (showLoading) {
-      setIsLoading(true);
-    }
-    
-    setRefreshing(true);
-
-    try {
-      const userId = getUserId();
-      
-      if (!userId) {
-        setError('Пользователь не определен. Авторизуйтесь заново.');
-        setIsLoading(false);
-        setRefreshing(false);
-        return;
-      }
-
-      // Прямой запрос без retry для простоты
-      const response = await fetch(`${API_URL}/user-orders/${userId}`, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+        if (showLoading) {
+            setIsLoading(true);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+        setRefreshing(true);
 
-      const result = await response.json();
-      
-      if (result.success) {
-        const ordersData = result.orders || [];
+        try {
+            const userId = getUserId();
 
-        // Сортируем по дате (новые сверху)
-        const sortedOrders = ordersData.sort((a, b) => {
-          const dateA = new Date(a.created_at || a.createdAt || Date.now());
-          const dateB = new Date(b.created_at || b.createdAt || Date.now());
-          return dateB - dateA;
+            if (!userId) {
+                setError('Пользователь не определен. Авторизуйтесь заново.');
+                setIsLoading(false);
+                setRefreshing(false);
+                return;
+            }
+
+            // Прямой запрос без retry для простоты
+            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                const ordersData = result.orders || [];
+
+                // Сортируем по дате (новые сверху)
+                const sortedOrders = ordersData.sort((a, b) => {
+                    const dateA = new Date(a.created_at || a.createdAt || Date.now());
+                    const dateB = new Date(b.created_at || b.createdAt || Date.now());
+                    return dateB - dateA;
+                });
+
+                setOrders(sortedOrders);
+                setError('');
+
+                // Сохраняем в localStorage как backup
+                localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
+
+                if (isInitialMount.current) {
+                    showMessage('success', `Загружено ${sortedOrders.length} ордеров`);
+                    isInitialMount.current = false;
+                }
+
+            } else {
+                throw new Error(result.error || 'Ошибка сервера');
+            }
+
+        } catch (error) {
+            console.error('❌ Ошибка загрузки:', error.message);
+
+            // Пробуем загрузить из localStorage
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                if (localOrders.length > 0) {
+                    setOrders(localOrders);
+                    setError('⚠️ Используем кэшированные данные');
+                    showMessage('warning', 'Используем сохраненные данные');
+                } else {
+                    setError('Не удалось загрузить историю');
+                    showMessage('error', 'Ошибка загрузки данных');
+                }
+            } catch (localError) {
+                console.error('❌ Ошибка локальных данных:', localError);
+                setError('Ошибка соединения с сервером');
+                showMessage('error', 'Ошибка сети');
+            }
+
+        } finally {
+            setIsLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    // Функция для загрузки больше ордеров (бесконечный скролл)
+    const handleLoadMore = () => {
+        if (isLoadingMore || orders.length >= 100) return;
+        setIsLoadingMore(true);
+        setTimeout(() => {
+            setIsLoadingMore(false);
+        }, 1000);
+    };
+
+    // Инициализация
+    useEffect(() => {
+        // Принудительно устанавливаем тестового пользователя для отладки
+        const debugUser = {
+            id: '7879866656',
+            telegramId: '7879866656',
+            username: 'TERBCEO',
+            firstName: 'G'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(debugUser));
+
+        fetchUserOrders();
+
+        // Автообновление каждые 30 секунд
+        refreshIntervalRef.current = setInterval(() => {
+            fetchUserOrders(false);
+        }, 30000);
+
+        return () => {
+            if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+            }
+        };
+    }, []);
+
+    // Эффект для отслеживания скролла
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset;
+            const windowHeight = window.innerHeight;
+            const docHeight = document.documentElement.offsetHeight;
+
+            if (scrollTop + windowHeight >= docHeight - 100 && !isLoadingMore) {
+                handleLoadMore();
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [isLoadingMore]);
+
+    // Тест подключения
+    const testConnection = async () => {
+        try {
+            showMessage('info', 'Тестируем подключение...');
+            const response = await fetch(`${API_URL}/health`);
+
+            if (response.ok) {
+                showMessage('success', 'API работает!');
+            } else {
+                showMessage('error', `HTTP ${response.status}`);
+            }
+        } catch (error) {
+            showMessage('error', `Ошибка сети: ${error.message}`);
+        }
+    };
+
+    // Фильтрация ордеров
+    const getFilteredOrders = () => {
+        if (viewMode === 'active') {
+            return orders.filter(order => {
+                const status = (order.admin_status || order.status || '').toLowerCase();
+                return ['pending', 'processing', 'accepted'].includes(status);
+            });
+        }
+        return orders; // В режиме 'all' показываем все
+    };
+
+    // Расчет итоговой суммы
+    const calculateTotal = (order) => {
+        if (!order || !order.amount || !order.rate) return '—';
+
+        const isBuy = order.type === 'buy' || order.operation_type === 'buy';
+
+        if (isBuy) {
+            return (order.amount / order.rate).toFixed(2) + ' USDT';
+        } else {
+            return (order.amount * order.rate).toFixed(2) + ' RUB';
+        }
+    };
+
+    // Форматирование даты
+    const formatDate = (dateString) => {
+        if (!dateString) return '—';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '—';
+
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return '—';
+        }
+    };
+
+    // Форматирование времени
+    const formatTime = (dateString) => {
+        if (!dateString) return '—';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '—';
+
+            return date.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return '—';
+        }
+    };
+
+    // Копирование ID
+    const copyOrderId = (orderId) => {
+        navigator.clipboard.writeText(orderId);
+        showMessage('success', 'ID скопирован');
+    };
+
+    // Переключение раскрытия ордера
+    const toggleOrderExpand = (orderId) => {
+        setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+    };
+
+    // Статистика
+    const getOrdersStats = () => {
+        const activeOrders = orders.filter(order => {
+            const status = (order.admin_status || order.status || '').toLowerCase();
+            return ['pending', 'processing', 'accepted'].includes(status);
         });
 
-        setOrders(sortedOrders);
-        setError('');
+        const completedOrders = orders.filter(order => {
+            const status = (order.admin_status || order.status || '').toLowerCase();
+            return ['completed', 'success'].includes(status);
+        });
 
-        // Сохраняем в localStorage как backup
-        localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
+        const rejectedOrders = orders.filter(order => {
+            const status = (order.admin_status || order.status || '').toLowerCase();
+            return ['rejected', 'cancelled', 'failed'].includes(status);
+        });
 
-        if (isInitialMount.current) {
-          showMessage('success', `Загружено ${sortedOrders.length} ордеров`);
-          isInitialMount.current = false;
+        return {
+            total: orders.length,
+            active: activeOrders.length,
+            completed: completedOrders.length,
+            rejected: rejectedOrders.length
+        };
+    };
+
+    // Ручное обновление
+    const handleRefresh = () => {
+        if (!refreshing) {
+            fetchUserOrders(true);
         }
-
-      } else {
-        throw new Error(result.error || 'Ошибка сервера');
-      }
-
-    } catch (error) {
-      console.error('❌ Ошибка загрузки:', error.message);
-      
-      // Пробуем загрузить из localStorage
-      try {
-        const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-        if (localOrders.length > 0) {
-          setOrders(localOrders);
-          setError('⚠️ Используем кэшированные данные');
-          showMessage('warning', 'Используем сохраненные данные');
-        } else {
-          setError('Не удалось загрузить историю');
-          showMessage('error', 'Ошибка загрузки данных');
-        }
-      } catch (localError) {
-        console.error('❌ Ошибка локальных данных:', localError);
-        setError('Ошибка соединения с сервером');
-        showMessage('error', 'Ошибка сети');
-      }
-      
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  // Функция для загрузки больше ордеров (бесконечный скролл)
-  const handleLoadMore = () => {
-    if (isLoadingMore || orders.length >= 100) return;
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setIsLoadingMore(false);
-    }, 1000);
-  };
-
-  // Инициализация
-  useEffect(() => {
-    // Принудительно устанавливаем тестового пользователя для отладки
-    const debugUser = {
-      id: '7879866656',
-      telegramId: '7879866656',
-      username: 'TERBCEO',
-      firstName: 'G'
-    };
-    localStorage.setItem('currentUser', JSON.stringify(debugUser));
-    
-    fetchUserOrders();
-
-    // Автообновление каждые 30 секунд
-    refreshIntervalRef.current = setInterval(() => {
-      fetchUserOrders(false);
-    }, 30000);
-
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // Эффект для отслеживания скролла
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset;
-      const windowHeight = window.innerHeight;
-      const docHeight = document.documentElement.offsetHeight;
-      
-      if (scrollTop + windowHeight >= docHeight - 100 && !isLoadingMore) {
-        handleLoadMore();
-      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMore]);
+    const stats = getOrdersStats();
+    const filteredOrders = getFilteredOrders();
 
-  // Тест подключения
-  const testConnection = async () => {
-    try {
-      showMessage('info', 'Тестируем подключение...');
-      const response = await fetch(`${API_URL}/health`);
-      
-      if (response.ok) {
-        showMessage('success', 'API работает!');
-      } else {
-        showMessage('error', `HTTP ${response.status}`);
-      }
-    } catch (error) {
-      showMessage('error', `Ошибка сети: ${error.message}`);
-    }
-  };
+    return (
+        <div className="history-container">
+            {/* Хедер */}
+            <div className="history-header-new">
+                <div className="header-content">
+                    <div className="header-left">
+                        <div className="header-titles">
+                            <h1 className="header-title-new">История операций</h1>
+                            <p className="header-subtitle">Все ваши транзакции</p>
+                        </div>
+                    </div>
 
-  // Фильтрация ордеров
-  const getFilteredOrders = () => {
-    if (viewMode === 'active') {
-      return orders.filter(order => {
-        const status = (order.admin_status || order.status || '').toLowerCase();
-        return ['pending', 'processing', 'accepted'].includes(status);
-      });
-    }
-    return orders; // В режиме 'all' показываем все
-  };
+                    <button
+                        className="test-connection-btn"
+                        onClick={testConnection}
+                        title="Тест подключения к серверу"
+                    >
+                        🌐
+                    </button>
+                </div>
 
-  // Расчет итоговой суммы
-  const calculateTotal = (order) => {
-    if (!order || !order.amount || !order.rate) return '—';
-
-    const isBuy = order.type === 'buy' || order.operation_type === 'buy';
-
-    if (isBuy) {
-      return (order.amount / order.rate).toFixed(2) + ' USDT';
-    } else {
-      return (order.amount * order.rate).toFixed(2) + ' RUB';
-    }
-  };
-
-  // Форматирование даты
-  const formatDate = (dateString) => {
-    if (!dateString) return '—';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '—';
-
-      return date.toLocaleDateString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return '—';
-    }
-  };
-
-  // Форматирование времени
-  const formatTime = (dateString) => {
-    if (!dateString) return '—';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '—';
-
-      return date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return '—';
-    }
-  };
-
-  // Копирование ID
-  const copyOrderId = (orderId) => {
-    navigator.clipboard.writeText(orderId);
-    showMessage('success', 'ID скопирован');
-  };
-
-  // Переключение раскрытия ордера
-  const toggleOrderExpand = (orderId) => {
-    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
-  };
-
-  // Статистика
-  const getOrdersStats = () => {
-    const activeOrders = orders.filter(order => {
-      const status = (order.admin_status || order.status || '').toLowerCase();
-      return ['pending', 'processing', 'accepted'].includes(status);
-    });
-
-    const completedOrders = orders.filter(order => {
-      const status = (order.admin_status || order.status || '').toLowerCase();
-      return ['completed', 'success'].includes(status);
-    });
-
-    const rejectedOrders = orders.filter(order => {
-      const status = (order.admin_status || order.status || '').toLowerCase();
-      return ['rejected', 'cancelled', 'failed'].includes(status);
-    });
-
-    return {
-      total: orders.length,
-      active: activeOrders.length,
-      completed: completedOrders.length,
-      rejected: rejectedOrders.length
-    };
-  };
-
-  // Ручное обновление
-  const handleRefresh = () => {
-    if (!refreshing) {
-      fetchUserOrders(true);
-    }
-  };
-
-  const stats = getOrdersStats();
-  const filteredOrders = getFilteredOrders();
-
-  return (
-    <div className="history-container">
-      {/* Хедер */}
-      <div className="history-header-new">
-        <div className="header-content">
-          <div className="header-left">
-            <div className="header-titles">
-              <h1 className="header-title-new">История операций</h1>
-              <p className="header-subtitle">Все ваши транзакции</p>
-            </div>
-          </div>
-
-          <button
-            className="test-connection-btn"
-            onClick={testConnection}
-            title="Тест подключения к серверу"
-          >
-            🌐
-          </button>
-        </div>
-
-        {/* Статистика */}
-        <div className="stats-cards">
-          {/* <div className="stat-card-new">
+                {/* Статистика */}
+                <div className="stats-cards">
+                    {/* <div className="stat-card-new">
             <div className="stat-icon-container">
               <div className="stat-icon">📊</div>
             </div>
@@ -445,7 +449,7 @@ function History({ navigateTo }) {
             </div>
           </div> */}
 
-          {/* <div className="stat-card-new">
+                    {/* <div className="stat-card-new">
             <div className="stat-icon-container">
               <div className="stat-icon">🔥</div>
             </div>
@@ -455,307 +459,317 @@ function History({ navigateTo }) {
             </div>
           </div> */}
 
-          <div className="stat-card-new">
-            <div className="stat-icon-container">
-              {stats.completed > 0 ? <CompletedSVG /> : <div className="stat-icon">✅</div>}
-            </div>
-            <div className="stat-content">
-              <div className="stat-value-new">{stats.completed}</div>
-              <div className="stat-label-new">Завершено</div>
-            </div>
-          </div>
-
-          <div className="stat-card-new">
-            <div className="stat-icon-container">
-              {stats.rejected > 0 ? <CancelledSVG /> : <div className="stat-icon">❌</div>}
-            </div>
-            <div className="stat-content">
-              <div className="stat-value-new">{stats.rejected}</div>
-              <div className="stat-label-new">Отклонено</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Переключатель вью и кнопка обновления */}
-        <div className="view-tabs">
-          <button
-            className={`view-tab-new ${viewMode === 'active' ? 'active' : ''}`}
-            onClick={() => setViewMode('active')}
-          >
-            <span className="tab-icon">🔥</span>
-            <span className="tab-text">Активные</span>
-            {stats.active > 0 && (
-              <span className="tab-badge">{stats.active}</span>
-            )}
-          </button>
-          <button
-            className={`view-tab-new ${viewMode === 'all' ? 'active' : ''}`}
-            onClick={() => setViewMode('all')}
-          >
-            <span className="tab-icon">📋</span>
-            <span className="tab-text">Все</span>
-            {stats.total > 0 && (
-              <span className="tab-badge">{stats.total}</span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Контейнер ордеров */}
-      <div className="orders-container-new">
-        {isLoading ? (
-          <div className="loading-container-new">
-            <div className="loading-spinner-svg">
-              <LoadingSVG />
-            </div>
-            <p className="loading-text">Загрузка истории...</p>
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="empty-state-new">
-            <div className="empty-icon-container">
-              <EmptySVG />
-            </div>
-            <h3 className="empty-title-new">
-              {viewMode === 'active' ? 'Нет активных операций' : 'История пуста'}
-            </h3>
-            <p className="empty-subtitle-new">
-              {viewMode === 'active'
-                ? 'Все операции завершены или отменены'
-                : 'Совершите первую операцию обмена'
-              }
-            </p>
-
-            {error && (
-              <div className="connection-error-info">
-                <p className="error-title">⚠️ {error}</p>
-                <p className="error-message">Попробуйте обновить страницу</p>
-              </div>
-            )}
-
-            <button
-              className="exchange-btn-new"
-              onClick={() => navigateTo('home')}
-            >
-              <span className="exchange-icon">💰</span>
-              <span>Начать обмен</span>
-            </button>
-          </div>
-        ) : (
-          <div className="orders-list-new">
-            {filteredOrders.map((order, index) => {
-              const isBuy = order.type === 'buy' || order.operation_type === 'buy';
-              const status = order.admin_status || order.status || 'pending';
-              const statusText = getStatusText(status);
-              const statusClass = getStatusClass(status);
-              const statusIcon = getStatusIcon(status);
-              const isExpanded = expandedOrderId === order.id;
-              
-              // Определяем, можно ли открыть чат
-              const canChat = ['pending', 'processing', 'accepted'].includes(status?.toLowerCase());
-
-              return (
-                <div 
-                  key={order.id || index} 
-                  className="order-card-new"
-                  style={{ '--order-index': index }}
-                >
-                  <div className="order-card-header">
-                    <div className="order-header-left">
-                      <div className="order-type-badge-new">
-                        <span className="type-icon-new">
-                          {isBuy ? '🛒' : '💰'}
-                        </span>
-                        <span className="type-text-new">
-                          {isBuy ? 'Покупка USDT' : 'Продажа USDT'}
-                        </span>
-                      </div>
-                      <button
-                        className="order-id-new"
-                        onClick={() => copyOrderId(order.id)}
-                        title="Копировать ID"
-                      >
-                        #{order.id ? order.id.substring(0, 10) + '...' : 'N/A'}
-                      </button>
-                    </div>
-                    <div className={`order-status ${statusClass}`}>
-                      <span className="status-icon">{statusIcon}</span>
-                      <span className="status-text">{statusText}</span>
-                    </div>
-                  </div>
-
-                  <div className="order-details-grid">
-                    <div className="order-detail">
-                      <span className="detail-label">Сумма</span>
-                      <span className="detail-value">
-                        {order.amount} {isBuy ? 'RUB' : 'USDT'}
-                      </span>
-                    </div>
-                    <div className="order-detail">
-                      <span className="detail-label">Курс</span>
-                      <span className="detail-value highlight">
-                        {order.rate} ₽
-                      </span>
-                    </div>
-                    <div className="order-detail">
-                      <span className="detail-label">Итого</span>
-                      <span className="detail-value total">
-                        {calculateTotal(order)}
-                      </span>
-                    </div>
-                    <div className="order-detail">
-                      <span className="detail-label">Время</span>
-                      <span className="detail-value date">
-                        {formatTime(order.created_at || order.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Кнопка раскрытия */}
-                  <button 
-                    className="expand-btn"
-                    onClick={() => toggleOrderExpand(order.id)}
-                  >
-                    <span className="expand-text">
-                      {isExpanded ? 'Скрыть детали' : 'Показать детали'}
-                    </span>
-                    <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-
-                  {/* Подробная информация (раскрывается) */}
-                  {isExpanded && (
-                    <div className="order-details-expanded">
-                      <div className="detail-row">
-                        <span className="detail-label">ID ордера:</span>
-                        <span className="detail-value code">{order.id}</span>
-                      </div>
-                      <div className="detail-row">
-                        <span className="detail-label">Дата создания:</span>
-                        <span className="detail-value">{formatDate(order.created_at || order.createdAt)}</span>
-                      </div>
-                      {order.user_id && (
-                        <div className="detail-row">
-                          <span className="detail-label">User ID:</span>
-                          <span className="detail-value code">{order.user_id}</span>
+                    <div className="stat-card-new">
+                        <div className="stat-icon-container">
+                            {stats.completed > 0 ? <CompletedSVG /> : <div className="stat-icon">✅</div>}
                         </div>
-                      )}
-                      {order.telegram_id && (
-                        <div className="detail-row">
-                          <span className="detail-label">Telegram ID:</span>
-                          <span className="detail-value code">{order.telegram_id}</span>
+                        <div className="stat-content">
+                            <div className="stat-value-new">{stats.completed}</div>
+                            <div className="stat-label-new">Завершено</div>
                         </div>
-                      )}
-                      {order.username && (
-                        <div className="detail-row">
-                          <span className="detail-label">Имя пользователя:</span>
-                          <span className="detail-value">@{order.username}</span>
-                        </div>
-                      )}
-                      {order.first_name && (
-                        <div className="detail-row">
-                          <span className="detail-label">Имя:</span>
-                          <span className="detail-value">{order.first_name}</span>
-                        </div>
-                      )}
-                      {order.admin_comment && (
-                        <div className="detail-row">
-                          <span className="detail-label">Комментарий оператора:</span>
-                          <span className="detail-value comment">{order.admin_comment}</span>
-                        </div>
-                      )}
-                      {order.admin_action_at && (
-                        <div className="detail-row">
-                          <span className="detail-label">Время действия:</span>
-                          <span className="detail-value">{formatDate(order.admin_action_at)}</span>
-                        </div>
-                      )}
                     </div>
-                  )}
 
-                  <div className="order-actions">
-                    <button
-                      className="copy-btn-new"
-                      onClick={() => copyOrderId(order.id)}
-                    >
-                      <span className="copy-icon-new">📋</span>
-                      <span>Копировать ID</span>
-                    </button>
-
-                    {/* Кнопка чата для активных ордеров */}
-                    {canChat && (
-                      <button
-                        className="chat-btn-new"
-                        onClick={() => setActiveChat({ orderId: order.id })}
-                      >
-                        <span className="chat-icon-new">💬</span>
-                        <span>Чат с оператором</span>
-                      </button>
-                    )}
-                  </div>
+                    <div className="stat-card-new">
+                        <div className="stat-icon-container">
+                            {stats.rejected > 0 ? <CancelledSVG /> : <div className="stat-icon">❌</div>}
+                        </div>
+                        <div className="stat-content">
+                            <div className="stat-value-new">{stats.rejected}</div>
+                            <div className="stat-label-new">Отклонено</div>
+                        </div>
+                    </div>
                 </div>
-              );
-            })}
-            
-            {/* Индикатор загрузки еще */}
-            {isLoadingMore && (
-              <div className="loading-more">
-                <div className="loading-more-spinner"></div>
-                <span>Загрузка...</span>
-              </div>
+
+                {/* Переключатель вью и кнопка обновления */}
+                <div className="view-tabs">
+                    <button
+                        className={`view-tab-new ${viewMode === 'active' ? 'active' : ''}`}
+                        onClick={() => setViewMode('active')}
+                    >
+                        <span className="tab-icon">🔥</span>
+                        <span className="tab-text">Активные</span>
+                        {stats.active > 0 && (
+                            <span className="tab-badge">{stats.active}</span>
+                        )}
+                    </button>
+                    <button
+                        className={`view-tab-new ${viewMode === 'all' ? 'active' : ''}`}
+                        onClick={() => setViewMode('all')}
+                    >
+                        <span className="tab-icon">📋</span>
+                        <span className="tab-text">Все</span>
+                        {stats.total > 0 && (
+                            <span className="tab-badge">{stats.total}</span>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            {/* Контейнер ордеров */}
+            <div className="orders-container-new">
+                {isLoading ? (
+                    <div className="loading-container-new">
+                        <div className="loading-spinner-svg">
+                            <LoadingSVG />
+                        </div>
+                        <p className="loading-text">Загрузка истории...</p>
+                    </div>
+                ) : filteredOrders.length === 0 ? (
+                    <div className="empty-state-new">
+                        <div className="empty-icon-container">
+                            <EmptySVG />
+                        </div>
+                        <h3 className="empty-title-new">
+                            {viewMode === 'active' ? 'Нет активных операций' : 'История пуста'}
+                        </h3>
+                        <p className="empty-subtitle-new">
+                            {viewMode === 'active'
+                                ? 'Все операции завершены или отменены'
+                                : 'Совершите первую операцию обмена'
+                            }
+                        </p>
+
+                        {error && (
+                            <div className="connection-error-info">
+                                <p className="error-title">⚠️ {error}</p>
+                                <p className="error-message">Попробуйте обновить страницу</p>
+                            </div>
+                        )}
+
+                        <button
+                            className="exchange-btn-new"
+                            onClick={() => navigateTo('home')}
+                        >
+                            <span className="exchange-icon">💰</span>
+                            <span>Начать обмен</span>
+                        </button>
+                    </div>
+                ) : (
+                    <div className="orders-list-new">
+                        {filteredOrders.map((order, index) => {
+                            const isBuy = order.type === 'buy' || order.operation_type === 'buy';
+                            const status = order.admin_status || order.status || 'pending';
+                            const statusText = getStatusText(status);
+                            const statusClass = getStatusClass(status);
+                            const statusIcon = getStatusIcon(status);
+                            const isExpanded = expandedOrderId === order.id;
+
+                            // Определяем, можно ли открыть чат
+                            const canChat = ['pending', 'processing', 'accepted'].includes(status?.toLowerCase());
+
+                            return (
+                                <div
+                                    key={order.id || index}
+                                    className="order-card-new"
+                                    style={{ '--order-index': index }}
+                                >
+                                    <div className="order-card-header">
+                                        <div className="order-header-left">
+                                            <div className="order-type-badge-new">
+                                                <span className="type-icon-new">
+                                                    {isBuy ? '🛒' : '💰'}
+                                                </span>
+                                                <span className="type-text-new">
+                                                    {isBuy ? 'Покупка USDT' : 'Продажа USDT'}
+                                                </span>
+                                            </div>
+                                            <button
+                                                className="order-id-new"
+                                                onClick={() => copyOrderId(order.id)}
+                                                title="Копировать ID"
+                                            >
+                                                #{order.id ? order.id.substring(0, 10) + '...' : 'N/A'}
+                                            </button>
+                                        </div>
+                                        <div className={`order-status ${statusClass}`}>
+                                            <span className="status-icon">{statusIcon}</span>
+                                            <span className="status-text">{statusText}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="order-details-grid">
+                                        <div className="order-detail">
+                                            <span className="detail-label">Сумма</span>
+                                            <span className="detail-value">
+                                                {order.amount} {isBuy ? 'RUB' : 'USDT'}
+                                            </span>
+                                        </div>
+                                        <div className="order-detail">
+                                            <span className="detail-label">Курс</span>
+                                            <span className="detail-value highlight">
+                                                {order.rate} ₽
+                                            </span>
+                                        </div>
+                                        <div className="order-detail">
+                                            <span className="detail-label">Итого</span>
+                                            <span className="detail-value total">
+                                                {calculateTotal(order)}
+                                            </span>
+                                        </div>
+                                        <div className="order-detail">
+                                            <span className="detail-label">Время</span>
+                                            <span className="detail-value date">
+                                                {formatTime(order.created_at || order.createdAt)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Кнопка раскрытия */}
+                                    <button
+                                        className="expand-btn"
+                                        onClick={() => toggleOrderExpand(order.id)}
+                                    >
+                                        <span className="expand-text">
+                                            {isExpanded ? 'Скрыть детали' : 'Показать детали'}
+                                        </span>
+                                        <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>
+                                            ▼
+                                        </span>
+                                    </button>
+
+                                    {/* Подробная информация (раскрывается) */}
+                                    {isExpanded && (
+                                        <div className="order-details-expanded">
+                                            <div className="detail-row">
+                                                <span className="detail-label">ID ордера:</span>
+                                                <span className="detail-value code">{order.id}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="detail-label">Дата создания:</span>
+                                                <span className="detail-value">{formatDate(order.created_at || order.createdAt)}</span>
+                                            </div>
+                                            {order.user_id && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">User ID:</span>
+                                                    <span className="detail-value code">{order.user_id}</span>
+                                                </div>
+                                            )}
+                                            {order.telegram_id && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Telegram ID:</span>
+                                                    <span className="detail-value code">{order.telegram_id}</span>
+                                                </div>
+                                            )}
+                                            {order.username && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Имя пользователя:</span>
+                                                    <span className="detail-value">@{order.username}</span>
+                                                </div>
+                                            )}
+                                            {order.first_name && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Имя:</span>
+                                                    <span className="detail-value">{order.first_name}</span>
+                                                </div>
+                                            )}
+                                            {order.admin_comment && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Комментарий оператора:</span>
+                                                    <span className="detail-value comment">{order.admin_comment}</span>
+                                                </div>
+                                            )}
+                                            {order.admin_action_at && (
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Время действия:</span>
+                                                    <span className="detail-value">{formatDate(order.admin_action_at)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="order-actions">
+                                        <button
+                                            className="copy-btn-new"
+                                            onClick={() => copyOrderId(order.id)}
+                                        >
+                                            <span className="copy-icon-new">📋</span>
+                                            <span>Копировать ID</span>
+                                        </button>
+
+                                        {/* Кнопка чата для активных ордеров */}
+                                        {canChat && (
+                                            <button
+                                                className="chat-btn-new"
+                                                onClick={() => setActiveChat({ orderId: order.id })}
+                                            >
+                                                <span className="chat-icon-new">💬</span>
+                                                <span>Чат с оператором</span>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* Индикатор загрузки еще */}
+                        {isLoadingMore && (
+                            <div className="loading-more">
+                                <div className="loading-more-spinner"></div>
+                                <span>Загрузка...</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Toast сообщения */}
+            {message.text && (
+                <div className={`message-toast-new message-${message.type}`}>
+                    <span className="toast-icon">
+                        {message.type === 'success' ? '✅' :
+                            message.type === 'error' ? '❌' : '⚠️'}
+                    </span>
+                    <span className="toast-text">{message.text}</span>
+                </div>
             )}
-          </div>
-        )}
-      </div>
 
-      {/* Toast сообщения */}
-      {message.text && (
-        <div className={`message-toast-new message-${message.type}`}>
-          <span className="toast-icon">
-            {message.type === 'success' ? '✅' :
-              message.type === 'error' ? '❌' : '⚠️'}
-          </span>
-          <span className="toast-text">{message.text}</span>
-        </div>
-      )}
+            {/* Support Chat */}
+            {activeChat && (
+                <div className="chat-modal-overlay">
+                    <div className="chat-modal">
+                        <SupportChat
+                            orderId={activeChat.orderId}
+                            onClose={() => setActiveChat(null)}
+                        />
+                    </div>
+                </div>
+            )}
 
-      {/* Support Chat */}
-      {activeChat && (
-        <div className="chat-modal-overlay">
-          <div className="chat-modal">
-            <SupportChat
-              orderId={activeChat.orderId}
-              onClose={() => setActiveChat(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Навигация */}
-      <div className="bottom-nav-new">
-        <button className="nav-item-new" onClick={() => navigateTo('profile')}>
-          <div className="nav-icon-wrapper">
-            <span className="nav-icon">👤</span>
-          </div>
-          <span className="nav-label">Профиль</span>
-        </button>
-        
-        <button className="nav-center-item" onClick={() => navigateTo('home')}>
-          <div className="nav-center-circle">
-            <span className="nav-center-icon">💸</span>
-          </div>
-          <span className="nav-center-label">Обмен</span>
-        </button>
-        
-        <button className="nav-item-new active" onClick={() => navigateTo('history')}>
-          <div className="nav-icon-wrapper">
-            <span className="nav-icon">📊</span>
-          </div>
-          <span className="nav-label">История</span>
-        </button>
-      </div>
+            {/* Навигация */}
+            {/* Навигация */}
+<div className="bottom-nav-new">
+  <button 
+    className="nav-item-new" 
+    onClick={() => navigateTo('profile')}
+  >
+    <div className="nav-icon-wrapper">
+      <ProfileIcon />
     </div>
-  );
+    <span className="nav-label">Профиль</span>
+  </button>
+  
+  <button 
+    className="nav-center-item" 
+    onClick={() => navigateTo('home')}
+  >
+    <div className="nav-center-circle">
+      <ExchangeIcon />
+    </div>
+    <span className="nav-center-label">Обмен</span>
+  </button>
+  
+  <button 
+    className="nav-item-new active" 
+    onClick={() => navigateTo('history')}
+  >
+    <div className="nav-icon-wrapper">
+      <HistoryIcon active={true} />
+    </div>
+    <span className="nav-label">История</span>
+  </button>
+</div>
+        </div>
+    );
 }
 
 export default History;

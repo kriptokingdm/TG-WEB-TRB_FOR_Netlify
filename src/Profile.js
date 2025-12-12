@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
+import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
-const API_BASE_URL = 'https://tethrab.shop';
+// Используем порт 3002 как в вашем API
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tethrab.shop:3002';
 
 // SVG иконки
 const ProfileSVG = () => (
@@ -47,6 +49,7 @@ function Profile({ navigateTo }) {
         referralCode: ''
     });
     const [photoError, setPhotoError] = useState(false);
+    const [userOrders, setUserOrders] = useState([]);
 
     // Получаем ID пользователя из Telegram Web App
     const getUserId = () => {
@@ -91,7 +94,7 @@ function Profile({ navigateTo }) {
         return '7879866656';
     };
 
-    // Загрузка данных пользователя
+    // Получение данных пользователя из его ордеров
     const loadUserData = async () => {
         try {
             const userId = getUserId();
@@ -123,25 +126,57 @@ function Profile({ navigateTo }) {
                 }
             }
 
-            // Если нет Telegram данных, загружаем с API
-            const response = await fetch(`${API_BASE_URL}/api/user?userId=${userId}`);
+            // АДАПТИРОВАННЫЙ ЗАПРОС: используем существующий endpoint для получения ордеров пользователя
+            // Из ордеров мы можем извлечь данные о пользователе
+            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`);
+            
             if (response.ok) {
                 const result = await response.json();
-                if (result.success && result.user) {
-                    console.log('✅ Данные пользователя из API:', result.user);
+                console.log('📊 Ответ от API ордеров:', result);
+                
+                if (result.success && result.orders && result.orders.length > 0) {
+                    // Берем данные из первого ордера
+                    const firstOrder = result.orders[0];
                     
                     const userData = {
-                        id: result.user.id,
-                        telegramId: result.user.telegramId,
-                        username: result.user.username,
-                        firstName: result.user.firstName || result.user.first_name || 'Пользователь',
-                        lastName: ''
+                        id: userId,
+                        telegramId: firstOrder.telegram_id || userId,
+                        username: firstOrder.username || `user_${userId}`,
+                        firstName: firstOrder.first_name || 'Пользователь',
+                        lastName: '',
+                        photoUrl: null,
+                        totalOrders: result.count,
+                        lastOrderDate: firstOrder.created_at
                     };
 
+                    console.log('✅ Данные пользователя из ордеров:', userData);
                     setUserData(userData);
                     localStorage.setItem('currentUser', JSON.stringify(userData));
+                    
+                    // Сохраняем ордера для статистики
+                    setUserOrders(result.orders);
+                    
+                    // Рассчитываем статистику из ордеров
+                    calculateUserStats(result.orders);
+                    
+                    return;
                 }
             }
+
+            // Если нет данных в API, создаем пользователя на основе ID
+            const defaultUserData = {
+                id: userId,
+                telegramId: userId,
+                username: `user_${userId}`,
+                firstName: 'Пользователь',
+                lastName: '',
+                photoUrl: null,
+                totalOrders: 0
+            };
+
+            console.log('⚙️ Создаем пользователя по умолчанию:', defaultUserData);
+            setUserData(defaultUserData);
+            localStorage.setItem('currentUser', JSON.stringify(defaultUserData));
 
         } catch (error) {
             console.error('❌ Ошибка загрузки данных пользователя:', error);
@@ -160,42 +195,81 @@ function Profile({ navigateTo }) {
         }
     };
 
-    // Загрузка статистики рефералов
+    // Рассчитываем статистику пользователя из его ордеров
+    const calculateUserStats = (orders) => {
+        if (!orders || orders.length === 0) return;
+        
+        // Подсчитываем общую сумму сделок
+        let totalAmount = 0;
+        let completedOrders = 0;
+        
+        orders.forEach(order => {
+            if (order.admin_status === 'completed') {
+                totalAmount += parseFloat(order.amount) || 0;
+                completedOrders++;
+            }
+        });
+        
+        // Здесь можно добавить расчет заработанного по рефералам
+        // Пока используем заглушку
+    };
+
+    // Загрузка статистики рефералов - временная заглушка
     const loadReferralStats = async () => {
         try {
             const userId = getUserId();
-            console.log('📊 Загрузка статистики для ID:', userId);
+            console.log('📊 Загрузка реферальной статистики для ID:', userId);
 
-            const response = await fetch(`${API_BASE_URL}/api/referral/stats/${userId}`);
+            // ВРЕМЕННАЯ ЗАГЛУШКА - можно будет доработать когда добавите endpoint
+            // Пока используем статические данные
+            const stats = {
+                totalReferrals: 0,
+                activeReferrals: 0,
+                earned: 0,
+                pendingEarned: 0,
+                referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
+                referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
+            };
             
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    setReferralStats({
-                        totalReferrals: data.data.total_referrals || 0,
-                        activeReferrals: data.data.active_referrals || 0,
-                        earned: data.data.earned || 0,
-                        pendingEarned: data.data.pending_earned || 0,
-                        referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
-                        referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
-                    });
-                }
+            // Пробуем рассчитать из ордеров пользователя
+            if (userOrders.length > 0) {
+                // Здесь можно добавить логику расчета, если в будущем будет реферальная система
             }
+            
+            setReferralStats(stats);
+            
+            console.log('📊 Установлена реферальная статистика:', stats);
+
         } catch (error) {
             console.error('❌ Ошибка загрузки статистики:', error);
+            
+            // Даже при ошибке устанавливаем базовые данные
+            const userId = getUserId();
+            setReferralStats({
+                totalReferrals: 0,
+                activeReferrals: 0,
+                earned: 0,
+                pendingEarned: 0,
+                referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
+                referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
+            });
         }
     };
 
     useEffect(() => {
-        loadUserData();
-        loadReferralStats();
-
-        // Таймер для скрытия загрузки
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-
-        return () => clearTimeout(timer);
+        const loadData = async () => {
+            await loadUserData();
+            await loadReferralStats();
+            
+            // Таймер для скрытия загрузки
+            const timer = setTimeout(() => {
+                setIsLoading(false);
+            }, 1000);
+            
+            return () => clearTimeout(timer);
+        };
+        
+        loadData();
     }, []);
 
     const showMessage = (type, text) => {
@@ -280,6 +354,15 @@ function Profile({ navigateTo }) {
                                 {userData?.id || '—'}
                             </button>
                         </div>
+                        <div>.</div>
+                        {/* Дополнительная статистика если есть */}
+                        {userData?.totalOrders > 0 && (
+                            <div className="user-stats-brief">
+                                <span className="stat-brief">
+                                    Всего сделок: <strong>{userData.totalOrders}</strong>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -415,25 +498,32 @@ function Profile({ navigateTo }) {
 
             {/* Навигация */}
             <div className="bottom-nav-new">
-                <button className="nav-item-new active" onClick={() => navigateTo('profile')}>
+                <button 
+                    className="nav-item-new active" 
+                    onClick={() => navigateTo('profile')}
+                >
                     <div className="nav-icon-wrapper">
-                        <span className="nav-icon">
-                            <ProfileSVG />
-                        </span>
+                        <ProfileIcon active={true} />
                     </div>
                     <span className="nav-label">Профиль</span>
                 </button>
-
-                <button className="nav-center-item" onClick={() => navigateTo('home')}>
+                
+                <button 
+                    className="nav-center-item" 
+                    onClick={() => navigateTo('home')}
+                >
                     <div className="nav-center-circle">
-                        <span className="nav-center-icon">💸</span>
+                        <ExchangeIcon />
                     </div>
                     <span className="nav-center-label">Обмен</span>
                 </button>
-
-                <button className="nav-item-new" onClick={() => navigateTo('history')}>
+                
+                <button 
+                    className="nav-item-new" 
+                    onClick={() => navigateTo('history')}
+                >
                     <div className="nav-icon-wrapper">
-                        <span className="nav-icon">📊</span>
+                        <HistoryIcon />
                     </div>
                     <span className="nav-label">История</span>
                 </button>

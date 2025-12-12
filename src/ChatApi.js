@@ -1,23 +1,29 @@
+// ChatApi.js
 const API_URL = 'https://tethrab.shop';
 
-export class ChatApi {
-    // Получение истории сообщений
-    static async getMessages(orderId) {
+export const ChatApi = {
+    async getMessages(orderId) {
         try {
+            console.log(`📨 Запрос сообщений для: ${orderId}`);
             const response = await fetch(`${API_URL}/chat/messages/${orderId}`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
             const data = await response.json();
-            return data.success ? data.messages : [];
+            
+            if (data.success) {
+                return data.messages || [];
+            } else {
+                console.error('❌ Ошибка получения сообщений:', data.error);
+                return [];
+            }
         } catch (error) {
-            console.error('❌ Ошибка загрузки сообщений:', error);
+            console.error('❌ Ошибка сети:', error);
             return [];
         }
-    }
+    },
 
-    // Отправка сообщения
-    static async sendMessage(orderId, senderId, senderType, message) {
+    async sendMessage(orderId, senderId, senderType, message) {
         try {
+            console.log(`📤 Отправка сообщения:`, { orderId, senderId, senderType, message });
+            
             const response = await fetch(`${API_URL}/chat/send`, {
                 method: 'POST',
                 headers: {
@@ -31,31 +37,25 @@ export class ChatApi {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const data = await response.json();
-            return data;
+            return await response.json();
         } catch (error) {
-            console.error('❌ Ошибка отправки сообщения:', error);
-            return { success: false, error: error.message };
+            console.error('❌ Ошибка отправки:', error);
+            return { success: false, error: 'Ошибка сети' };
         }
-    }
+    },
 
-    // Пометить как прочитанные
-    static async markAsRead(orderId, readerId) {
+    async markAsRead(orderId, userId) {
         try {
-            const response = await fetch(`${API_URL}/chat/read/${orderId}`, {
+            // Можно добавить эндпоинт для отметки прочитанных сообщений
+            await fetch(`${API_URL}/chat/mark-read`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ readerId })
+                body: JSON.stringify({ orderId, userId })
             });
-            
-            return response.ok;
         } catch (error) {
-            console.error('❌ Ошибка обновления статуса:', error);
-            return false;
+            console.error('❌ Ошибка отметки прочитанного:', error);
         }
     }
-}
+};

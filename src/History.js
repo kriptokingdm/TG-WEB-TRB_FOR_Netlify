@@ -278,9 +278,9 @@ function History({ navigateTo }) {
       <div className="history-header-new">
         <div className="header-content">
           <div className="header-left">
-            <button className="back-button" onClick={() => navigateTo('/')}>
+            {/* <button className="back-button" onClick={() => navigateTo('/')}>
               ←
-            </button>
+            </button> */}
             <div className="header-titles">
               <h1 className="header-title-new">История операций</h1>
               <p className="header-subtitle">Все ваши транзакции</p>
@@ -363,7 +363,7 @@ function History({ navigateTo }) {
           </button>
 
           {/* Кнопка обновления */}
-          <button
+          {/* <button
             className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
             disabled={refreshing}
@@ -375,7 +375,7 @@ function History({ navigateTo }) {
             <span className="refresh-text">
               {refreshing ? 'Обновление...' : 'Обновить'}
             </span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -538,7 +538,7 @@ function History({ navigateTo }) {
       )}
 
       {/* Навигация */}
-      <div className="bottom-nav">
+      {/* <div className="bottom-nav">
         <button className="nav-item" onClick={() => navigateTo('/')}>
           <span className="nav-icon">💸</span>
           <span className="nav-label">Обмен</span>
@@ -558,7 +558,29 @@ function History({ navigateTo }) {
           <span className="nav-icon">❓</span>
           <span className="nav-label">Помощь</span>
         </button>
-      </div>
+      </div> */}
+      <div className="bottom-nav-new">
+                <button className="nav-item-new" onClick={() => navigateTo('profile')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon">👤</span>
+                    </div>
+                    <span className="nav-label">Профиль</span>
+                </button>
+                
+                <button className="nav-center-item" onClick={() => navigateTo('home')}>
+                    <div className="nav-center-circle">
+                        <span className="nav-center-icon">💸</span>
+                    </div>
+                    <span className="nav-center-label">Обмен</span>
+                </button>
+                
+                <button className="nav-item-new" onClick={() => navigateTo('history')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon">📊</span>
+                    </div>
+                    <span className="nav-label">История</span>
+                </button>
+            </div>
     </div>
   );
 }

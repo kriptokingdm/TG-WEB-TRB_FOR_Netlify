@@ -47,6 +47,11 @@ body {
   margin-bottom: 20px;
 }
 
+
+[data-theme="dark"]  .loading-spinner{
+  background: #0f172a;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

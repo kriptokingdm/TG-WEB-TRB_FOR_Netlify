@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import './Profile.css';
 
-
 const API_BASE_URL = 'https://tethrab.shop';
 const API_URL = `${API_BASE_URL}/api`;
 
@@ -15,12 +14,12 @@ const API_ENDPOINTS = [
 // Умный fetch
 const apiFetch = async (path, options = {}) => {
     let lastError = '';
-    
+
     for (const baseUrl of API_ENDPOINTS) {
         try {
             const url = `${baseUrl}${path}`;
             console.log(`🌐 Пробуем: ${url}`);
-            
+
             const response = await fetch(url, {
                 ...options,
                 headers: {
@@ -29,22 +28,22 @@ const apiFetch = async (path, options = {}) => {
                     ...options.headers
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log(`✅ Успех с ${baseUrl}`);
                 return data;
             }
-            
+
             lastError = `HTTP ${response.status}`;
             console.log(`⚠️ ${url}: ${lastError}`);
-            
+
         } catch (error) {
             lastError = error.message;
             console.log(`❌ ${baseUrl}: ${lastError}`);
         }
     }
-    
+
     throw new Error(`Не удалось подключиться. Последняя ошибка: ${lastError}`);
 };
 
@@ -94,10 +93,10 @@ function Profile({ navigateTo, telegramUser }) {
         if (telegramUser) {
             console.log('🤖 Telegram User из пропсов:', telegramUser);
             setTelegramData(telegramUser);
-            
+
             // Сохраняем в localStorage
             localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
-            
+
             // Создаем userData
             const appUser = {
                 id: `user_${telegramUser.id}`,
@@ -109,7 +108,7 @@ function Profile({ navigateTo, telegramUser }) {
             };
             setUserData(appUser);
             localStorage.setItem('currentUser', JSON.stringify(appUser));
-            
+
             // Загружаем фото если есть
             if (telegramUser.photo_url) {
                 setUserPhoto(telegramUser.photo_url);
@@ -118,19 +117,19 @@ function Profile({ navigateTo, telegramUser }) {
             // Пробуем загрузить из localStorage
             loadUserFromStorage();
         }
-        
+
         // Загружаем статистику
         loadReferralStats();
-        
+
         // Устанавливаем тему
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        
+
         // Таймер для скрытия загрузки
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 1000);
-        
+
         return () => clearTimeout(timer);
     }, [telegramUser]);
 
@@ -142,26 +141,26 @@ function Profile({ navigateTo, telegramUser }) {
                 const parsed = JSON.parse(savedTelegramUser);
                 console.log('📱 Telegram данные из localStorage:', parsed);
                 setTelegramData(parsed);
-                
+
                 // Фото
                 if (parsed.photo_url) {
                     setUserPhoto(parsed.photo_url);
                 }
             }
-            
+
             // Пробуем данные приложения
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 const parsed = JSON.parse(savedUser);
                 console.log('👤 Данные приложения:', parsed);
                 setUserData(parsed);
-                
+
                 // Фото если еще нет
                 if (parsed.photoUrl && !userPhoto) {
                     setUserPhoto(parsed.photoUrl);
                 }
             }
-            
+
             // Если все еще нет данных - создаем тестовые
             if (!telegramData && !userData) {
                 console.log('⚠️ Данных нет, создаю тестовые');
@@ -172,7 +171,7 @@ function Profile({ navigateTo, telegramUser }) {
                     last_name: ''
                 };
                 setTelegramData(testUser);
-                
+
                 const appUser = {
                     id: 'user_7879866656',
                     telegramId: 7879866656,
@@ -182,7 +181,7 @@ function Profile({ navigateTo, telegramUser }) {
                 };
                 setUserData(appUser);
             }
-            
+
         } catch (error) {
             console.error('❌ Ошибка загрузки данных:', error);
         }
@@ -194,17 +193,17 @@ function Profile({ navigateTo, telegramUser }) {
         if (telegramUser?.id) {
             return telegramUser.id.toString();
         }
-        
+
         // Из telegramData
         if (telegramData?.id) {
             return telegramData.id.toString();
         }
-        
+
         // Из userData
         if (userData?.telegramId) {
             return userData.telegramId.toString();
         }
-        
+
         // Из localStorage
         try {
             const savedTelegramUser = localStorage.getItem('telegramUser');
@@ -212,7 +211,7 @@ function Profile({ navigateTo, telegramUser }) {
                 const parsed = JSON.parse(savedTelegramUser);
                 return parsed.id?.toString() || '7879866656';
             }
-            
+
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 const parsed = JSON.parse(savedUser);
@@ -221,7 +220,7 @@ function Profile({ navigateTo, telegramUser }) {
         } catch (e) {
             console.error('❌ Ошибка получения ID:', e);
         }
-        
+
         // По умолчанию
         return '7879866656';
     };
@@ -231,16 +230,16 @@ function Profile({ navigateTo, telegramUser }) {
         try {
             const userId = getUserId();
             console.log('📊 Загрузка статистики для ID:', userId);
-            
+
             // Пробуем прямой запрос
             const response = await fetch(`${API_BASE_URL}/api/referral/stats/${userId}`, {
                 headers: {
                     'Accept': 'application/json'
                 }
             });
-            
+
             console.log('✅ Ответ сервера:', response.status);
-            
+
             if (!response.ok) {
                 console.error('❌ HTTP ошибка:', response.status);
                 // Показываем тестовые данные
@@ -257,10 +256,10 @@ function Profile({ navigateTo, telegramUser }) {
                 });
                 return;
             }
-            
+
             const data = await response.json();
             console.log('📈 Данные статистики:', data);
-            
+
             if (data.success) {
                 setReferralStats({
                     totalReferrals: data.data.total_referrals || 0,
@@ -298,10 +297,10 @@ function Profile({ navigateTo, telegramUser }) {
         try {
             const userId = getUserId();
             console.log('👥 Загрузка рефералов для:', userId);
-            
+
             const response = await fetch(`${API_BASE_URL}/api/referrals/${userId}`);
             const data = await response.json();
-    
+
             if (data.success) {
                 console.log('✅ Реальные рефералы из базы:', data.data);
                 setReferralList(data.data || []);
@@ -529,16 +528,15 @@ function Profile({ navigateTo, telegramUser }) {
             <div className="profile-header-new">
                 <div className="header-content">
                     <div className="header-left">
-                        <button
-                            className="back-button"
-                            onClick={() => navigateTo && navigateTo('/')}
-                        >
-                            ←
-                        </button>
+
                         <div className="header-titles">
                             <h1 className="header-title-new">Профиль</h1>
                             <p className="header-subtitle">Управление вашим аккаунтом</p>
                         </div>
+                        <button className="nav-item" onClick={() => navigateTo('/help')}>
+                            <span className="nav-icon">❓</span>
+                            <span className="nav-label">Помощь</span>
+                        </button>
                     </div>
                 </div>
 
@@ -617,29 +615,7 @@ function Profile({ navigateTo, telegramUser }) {
                             <div className="detailed-earnings-section">
                                 <div className="refresh-section">
                                     <h4>Детальная статистика</h4>
-                                    <button
-                                        className="refresh-btn"
-                                        onClick={() => {
-                                            loadReferralStats();
-                                            loadEarningsHistory();
-                                            loadReferralList();
-                                            showMessage('info', 'Статистика обновляется...');
-                                        }}
-                                        style={{
-                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            padding: '8px 12px',
-                                            fontSize: '12px',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '5px'
-                                        }}
-                                    >
-                                        🔄 Обновить
-                                    </button>
+
                                 </div>
                                 <div className="earnings-breakdown">
                                     <div className="earning-source">
@@ -691,7 +667,7 @@ function Profile({ navigateTo, telegramUser }) {
                             </div>
 
                             {/* Тестовая сделка */}
-                            <div className="test-transaction-section">
+                            {/* <div className="test-transaction-section">
                                 <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                                     <input
                                         type="number"
@@ -723,7 +699,7 @@ function Profile({ navigateTo, telegramUser }) {
                                 <p className="test-transaction-note">
                                     Нажмите для демонстрации работы системы. Реферер получит 0.5% от суммы.
                                 </p>
-                            </div>
+                            </div> */}
 
                             {/* История начислений */}
                             {earningsHistory.length > 0 && (
@@ -948,8 +924,33 @@ function Profile({ navigateTo, telegramUser }) {
                     <span className="toast-text">{message.text}</span>
                 </div>
             )}
+            <div className="bottom-nav-new">
+                <button className="nav-item-new" onClick={() => navigateTo('profile')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon">👤</span>
+                    </div>
+                    <span className="nav-label">Профиль</span>
+                </button>
+
+                <button className="nav-center-item" onClick={() => navigateTo('home')}>
+                    <div className="nav-center-circle">
+                        <span className="nav-center-icon">💸</span>
+                    </div>
+                    <span className="nav-center-label">Обмен</span>
+                </button>
+
+                <button className="nav-item-new" onClick={() => navigateTo('history')}>
+                    <div className="nav-icon-wrapper">
+                        <span className="nav-icon">📊</span>
+                    </div>
+                    <span className="nav-label">История</span>
+                </button>
+            </div>
         </div>
+
+
     );
+
 }
 
 export default Profile;

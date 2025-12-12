@@ -74,8 +74,8 @@ function App() {
         console.log('⚠️ Создаём тестового пользователя');
         const testUser = {
           id: 7879866656,
-          username: 'TERBCEO',
-          first_name: 'G',
+          username: 'Rabbit',
+          first_name: 'Rabbit',
           last_name: '',
           photo_url: null
         };
@@ -136,7 +136,7 @@ function App() {
       </div>
       
       {/* Кнопка отладки */}
-      <button 
+      {/* <button 
         onClick={() => {
           console.log('=== ОТЛАДКА ===');
           console.log('🔍 Telegram WebApp:', window.Telegram?.WebApp);
@@ -175,7 +175,7 @@ function App() {
         }}
       >
         🔧 Отладка
-      </button>
+      </button> */}
     </div>
   );
 }

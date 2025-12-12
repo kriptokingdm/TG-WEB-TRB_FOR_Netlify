@@ -185,9 +185,7 @@ const SupportChat = ({ orderId, onClose }) => {
       {/* Header */}
       <div className="chat-header">
         <div className="chat-header-left">
-          <button className="chat-back-btn" onClick={onClose}>
-            ← Назад
-          </button>
+          
           <div className="chat-title">
             <div className="chat-order-id">Ордер #{orderId}</div>
             <div className="chat-subtitle">Чат с оператором</div>

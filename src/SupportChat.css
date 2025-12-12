@@ -70,6 +70,11 @@
 }
 
 /* Messages Container */
+[data-theme="dark"] .chat-messages-container {
+     
+        background: #0f172a;
+    }
+    
 .chat-messages-container {
     flex: 1;
     overflow-y: auto;
@@ -262,6 +267,10 @@
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     background: white;
 }
+[data-theme="dark"] .chat-input-container {
+     
+    background: #0f172a;
+}
 
 .chat-input-wrapper {
     display: flex;
@@ -327,6 +336,10 @@
 @media (max-width: 480px) {
     .chat-header {
         padding: 15px;
+    }
+    [data-theme="dark"].chat-header {
+     
+        background: #1a574f;
     }
     
     .chat-order-id {

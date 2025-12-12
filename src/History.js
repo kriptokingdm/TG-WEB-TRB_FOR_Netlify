@@ -33,61 +33,18 @@ const getStatusClass = (status) => {
   return statusMap[status?.toLowerCase()] || 'status-pending';
 };
 
-// Функция с retry логикой
-const fetchWithRetry = async (url, retries = 3, delay = 2000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      console.log(`🔄 Попытка ${i + 1}/${retries}: ${url}`);
-      
-      // Создаем AbortController для таймаута
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
-      
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(`✅ Успех на попытке ${i + 1}`);
-      return data;
-    } catch (error) {
-      console.log(`❌ Попытка ${i + 1}/${retries} не удалась:`, error.message);
-      
-      if (i === retries - 1) throw error;
-      
-      // Ждем перед следующей попыткой
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Увеличиваем задержку
-    }
-  }
-};
-
 function History({ navigateTo }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeChat, setActiveChat] = useState(null);
-  const [viewMode, setViewMode] = useState('active');
+  const [viewMode, setViewMode] = useState('active'); // 'active' или 'all'
   const [message, setMessage] = useState({ type: '', text: '' });
   const [refreshing, setRefreshing] = useState(false);
 
   const isInitialMount = useRef(true);
   const refreshIntervalRef = useRef(null);
   const lastUpdateRef = useRef(0);
-  const retryCountRef = useRef(0);
-  const MAX_RETRIES = 3;
-  const RETRY_DELAY = 5000; // 5 секунд
-  const REFRESH_INTERVAL = 60000; // 60 секунд для автообновления
-  const MIN_REQUEST_INTERVAL = 3000; // Минимум 3 секунды между запросами
 
   // Показать сообщение
   const showMessage = (type, text) => {
@@ -95,44 +52,53 @@ function History({ navigateTo }) {
     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
 
-  // Получение ID пользователя
+  // Получение ID пользователя - УПРОЩЕННАЯ версия
   const getUserId = () => {
     try {
-      // 1. Telegram Web App
+      console.log('🔍 Получаем ID пользователя...');
+      
+      // 1. Пробуем получить из localStorage (созданный при регистрации/логине)
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        console.log('📱 Из currentUser:', parsed.id || parsed.telegramId);
+        return parsed.id || parsed.telegramId;
+      }
+      
+      // 2. Пробуем из telegramUser
+      const savedTelegramUser = localStorage.getItem('telegramUser');
+      if (savedTelegramUser) {
+        const parsed = JSON.parse(savedTelegramUser);
+        console.log('🤖 Из telegramUser:', parsed.id);
+        return parsed.id || `user_${parsed.id}`;
+      }
+      
+      // 3. Telegram WebApp
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         const tgUser = tg.initDataUnsafe?.user;
         if (tgUser?.id) {
+          console.log('📲 Из Telegram WebApp:', tgUser.id);
           return `user_${tgUser.id}`;
         }
       }
       
-      // 2. localStorage
-      const savedUser = localStorage.getItem('currentUser');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        return parsed.id || parsed.telegramId;
-      }
-      
-      const savedTelegramUser = localStorage.getItem('telegramUser');
-      if (savedTelegramUser) {
-        const parsed = JSON.parse(savedTelegramUser);
-        return `user_${parsed.id}`;
-      }
+      // 4. Если ничего не нашли, пробуем тестовый ID
+      console.log('⚠️ ID не найден, пробуем тестовый');
+      return '7879866656'; // Тестовый ID
       
     } catch (error) {
       console.error('❌ Ошибка получения ID:', error);
+      return '7879866656'; // Тестовый ID при ошибке
     }
-    
-    return null;
   };
 
-  // Основная функция загрузки ордеров
-  const fetchUserOrders = async (showLoading = true, force = false) => {
+  // Основная функция загрузки ордеров - УПРОЩЕННАЯ
+  const fetchUserOrders = async (showLoading = true) => {
     const now = Date.now();
     
     // Защита от слишком частых запросов
-    if (!force && lastUpdateRef.current && (now - lastUpdateRef.current < MIN_REQUEST_INTERVAL)) {
+    if (lastUpdateRef.current && (now - lastUpdateRef.current < 3000)) {
       console.log('⏳ Слишком частый запрос, пропускаем');
       if (showLoading) setIsLoading(false);
       return;
@@ -152,16 +118,30 @@ function History({ navigateTo }) {
       
       if (!userId) {
         console.log('⚠️ Пользователь не найден');
-        setError('Пользователь не определен');
+        setError('Пользователь не определен. Авторизуйтесь заново.');
         setIsLoading(false);
         setRefreshing(false);
         return;
       }
 
-      console.log('👤 Загружаем ордера для:', userId);
+      console.log('👤 Загружаем ордера для userId:', userId);
 
-      // Используем fetch с retry
-      const result = await fetchWithRetry(`${API_URL}/user-orders/${userId}`);
+      // Прямой запрос без retry для простоты
+      const response = await fetch(`${API_URL}/user-orders/${userId}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('📊 Ответ API:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('📊 Данные ордеров:', result);
       
       if (result.success) {
         const ordersData = result.orders || [];
@@ -176,9 +156,8 @@ function History({ navigateTo }) {
 
         setOrders(sortedOrders);
         setError('');
-        retryCountRef.current = 0; // Сбрасываем счетчик ошибок
 
-        // Сохраняем в localStorage
+        // Сохраняем в localStorage как backup
         localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
 
         if (isInitialMount.current) {
@@ -193,37 +172,22 @@ function History({ navigateTo }) {
     } catch (error) {
       console.error('❌ Ошибка загрузки:', error.message);
       
-      // Увеличиваем счетчик ошибок
-      retryCountRef.current++;
-      
-      if (retryCountRef.current >= MAX_RETRIES) {
-        // После 3 ошибок показываем локальные данные
-        try {
-          const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-          if (localOrders.length > 0) {
-            console.log('📂 Используем локальные данные:', localOrders.length);
-            setOrders(localOrders);
-            setError('⚠️ Используем кэшированные данные');
-            showMessage('warning', '⚠️ Используем сохраненные данные');
-          } else {
-            setError('Не удалось загрузить историю');
-            showMessage('error', '❌ Ошибка загрузки данных');
-          }
-        } catch (localError) {
-          console.error('❌ Ошибка локальных данных:', localError);
-          setError('Ошибка соединения с сервером');
-          showMessage('error', '❌ Ошибка сети');
+      // Пробуем загрузить из localStorage
+      try {
+        const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+        if (localOrders.length > 0) {
+          console.log('📂 Используем локальные данные:', localOrders.length);
+          setOrders(localOrders);
+          setError('⚠️ Используем кэшированные данные');
+          showMessage('warning', '⚠️ Используем сохраненные данные');
+        } else {
+          setError('Не удалось загрузить историю');
+          showMessage('error', '❌ Ошибка загрузки данных');
         }
-      } else {
-        // Пробуем снова через RETRY_DELAY
-        const nextDelay = RETRY_DELAY * retryCountRef.current;
-        console.log(`🔄 Повтор через ${nextDelay/1000} сек... (${retryCountRef.current}/${MAX_RETRIES})`);
-        
-        setError(`Ошибка подключения. Повтор через ${nextDelay/1000} сек...`);
-        
-        setTimeout(() => {
-          fetchUserOrders(false, true); // Форсируем повтор
-        }, nextDelay);
+      } catch (localError) {
+        console.error('❌ Ошибка локальных данных:', localError);
+        setError('Ошибка соединения с сервером');
+        showMessage('error', '❌ Ошибка сети');
       }
       
     } finally {
@@ -232,37 +196,26 @@ function History({ navigateTo }) {
     }
   };
 
-  // Автоматическое обновление
-  const startAutoRefresh = () => {
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-    }
-
-    // Обновляем только если есть активные ордера
-    const hasActiveOrders = orders.some(order => {
-      const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
-      return ['pending', 'processing', 'accepted'].includes(status);
-    });
-    
-    if (hasActiveOrders) {
-      console.log('🔄 Запускаем автообновление (есть активные ордера)');
-      
-      refreshIntervalRef.current = setInterval(() => {
-        const now = Date.now();
-        if (now - lastUpdateRef.current > REFRESH_INTERVAL) {
-          console.log('🔄 Автообновление активных ордеров');
-          fetchUserOrders(false);
-        }
-      }, REFRESH_INTERVAL);
-    } else {
-      console.log('⏸️ Нет активных ордеров, автообновление остановлено');
-    }
-  };
-
   // Инициализация
   useEffect(() => {
     console.log('🚀 History компонент загружен');
+    
+    // Принудительно устанавливаем тестового пользователя для отладки
+    const debugUser = {
+      id: '7879866656',
+      telegramId: '7879866656',
+      username: 'TERBCEO',
+      firstName: 'G'
+    };
+    localStorage.setItem('currentUser', JSON.stringify(debugUser));
+    
     fetchUserOrders();
+
+    // Автообновление каждые 30 секунд
+    refreshIntervalRef.current = setInterval(() => {
+      console.log('🔄 Автообновление истории');
+      fetchUserOrders(false);
+    }, 30000);
 
     return () => {
       console.log('🧹 Очистка History компонента');
@@ -271,14 +224,6 @@ function History({ navigateTo }) {
       }
     };
   }, []);
-
-  // Обновляем автообновление при изменении ордеров
-  useEffect(() => {
-    if (orders.length > 0) {
-      console.log('📊 Ордеры обновлены, проверяем автообновление');
-      startAutoRefresh();
-    }
-  }, [orders]);
 
   // Тест подключения
   const testConnection = async () => {
@@ -296,15 +241,15 @@ function History({ navigateTo }) {
     }
   };
 
-  // Фильтрация ордеров
+  // Фильтрация ордеров - ПРАВИЛЬНАЯ версия
   const getFilteredOrders = () => {
     if (viewMode === 'active') {
       return orders.filter(order => {
-        const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
+        const status = (order.admin_status || order.status || '').toLowerCase();
         return ['pending', 'processing', 'accepted'].includes(status);
       });
     }
-    return orders;
+    return orders; // В режиме 'all' показываем все
   };
 
   // Расчет итоговой суммы
@@ -349,17 +294,17 @@ function History({ navigateTo }) {
   // Статистика
   const getOrdersStats = () => {
     const activeOrders = orders.filter(order => {
-      const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
+      const status = (order.admin_status || order.status || '').toLowerCase();
       return ['pending', 'processing', 'accepted'].includes(status);
     });
 
     const completedOrders = orders.filter(order => {
-      const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
+      const status = (order.admin_status || order.status || '').toLowerCase();
       return ['completed', 'success'].includes(status);
     });
 
     const rejectedOrders = orders.filter(order => {
-      const status = order.admin_status?.toLowerCase() || order.status?.toLowerCase();
+      const status = (order.admin_status || order.status || '').toLowerCase();
       return ['rejected', 'cancelled', 'failed'].includes(status);
     });
 
@@ -375,12 +320,27 @@ function History({ navigateTo }) {
   const handleRefresh = () => {
     if (!refreshing) {
       console.log('🔄 Ручное обновление');
-      fetchUserOrders(true, true);
+      fetchUserOrders(true);
     }
   };
 
   const stats = getOrdersStats();
   const filteredOrders = getFilteredOrders();
+
+  // ДЕБАГ-информация
+  useEffect(() => {
+    console.log('📊 Статистика ордеров:', stats);
+    console.log('👁 Режим просмотра:', viewMode);
+    console.log('📋 Отфильтровано ордеров:', filteredOrders.length);
+    console.log('📦 Всего ордеров:', orders.length);
+    orders.forEach((order, i) => {
+      console.log(`🔍 Ордер ${i+1}:`, {
+        id: order.id,
+        status: order.admin_status || order.status,
+        amount: order.amount
+      });
+    });
+  }, [orders, viewMode, filteredOrders, stats]);
 
   return (
     <div className="history-container">
@@ -469,7 +429,7 @@ function History({ navigateTo }) {
             )}
           </button>
 
-          <button
+          {/* <button
             className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
             disabled={refreshing}
@@ -481,9 +441,24 @@ function History({ navigateTo }) {
             <span className="refresh-text">
               {refreshing ? 'Обновление...' : 'Обновить'}
             </span>
-          </button>
+          </button> */}
         </div>
       </div>
+
+      {/* ДЕБАГ информация */}
+      {/* <div className="debug-info" style={{ 
+        backgroundColor: '#f0f0f0', 
+        padding: '10px', 
+        margin: '10px', 
+        borderRadius: '5px',
+        fontSize: '12px'
+      }}>
+        <div>👤 Текущий пользователь: {getUserId()}</div>
+        <div>📊 Всего ордеров: {stats.total}</div>
+        <div>🔥 Активных: {stats.active}</div>
+        <div>👁 Режим: {viewMode === 'active' ? 'Только активные' : 'Все'}</div>
+        <div>📋 Показывается: {filteredOrders.length}</div>
+      </div> */}
 
       {/* Контейнер ордеров */}
       <div className="orders-container-new">
@@ -526,7 +501,7 @@ function History({ navigateTo }) {
           <div className="orders-list-new">
             {filteredOrders.map((order, index) => {
               const isBuy = order.type === 'buy' || order.operation_type === 'buy';
-              const status = order.admin_status || order.status;
+              const status = order.admin_status || order.status || 'pending';
               const statusText = getStatusText(status);
               const statusClass = getStatusClass(status);
               

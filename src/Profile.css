@@ -1017,7 +1017,7 @@
   /* Портретная ориентация */
   @media (orientation: portrait) {
     .referral-stats {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
   }
   
@@ -1103,3 +1103,55 @@
       height: -webkit-fill-available;
     }
   } 
+
+  /* Добавьте в существующий Profile.css */
+
+/* Кнопка помощи в хедере */
+.help-button-new {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.help-button-new:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+.help-button-new svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] .help-button-new {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .help-button-new:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .help-button-new {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .help-button-new svg {
+        width: 18px;
+        height: 18px;
+    }
+}

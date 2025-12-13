@@ -35,6 +35,16 @@ const MoonSVG = () => (
   </svg>
 );
 
+// Добавьте эту SVG иконку для помощи
+const HelpSVG = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 17V16.9C12 15.86 12.84 15.02 13.88 15.02H14.12C15.16 15.02 16 15.86 16 16.9V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 11.5C12.2761 11.5 12.5 11.2761 12.5 11C12.5 10.7239 12.2761 10.5 12 10.5C11.7239 10.5 11.5 10.7239 11.5 11C11.5 11.2761 11.7239 11.5 12 11.5Z" fill="currentColor"/>
+    <path d="M12 8.5V8C12 7.44772 12.4477 7 13 7C13.5523 7 14 7.44772 14 8C14 8.55228 13.5523 9 13 9C12.4477 9 12 8.55228 12 8.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 function Profile({ navigateTo }) {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -296,6 +306,10 @@ function Profile({ navigateTo }) {
         setPhotoError(true);
     };
 
+    const handleHelpClick = () => {
+        navigateTo('help');
+    };
+
     if (isLoading) {
         return (
             <div className="profile-container">
@@ -318,6 +332,15 @@ function Profile({ navigateTo }) {
                             <p className="header-subtitle">Управление вашим аккаунтом</p>
                         </div>
                     </div>
+                    
+                    {/* Кнопка помощи - добавлена справа */}
+                    <button 
+                        className="help-button-new"
+                        onClick={handleHelpClick}
+                        title="Помощь и поддержка"
+                    >
+                        <HelpSVG />
+                    </button>
                 </div>
 
                 {/* Карточка профиля */}
@@ -391,12 +414,8 @@ function Profile({ navigateTo }) {
                             <div className="referral-stat-label">Активных</div>
                         </div>
                         <div className="referral-stat-item">
-                            <div className="referral-stat-value">{referralStats.earned || 0} ₽</div>
+                            <div className="referral-stat-value">{referralStats.earned || 0} $</div>
                             <div className="referral-stat-label">Заработано</div>
-                        </div>
-                        <div className="referral-stat-item">
-                            <div className="referral-stat-value">{referralStats.pendingEarned || 0} ₽</div>
-                            <div className="referral-stat-label">Доступно</div>
                         </div>
                     </div>
 

@@ -156,14 +156,16 @@ if (window.Telegram && window.Telegram.WebApp) {
   }, [currentPage, isAnimating]);
 
   // Показываем страницу с анимацией
-  const renderPage = () => {
-    // Общие пропсы для всех компонентов
-    const commonProps = {
+  // В App.js в функции renderPage добавьте case для help:
+
+const renderPage = () => {
+  // Общие пропсы для всех компонентов
+  const commonProps = {
       navigateTo: navigateTo,
       telegramUser: telegramUser
-    };
-    
-    const getAnimationClass = () => {
+  };
+  
+  const getAnimationClass = () => {
       if (!prevPage || isAnimating) return '';
       
       const pages = ['home', 'profile', 'history', 'help'];
@@ -171,30 +173,30 @@ if (window.Telegram && window.Telegram.WebApp) {
       const prevIndex = pages.indexOf(prevPage);
       
       if (currentIndex > prevIndex) {
-        return 'slide-in-left';
+          return 'slide-in-left';
       } else {
-        return 'slide-in-right';
+          return 'slide-in-right';
       }
-    };
-    
-    return (
-      <div className={`page-container ${getAnimationClass()}`}>
-        {(() => {
-          switch (currentPage) {
-            case 'history':
-              return <History key="history" {...commonProps} />;
-            case 'profile':
-              return <Profile key="profile" {...commonProps} />;
-            case 'help':
-              return <Help key="help" {...commonProps} />;
-            case 'home':
-            default:
-              return <Home key="home" {...commonProps} />;
-          }
-        })()}
-      </div>
-    );
   };
+  
+  return (
+      <div className={`page-container ${getAnimationClass()}`}>
+          {(() => {
+              switch (currentPage) {
+                  case 'history':
+                      return <History key="history" {...commonProps} />;
+                  case 'profile':
+                      return <Profile key="profile" {...commonProps} />;
+                  case 'help':
+                      return <Help key="help" {...commonProps} />;
+                  case 'home':
+                  default:
+                      return <Home key="home" {...commonProps} />;
+              }
+          })()}
+      </div>
+  );
+};
 
   // Лоадер пока инициализируем
   if (isLoading) {

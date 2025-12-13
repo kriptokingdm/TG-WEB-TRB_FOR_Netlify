@@ -670,7 +670,7 @@
   }
   
   .exchange-button-new.sell {
-    background: var(--tg-accent);
+    background: #ec3333;
     color: white;
     box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
   }

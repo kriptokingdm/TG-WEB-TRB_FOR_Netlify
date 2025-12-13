@@ -292,7 +292,7 @@ function Help({ navigateTo }) {
                         className="back-button-new"
                         onClick={() => navigateTo('profile')}
                     >
-                        ← На главную
+                        ← Назад
                     </button>
                 </div>
 
@@ -302,7 +302,7 @@ function Help({ navigateTo }) {
                         <div className="search-icon-new">🔍</div>
                         <input
                             type="text"
-                            placeholder="Поиск по вопросам и правилам..."
+                            placeholder="Спросите у кролика ..."
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="search-input-new"
@@ -511,7 +511,7 @@ function Help({ navigateTo }) {
                                 <span className="btn-icon">📢</span>
                                 Официальный канал
                             </button>
-                           
+
                         </div>
                         
                         <div className="support-info-new">
@@ -528,7 +528,7 @@ function Help({ navigateTo }) {
             </div>
 
             {/* Навигация */}
-            <div className="bottom-nav-new">
+            {/* <div className="bottom-nav-new">
                 <button 
                     className="nav-item-new" 
                     onClick={() => navigateTo('home')}
@@ -568,7 +568,7 @@ function Help({ navigateTo }) {
                     </div>
                     <span className="nav-label">Помощь</span>
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }

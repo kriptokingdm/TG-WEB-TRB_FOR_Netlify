@@ -50,6 +50,46 @@
     --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
   }
   
+
+  /* Обновите стили для help-button-new в Profile.css */
+.help-button-new {
+    background: var(--tg-accent);
+    border: none;
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white !important;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
+    text-decoration: none; /* Убираем подчеркивание у ссылки */
+}
+
+.help-button-new:hover {
+    background: #2a7bc8;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(51, 144, 236, 0.4);
+    text-decoration: none; /* Убираем подчеркивание при hover */
+}
+
+.help-button-new:active {
+    transform: scale(0.95);
+}
+
+.help-button-new svg {
+    width: 20px;
+    height: 20px;
+    stroke: white !important;
+    fill: white !important;
+}
+
+
   /* ====================== */
   /* ОСНОВНЫЕ СТИЛИ TELEGRAM */
   /* ====================== */
@@ -1153,5 +1193,126 @@
     .help-button-new svg {
         width: 18px;
         height: 18px;
+    }
+}
+
+/* Profile.css - добавьте эти стили */
+
+/* Кнопка помощи в хедере */
+.help-button-new {
+    background: var(--tg-input-bg);
+    border: 1.5px solid var(--tg-accent);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.help-button-new:hover {
+    background: var(--tg-accent-light);
+    border-color: var(--tg-accent);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.help-button-new:active {
+    transform: scale(0.95);
+}
+
+.help-button-new svg {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Для светлой темы */
+[data-theme="light"] .help-button-new {
+    background: rgba(51, 144, 236, 0.1);
+    border-color: rgba(51, 144, 236, 0.3);
+}
+
+[data-theme="light"] .help-button-new:hover {
+    background: rgba(51, 144, 236, 0.2);
+    border-color: var(--tg-accent);
+}
+
+/* Для темной темы */
+[data-theme="dark"] .help-button-new {
+    background: rgba(51, 144, 236, 0.15);
+    border-color: rgba(51, 144, 236, 0.4);
+}
+
+[data-theme="dark"] .help-button-new:hover {
+    background: rgba(51, 144, 236, 0.25);
+    border-color: var(--tg-accent);
+}
+
+/* Анимация пульсации */
+@keyframes pulseHelp {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(51, 144, 236, 0.4);
+    }
+    70% { 
+        box-shadow: 0 0 0 6px rgba(51, 144, 236, 0);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(51, 144, 236, 0);
+    }
+}
+
+.help-button-new.has-notifications {
+    animation: pulseHelp 2s infinite;
+}
+
+/* Бэйджик для уведомлений */
+.help-button-new.has-notifications::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: var(--tg-error);
+    border-radius: 50%;
+    border: 2px solid var(--tg-header-bg);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .help-button-new {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .help-button-new svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Улучшенная видимость в светлой теме */
+@media (prefers-color-scheme: light) {
+    .help-button-new:not([data-theme="dark"]) {
+        background: #3390ec;
+        border-color: #3390ec;
+    }
+    
+    .help-button-new:not([data-theme="dark"]) svg {
+        color: white;
+    }
+    
+    .help-button-new:not([data-theme="dark"]):hover {
+        background: #2a7bc8;
+        border-color: #2a7bc8;
     }
 }

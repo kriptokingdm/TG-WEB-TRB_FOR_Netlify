@@ -9,10 +9,10 @@ import { API_BASE_URL } from './config';
 
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
-    
-    const url = API_BASE_URL + endpoint; 
+
+    const url = API_BASE_URL + endpoint;
     console.log(`🌐 URL: ${url}`);
-    
+
     try {
         const options = {
             method: data ? 'POST' : 'GET',
@@ -29,7 +29,7 @@ const simpleFetch = async (endpoint, data = null) => {
         }
 
         const response = await fetch(url, options);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -40,7 +40,7 @@ const simpleFetch = async (endpoint, data = null) => {
 
     } catch (error) {
         console.error('❌ Ошибка запроса:', error.message);
-        
+
         // Фолбэк для курсов
         if (endpoint.includes('/exchange-rate')) {
             return {
@@ -53,7 +53,7 @@ const simpleFetch = async (endpoint, data = null) => {
                 }
             };
         }
-        
+
         return {
             success: false,
             error: error.message
@@ -715,8 +715,8 @@ function Home({ navigateTo, telegramUser }) {
                             onClick={handleSwap}
                         >
                             <svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="29" cy="29" r="26.5" fill="#007CFF" stroke="#EFEFF3" strokeWidth="5" />
-                                <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="29" cy="29" r="26.5" fill="#36B2FF" stroke="#EFEFF3" strokeWidth="5" />
+                                <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
 
@@ -1003,37 +1003,37 @@ function Home({ navigateTo, telegramUser }) {
             )}
 
             {/* Навигация */}
-<div className="bottom-nav-new">
-  <button 
-    className="nav-item-new" 
-    onClick={() => navigateTo('profile')}
-  >
-    <div className="nav-icon-wrapper">
-      <ProfileIcon />
-    </div>
-    <span className="nav-label">Профиль</span>
-  </button>
-  
-  <button 
-    className="nav-center-item active" 
-    onClick={() => navigateTo('home')}
-  >
-    <div className="nav-center-circle">
-      <ExchangeIcon active={true} />
-    </div>
-    <span className="nav-center-label">Обмен</span>
-  </button>
-  
-  <button 
-    className="nav-item-new" 
-    onClick={() => navigateTo('history')}
-  >
-    <div className="nav-icon-wrapper">
-      <HistoryIcon />
-    </div>
-    <span className="nav-label">История</span>
-  </button>
-</div>
+            <div className="bottom-nav-new">
+                <button
+                    className="nav-item-new"
+                    onClick={() => navigateTo('profile')}
+                >
+                    <div className="nav-icon-wrapper">
+                        <ProfileIcon />
+                    </div>
+                    <span className="nav-label">Профиль</span>
+                </button>
+
+                <button
+                    className="nav-center-item active"
+                    onClick={() => navigateTo('home')}
+                >
+                    <div className="nav-center-circle">
+                        <ExchangeIcon active={true} />
+                    </div>
+                    <span className="nav-center-label">Обмен</span>
+                </button>
+
+                <button
+                    className="nav-item-new"
+                    onClick={() => navigateTo('history')}
+                >
+                    <div className="nav-icon-wrapper">
+                        <HistoryIcon />
+                    </div>
+                    <span className="nav-label">История</span>
+                </button>
+            </div>
         </div>
     );
 }

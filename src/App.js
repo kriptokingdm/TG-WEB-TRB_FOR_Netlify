@@ -15,6 +15,15 @@ function App() {
   useEffect(() => {
     console.log('🚀 Запуск TetherRabbit App...');
     
+    // Проверяем hash в URL при загрузке
+    const hash = window.location.hash.replace('#', '');
+    console.log('🔗 Initial hash:', hash);
+    
+    if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
+      console.log('📍 Setting initial page from hash:', hash);
+      setCurrentPage(hash);
+    }
+    
     // Предотвращаем масштабирование на мобильных
     const preventZoom = () => {
       document.addEventListener('touchmove', (e) => {
@@ -36,71 +45,61 @@ function App() {
     preventZoom();
 
     // 1. Проверяем есть ли Telegram WebApp
-    // В App.js замените блок получения пользователя Telegram:
-// В useEffect в App.js:
-if (window.Telegram && window.Telegram.WebApp) {
-  console.log('🤖 Telegram WebApp найден');
-  const tg = window.Telegram.WebApp;
-  
-  tg.ready();
-  tg.expand();
-  
-  // Показываем всю информацию для отладки
-  console.log('Telegram WebApp объект:', tg);
-  console.log('Init Data Raw:', tg.initData);
-  console.log('Init Data Unsafe:', tg.initDataUnsafe);
-  console.log('Platform:', tg.platform);
-  console.log('Color Scheme:', tg.colorScheme);
-  
-  // Получаем пользователя
-  if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-    const tgUser = tg.initDataUnsafe.user;
-    console.log('✅ Telegram User найден:', tgUser);
-    
-    const userData = {
-      id: tgUser.id.toString(),
-      telegramId: tgUser.id,
-      username: tgUser.username || `user_${tgUser.id}`,
-      firstName: tgUser.first_name || 'Пользователь',
-      lastName: tgUser.last_name || '',
-      languageCode: tgUser.language_code || 'ru',
-      isPremium: tgUser.is_premium || false,
-      photoUrl: tgUser.photo_url || null
-    };
-    
-    console.log('📱 Подготовленные данные:', userData);
-    setTelegramUser(userData);
-    
-    // Сохраняем
-    localStorage.setItem('telegramUser', JSON.stringify(userData));
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-    
-    // Также сохраняем raw данные для отладки
-    localStorage.setItem('telegramRawData', JSON.stringify(tg.initDataUnsafe));
-  } else {
-    console.log('❌ Пользователь не найден в initDataUnsafe');
-    console.log('Проверяем query параметры...');
-    
-    // Пробуем получить из URL параметров (для тестирования)
-    const urlParams = new URLSearchParams(window.location.search);
-    const testUserId = urlParams.get('test_user_id');
-    
-    if (testUserId) {
-      console.log('🧪 Тестовый пользователь из URL:', testUserId);
-      const testUser = {
-        id: testUserId,
-        telegramId: parseInt(testUserId),
-        username: `test_${testUserId}`,
-        firstName: 'Тестовый',
-        lastName: 'Пользователь'
-      };
-      setTelegramUser(testUser);
-      localStorage.setItem('telegramUser', JSON.stringify(testUser));
+    if (window.Telegram && window.Telegram.WebApp) {
+      console.log('🤖 Telegram WebApp найден');
+      const tg = window.Telegram.WebApp;
+      
+      tg.ready();
+      tg.expand();
+      
+      // Получаем пользователя
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const tgUser = tg.initDataUnsafe.user;
+        console.log('✅ Telegram User найден:', tgUser);
+        
+        const userData = {
+          id: tgUser.id.toString(),
+          telegramId: tgUser.id,
+          username: tgUser.username || `user_${tgUser.id}`,
+          firstName: tgUser.first_name || 'Пользователь',
+          lastName: tgUser.last_name || '',
+          languageCode: tgUser.language_code || 'ru',
+          isPremium: tgUser.is_premium || false,
+          photoUrl: tgUser.photo_url || null
+        };
+        
+        console.log('📱 Подготовленные данные:', userData);
+        setTelegramUser(userData);
+        
+        // Сохраняем
+        localStorage.setItem('telegramUser', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        
+        // Также сохраняем raw данные для отладки
+        localStorage.setItem('telegramRawData', JSON.stringify(tg.initDataUnsafe));
+      } else {
+        console.log('❌ Пользователь не найден в initDataUnsafe');
+        
+        // Пробуем получить из URL параметров (для тестирования)
+        const urlParams = new URLSearchParams(window.location.search);
+        const testUserId = urlParams.get('test_user_id');
+        
+        if (testUserId) {
+          console.log('🧪 Тестовый пользователь из URL:', testUserId);
+          const testUser = {
+            id: testUserId,
+            telegramId: parseInt(testUserId),
+            username: `test_${testUserId}`,
+            firstName: 'Тестовый',
+            lastName: 'Пользователь'
+          };
+          setTelegramUser(testUser);
+          localStorage.setItem('telegramUser', JSON.stringify(testUser));
+        }
+      }
+    } else {
+      console.log('⚠️ Telegram WebApp не найден');
     }
-  }
-} else {
-  console.log('⚠️ Telegram WebApp не найден');
-}
     
     // 2. Проверяем localStorage
     const savedUser = localStorage.getItem('telegramUser');
@@ -140,9 +139,16 @@ if (window.Telegram && window.Telegram.WebApp) {
 
   // Плавная навигация
   const navigateTo = useCallback((page) => {
-    if (page === currentPage || isAnimating) return;
+    console.log(`📍 Навигация на: ${page} (текущая: ${currentPage})`);
     
-    console.log(`📍 Навигация на: ${page}`);
+    if (page === currentPage) {
+      console.log('⏸️ Навигация заблокирована - та же страница');
+      return;
+    }
+    
+    // Обновляем hash в URL
+    window.location.hash = page;
+    console.log('🔗 URL hash updated to:', page);
     
     // Анимация перехода
     setIsAnimating(true);
@@ -152,20 +158,40 @@ if (window.Telegram && window.Telegram.WebApp) {
     setTimeout(() => {
       setCurrentPage(page);
       setIsAnimating(false);
+      console.log(`✅ Страница изменена на: ${page}`);
     }, 150);
-  }, [currentPage, isAnimating]);
+  }, [currentPage]);
+
+  // Слушаем изменения hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      console.log('🔗 Hash changed to:', hash);
+      
+      if (hash && ['home', 'profile', 'history', 'help'].includes(hash) && hash !== currentPage) {
+        console.log('📍 Navigating from hash change:', hash);
+        setCurrentPage(hash);
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [currentPage]);
 
   // Показываем страницу с анимацией
-  // В App.js в функции renderPage добавьте case для help:
-
-const renderPage = () => {
-  // Общие пропсы для всех компонентов
-  const commonProps = {
+  const renderPage = () => {
+    // Общие пропсы для всех компонентов
+    const commonProps = {
       navigateTo: navigateTo,
       telegramUser: telegramUser
-  };
-  
-  const getAnimationClass = () => {
+    };
+    
+    console.log('🔄 Рендеринг страницы:', currentPage);
+    
+    const getAnimationClass = () => {
       if (!prevPage || isAnimating) return '';
       
       const pages = ['home', 'profile', 'history', 'help'];
@@ -173,30 +199,30 @@ const renderPage = () => {
       const prevIndex = pages.indexOf(prevPage);
       
       if (currentIndex > prevIndex) {
-          return 'slide-in-left';
+        return 'slide-in-left';
       } else {
-          return 'slide-in-right';
+        return 'slide-in-right';
       }
-  };
-  
-  return (
+    };
+    
+    return (
       <div className={`page-container ${getAnimationClass()}`}>
-          {(() => {
-              switch (currentPage) {
-                  case 'history':
-                      return <History key="history" {...commonProps} />;
-                  case 'profile':
-                      return <Profile key="profile" {...commonProps} />;
-                  case 'help':
-                      return <Help key="help" {...commonProps} />;
-                  case 'home':
-                  default:
-                      return <Home key="home" {...commonProps} />;
-              }
-          })()}
+        {(() => {
+          switch (currentPage) {
+            case 'history':
+              return <History key="history" {...commonProps} />;
+            case 'profile':
+              return <Profile key="profile" {...commonProps} />;
+            case 'help':
+              return <Help key="help" {...commonProps} />;
+            case 'home':
+            default:
+              return <Home key="home" {...commonProps} />;
+          }
+        })()}
       </div>
-  );
-};
+    );
+  };
 
   // Лоадер пока инициализируем
   if (isLoading) {

@@ -1195,3 +1195,19 @@
       height: -webkit-fill-available;
     }
   }
+
+  /* Исправление заголовков для всех страниц */
+.header-title-new {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--tg-header-color) !important;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: var(--tg-header-subtitle) !important;
+    margin: 0;
+    font-weight: 400;
+}

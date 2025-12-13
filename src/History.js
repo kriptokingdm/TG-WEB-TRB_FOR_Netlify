@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
-import { API_BASE_URL, API_ENDPOINTS } from './config';
+    import { API_BASE_URL } from './config';
+
 
 // В начале History.js:
     // SVG иконки
@@ -178,7 +179,7 @@ function History({ navigateTo }) {
             }
 
             // Прямой запрос без retry для простоты
-            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.USER_ORDERS}/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`, {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -296,7 +297,7 @@ function History({ navigateTo }) {
     const testConnection = async () => {
         try {
             showMessage('info', 'Тестируем подключение...');
-            const response = await fetch(`${API_URL}/health`);
+            const response = await fetch(`${API_BASE_URL}/health`);
 
             if (response.ok) {
                 showMessage('success', 'API работает!');

@@ -1,5 +1,5 @@
 // src/config.js
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tethrab.shop'; // HTTPS без порта!
+export const API_BASE_URL = 'https://tethrab.shop'; // БЕЗ порта!
 
 export const API_ENDPOINTS = {
   USER_ORDERS: '/user-orders',

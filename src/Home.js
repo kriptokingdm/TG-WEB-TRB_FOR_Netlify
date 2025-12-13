@@ -2,8 +2,7 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
-import { API_BASE_URL, API_ENDPOINTS } from './config';
-
+import { API_BASE_URL } from './config';
 // В Home.js ДОБАВЬТЕ ЭТО после импортов, но до function Home():
 
 
@@ -11,7 +10,7 @@ import { API_BASE_URL, API_ENDPOINTS } from './config';
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
     
-    const url = API_BASE_URL + endpoint; // API_BASE_URL должен быть определен выше
+    const url = API_BASE_URL + endpoint; 
     console.log(`🌐 URL: ${url}`);
     
     try {

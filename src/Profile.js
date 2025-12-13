@@ -3,7 +3,7 @@ import './Profile.css';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // Используем порт 3002 как в вашем API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tethrab.shop:3002';
+const API_BASE_URL = 'https://tethrab.shop'; 
 
 // SVG иконки
 const ProfileSVG = () => (

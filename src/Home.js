@@ -2,9 +2,8 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
-    
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://tethrab.shop:3002';
 
+const API_BASE_URL = 'https://tethrab.shop';
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
 

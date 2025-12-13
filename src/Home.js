@@ -2,21 +2,26 @@ import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
+import { API_BASE_URL, API_ENDPOINTS } from './config';
 
-const API_BASE_URL = 'https://tethrab.shop';
+// В Home.js ДОБАВЬТЕ ЭТО после импортов, но до function Home():
+
+
+
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
-
+    
+    const url = API_BASE_URL + endpoint; // API_BASE_URL должен быть определен выше
+    console.log(`🌐 URL: ${url}`);
+    
     try {
-        // Используем fetch с игнорированием SSL ошибок через прокси подход
-        const url = API_BASE_URL + endpoint;
         const options = {
             method: data ? 'POST' : 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            mode: 'cors', // Важно для CORS
+            mode: 'cors',
             credentials: 'omit'
         };
 
@@ -24,9 +29,8 @@ const simpleFetch = async (endpoint, data = null) => {
             options.body = JSON.stringify(data);
         }
 
-        // Пробуем обычный fetch (если браузер позволяет)
         const response = await fetch(url, options);
-
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -37,54 +41,30 @@ const simpleFetch = async (endpoint, data = null) => {
 
     } catch (error) {
         console.error('❌ Ошибка запроса:', error.message);
-
-        // Для курсов возвращаем фиксированные значения
-        if (endpoint === '/exchange-rate') {
+        
+        // Фолбэк для курсов
+        if (endpoint.includes('/exchange-rate')) {
             return {
                 success: true,
                 data: {
-                    buy: 95,
-                    sell: 96,
-                    message: 'Фиксированный курс'
+                    buy: 88.0,
+                    sell: 84.0,
+                    spread: 4.0,
+                    amount: 1000
                 }
             };
         }
-
-        // Для создания ордера - фолбэк на локальное сохранение
-        if (endpoint === '/create-order') {
-            const orderId = 'TRB' + Date.now();
-            const order = {
-                id: orderId,
-                type: data?.type || 'buy',
-                amount: data?.amount || 0,
-                rate: data?.type === 'buy' ? 95 : 96,
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            };
-
-            // Сохраняем локально
-            try {
-                const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
-                userOrders.unshift(order);
-                localStorage.setItem('userOrders', JSON.stringify(userOrders));
-            } catch (e) {
-                console.log('❌ Ошибка сохранения локально:', e);
-            }
-
-            return {
-                success: true,
-                message: 'Ордер создан (локальный режим)',
-                order: order
-            };
-        }
-
-        // Для других эндпоинтов
+        
         return {
             success: false,
-            error: 'Соединение с сервером недоступно. Пожалуйста, попробуйте позже.'
+            error: error.message
         };
     }
 };
+
+
+
+
 
 function Home({ navigateTo, telegramUser }) {
     console.log('🏠 Home загружен');

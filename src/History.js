@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import './History.css';
 import SupportChat from './SupportChat';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
+import { API_BASE_URL, API_ENDPOINTS } from './config';
 
-// ДОЛЖНО БЫТЬ в начале файла History.js:
-const API_BASE_URL = 'https://tethrab.shop';
-
-// SVG иконки
+// В начале History.js:
+    // SVG иконки
 const LoadingSVG = () => (
     <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path opacity="0.2" d="M28 10C30.3638 10 32.7044 10.4656 34.8883 11.3702C37.0722 12.2748 39.0565 13.6006 40.7279 15.2721C42.3994 16.9435 43.7252 18.9278 44.6298 21.1117C45.5344 23.2956 46 25.6362 46 28C46 30.3638 45.5344 32.7044 44.6298 34.8883C43.7252 37.0722 42.3994 39.0565 40.7279 40.7279C39.0565 42.3994 37.0722 43.7252 34.8883 44.6298C32.7044 45.5344 30.3638 46 28 46C25.6362 46 23.2956 45.5344 21.1117 44.6298C18.9278 43.7252 16.9435 42.3994 15.2721 40.7279C13.6006 39.0565 12.2747 37.0722 11.3702 34.8883C10.4656 32.7044 10 30.3638 10 28C10 25.6362 10.4656 23.2955 11.3702 21.1117C12.2748 18.9278 13.6006 16.9435 15.2721 15.2721C16.9435 13.6006 18.9278 12.2747 21.1117 11.3702C23.2956 10.4656 25.6362 10 28 10L28 10Z" stroke="var(--tg-accent)" strokeOpacity="0.1" strokeWidth="4" strokeLinecap="round" />
@@ -179,7 +178,7 @@ function History({ navigateTo }) {
             }
 
             // Прямой запрос без retry для простоты
-            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.USER_ORDERS}/${userId}`, {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'

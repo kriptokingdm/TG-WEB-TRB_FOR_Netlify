@@ -9,7 +9,7 @@ function SupportChat({ orderId, onClose }) {
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState('');
     const [userId, setUserId] = useState(null);
-    const [fullOrderId, setFullOrderId] = useState(orderId); // Полный ID ордера
+    const [fullOrderId, setFullOrderId] = useState(orderId);
     
     const messagesEndRef = useRef(null);
     
@@ -19,14 +19,12 @@ function SupportChat({ orderId, onClose }) {
     useEffect(() => {
         const getUserData = () => {
             try {
-                // 1. Telegram Web App
                 if (window.Telegram?.WebApp) {
                     const tg = window.Telegram.WebApp;
                     const tgUser = tg.initDataUnsafe?.user;
                     if (tgUser?.id) return tgUser.id.toString();
                 }
                 
-                // 2. localStorage
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
                     const parsed = JSON.parse(savedUser);
@@ -45,42 +43,19 @@ function SupportChat({ orderId, onClose }) {
     // Функция для получения полного orderId
     const getFullOrderId = async (orderId) => {
         try {
-            console.log('🔍 Получаем полный orderId для:', orderId);
-            
-            // Если уже есть _ в ID, значит это полный ID
             if (orderId.includes('_')) {
                 return orderId;
             }
             
-            // Пробуем найти ордер через API
             const response = await fetch(`${API_URL}/admin/order/${orderId}`);
             const data = await response.json();
             
             if (data.success && data.order) {
-                console.log('✅ Найден полный order_id:', data.order.order_id);
                 return data.order.order_id;
             }
             
-            // Если не нашли, пробуем поискать по части
-            const searchResponse = await fetch(`${API_URL}/admin/all-orders`);
-            const searchData = await searchResponse.json();
-            
-            if (searchData.success && searchData.orders) {
-                const foundOrder = searchData.orders.find(o => 
-                    o.order_id && o.order_id.includes(orderId)
-                );
-                if (foundOrder) {
-                    console.log('✅ Найден по частичному совпадению:', foundOrder.order_id);
-                    return foundOrder.order_id;
-                }
-            }
-            
-            // Если ничего не нашли, используем как есть
-            console.log('⚠️ Не удалось найти полный orderId, используем как есть');
             return orderId;
-            
         } catch (error) {
-            console.error('❌ Ошибка получения полного orderId:', error);
             return orderId;
         }
     };
@@ -92,22 +67,18 @@ function SupportChat({ orderId, onClose }) {
         try {
             setIsLoading(true);
             
-            // Получаем полный orderId
             const actualOrderId = await getFullOrderId(orderId);
             if (actualOrderId !== fullOrderId) {
                 setFullOrderId(actualOrderId);
             }
             
-            console.log('📨 Загружаем сообщения для orderId:', actualOrderId);
             const loadedMessages = await ChatApi.getMessages(actualOrderId);
             setMessages(loadedMessages);
             
-            // Помечаем сообщения админа как прочитанные
             await ChatApi.markAsRead(actualOrderId, userId);
             
             setError('');
         } catch (error) {
-            console.error('❌ Ошибка загрузки:', error);
             setError('Не удалось загрузить сообщения');
         } finally {
             setIsLoading(false);
@@ -120,7 +91,6 @@ function SupportChat({ orderId, onClose }) {
         
         loadMessages();
         
-        // Обновляем каждые 10 секунд
         const interval = setInterval(() => {
             loadMessages();
         }, 10000);
@@ -144,15 +114,10 @@ function SupportChat({ orderId, onClose }) {
         try {
             setIsSending(true);
             
-            // Получаем полный orderId
             const actualOrderId = await getFullOrderId(orderId);
             if (actualOrderId !== fullOrderId) {
                 setFullOrderId(actualOrderId);
             }
-            
-            console.log('📤 Отправка сообщения для orderId:', actualOrderId);
-            console.log('👤 User ID:', userId);
-            console.log('📝 Message:', newMessage.trim());
             
             const result = await ChatApi.sendMessage(
                 actualOrderId,
@@ -163,19 +128,15 @@ function SupportChat({ orderId, onClose }) {
             
             if (result.success) {
                 setNewMessage('');
-                // Добавляем сообщение в список
                 setMessages(prev => [...prev, result.message]);
                 
-                // Прокручиваем вниз
                 setTimeout(() => {
                     scrollToBottom();
                 }, 100);
             } else {
                 setError(result.error || 'Ошибка отправки');
-                console.error('❌ Ошибка отправки:', result.error);
             }
         } catch (error) {
-            console.error('❌ Ошибка отправки:', error);
             setError('Ошибка отправки сообщения');
         } finally {
             setIsSending(false);
@@ -190,118 +151,137 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
-    if (!orderId) {
-        return (
-            <div className="chat-error">
-                <p>❌ Ордер не указан</p>
-                <button onClick={onClose}>Закрыть</button>
-            </div>
-        );
-    }
-
-    if (!userId) {
-        return (
-            <div className="chat-error">
-                <p>❌ Не удалось определить пользователя</p>
-                <button onClick={onClose}>Закрыть</button>
-            </div>
-        );
-    }
+    // Форматирование времени
+    const formatTime = (dateString) => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return '';
+        }
+    };
 
     return (
-        <div className="support-chat-container">
-            {/* Заголовок */}
-            <div className="chat-header">
-                <div className="chat-title">
-                    <span className="chat-icon">💬</span>
-                    <div className="chat-title-text">
-                        <h3>Чат с оператором</h3>
-                        <p className="chat-subtitle">
-                            Ордер #{fullOrderId || orderId}
-                            {fullOrderId !== orderId && (
-                                <span className="order-id-note">
-                                    {' '}(изначально: {orderId})
-                                </span>
-                            )}
-                        </p>
+        <div className="support-chat-new">
+            {/* Хедер */}
+            <div className="chat-header-new">
+                <div className="chat-header-content">
+                    <div className="chat-title-section">
+                        <div className="chat-title-icon">💬</div>
+                        <div className="chat-title-texts">
+                            <h3 className="chat-title-new">Чат с оператором</h3>
+                            <p className="chat-order-id">
+                                Ордер #{fullOrderId || orderId}
+                            </p>
+                        </div>
                     </div>
+                    <button 
+                        className="chat-close-btn-new" 
+                        onClick={onClose}
+                        aria-label="Закрыть чат"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                    </button>
                 </div>
-                <button className="chat-close-btn" onClick={onClose}>✕</button>
             </div>
 
-            {/* Сообщения */}
-            <div className="chat-messages-container">
+            {/* Основной контейнер сообщений */}
+            <div className="chat-messages-container-new">
                 {isLoading ? (
-                    <div className="chat-loading">
-                        <div className="spinner"></div>
-                        <p>Загрузка сообщений...</p>
+                    <div className="chat-loading-new">
+                        <div className="chat-spinner-new"></div>
+                        <p className="chat-loading-text">Загрузка сообщений...</p>
                     </div>
                 ) : error ? (
-                    <div className="chat-error-message">
-                        <p>{error}</p>
-                        <button onClick={loadMessages}>Повторить</button>
+                    <div className="chat-error-new">
+                        <div className="error-icon">⚠️</div>
+                        <p className="error-text">{error}</p>
+                        <button 
+                            className="retry-btn-new" 
+                            onClick={loadMessages}
+                        >
+                            Повторить
+                        </button>
                     </div>
                 ) : messages.length === 0 ? (
-                    <div className="chat-empty">
-                        <p>Нет сообщений. Начните диалог первым!</p>
+                    <div className="chat-empty-new">
+                        <div className="empty-icon-new">💭</div>
+                        <h4 className="empty-title-new">Нет сообщений</h4>
+                        <p className="empty-subtitle">Начните диалог первым!</p>
                     </div>
                 ) : (
-                    <div className="chat-messages">
+                    <div className="chat-messages-list">
                         {messages.map((msg) => (
                             <div 
                                 key={msg.id} 
-                                className={`chat-message ${msg.sender_type === 'user' ? 'user-message' : 'admin-message'}`}
+                                className={`chat-message-new ${
+                                    msg.sender_type === 'user' ? 'user-message-new' : 'admin-message-new'
+                                }`}
                             >
-                                <div className="message-content">
-                                    <p>{msg.message}</p>
-                                    <span className="message-time">
-                                        {new Date(msg.created_at).toLocaleTimeString('ru-RU', {
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </span>
+                                <div className="message-bubble">
+                                    <div className="message-content-new">
+                                        <p className="message-text">{msg.message}</p>
+                                        <div className="message-meta">
+                                            <span className="message-time-new">
+                                                {formatTime(msg.created_at)}
+                                            </span>
+                                            {msg.sender_type === 'admin' && !msg.read_status && (
+                                                <span className="unread-dot"></span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="message-sender">
+                                        {msg.sender_type === 'user' ? 'Вы' : 'Оператор'}
+                                    </div>
                                 </div>
-                                {msg.sender_type === 'admin' && !msg.read_status && (
-                                    <span className="unread-badge">новое</span>
-                                )}
                             </div>
                         ))}
-                        <div ref={messagesEndRef} />
+                        <div ref={messagesEndRef} className="messages-end" />
                     </div>
                 )}
             </div>
 
             {/* Поле ввода */}
-            <div className="chat-input-container">
-                <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Введите сообщение..."
-                    disabled={isSending}
-                    rows={2}
-                    className="chat-input"
-                />
-                <button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || isSending}
-                    className="chat-send-btn"
-                >
-                    {isSending ? (
-                        <span className="sending-spinner"></span>
-                    ) : (
-                        'Отправить'
-                    )}
-                </button>
-            </div>
-
-            {/* Подсказка */}
-            <div className="chat-info">
-                <p>💡 Сообщения отправляются оператору в реальном времени</p>
-                <p className="debug-info">
-                    Order ID: {fullOrderId || orderId} | 
-                    User ID: {userId || 'не определен'}
-                </p>
+            <div className="chat-input-section-new">
+                <div className="input-wrapper-new">
+                    <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Введите сообщение..."
+                        disabled={isSending}
+                        rows={1}
+                        className="chat-input-new"
+                    />
+                    <button
+                        onClick={handleSendMessage}
+                        disabled={!newMessage.trim() || isSending}
+                        className="chat-send-btn-new"
+                    >
+                        {isSending ? (
+                            <div className="send-spinner"></div>
+                        ) : (
+                            <>
+                                <span className="send-text">Отправить</span>
+                                <svg className="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </>
+                        )}
+                    </button>
+                </div>
+                
+                <div className="chat-hint-new">
+                    <span className="hint-icon">💡</span>
+                    <span className="hint-text">Сообщения отправляются оператору в реальном времени</span>
+                </div>
             </div>
         </div>
     );

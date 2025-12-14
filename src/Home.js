@@ -89,11 +89,12 @@ function Home({ navigateTo, telegramUser }) {
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [selectedCrypto, setSelectedCrypto] = useState(null);
 
-    // Лимиты
-    const MIN_RUB = 1000;
-    const MAX_RUB = 1000000;
-    const MIN_USDT = 10;
-    const MAX_USDT = 10000;
+    const [limits, setLimits] = useState({
+        minBuy: 1000,
+        maxBuy: 1000000,
+        minSell: 10,
+        maxSell: 10000
+    });
 
     // Список популярных банков для продажи USDT (СБП первым)
     const availableBanks = [
@@ -165,13 +166,16 @@ function Home({ navigateTo, telegramUser }) {
     // Инициализация пользователя
     useEffect(() => {
         console.log('🏠 Home компонент загружен');
-
+        
+        // Загружаем курсы сразу
+        fetchExchangeRates();
+        
         // Пробуем получить пользователя из Telegram Web App
         const tgUser = getTelegramUser();
-
+    
         if (tgUser) {
             console.log('🤖 Telegram Web App User:', tgUser);
-
+    
             const userData = {
                 id: tgUser.id.toString(),
                 telegramId: tgUser.id,
@@ -180,23 +184,23 @@ function Home({ navigateTo, telegramUser }) {
                 lastName: tgUser.last_name || '',
                 photoUrl: tgUser.photo_url
             };
-
+    
             // Сохраняем в localStorage
             localStorage.setItem('currentUser', JSON.stringify(userData));
             localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-
+    
             console.log('✅ Пользователь сохранен:', userData);
         } else if (telegramUser) {
             // Если пользователь передан через props (старый способ)
             console.log('👤 Telegram User из props:', telegramUser);
-
+    
             const userData = {
                 id: `user_${telegramUser.id}`,
                 telegramId: telegramUser.id,
                 username: telegramUser.username || `user_${telegramUser.id}`,
                 firstName: telegramUser.first_name || 'Пользователь'
             };
-
+    
             localStorage.setItem('currentUser', JSON.stringify(userData));
             localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
         } else {
@@ -206,13 +210,10 @@ function Home({ navigateTo, telegramUser }) {
                 console.log('⚠️ Пользователь не найден. Будет определен при создании ордера.');
             }
         }
-
+    
         // Загружаем сохраненные реквизиты
         loadSavedData();
-
-        // Загружаем курсы
-        fetchExchangeRates();
-
+    
     }, [telegramUser]);
 
     // Загрузка сохраненных данных
@@ -268,14 +269,26 @@ function Home({ navigateTo, telegramUser }) {
     // Загрузка курсов
     const fetchExchangeRates = async () => {
         try {
-            const queryAmount = amount || MIN_RUB;
-            const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}`);
-
-            if (result.success && result.data) {
+            const queryAmount = amount || (isBuyMode ? 1000 : 10);
+            const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}&type=${isBuyMode ? 'buy' : 'sell'}`);
+            
+            console.log('📊 Получены курсы:', result);
+            
+            if (result.success) {
                 setRates({
-                    buy: result.data.buy || 92.50,
-                    sell: result.data.sell || 93.50
+                    buy: result.rate || 88.0,
+                    sell: result.rate || 84.0
                 });
+                
+                // Обновляем лимиты если они есть в ответе
+                if (result.min_amount) {
+                    setLimits(prev => ({
+                        ...prev,
+                        minBuy: isBuyMode ? result.min_amount : prev.minBuy,
+                        minSell: !isBuyMode ? result.min_amount : prev.minSell,
+                        max_amount: result.max_amount || prev.maxSell
+                    }));
+                }
             }
         } catch (error) {
             console.error('Ошибка курсов:', error);
@@ -286,24 +299,24 @@ function Home({ navigateTo, telegramUser }) {
     const handleAmountChange = (e) => {
         const value = e.target.value;
         setAmount(value);
-
+    
         if (value && value.trim() !== '') {
             const numAmount = parseFloat(value);
             if (!isNaN(numAmount)) {
                 if (isBuyMode) {
-                    if (numAmount < MIN_RUB) {
-                        setError(`Минимальная сумма: ${MIN_RUB.toLocaleString()} RUB`);
-                    } else if (numAmount > MAX_RUB) {
-                        setError(`Максимальная сумма: ${MAX_RUB.toLocaleString()} RUB`);
+                    if (numAmount < limits.minBuy) {
+                        setError(`Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
+                    } else if (numAmount > limits.maxBuy) {
+                        setError(`Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
                     } else {
                         setError('');
                         fetchExchangeRates();
                     }
                 } else {
-                    if (numAmount < MIN_USDT) {
-                        setError(`Минимальная сумма: ${MIN_USDT} USDT`);
-                    } else if (numAmount > MAX_USDT) {
-                        setError(`Максимальная сумма: ${MAX_USDT} USDT`);
+                    if (numAmount < limits.minSell) {
+                        setError(`Минимальная сумма: ${limits.minSell} USDT`);
+                    } else if (numAmount > limits.maxSell) {
+                        setError(`Максимальная сумма: ${limits.maxSell} USDT`);
                     } else {
                         setError('');
                         fetchExchangeRates();

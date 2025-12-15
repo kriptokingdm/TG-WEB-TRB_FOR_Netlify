@@ -760,3 +760,331 @@
 .chat-message-new:last-child {
     animation: newMessage 0.3s ease;
 }
+
+
+/* Улучшенные отступы между сообщениями */
+
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-refresh-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.chat-refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(45deg);
+}
+
+.chat-refresh-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.refresh-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Улучшенные отступы между сообщениями */
+.chat-message-new {
+    display: flex;
+    animation: messageAppear 0.3s ease;
+    transition: margin 0.3s ease;
+}
+
+/* Нормальные отступы (между сообщениями разных отправителей или > 5 минут) */
+.message-margin-normal.user-message-new {
+    margin-top: 16px;
+    margin-bottom: 4px;
+}
+
+.message-margin-normal.admin-message-new {
+    margin-top: 16px;
+    margin-bottom: 4px;
+}
+
+/* Маленькие отступы (между сообщениями одного отправителя < 1 минуты) */
+.message-margin-small.user-message-new {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.message-margin-small.admin-message-new {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+/* Большие отступы (> 5 минут между сообщениями) */
+.message-margin-large.user-message-new {
+    margin-top: 24px;
+    margin-bottom: 4px;
+}
+
+.message-margin-large.admin-message-new {
+    margin-top: 24px;
+    margin-bottom: 4px;
+}
+
+/* Пузыри сообщений */
+.message-bubble {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-message-new .message-bubble {
+    align-items: flex-end;
+}
+
+.admin-message-new .message-bubble {
+    align-items: flex-start;
+}
+
+/* Контент сообщения */
+.message-content-new {
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    min-width: 120px;
+}
+
+/* Стили для сообщений пользователя */
+.user-message-new .message-content-new {
+    background: linear-gradient(135deg, var(--tg-accent, #007AFF) 0%, #0056CC 100%);
+    color: white;
+    border-bottom-right-radius: 6px;
+}
+
+/* Стили для сообщений админа */
+.admin-message-new .message-content-new {
+    background: white;
+    color: var(--tg-primary-text, #000000);
+    border: 1px solid var(--tg-border, #e0e0e0);
+    border-bottom-left-radius: 6px;
+}
+
+/* Текст сообщения */
+.message-text {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    letter-spacing: 0.01em;
+}
+
+/* Мета информация */
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    justify-content: flex-end;
+}
+
+.message-time-new {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+.user-message-new .message-time-new {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.admin-message-new .message-time-new {
+    color: var(--tg-secondary-text, #8e8e93);
+}
+
+/* Индикатор отправителя (только у последнего сообщения в группе) */
+.message-sender {
+    font-size: 11px;
+    color: var(--tg-secondary-text, #8e8e93);
+    padding: 0 4px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* Улучшенные системные сообщения */
+.system-message-new {
+    justify-content: center !important;
+    margin: 16px 0 !important;
+}
+
+.system-message-new .message-content-new {
+    background: var(--tg-input-bg, #f8f9fa) !important;
+    color: var(--tg-secondary-text, #8e8e93) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 10px 16px !important;
+    max-width: 90% !important;
+    text-align: center;
+    font-size: 13px !important;
+    box-shadow: none !important;
+}
+
+.system-message-new .message-text {
+    font-style: italic;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Улучшенный разделитель дат */
+.date-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0 16px 0;
+    position: relative;
+}
+
+.date-divider::before,
+.date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--tg-border, #e0e0e0);
+    opacity: 0.5;
+}
+
+.date-text {
+    padding: 6px 12px;
+    background: var(--tg-input-bg, #f8f9fa);
+    border-radius: 14px;
+    font-size: 12px;
+    color: var(--tg-secondary-text, #8e8e93);
+    font-weight: 600;
+    margin: 0 12px;
+    border: 1px solid var(--tg-border, #e0e0e0);
+}
+
+[data-theme="dark"] .date-text {
+    background: #2c2c2e;
+    border-color: #3a3a3c;
+}
+
+/* Анимации */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Улучшенная прокрутка */
+.chat-messages-container-new {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px;
+}
+
+.chat-messages-container-new::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-messages-container-new::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-messages-container-new::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+[data-theme="dark"] .chat-messages-container-new::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Улучшенный контейнер для сообщений */
+.chat-messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Тень для последнего сообщения для визуального акцента */
+.chat-message-new:last-child .message-content-new {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .chat-message-new {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+    
+    .message-bubble {
+        max-width: 85%;
+    }
+    
+    .message-content-new {
+        padding: 10px 14px;
+    }
+    
+    .message-text {
+        font-size: 16px; /* Чуть больше на мобильных */
+    }
+    
+    .date-divider {
+        margin: 20px 0 12px 0;
+    }
+}
+
+/* Для очень маленьких сообщений добавляем минимальную ширину */
+
+/* Эффект при наведении на сообщения */
+.chat-message-new:not(.system-message-new):hover .message-content-new {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+.user-message-new:not(.system-message-new):hover .message-content-new {
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+.admin-message-new:not(.system-message-new):hover .message-content-new {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Фикс для тёмной темы */
+[data-theme="dark"] .admin-message-new .message-content-new {
+    background: #2c2c2e;
+    color: white;
+    border-color: #3a3a3c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .system-message-new .message-content-new {
+    background: #3a3a3c !important;
+    color: #8e8e93 !important;
+}
+
+[data-theme="dark"] .date-divider::before,
+[data-theme="dark"] .date-divider::after {
+    background: #3a3a3c;
+}

@@ -9,10 +9,11 @@ function SupportChat({ orderId, onClose }) {
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState('');
     const [userId, setUserId] = useState(null);
-    const [fullOrderId, setFullOrderId] = useState(orderId);
     
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const chatContainerRef = useRef(null);
+    const updateIntervalRef = useRef(null);
     
     // Получаем ID пользователя
     useEffect(() => {
@@ -23,7 +24,6 @@ function SupportChat({ orderId, onClose }) {
                     const tg = window.Telegram.WebApp;
                     const tgUser = tg.initDataUnsafe?.user;
                     if (tgUser?.id) {
-                        console.log('📱 Telegram User ID:', tgUser.id);
                         return tgUser.id.toString();
                     }
                 }
@@ -33,7 +33,6 @@ function SupportChat({ orderId, onClose }) {
                 if (savedTelegramUser) {
                     const parsed = JSON.parse(savedTelegramUser);
                     if (parsed?.id) {
-                        console.log('📱 Telegram User from localStorage:', parsed.id);
                         return parsed.id.toString();
                     }
                 }
@@ -43,11 +42,9 @@ function SupportChat({ orderId, onClose }) {
                 if (savedUser) {
                     const parsed = JSON.parse(savedUser);
                     if (parsed?.telegramId) {
-                        console.log('👤 User ID from currentUser:', parsed.telegramId);
                         return parsed.telegramId.toString();
                     }
                     if (parsed?.id) {
-                        console.log('👤 User ID from currentUser:', parsed.id);
                         return parsed.id.toString();
                     }
                 }
@@ -56,93 +53,108 @@ function SupportChat({ orderId, onClose }) {
                 const urlParams = new URLSearchParams(window.location.search);
                 const testUserId = urlParams.get('test_user_id');
                 if (testUserId) {
-                    console.log('🧪 Test User ID from URL:', testUserId);
                     return testUserId;
                 }
                 
             } catch (error) {
                 console.error('❌ Ошибка получения ID:', error);
             }
-            console.log('⚠️ User ID not found');
             return null;
         };
         
         const id = getUserData();
-        console.log('✅ Final User ID for chat:', id);
         setUserId(id);
     }, []);
 
     // Загрузка сообщений
-    const loadMessages = async () => {
+    const loadMessages = async (silent = false) => {
         if (!orderId || !userId) {
-            console.log('❌ Missing orderId or userId');
             return;
         }
         
         try {
-            setIsLoading(true);
-            console.log('🔄 Loading messages for order:', orderId, 'user:', userId);
+            if (!silent) {
+                setIsLoading(true);
+            }
             
             const loadedMessages = await ChatApi.getMessages(orderId);
-            console.log('✅ Loaded messages:', loadedMessages);
             
-            setMessages(loadedMessages);
+            // Обновляем только если сообщения изменились
+            setMessages(prev => {
+                if (JSON.stringify(prev) !== JSON.stringify(loadedMessages)) {
+                    return loadedMessages;
+                }
+                return prev;
+            });
             
             // Помечаем как прочитанные (игнорируем ошибки)
             try {
                 await ChatApi.markAsRead(orderId, userId);
-                console.log('✅ Messages marked as read');
             } catch (markError) {
-                console.log('⚠️ Could not mark as read:', markError.message);
+                // Игнорируем ошибку отметки как прочитанного
             }
             
             setError('');
         } catch (error) {
             console.error('❌ Error loading messages:', error);
-            setError('Не удалось загрузить сообщения');
+            if (!silent) {
+                setError('Не удалось загрузить сообщения');
+            }
         } finally {
-            setIsLoading(false);
+            if (!silent) {
+                setIsLoading(false);
+            }
         }
     };
 
-    // Автообновление сообщений
+    // Автообновление сообщений - РЕЖЕ!
     useEffect(() => {
         if (!orderId || !userId) {
-            console.log('❌ Cannot start chat: missing orderId or userId');
             return;
         }
         
-        console.log('🚀 Starting chat for order:', orderId, 'user:', userId);
+        // Первоначальная загрузка
         loadMessages();
         
-        const interval = setInterval(() => {
-            loadMessages();
-        }, 5000); // Обновляем каждые 5 секунд
+        // Устанавливаем интервал на 30 секунд вместо 5
+        updateIntervalRef.current = setInterval(() => {
+            loadMessages(true); // silent update
+        }, 30000); // 30 секунд
         
         return () => {
-            console.log('🛑 Cleaning up chat interval');
-            clearInterval(interval);
+            if (updateIntervalRef.current) {
+                clearInterval(updateIntervalRef.current);
+            }
         };
     }, [orderId, userId]);
 
-    // Прокрутка к последнему сообщению
+    // Прокрутка к последнему сообщению при загрузке
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        if (messages.length > 0 && !isLoading) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'end'
+                });
+            }, 100);
+        }
+    }, [messages, isLoading]);
 
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'end'
-            });
-        }, 100);
-    };
+    // Прокрутка вниз при отправке нового сообщения
+    useEffect(() => {
+        if (messages.length > 0) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'end'
+                });
+            }, 50);
+        }
+    }, [messages.length]);
 
     // Отправка сообщения
     const handleSendMessage = async () => {
         if (!newMessage.trim()) {
-            console.log('❌ Message is empty');
             return;
         }
         
@@ -152,11 +164,10 @@ function SupportChat({ orderId, onClose }) {
         }
         
         if (isSending) {
-            console.log('⚠️ Already sending message');
             return;
         }
         
-        console.log('📤 Sending message:', newMessage);
+        const messageText = newMessage.trim();
         
         try {
             setIsSending(true);
@@ -166,13 +177,11 @@ function SupportChat({ orderId, onClose }) {
                 orderId,
                 userId,
                 'user',
-                newMessage.trim()
+                messageText
             );
             
-            console.log('✅ Send message result:', result);
-            
             if (result.success && result.message) {
-                // Добавляем новое сообщение в список
+                // Добавляем новое сообщение в список локально
                 setMessages(prev => [...prev, result.message]);
                 setNewMessage('');
                 
@@ -183,15 +192,10 @@ function SupportChat({ orderId, onClose }) {
                     }
                 }, 100);
                 
-                // Прокручиваем вниз
+                // Обновляем сообщения через 2 секунды
                 setTimeout(() => {
-                    scrollToBottom();
-                }, 200);
-                
-                // Перезагружаем сообщения через 1 секунду для синхронизации
-                setTimeout(() => {
-                    loadMessages();
-                }, 1000);
+                    loadMessages(true);
+                }, 2000);
                 
             } else {
                 setError(result.error || 'Ошибка отправки сообщения');
@@ -240,7 +244,7 @@ function SupportChat({ orderId, onClose }) {
             } else {
                 return date.toLocaleDateString('ru-RU', {
                     day: 'numeric',
-                    month: 'short'
+                    month: 'long'
                 });
             }
         } catch (e) {
@@ -251,12 +255,33 @@ function SupportChat({ orderId, onClose }) {
     // Группировка сообщений по датам
     const groupMessagesByDate = () => {
         const groups = {};
-        messages.forEach(msg => {
+        messages.forEach((msg, index) => {
             const date = formatDate(msg.created_at);
             if (!groups[date]) {
                 groups[date] = [];
             }
-            groups[date].push(msg);
+            
+            // Добавляем время между сообщениями для определения отступа
+            const prevMsg = messages[index - 1];
+            let marginTop = 'normal';
+            
+            if (prevMsg) {
+                const prevTime = new Date(prevMsg.created_at);
+                const currentTime = new Date(msg.created_at);
+                const timeDiff = (currentTime - prevTime) / 1000; // разница в секундах
+                const isSameSender = prevMsg.sender_type === msg.sender_type;
+                
+                if (isSameSender && timeDiff < 60) { // меньше минуты между сообщениями
+                    marginTop = 'small';
+                } else if (timeDiff > 300) { // больше 5 минут
+                    marginTop = 'large';
+                }
+            }
+            
+            groups[date].push({
+                ...msg,
+                marginTop
+            });
         });
         return groups;
     };
@@ -269,8 +294,13 @@ function SupportChat({ orderId, onClose }) {
             if (inputRef.current) {
                 inputRef.current.focus();
             }
-        }, 500);
+        }, 300);
     }, []);
+
+    // Ручное обновление сообщений
+    const handleManualRefresh = () => {
+        loadMessages();
+    };
 
     return (
         <div className="support-chat-new">
@@ -292,17 +322,43 @@ function SupportChat({ orderId, onClose }) {
                         <div className="chat-title-texts">
                             <h3 className="chat-title-new">Чат с оператором</h3>
                             <p className="chat-order-id">
-                                Ордер #{fullOrderId || orderId}
+                                Ордер #{orderId?.substring(0, 16)}...
                             </p>
                         </div>
                     </div>
-                   
+                    <div className="chat-header-actions">
+                        <button 
+                            className="chat-refresh-btn"
+                            onClick={handleManualRefresh}
+                            title="Обновить"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="refresh-spinner"></div>
+                            ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            )}
+                        </button>
+                        <button 
+                            className="chat-close-btn-new" 
+                            onClick={onClose}
+                            aria-label="Закрыть чат"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Основной контейнер сообщений */}
-            <div className="chat-messages-container-new">
-                {isLoading ? (
+            <div className="chat-messages-container-new" ref={chatContainerRef}>
+                {isLoading && messages.length === 0 ? (
                     <div className="chat-loading-new">
                         <div className="chat-spinner-new"></div>
                         <p className="chat-loading-text">Загрузка сообщений...</p>
@@ -313,7 +369,7 @@ function SupportChat({ orderId, onClose }) {
                         <p className="error-text">{error}</p>
                         <button 
                             className="retry-btn-new" 
-                            onClick={loadMessages}
+                            onClick={() => loadMessages()}
                         >
                             Повторить
                         </button>
@@ -331,12 +387,13 @@ function SupportChat({ orderId, onClose }) {
                                 <div className="date-divider">
                                     <span className="date-text">{date}</span>
                                 </div>
-                                {dateMessages.map((msg) => (
+                                {dateMessages.map((msg, msgIndex) => (
                                     <div 
                                         key={msg.id} 
                                         className={`chat-message-new ${
                                             msg.sender_type === 'user' ? 'user-message-new' : 'admin-message-new'
-                                        } ${msg.sender_type === 'system' ? 'system-message-new' : ''}`}
+                                        } ${msg.sender_type === 'system' ? 'system-message-new' : ''} 
+                                        message-margin-${msg.marginTop}`}
                                     >
                                         <div className="message-bubble">
                                             <div className="message-content-new">
@@ -350,6 +407,12 @@ function SupportChat({ orderId, onClose }) {
                                                     )}
                                                 </div>
                                             </div>
+                                            {msgIndex === dateMessages.length - 1 && (
+                                                <div className="message-sender">
+                                                    {msg.sender_type === 'user' ? 'Вы' : 
+                                                     msg.sender_type === 'admin' ? 'Оператор' : 'Система'}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -360,7 +423,7 @@ function SupportChat({ orderId, onClose }) {
                 )}
             </div>
 
-            {/* Поле ввода - ВСЕГДА ВИДИМОЕ */}
+            {/* Поле ввода */}
             <div className="chat-input-section-new">
                 <div className="input-wrapper-new">
                     <div className="input-container">
@@ -379,6 +442,7 @@ function SupportChat({ orderId, onClose }) {
                                 className="clear-input-btn"
                                 onClick={() => setNewMessage('')}
                                 title="Очистить"
+                                type="button"
                             >
                                 ✕
                             </button>
@@ -389,6 +453,7 @@ function SupportChat({ orderId, onClose }) {
                         disabled={!newMessage.trim() || isSending}
                         className="chat-send-btn-new"
                         title="Отправить сообщение"
+                        type="button"
                     >
                         {isSending ? (
                             <div className="send-spinner"></div>
@@ -410,7 +475,7 @@ function SupportChat({ orderId, onClose }) {
                 <div className="chat-hint-new">
                     <span className="hint-icon">💡</span>
                     <span className="hint-text">
-                        Нажмите Enter для отправки, Shift+Enter для новой строки
+                        Нажмите Enter для отправки
                     </span>
                 </div>
             </div>

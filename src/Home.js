@@ -1,4 +1,4 @@
-// Home.js
+// Home.js - с красивым Telegram-стилем для активного ордера
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
@@ -7,7 +7,6 @@ import { API_BASE_URL } from './config';
 
 const simpleFetch = async (endpoint, data = null) => {
     console.log(`🔗 Запрос ${endpoint}`);
-
     const url = API_BASE_URL + endpoint;
     console.log(`🌐 URL: ${url}`);
 
@@ -27,19 +26,13 @@ const simpleFetch = async (endpoint, data = null) => {
         }
 
         const response = await fetch(url, options);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         console.log('✅ Ответ:', result);
         return result;
 
     } catch (error) {
         console.error('❌ Ошибка запроса:', error.message);
-
-        // Фолбэк для курсов
         if (endpoint.includes('/exchange-rate')) {
             return {
                 success: true,
@@ -48,11 +41,7 @@ const simpleFetch = async (endpoint, data = null) => {
                 max_amount: 100000
             };
         }
-
-        return {
-            success: false,
-            error: error.message
-        };
+        return { success: false, error: error.message };
     }
 };
 
@@ -68,6 +57,7 @@ function Home({ navigateTo, telegramUser }) {
     const [isLoading, setIsLoading] = useState(false);
     const [hasActiveOrder, setHasActiveOrder] = useState(false);
     const [activeOrderId, setActiveOrderId] = useState(null);
+    const [activeOrderStatus, setActiveOrderStatus] = useState('');
     const [limits, setLimits] = useState({
         minBuy: 1000,
         maxBuy: 100000,
@@ -75,12 +65,10 @@ function Home({ navigateTo, telegramUser }) {
         maxSell: 10000
     });
 
-    // Реквизиты для покупки (USDT адреса)
+    // Реквизиты
     const [cryptoAddress, setCryptoAddress] = useState('');
     const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
     const [cryptoAddresses, setCryptoAddresses] = useState([]);
-
-    // Реквизиты для продажи (банковские карты/СБП)
     const [bankName, setBankName] = useState('СБП (Система быстрых платежей)');
     const [cardNumber, setCardNumber] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -88,7 +76,10 @@ function Home({ navigateTo, telegramUser }) {
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [selectedCrypto, setSelectedCrypto] = useState(null);
 
-    // Список популярных банков для продажи USDT (СБП первым)
+    // Данные активного ордера
+    const [activeOrderData, setActiveOrderData] = useState(null);
+
+    // Списки
     const availableBanks = [
         'СБП (Система быстрых платежей)',
         'Сбербанк',
@@ -118,7 +109,6 @@ function Home({ navigateTo, telegramUser }) {
         'Т-Банк'
     ];
 
-    // Список сетей для покупки USDT
     const availableNetworks = [
         { value: 'TRC20', name: 'TRC20 (Tron)', icon: '⚡', popular: true },
         { value: 'ERC20', name: 'ERC20 (Ethereum)', icon: '⛓️', popular: true },
@@ -132,24 +122,48 @@ function Home({ navigateTo, telegramUser }) {
         { value: 'BASE', name: 'Base', icon: '🏢', popular: false }
     ];
 
-    // Фильтр популярных сетей
     const popularNetworks = availableNetworks.filter(n => n.popular);
 
-    // Функция для получения пользователя из Telegram Web App
+    // Функции
     const getTelegramUser = () => {
         if (window.Telegram?.WebApp) {
             const tg = window.Telegram.WebApp;
             const tgUser = tg.initDataUnsafe?.user;
+            if (tgUser) return {
+                id: tgUser.id.toString(),
+                username: tgUser.username || `user_${tgUser.id}`,
+                first_name: tgUser.first_name || 'Пользователь',
+                last_name: tgUser.last_name || '',
+                photo_url: tgUser.photo_url
+            };
+        }
+        return null;
+    };
 
-            if (tgUser) {
-                return {
-                    id: tgUser.id.toString(),
-                    username: tgUser.username || `user_${tgUser.id}`,
-                    first_name: tgUser.first_name || 'Пользователь',
-                    last_name: tgUser.last_name || '',
-                    photo_url: tgUser.photo_url
-                };
+    const getUserId = () => {
+        try {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                const tgUser = tg.initDataUnsafe?.user;
+                if (tgUser?.id) return tgUser.id.toString();
             }
+            const urlParams = new URLSearchParams(window.location.search);
+            const testUserId = urlParams.get('test_user_id');
+            if (testUserId) return testUserId;
+            const savedTelegramUser = localStorage.getItem('telegramUser');
+            if (savedTelegramUser) {
+                const parsed = JSON.parse(savedTelegramUser);
+                if (parsed?.id) return parsed.id.toString();
+            }
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const parsed = JSON.parse(savedUser);
+                if (parsed?.telegramId) return parsed.telegramId.toString();
+                if (parsed?.id) return parsed.id.toString();
+            }
+            if (telegramUser?.id) return telegramUser.id.toString();
+        } catch (error) {
+            console.error('❌ Ошибка получения ID:', error);
         }
         return null;
     };
@@ -161,15 +175,19 @@ function Home({ navigateTo, telegramUser }) {
             if (!userId) return false;
 
             const response = await simpleFetch(`/api/user/active-order/${userId}`);
+            console.log('🔍 Ответ активного ордера:', response);
             
             if (response.success && response.hasActiveOrder && response.order) {
                 setHasActiveOrder(true);
                 setActiveOrderId(response.order.order_id);
-                console.log(`⚠️ У пользователя активный ордер: ${response.order.order_id}`);
+                setActiveOrderStatus(response.order.admin_status);
+                setActiveOrderData(response.order);
                 return true;
             } else {
                 setHasActiveOrder(false);
                 setActiveOrderId(null);
+                setActiveOrderStatus('');
+                setActiveOrderData(null);
                 return false;
             }
         } catch (error) {
@@ -178,58 +196,13 @@ function Home({ navigateTo, telegramUser }) {
         }
     };
 
-    // Получение ID пользователя
-    const getUserId = () => {
-        try {
-            // 1. Telegram Web App
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                const tgUser = tg.initDataUnsafe?.user;
-                if (tgUser?.id) return tgUser.id.toString();
-            }
-
-            // 2. URL параметры
-            const urlParams = new URLSearchParams(window.location.search);
-            const testUserId = urlParams.get('test_user_id');
-            if (testUserId) return testUserId;
-
-            // 3. LocalStorage
-            const savedTelegramUser = localStorage.getItem('telegramUser');
-            if (savedTelegramUser) {
-                const parsed = JSON.parse(savedTelegramUser);
-                if (parsed?.id) return parsed.id.toString();
-            }
-
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                const parsed = JSON.parse(savedUser);
-                if (parsed?.telegramId) return parsed.telegramId.toString();
-                if (parsed?.id) return parsed.id.toString();
-            }
-
-            // 4. Props
-            if (telegramUser?.id) return telegramUser.id.toString();
-
-        } catch (error) {
-            console.error('❌ Ошибка получения ID:', error);
-        }
-
-        return null;
-    };
-
-    // Инициализация пользователя
+    // Инициализация
     useEffect(() => {
         console.log('🏠 Home компонент загружен');
-
-        // Загружаем курсы
         fetchExchangeRates();
 
-        // Пробуем получить пользователя из Telegram Web App
         const tgUser = getTelegramUser();
-
         if (tgUser) {
-            console.log('🤖 Telegram Web App User:', tgUser);
-
             const userData = {
                 id: tgUser.id.toString(),
                 telegramId: tgUser.id,
@@ -238,111 +211,74 @@ function Home({ navigateTo, telegramUser }) {
                 lastName: tgUser.last_name || '',
                 photoUrl: tgUser.photo_url
             };
-
-            // Сохраняем в localStorage
             localStorage.setItem('currentUser', JSON.stringify(userData));
             localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-
             console.log('✅ Пользователь сохранен:', userData);
         } else if (telegramUser) {
-            // Если пользователь передан через props
-            console.log('👤 Telegram User из props:', telegramUser);
-
             const userData = {
                 id: `user_${telegramUser.id}`,
                 telegramId: telegramUser.id,
                 username: telegramUser.username || `user_${telegramUser.id}`,
                 firstName: telegramUser.first_name || 'Пользователь'
             };
-
             localStorage.setItem('currentUser', JSON.stringify(userData));
             localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
-        } else {
-            // Пробуем загрузить из localStorage
-            const savedUser = localStorage.getItem('currentUser');
-            if (!savedUser) {
-                console.log('⚠️ Пользователь не найден. Будет определен при создании ордера.');
-            }
         }
 
-        // Загружаем сохраненные реквизиты
         loadSavedData();
-
-        // Проверяем активный ордер
-        setTimeout(() => {
-            checkActiveOrder();
-        }, 1000);
-
+        setTimeout(() => checkActiveOrder(), 1000);
     }, [telegramUser]);
 
-    // Загрузка сохраненных данных
     const loadSavedData = () => {
         try {
             const savedPayments = localStorage.getItem('userPaymentMethods');
             if (savedPayments) {
                 const payments = JSON.parse(savedPayments);
                 setPaymentMethods(payments);
-                if (payments.length > 0) {
-                    setSelectedPayment(payments[0]);
-                }
+                if (payments.length > 0) setSelectedPayment(payments[0]);
             }
-
             const savedCrypto = localStorage.getItem('userCryptoAddresses');
             if (savedCrypto) {
                 const crypto = JSON.parse(savedCrypto);
                 setCryptoAddresses(crypto);
-                if (crypto.length > 0) {
-                    setSelectedCrypto(crypto[0]);
-                }
+                if (crypto.length > 0) setSelectedCrypto(crypto[0]);
             }
         } catch (error) {
             console.error('❌ Ошибка загрузки данных:', error);
         }
     };
 
-    // Сохранение данных
     useEffect(() => {
         localStorage.setItem('userPaymentMethods', JSON.stringify(paymentMethods));
         localStorage.setItem('userCryptoAddresses', JSON.stringify(cryptoAddresses));
     }, [paymentMethods, cryptoAddresses]);
 
-    // Расчет суммы
     const calculateConvertedAmount = () => {
         if (!amount) return '';
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount)) return '';
-
         const rate = isBuyMode ? rates.buy : rates.sell;
-        const converted = isBuyMode
-            ? (numAmount / rate).toFixed(2)
-            : (numAmount * rate).toFixed(2);
+        const converted = isBuyMode ? (numAmount / rate).toFixed(2) : (numAmount * rate).toFixed(2);
         return converted;
     };
 
-    // Сообщения
     const showMessage = (text) => {
         setMessage(text);
         setTimeout(() => setMessage(''), 3000);
     };
 
-    // Загрузка курсов и лимитов
     const fetchExchangeRates = async () => {
         try {
             const queryAmount = amount || (isBuyMode ? 1000 : 10);
             const type = isBuyMode ? 'buy' : 'sell';
             const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}&type=${type}`);
-            
             console.log('📊 Получены курсы и лимиты:', result);
             
             if (result.success) {
-                // Обновляем курс
-                const rateKey = isBuyMode ? 'buy' : 'sell';
                 setRates(prev => ({
                     ...prev,
-                    [rateKey]: result.rate || (isBuyMode ? 88.0 : 84.0)
+                    [isBuyMode ? 'buy' : 'sell']: result.rate || (isBuyMode ? 88.0 : 84.0)
                 }));
-                
-                // Обновляем лимиты
                 if (result.min_amount && result.max_amount) {
                     setLimits(prev => ({
                         minBuy: isBuyMode ? result.min_amount : prev.minBuy,
@@ -357,11 +293,9 @@ function Home({ navigateTo, telegramUser }) {
         }
     };
 
-    // Изменение суммы
     const handleAmountChange = (e) => {
         const value = e.target.value;
         setAmount(value);
-
         if (value && value.trim() !== '') {
             const numAmount = parseFloat(value);
             if (!isNaN(numAmount)) {
@@ -390,13 +324,11 @@ function Home({ navigateTo, telegramUser }) {
         }
     };
 
-    // Переключение режима покупки/продажи
     const handleSwap = () => {
         if (hasActiveOrder) {
             showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
             return;
         }
-
         setIsSwapped(!isSwapped);
         setIsBuyMode(!isBuyMode);
         setAmount('');
@@ -404,19 +336,15 @@ function Home({ navigateTo, telegramUser }) {
         fetchExchangeRates();
     };
 
-    // Добавление банковской карты/СБП
     const handleAddPayment = () => {
         const isSBP = bankName === 'СБП (Система быстрых платежей)';
-
         if (isSBP) {
-            // Проверка номера телефона для СБП
             const cleanPhone = phoneNumber.replace(/\D/g, '');
             if (cleanPhone.length !== 11 || !cleanPhone.startsWith('7')) {
                 showMessage('❌ Введите корректный номер телефона (+7XXXXXXXXXX)');
                 return;
             }
         } else {
-            // Проверка номера карты для банка
             const cleanCardNumber = cardNumber.replace(/\s/g, '');
             if (cleanCardNumber.length !== 16) {
                 showMessage('❌ Номер карты должен содержать 16 цифр');
@@ -429,13 +357,10 @@ function Home({ navigateTo, telegramUser }) {
             bankName,
             type: isSBP ? 'sbp' : 'card',
             number: isSBP ? phoneNumber : cardNumber,
-            formattedNumber: isSBP ?
-                formatPhoneNumber(phoneNumber) :
-                formatCardNumber(cardNumber)
+            formattedNumber: isSBP ? formatPhoneNumber(phoneNumber) : formatCardNumber(cardNumber)
         };
 
-        const updatedPayments = [...paymentMethods, newPayment];
-        setPaymentMethods(updatedPayments);
+        setPaymentMethods([...paymentMethods, newPayment]);
         setSelectedPayment(newPayment);
         setBankName('СБП (Система быстрых платежей)');
         setCardNumber('');
@@ -443,7 +368,6 @@ function Home({ navigateTo, telegramUser }) {
         showMessage('✅ Реквизиты добавлены');
     };
 
-    // Форматирование номера телефона
     const formatPhoneNumber = (phone) => {
         const cleaned = phone.replace(/\D/g, '');
         if (cleaned.length === 11) {
@@ -452,17 +376,14 @@ function Home({ navigateTo, telegramUser }) {
         return phone;
     };
 
-    // Форматирование номера карты
     const formatCardNumber = (card) => {
         const cleaned = card.replace(/\D/g, '');
         return cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
     };
 
-    // Обработка ввода номера телефона
     const handlePhoneChange = (e) => {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);
-
         let formatted = '';
         if (value.length > 0) {
             formatted = '+7';
@@ -472,27 +393,21 @@ function Home({ navigateTo, telegramUser }) {
                     formatted += `) ${value.slice(4, 7)}`;
                     if (value.length > 7) {
                         formatted += `-${value.slice(7, 9)}`;
-                        if (value.length > 9) {
-                            formatted += `-${value.slice(9)}`;
-                        }
+                        if (value.length > 9) formatted += `-${value.slice(9)}`;
                     }
                 }
             }
         }
-
         setPhoneNumber(formatted);
     };
 
-    // Обработка ввода номера карты
     const handleCardChange = (e) => {
         let value = e.target.value.replace(/\D/g, '');
         if (value.length > 16) value = value.slice(0, 16);
-
         const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ');
         setCardNumber(formatted);
     };
 
-    // Добавление крипто адреса
     const handleAddCryptoAddress = () => {
         if (!cryptoAddress || cryptoAddress.length < 10) {
             showMessage('❌ Введите корректный адрес');
@@ -506,44 +421,32 @@ function Home({ navigateTo, telegramUser }) {
             name: `${availableNetworks.find(n => n.value === cryptoNetwork)?.name} кошелек`
         };
 
-        const updatedCrypto = [...cryptoAddresses, newCrypto];
-        setCryptoAddresses(updatedCrypto);
+        setCryptoAddresses([...cryptoAddresses, newCrypto]);
         setSelectedCrypto(newCrypto);
         setCryptoAddress('');
         showMessage('✅ Адрес добавлен');
     };
 
-    // Удаление реквизитов
     const handleDeletePayment = (id) => {
         const updated = paymentMethods.filter(p => p.id !== id);
         setPaymentMethods(updated);
-        if (selectedPayment?.id === id) {
-            setSelectedPayment(updated.length > 0 ? updated[0] : null);
-        }
+        if (selectedPayment?.id === id) setSelectedPayment(updated.length > 0 ? updated[0] : null);
         showMessage('✅ Реквизиты удалены');
     };
 
     const handleDeleteCrypto = (id) => {
         const updated = cryptoAddresses.filter(c => c.id !== id);
         setCryptoAddresses(updated);
-        if (selectedCrypto?.id === id) {
-            setSelectedCrypto(updated.length > 0 ? updated[0] : null);
-        }
+        if (selectedCrypto?.id === id) setSelectedCrypto(updated.length > 0 ? updated[0] : null);
         showMessage('✅ Адрес удален');
     };
 
-    // Копирование в буфер
     const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            showMessage('✅ Скопировано');
-        });
+        navigator.clipboard.writeText(text).then(() => showMessage('✅ Скопировано'));
     };
 
-    // Создание ордера
     const handleExchange = async () => {
         console.log('🎯 Создание ордера');
-
-        // Проверка активного ордера
         if (hasActiveOrder) {
             showMessage(`⚠️ У вас уже есть активный ордер ${activeOrderId}. Дождитесь его завершения.`);
             navigateTo('history');
@@ -584,32 +487,23 @@ function Home({ navigateTo, telegramUser }) {
             }
         }
 
-        // Получаем реальный ID пользователя
         const userId = getUserId();
-
         if (!userId) {
             showMessage('❌ Не удалось определить ID пользователя. Обновите страницу.');
             return;
         }
 
-        // Получаем данные пользователя
         const getUserData = () => {
             try {
-                // Пробуем Telegram Web App
                 if (window.Telegram?.WebApp) {
                     const tg = window.Telegram.WebApp;
                     const tgUser = tg.initDataUnsafe?.user;
-
-                    if (tgUser) {
-                        return {
-                            username: tgUser.username || `user_${tgUser.id}`,
-                            firstName: tgUser.first_name || 'Клиент',
-                            lastName: tgUser.last_name || ''
-                        };
-                    }
+                    if (tgUser) return {
+                        username: tgUser.username || `user_${tgUser.id}`,
+                        firstName: tgUser.first_name || 'Клиент',
+                        lastName: tgUser.last_name || ''
+                    };
                 }
-
-                // Пробуем localStorage
                 const savedTelegramUser = localStorage.getItem('telegramUser');
                 if (savedTelegramUser) {
                     const parsed = JSON.parse(savedTelegramUser);
@@ -618,8 +512,6 @@ function Home({ navigateTo, telegramUser }) {
                         firstName: parsed.first_name || 'Клиент'
                     };
                 }
-
-                // Пробуем currentUser
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
                     const parsed = JSON.parse(savedUser);
@@ -628,21 +520,13 @@ function Home({ navigateTo, telegramUser }) {
                         firstName: parsed.firstName || 'Клиент'
                     };
                 }
-
             } catch (error) {
                 console.error('❌ Ошибка получения данных:', error);
             }
-
-            // Дефолтные значения
-            return {
-                username: `user_${userId}`,
-                firstName: 'Клиент'
-            };
+            return { username: `user_${userId}`, firstName: 'Клиент' };
         };
 
         const userData = getUserData();
-
-        // Формируем данные для отправки
         const orderData = {
             type: isBuyMode ? 'buy' : 'sell',
             amount: numAmount,
@@ -660,14 +544,11 @@ function Home({ navigateTo, telegramUser }) {
         try {
             setIsLoading(true);
             showMessage('🔄 Создание ордера...');
-
             const result = await simpleFetch('/create-order', orderData);
 
             if (result.success) {
                 showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
                 setAmount('');
-
-                // Сохраняем пользователя в localStorage
                 const fullUserData = {
                     id: userId,
                     telegramId: userId,
@@ -675,31 +556,18 @@ function Home({ navigateTo, telegramUser }) {
                     firstName: userData.firstName,
                     lastName: userData.lastName || ''
                 };
-
                 localStorage.setItem('currentUser', JSON.stringify(fullUserData));
-
-                // Сохраняем Telegram данные если есть
                 if (window.Telegram?.WebApp) {
                     const tg = window.Telegram.WebApp;
                     const tgUser = tg.initDataUnsafe?.user;
-                    if (tgUser) {
-                        localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-                    }
+                    if (tgUser) localStorage.setItem('telegramUser', JSON.stringify(tgUser));
                 }
-
-                // Помечаем что есть активный ордер
                 setHasActiveOrder(true);
                 setActiveOrderId(result.order?.id);
-
-                // Переход в историю через 2 секунды
-                setTimeout(() => {
-                    navigateTo('history');
-                }, 2000);
-
+                setTimeout(() => navigateTo('history'), 2000);
             } else {
                 showMessage(`❌ Ошибка: ${result.error}`);
             }
-
         } catch (error) {
             console.error('❌ Ошибка сети:', error);
             showMessage('❌ Ошибка сети');
@@ -708,14 +576,11 @@ function Home({ navigateTo, telegramUser }) {
         }
     };
 
-    // Проверка готовности
     const isExchangeReady = () => {
         if (hasActiveOrder) return false;
         if (!amount || error) return false;
-
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount)) return false;
-
         if (isBuyMode) {
             if (numAmount < limits.minBuy || numAmount > limits.maxBuy) return false;
             if (!selectedCrypto) return false;
@@ -723,29 +588,35 @@ function Home({ navigateTo, telegramUser }) {
             if (numAmount < limits.minSell || numAmount > limits.maxSell) return false;
             if (!selectedPayment) return false;
         }
-
         return true;
     };
 
-    // При изменении режима обновляем курсы
     useEffect(() => {
         fetchExchangeRates();
     }, [isBuyMode]);
 
-    // Проверка активного ордера каждые 30 секунд
     useEffect(() => {
         const interval = setInterval(() => {
-            if (!hasActiveOrder) {
-                checkActiveOrder();
-            }
+            if (!hasActiveOrder) checkActiveOrder();
         }, 30000);
-
         return () => clearInterval(interval);
     }, [hasActiveOrder]);
 
     const currentRate = isBuyMode ? rates.buy : rates.sell;
     const convertedAmount = calculateConvertedAmount();
     const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
+
+    // Статус тексты и иконки
+    const getStatusInfo = (status) => {
+        switch (status) {
+            case 'pending': return { text: '⏳ Ожидание', color: '#FF9500', bg: '#FF9500' };
+            case 'processing': return { text: '🔄 В обработке', color: '#007AFF', bg: '#007AFF' };
+            case 'accepted': return { text: '✅ Принят', color: '#34C759', bg: '#34C759' };
+            default: return { text: '⏳ В обработке', color: '#FF9500', bg: '#FF9500' };
+        }
+    };
+
+    const statusInfo = getStatusInfo(activeOrderStatus);
 
     return (
         <div className="home-container">
@@ -754,33 +625,123 @@ function Home({ navigateTo, telegramUser }) {
                 <div className="header-content">
                     <div className="header-left">
                         <h1 className="header-title-new">TetherRabbit 🥕</h1>
-                        {hasActiveOrder && (
-                            <div className="active-order-badge" onClick={() => navigateTo('history')}>
-                                ⚠️ Активный ордер: {activeOrderId?.substring(0, 12)}...
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
 
+            {/* Бейдж активного ордера в хедере */}
+            {hasActiveOrder && (
+                <div className="active-order-header-badge" onClick={() => navigateTo('history')}>
+                    <div className="badge-icon">📊</div>
+                    <div className="badge-content">
+                        <span className="badge-title">Активная заявка</span>
+                        <span className="badge-id">#{activeOrderId?.substring(0, 10)}...</span>
+                    </div>
+                    <div className="badge-status" style={{ color: statusInfo.color, backgroundColor: `${statusInfo.bg}15` }}>
+                        {statusInfo.text}
+                    </div>
+                </div>
+            )}
+
             {/* Контент */}
             <div className="home-content">
                 {hasActiveOrder ? (
-                    <div className="active-order-warning">
-                        <div className="warning-icon">⚠️</div>
-                        <div className="warning-content">
-                            <h3>У вас есть активный ордер!</h3>
-                            <p>Ордер <strong>{activeOrderId}</strong> находится в обработке.</p>
-                            <p>Дождитесь его завершения или отмените в истории.</p>
-                            <button 
-                                className="view-order-btn"
-                                onClick={() => navigateTo('history')}
-                            >
-                                Перейти к ордеру
-                            </button>
+                    // ТЕЛЕГРАМ-СТИЛЬ ДЛЯ АКТИВНОГО ОРДЕРА
+                    <div className="tg-active-order-container">
+                        {/* Заголовок */}
+                        <div className="tg-order-header">
+                            <div className="tg-order-icon">📋</div>
+                            <div className="tg-order-title">
+                                <h2>Активная заявка</h2>
+                                <p>Ваш ордер находится в обработке</p>
+                            </div>
+                        </div>
+
+                        {/* Карточка ордера */}
+                        <div className="tg-order-card">
+                            <div className="tg-order-card-header">
+                                <div className="tg-order-id">
+                                    <span className="tg-order-label">ID заявки</span>
+                                    <span className="tg-order-value">#{activeOrderId}</span>
+                                </div>
+                                <div className="tg-order-status" style={{ color: statusInfo.color }}>
+                                    {statusInfo.text}
+                                </div>
+                            </div>
+
+                            <div className="tg-order-details">
+                                {activeOrderData && (
+                                    <>
+                                        <div className="tg-order-detail">
+                                            <span className="tg-detail-label">Тип операции</span>
+                                            <span className="tg-detail-value">
+                                                {activeOrderData.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
+                                            </span>
+                                        </div>
+                                        <div className="tg-order-detail">
+                                            <span className="tg-detail-label">Сумма</span>
+                                            <span className="tg-detail-value">
+                                                {activeOrderData.amount} {activeOrderData.operation_type === 'buy' ? 'RUB' : 'USDT'}
+                                            </span>
+                                        </div>
+                                        <div className="tg-order-detail">
+                                            <span className="tg-detail-label">Курс</span>
+                                            <span className="tg-detail-value">{activeOrderData.rate} RUB/USDT</span>
+                                        </div>
+                                        <div className="tg-order-detail">
+                                            <span className="tg-detail-label">К получению</span>
+                                            <span className="tg-detail-value">
+                                                {activeOrderData.operation_type === 'buy' 
+                                                    ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
+                                                    : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} RUB`}
+                                            </span>
+                                        </div>
+                                        <div className="tg-order-detail">
+                                            <span className="tg-detail-label">Создано</span>
+                                            <span className="tg-detail-value">
+                                                {new Date(activeOrderData.created_at).toLocaleString('ru-RU')}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Кнопки действий */}
+                            <div className="tg-order-actions">
+                                <button 
+                                    className="tg-action-btn primary"
+                                    onClick={() => navigateTo('history')}
+                                >
+                                    📋 Перейти к деталям
+                                </button>
+                                <button 
+                                    className="tg-action-btn secondary"
+                                    onClick={checkActiveOrder}
+                                >
+                                    🔄 Проверить статус
+                                </button>
+                            </div>
+
+                            {/* Информация */}
+                            <div className="tg-order-info">
+                                <div className="tg-info-icon">💬</div>
+                                <div className="tg-info-text">
+                                    Вы можете общаться с оператором в чате заявки для уточнения деталей
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Предупреждение */}
+                        <div className="tg-order-warning">
+                            <div className="tg-warning-icon">⚠️</div>
+                            <div className="tg-warning-text">
+                                <strong>Новая заявка не может быть создана</strong>
+                                <span>Дождитесь завершения текущей заявки для создания новой</span>
+                            </div>
                         </div>
                     </div>
                 ) : (
+                    // ОБЫЧНЫЙ ИНТЕРФЕЙС ОБМЕНА
                     <>
                         {/* Карточки валют */}
                         <div className="currency-cards-section">
@@ -834,7 +795,7 @@ function Home({ navigateTo, telegramUser }) {
                                             value={amount}
                                             onChange={handleAmountChange}
                                             className="amount-input"
-                                            disabled={isLoading || hasActiveOrder}
+                                            disabled={isLoading}
                                         />
                                         <span className="amount-currency">
                                             {isBuyMode ? "RUB" : "USDT"}
@@ -858,7 +819,6 @@ function Home({ navigateTo, telegramUser }) {
                                             value={convertedAmount}
                                             readOnly
                                             className="amount-input"
-                                            disabled={hasActiveOrder}
                                         />
                                         <span className="amount-currency">
                                             {isBuyMode ? "USDT" : "RUB"}
@@ -881,7 +841,6 @@ function Home({ navigateTo, telegramUser }) {
                                         value={cryptoNetwork}
                                         onChange={(e) => setCryptoNetwork(e.target.value)}
                                         className="network-select"
-                                        disabled={hasActiveOrder}
                                     >
                                         <option value="">Выберите сеть</option>
                                         {popularNetworks.map(network => (
@@ -897,13 +856,11 @@ function Home({ navigateTo, telegramUser }) {
                                         value={cryptoAddress}
                                         onChange={(e) => setCryptoAddress(e.target.value)}
                                         className="address-input"
-                                        disabled={hasActiveOrder}
                                     />
 
                                     <button
                                         onClick={handleAddCryptoAddress}
                                         className="add-button"
-                                        disabled={hasActiveOrder}
                                     >
                                         + Добавить адрес
                                     </button>
@@ -917,7 +874,7 @@ function Home({ navigateTo, telegramUser }) {
                                             <div
                                                 key={crypto.id}
                                                 className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
-                                                onClick={() => !hasActiveOrder && setSelectedCrypto(crypto)}
+                                                onClick={() => setSelectedCrypto(crypto)}
                                             >
                                                 <div className="crypto-info">
                                                     <div className="crypto-header">
@@ -947,11 +904,10 @@ function Home({ navigateTo, telegramUser }) {
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            !hasActiveOrder && handleDeleteCrypto(crypto.id);
+                                                            handleDeleteCrypto(crypto.id);
                                                         }}
                                                         className="action-btn delete-btn"
                                                         title="Удалить"
-                                                        disabled={hasActiveOrder}
                                                     >
                                                         🗑️
                                                     </button>
@@ -983,7 +939,6 @@ function Home({ navigateTo, telegramUser }) {
                                         value={bankName}
                                         onChange={(e) => setBankName(e.target.value)}
                                         className="bank-select"
-                                        disabled={hasActiveOrder}
                                     >
                                         {availableBanks.map(bank => (
                                             <option key={bank} value={bank}>
@@ -999,7 +954,6 @@ function Home({ navigateTo, telegramUser }) {
                                             value={phoneNumber}
                                             onChange={handlePhoneChange}
                                             className="phone-input"
-                                            disabled={hasActiveOrder}
                                         />
                                     ) : (
                                         <input
@@ -1009,14 +963,12 @@ function Home({ navigateTo, telegramUser }) {
                                             onChange={handleCardChange}
                                             className="card-input"
                                             maxLength={19}
-                                            disabled={hasActiveOrder}
                                         />
                                     )}
 
                                     <button
                                         onClick={handleAddPayment}
                                         className="add-button"
-                                        disabled={hasActiveOrder}
                                     >
                                         + Добавить реквизиты
                                     </button>
@@ -1030,7 +982,7 @@ function Home({ navigateTo, telegramUser }) {
                                             <div
                                                 key={payment.id}
                                                 className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
-                                                onClick={() => !hasActiveOrder && setSelectedPayment(payment)}
+                                                onClick={() => setSelectedPayment(payment)}
                                             >
                                                 <div className="payment-info">
                                                     <div className="payment-header">
@@ -1048,11 +1000,10 @@ function Home({ navigateTo, telegramUser }) {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        !hasActiveOrder && handleDeletePayment(payment.id);
+                                                        handleDeletePayment(payment.id);
                                                     }}
                                                     className="action-btn delete-btn"
                                                     title="Удалить"
-                                                    disabled={hasActiveOrder}
                                                 >
                                                     🗑️
                                                 </button>
@@ -1072,17 +1023,15 @@ function Home({ navigateTo, telegramUser }) {
 
                         {/* Кнопка обмена */}
                         <button
-                            className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() || hasActiveOrder ? 'disabled' : ''}`}
-                            disabled={!isExchangeReady() || isLoading || hasActiveOrder}
+                            className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
+                            disabled={!isExchangeReady() || isLoading}
                             onClick={handleExchange}
                         >
                             <span className="exchange-icon">
                                 {isBuyMode ? '🛒' : '💰'}
                             </span>
                             <span className="exchange-text">
-                                {isLoading ? '🔄 Обработка...' :
-                                    (hasActiveOrder ? 'Есть активный ордер' :
-                                        (isBuyMode ? 'Купить USDT' : 'Продать USDT'))}
+                                {isLoading ? '🔄 Обработка...' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
                             </span>
                         </button>
 

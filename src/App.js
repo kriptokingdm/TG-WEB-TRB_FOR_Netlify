@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Home from './Home';
@@ -11,220 +12,130 @@ function App() {
   const [telegramUser, setTelegramUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [theme, setTheme] = useState('light');
 
+  // Инициализация приложения
   useEffect(() => {
     console.log('🚀 Запуск TetherRabbit App...');
     
-    // Проверяем hash в URL при загрузке
-    const hash = window.location.hash.replace('#', '');
-    console.log('🔗 Initial hash:', hash);
+    // Определяем тему
+    const detectTheme = () => {
+      // 1. Пробуем получить тему из Telegram
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        const tgTheme = tg.colorScheme || 'light';
+        console.log('🎨 Telegram тема:', tgTheme);
+        setTheme(tgTheme);
+        document.documentElement.setAttribute('data-theme', tgTheme);
+        return tgTheme;
+      }
+      
+      // 2. Пробуем получить из localStorage
+      const savedTheme = localStorage.getItem('appTheme');
+      if (savedTheme) {
+        console.log('🎨 Тема из localStorage:', savedTheme);
+        setTheme(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        return savedTheme;
+      }
+      
+      // 3. Системная тема
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const systemTheme = prefersDark ? 'dark' : 'light';
+      console.log('🎨 Системная тема:', systemTheme);
+      setTheme(systemTheme);
+      document.documentElement.setAttribute('data-theme', systemTheme);
+      return systemTheme;
+    };
     
+    const currentTheme = detectTheme();
+    
+    // Hash навигация
+    const hash = window.location.hash.replace('#', '');
     if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
-      console.log('📍 Setting initial page from hash:', hash);
       setCurrentPage(hash);
     }
     
-    // Предотвращаем масштабирование на мобильных
-    const preventZoom = () => {
-      document.addEventListener('touchmove', (e) => {
-        if (e.scale !== 1) {
-          e.preventDefault();
-        }
-      }, { passive: false });
-      
-      let lastTouchEnd = 0;
-      document.addEventListener('touchend', (e) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-          e.preventDefault();
-        }
-        lastTouchEnd = now;
-      }, false);
-    };
-
-    preventZoom();
-
-    // 1. Проверяем есть ли Telegram WebApp
+    // Telegram WebApp инициализация
     if (window.Telegram && window.Telegram.WebApp) {
-      console.log('🤖 Telegram WebApp найден');
       const tg = window.Telegram.WebApp;
-      
       tg.ready();
       tg.expand();
       
-      // Получаем пользователя
-      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      // Получаем пользователя Telegram
+      if (tg.initDataUnsafe?.user) {
         const tgUser = tg.initDataUnsafe.user;
-        console.log('✅ Telegram User найден:', tgUser);
-        
         const userData = {
           id: tgUser.id.toString(),
           telegramId: tgUser.id,
           username: tgUser.username || `user_${tgUser.id}`,
           firstName: tgUser.first_name || 'Пользователь',
           lastName: tgUser.last_name || '',
-          languageCode: tgUser.language_code || 'ru',
-          isPremium: tgUser.is_premium || false,
           photoUrl: tgUser.photo_url || null
         };
-        
-        console.log('📱 Подготовленные данные:', userData);
         setTelegramUser(userData);
-        
-        // Сохраняем
         localStorage.setItem('telegramUser', JSON.stringify(userData));
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        
-        // Также сохраняем raw данные для отладки
-        localStorage.setItem('telegramRawData', JSON.stringify(tg.initDataUnsafe));
-      } else {
-        console.log('❌ Пользователь не найден в initDataUnsafe');
-        
-        // Пробуем получить из URL параметров (для тестирования)
-        const urlParams = new URLSearchParams(window.location.search);
-        const testUserId = urlParams.get('test_user_id');
-        
-        if (testUserId) {
-          console.log('🧪 Тестовый пользователь из URL:', testUserId);
-          const testUser = {
-            id: testUserId,
-            telegramId: parseInt(testUserId),
-            username: `test_${testUserId}`,
-            firstName: 'Тестовый',
-            lastName: 'Пользователь'
-          };
-          setTelegramUser(testUser);
-          localStorage.setItem('telegramUser', JSON.stringify(testUser));
-        }
-      }
-    } else {
-      console.log('⚠️ Telegram WebApp не найден');
-    }
-    
-    // 2. Проверяем localStorage
-    const savedUser = localStorage.getItem('telegramUser');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        console.log('✅ Пользователь из localStorage:', userData);
-        
-        if (!telegramUser) {
-          setTelegramUser(userData);
-        }
-      } catch (error) {
-        console.error('❌ Ошибка парсинга localStorage:', error);
-      }
-    }
-    
-    // 3. Если всё ещё нет пользователя, создаём тестового
-    setTimeout(() => {
-      if (!telegramUser) {
-        console.log('⚠️ Создаём тестового пользователя');
-        const testUser = {
-          id: 7879866656,
-          username: 'Rabbit',
-          first_name: 'Rabbit',
-          last_name: '',
-          photo_url: null
-        };
-        setTelegramUser(testUser);
-        localStorage.setItem('telegramUser', JSON.stringify(testUser));
       }
       
+      // Слушаем изменения темы
+      tg.onEvent('themeChanged', () => {
+        const newTheme = tg.colorScheme || 'light';
+        console.log('🎨 Тема изменена на:', newTheme);
+        setTheme(newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('appTheme', newTheme);
+      });
+    }
+    
+    // Завершаем загрузку
+    setTimeout(() => {
       setIsLoading(false);
-      console.log('🎉 Инициализация завершена');
+      console.log('✅ Инициализация завершена');
     }, 500);
     
   }, []);
 
-  // Плавная навигация
+  // Навигация
   const navigateTo = useCallback((page) => {
-    console.log(`📍 Навигация на: ${page} (текущая: ${currentPage})`);
+    if (page === currentPage) return;
     
-    if (page === currentPage) {
-      console.log('⏸️ Навигация заблокирована - та же страница');
-      return;
-    }
-    
-    // Обновляем hash в URL
     window.location.hash = page;
-    console.log('🔗 URL hash updated to:', page);
-    
-    // Анимация перехода
     setIsAnimating(true);
     setPrevPage(currentPage);
     
-    // Небольшая задержка для начала анимации
     setTimeout(() => {
       setCurrentPage(page);
       setIsAnimating(false);
-      console.log(`✅ Страница изменена на: ${page}`);
     }, 150);
   }, [currentPage]);
 
-  // Слушаем изменения hash
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      console.log('🔗 Hash changed to:', hash);
-      
-      if (hash && ['home', 'profile', 'history', 'help'].includes(hash) && hash !== currentPage) {
-        console.log('📍 Navigating from hash change:', hash);
-        setCurrentPage(hash);
-      }
-    };
-    
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [currentPage]);
-
-  // Показываем страницу с анимацией
+  // Рендер страницы
   const renderPage = () => {
-    // Общие пропсы для всех компонентов
     const commonProps = {
       navigateTo: navigateTo,
-      telegramUser: telegramUser
+      telegramUser: telegramUser,
+      theme: theme
     };
-    
-    console.log('🔄 Рендеринг страницы:', currentPage);
     
     const getAnimationClass = () => {
       if (!prevPage || isAnimating) return '';
-      
       const pages = ['home', 'profile', 'history', 'help'];
       const currentIndex = pages.indexOf(currentPage);
       const prevIndex = pages.indexOf(prevPage);
-      
-      if (currentIndex > prevIndex) {
-        return 'slide-in-left';
-      } else {
-        return 'slide-in-right';
-      }
+      return currentIndex > prevIndex ? 'slide-in-left' : 'slide-in-right';
     };
     
     return (
       <div className={`page-container ${getAnimationClass()}`}>
-        {(() => {
-          switch (currentPage) {
-            case 'history':
-              return <History key="history" {...commonProps} />;
-            case 'profile':
-              return <Profile key="profile" {...commonProps} />;
-            case 'help':
-              return <Help key="help" {...commonProps} />;
-            case 'home':
-            default:
-              return <Home key="home" {...commonProps} />;
-          }
-        })()}
+        {currentPage === 'history' && <History key="history" {...commonProps} />}
+        {currentPage === 'profile' && <Profile key="profile" {...commonProps} />}
+        {currentPage === 'help' && <Help key="help" {...commonProps} />}
+        {(currentPage === 'home' || !currentPage) && <Home key="home" {...commonProps} />}
       </div>
     );
   };
 
-  // Лоадер пока инициализируем
+  // Лоадер
   if (isLoading) {
     return (
       <div className="app-loading">

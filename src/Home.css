@@ -75,7 +75,7 @@
   
   .home-header-new {
     background: var(--tg-header-bg);
-    padding: 44px 16px 16px;
+    padding: 44px 16px 0px;
     border-bottom: 0.5px solid var(--tg-border);
     position: sticky;
     top: 0;

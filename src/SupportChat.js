@@ -12,73 +12,93 @@ function SupportChat({ orderId, onClose }) {
     const [fullOrderId, setFullOrderId] = useState(orderId);
     
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
     
-    const API_URL = 'https://tethrab.shop';
-
     // Получаем ID пользователя
     useEffect(() => {
         const getUserData = () => {
             try {
+                // 1. Telegram Web App
                 if (window.Telegram?.WebApp) {
                     const tg = window.Telegram.WebApp;
                     const tgUser = tg.initDataUnsafe?.user;
-                    if (tgUser?.id) return tgUser.id.toString();
+                    if (tgUser?.id) {
+                        console.log('📱 Telegram User ID:', tgUser.id);
+                        return tgUser.id.toString();
+                    }
                 }
                 
+                // 2. LocalStorage
+                const savedTelegramUser = localStorage.getItem('telegramUser');
+                if (savedTelegramUser) {
+                    const parsed = JSON.parse(savedTelegramUser);
+                    if (parsed?.id) {
+                        console.log('📱 Telegram User from localStorage:', parsed.id);
+                        return parsed.id.toString();
+                    }
+                }
+                
+                // 3. Current user
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
                     const parsed = JSON.parse(savedUser);
-                    return parsed.id || parsed.telegramId;
+                    if (parsed?.telegramId) {
+                        console.log('👤 User ID from currentUser:', parsed.telegramId);
+                        return parsed.telegramId.toString();
+                    }
+                    if (parsed?.id) {
+                        console.log('👤 User ID from currentUser:', parsed.id);
+                        return parsed.id.toString();
+                    }
                 }
+                
+                // 4. Test ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const testUserId = urlParams.get('test_user_id');
+                if (testUserId) {
+                    console.log('🧪 Test User ID from URL:', testUserId);
+                    return testUserId;
+                }
+                
             } catch (error) {
                 console.error('❌ Ошибка получения ID:', error);
             }
+            console.log('⚠️ User ID not found');
             return null;
         };
         
         const id = getUserData();
+        console.log('✅ Final User ID for chat:', id);
         setUserId(id);
     }, []);
 
-    // Функция для получения полного orderId
-    const getFullOrderId = async (orderId) => {
-        try {
-            if (orderId.includes('_')) {
-                return orderId;
-            }
-            
-            const response = await fetch(`${API_URL}/admin/order/${orderId}`);
-            const data = await response.json();
-            
-            if (data.success && data.order) {
-                return data.order.order_id;
-            }
-            
-            return orderId;
-        } catch (error) {
-            return orderId;
-        }
-    };
-
     // Загрузка сообщений
     const loadMessages = async () => {
-        if (!orderId || !userId) return;
+        if (!orderId || !userId) {
+            console.log('❌ Missing orderId or userId');
+            return;
+        }
         
         try {
             setIsLoading(true);
+            console.log('🔄 Loading messages for order:', orderId, 'user:', userId);
             
-            const actualOrderId = await getFullOrderId(orderId);
-            if (actualOrderId !== fullOrderId) {
-                setFullOrderId(actualOrderId);
-            }
+            const loadedMessages = await ChatApi.getMessages(orderId);
+            console.log('✅ Loaded messages:', loadedMessages);
             
-            const loadedMessages = await ChatApi.getMessages(actualOrderId);
             setMessages(loadedMessages);
             
-            await ChatApi.markAsRead(actualOrderId, userId);
+            // Помечаем как прочитанные (игнорируем ошибки)
+            try {
+                await ChatApi.markAsRead(orderId, userId);
+                console.log('✅ Messages marked as read');
+            } catch (markError) {
+                console.log('⚠️ Could not mark as read:', markError.message);
+            }
             
             setError('');
         } catch (error) {
+            console.error('❌ Error loading messages:', error);
             setError('Не удалось загрузить сообщения');
         } finally {
             setIsLoading(false);
@@ -87,15 +107,22 @@ function SupportChat({ orderId, onClose }) {
 
     // Автообновление сообщений
     useEffect(() => {
-        if (!orderId || !userId) return;
+        if (!orderId || !userId) {
+            console.log('❌ Cannot start chat: missing orderId or userId');
+            return;
+        }
         
+        console.log('🚀 Starting chat for order:', orderId, 'user:', userId);
         loadMessages();
         
         const interval = setInterval(() => {
             loadMessages();
-        }, 10000);
+        }, 5000); // Обновляем каждые 5 секунд
         
-        return () => clearInterval(interval);
+        return () => {
+            console.log('🛑 Cleaning up chat interval');
+            clearInterval(interval);
+        };
     }, [orderId, userId]);
 
     // Прокрутка к последнему сообщению
@@ -104,46 +131,80 @@ function SupportChat({ orderId, onClose }) {
     }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'end'
+            });
+        }, 100);
     };
 
     // Отправка сообщения
     const handleSendMessage = async () => {
-        if (!newMessage.trim() || !orderId || !userId || isSending) return;
+        if (!newMessage.trim()) {
+            console.log('❌ Message is empty');
+            return;
+        }
+        
+        if (!orderId || !userId) {
+            setError('Не удалось определить пользователя');
+            return;
+        }
+        
+        if (isSending) {
+            console.log('⚠️ Already sending message');
+            return;
+        }
+        
+        console.log('📤 Sending message:', newMessage);
         
         try {
             setIsSending(true);
-            
-            const actualOrderId = await getFullOrderId(orderId);
-            if (actualOrderId !== fullOrderId) {
-                setFullOrderId(actualOrderId);
-            }
+            setError('');
             
             const result = await ChatApi.sendMessage(
-                actualOrderId,
+                orderId,
                 userId,
                 'user',
                 newMessage.trim()
             );
             
-            if (result.success) {
-                setNewMessage('');
+            console.log('✅ Send message result:', result);
+            
+            if (result.success && result.message) {
+                // Добавляем новое сообщение в список
                 setMessages(prev => [...prev, result.message]);
+                setNewMessage('');
                 
+                // Фокус на поле ввода
+                setTimeout(() => {
+                    if (inputRef.current) {
+                        inputRef.current.focus();
+                    }
+                }, 100);
+                
+                // Прокручиваем вниз
                 setTimeout(() => {
                     scrollToBottom();
-                }, 100);
+                }, 200);
+                
+                // Перезагружаем сообщения через 1 секунду для синхронизации
+                setTimeout(() => {
+                    loadMessages();
+                }, 1000);
+                
             } else {
-                setError(result.error || 'Ошибка отправки');
+                setError(result.error || 'Ошибка отправки сообщения');
             }
         } catch (error) {
+            console.error('❌ Error sending message:', error);
             setError('Ошибка отправки сообщения');
         } finally {
             setIsSending(false);
         }
     };
 
-    // Отправка по Enter
+    // Отправка по Enter (Shift+Enter для новой строки)
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -164,12 +225,69 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
+    // Форматирование даты
+    const formatDate = (dateString) => {
+        try {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return 'Сегодня';
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Вчера';
+            } else {
+                return date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'short'
+                });
+            }
+        } catch (e) {
+            return '';
+        }
+    };
+
+    // Группировка сообщений по датам
+    const groupMessagesByDate = () => {
+        const groups = {};
+        messages.forEach(msg => {
+            const date = formatDate(msg.created_at);
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(msg);
+        });
+        return groups;
+    };
+
+    const messageGroups = groupMessagesByDate();
+
+    // Фокус на поле ввода при открытии
+    useEffect(() => {
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 500);
+    }, []);
+
     return (
         <div className="support-chat-new">
             {/* Хедер */}
             <div className="chat-header-new">
                 <div className="chat-header-content">
                     <div className="chat-title-section">
+                        <button 
+                            className="chat-back-btn"
+                            onClick={onClose}
+                            aria-label="Назад"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </button>
                         <div className="chat-title-icon">💬</div>
                         <div className="chat-title-texts">
                             <h3 className="chat-title-new">Чат с оператором</h3>
@@ -178,16 +296,7 @@ function SupportChat({ orderId, onClose }) {
                             </p>
                         </div>
                     </div>
-                    <button 
-                        className="chat-close-btn-new" 
-                        onClick={onClose}
-                        aria-label="Закрыть чат"
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                            <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                    </button>
+                   
                 </div>
             </div>
 
@@ -217,29 +326,33 @@ function SupportChat({ orderId, onClose }) {
                     </div>
                 ) : (
                     <div className="chat-messages-list">
-                        {messages.map((msg) => (
-                            <div 
-                                key={msg.id} 
-                                className={`chat-message-new ${
-                                    msg.sender_type === 'user' ? 'user-message-new' : 'admin-message-new'
-                                }`}
-                            >
-                                <div className="message-bubble">
-                                    <div className="message-content-new">
-                                        <p className="message-text">{msg.message}</p>
-                                        <div className="message-meta">
-                                            <span className="message-time-new">
-                                                {formatTime(msg.created_at)}
-                                            </span>
-                                            {msg.sender_type === 'admin' && !msg.read_status && (
-                                                <span className="unread-dot"></span>
-                                            )}
+                        {Object.entries(messageGroups).map(([date, dateMessages]) => (
+                            <div key={date} className="message-date-group">
+                                <div className="date-divider">
+                                    <span className="date-text">{date}</span>
+                                </div>
+                                {dateMessages.map((msg) => (
+                                    <div 
+                                        key={msg.id} 
+                                        className={`chat-message-new ${
+                                            msg.sender_type === 'user' ? 'user-message-new' : 'admin-message-new'
+                                        } ${msg.sender_type === 'system' ? 'system-message-new' : ''}`}
+                                    >
+                                        <div className="message-bubble">
+                                            <div className="message-content-new">
+                                                <p className="message-text">{msg.message}</p>
+                                                <div className="message-meta">
+                                                    <span className="message-time-new">
+                                                        {formatTime(msg.created_at)}
+                                                    </span>
+                                                    {msg.sender_type === 'admin' && !msg.is_read && (
+                                                        <span className="unread-dot" title="Непрочитано"></span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="message-sender">
-                                        {msg.sender_type === 'user' ? 'Вы' : 'Оператор'}
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         ))}
                         <div ref={messagesEndRef} className="messages-end" />
@@ -247,40 +360,58 @@ function SupportChat({ orderId, onClose }) {
                 )}
             </div>
 
-            {/* Поле ввода */}
+            {/* Поле ввода - ВСЕГДА ВИДИМОЕ */}
             <div className="chat-input-section-new">
                 <div className="input-wrapper-new">
-                    <textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Введите сообщение..."
-                        disabled={isSending}
-                        rows={1}
-                        className="chat-input-new"
-                    />
+                    <div className="input-container">
+                        <textarea
+                            ref={inputRef}
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyDown={handleKeyPress}
+                            placeholder="Введите сообщение..."
+                            disabled={isSending}
+                            rows={1}
+                            className="chat-input-new"
+                        />
+                        {newMessage.trim() && (
+                            <button
+                                className="clear-input-btn"
+                                onClick={() => setNewMessage('')}
+                                title="Очистить"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
                     <button
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || isSending}
                         className="chat-send-btn-new"
+                        title="Отправить сообщение"
                     >
                         {isSending ? (
                             <div className="send-spinner"></div>
                         ) : (
-                            <>
-                                <span className="send-text">Отправить</span>
-                                <svg className="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </>
+                            <svg className="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
                         )}
                     </button>
                 </div>
                 
+                {error && (
+                    <div className="chat-error-message">
+                        <span className="error-icon-small">⚠️</span>
+                        <span className="error-text-small">{error}</span>
+                    </div>
+                )}
+                
                 <div className="chat-hint-new">
                     <span className="hint-icon">💡</span>
-                    <span className="hint-text">Сообщения отправляются оператору в реальном времени</span>
+                    <span className="hint-text">
+                        Нажмите Enter для отправки, Shift+Enter для новой строки
+                    </span>
                 </div>
             </div>
         </div>

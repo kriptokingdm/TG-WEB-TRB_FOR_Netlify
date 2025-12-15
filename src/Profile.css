@@ -463,6 +463,10 @@
     overflow: hidden;
   }
   
+  [data-theme="dark"] .referral-show-btn {
+        background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+  }
+
   .referral-show-btn:hover {
     opacity: 0.9;
   }
@@ -707,6 +711,10 @@
   .toggle-switch.active {
     background: var(--tg-accent);
   }
+
+  [data-theme="dark"] .toggle-switch.active{
+    background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+  }
   
   .toggle-slider {
     position: absolute;
@@ -852,6 +860,7 @@
     opacity: 1;
   }
   
+
   .nav-icon-wrapper {
     width: 28px;
     height: 28px;

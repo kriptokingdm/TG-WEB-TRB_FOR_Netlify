@@ -50,9 +50,12 @@ function App() {
     
     const currentTheme = detectTheme();
     
-    // Hash навигация
+    // Hash навигация - СНАЧАЛА проверяем hash
     const hash = window.location.hash.replace('#', '');
+    console.log('🔗 Initial hash:', hash);
+    
     if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
+      console.log('📍 Setting initial page from hash:', hash);
       setCurrentPage(hash);
     }
     
@@ -75,6 +78,7 @@ function App() {
         };
         setTelegramUser(userData);
         localStorage.setItem('telegramUser', JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userData));
       }
       
       // Слушаем изменения темы
@@ -95,17 +99,47 @@ function App() {
     
   }, []);
 
-  // Навигация
-  const navigateTo = useCallback((page) => {
-    if (page === currentPage) return;
+  // Слушаем изменения hash в реальном времени
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      console.log('🔗 Hash changed to:', hash);
+      
+      if (hash && ['home', 'profile', 'history', 'help'].includes(hash) && hash !== currentPage) {
+        console.log('📍 Navigating from hash change:', hash);
+        navigateTo(hash);
+      }
+    };
     
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [currentPage]);
+
+  // Навигация - ИСПРАВЛЕННАЯ ВЕРСИЯ
+  const navigateTo = useCallback((page) => {
+    console.log(`📍 Навигация на: ${page} (текущая: ${currentPage})`);
+    
+    if (page === currentPage) {
+      console.log('⏸️ Навигация заблокирована - та же страница');
+      return;
+    }
+    
+    // Обновляем hash в URL
     window.location.hash = page;
+    console.log('🔗 URL hash updated to:', page);
+    
+    // Анимация перехода
     setIsAnimating(true);
     setPrevPage(currentPage);
     
+    // Небольшая задержка для начала анимации
     setTimeout(() => {
       setCurrentPage(page);
       setIsAnimating(false);
+      console.log(`✅ Страница изменена на: ${page}`);
     }, 150);
   }, [currentPage]);
 

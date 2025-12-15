@@ -533,7 +533,7 @@ function History({ navigateTo }) {
                                 <p className="error-message">Попробуйте обновить страницу</p>
                             </div>
                         )}
-
+                        <br></br>
                         <button
                             className="exchange-btn-new"
                             onClick={() => navigateTo('home')}

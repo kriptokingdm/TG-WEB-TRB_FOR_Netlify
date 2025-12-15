@@ -430,6 +430,12 @@
     transition: all 0.3s ease;
     font-family: var(--tg-font);
   }
+
+
+[data-theme="dark"]  .add-button {
+    background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+}
+
   
   .add-button:hover {
     opacity: 0.9;
@@ -1074,7 +1080,10 @@
       padding: 16px;
       min-height: 90px;
     }
-    
+    [data-theme="dark"] .currency-card-side {
+        background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+      }
+      
     .currency-name {
       font-size: 20px;
     }

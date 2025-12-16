@@ -426,7 +426,6 @@
     align-items: center;
     gap: 10px;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(51, 144, 236, 0.3);
     animation: pulse 2s infinite;
   }
 

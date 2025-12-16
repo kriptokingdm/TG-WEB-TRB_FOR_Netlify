@@ -1,8 +1,7 @@
-// Home.js - с красивым Telegram-стилем для активного ордера
+// Home.js - исправленная версия
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
-import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import { API_BASE_URL } from './config';
 
 const simpleFetch = async (endpoint, data = null) => {
@@ -68,6 +67,7 @@ function Home({ navigateTo, telegramUser }) {
     // Реквизиты
     const [cryptoAddress, setCryptoAddress] = useState('');
     const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
+    const [cryptoUID, setCryptoUID] = useState('');
     const [cryptoAddresses, setCryptoAddresses] = useState([]);
     const [bankName, setBankName] = useState('СБП (Система быстрых платежей)');
     const [cardNumber, setCardNumber] = useState('');
@@ -75,6 +75,8 @@ function Home({ navigateTo, telegramUser }) {
     const [paymentMethods, setPaymentMethods] = useState([]);
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [selectedCrypto, setSelectedCrypto] = useState(null);
+    const [cryptoType, setCryptoType] = useState('address'); // 'address' или 'uid'
+    const [selectedExchange, setSelectedExchange] = useState('Binance');
 
     // Данные активного ордера
     const [activeOrderData, setActiveOrderData] = useState(null);
@@ -120,6 +122,14 @@ function Home({ navigateTo, telegramUser }) {
         { value: 'SOLANA', name: 'Solana', icon: '🔥', popular: true },
         { value: 'TON', name: 'TON', icon: '💎', popular: true },
         { value: 'BASE', name: 'Base', icon: '🏢', popular: false }
+    ];
+
+    const availableExchanges = [
+        { value: 'Binance', name: 'Binance', icon: '🅱️' },
+        { value: 'Bybit', name: 'Bybit', icon: '🏛️' },
+        { value: 'OKX', name: 'OKX', icon: '🟢' },
+        { value: 'MEX', name: 'MEX', icon: '📊' },
+        { value: 'BitGet', name: 'BitGet', icon: '🔄' }
     ];
 
     const popularNetworks = availableNetworks.filter(n => n.popular);
@@ -409,21 +419,33 @@ function Home({ navigateTo, telegramUser }) {
     };
 
     const handleAddCryptoAddress = () => {
-        if (!cryptoAddress || cryptoAddress.length < 10) {
-            showMessage('❌ Введите корректный адрес');
-            return;
+        if (cryptoType === 'address') {
+            if (!cryptoAddress || cryptoAddress.length < 10) {
+                showMessage('❌ Введите корректный адрес');
+                return;
+            }
+        } else {
+            if (!cryptoUID || cryptoUID.length < 5) {
+                showMessage('❌ Введите корректный UID');
+                return;
+            }
         }
 
         const newCrypto = {
             id: Date.now().toString(),
-            address: cryptoAddress,
+            address: cryptoType === 'address' ? cryptoAddress : cryptoUID,
             network: cryptoNetwork,
-            name: `${availableNetworks.find(n => n.value === cryptoNetwork)?.name} кошелек`
+            type: cryptoType,
+            exchange: cryptoType === 'uid' ? selectedExchange : null,
+            name: cryptoType === 'address' 
+                ? `${availableNetworks.find(n => n.value === cryptoNetwork)?.name} кошелек`
+                : `${selectedExchange} UID`
         };
 
         setCryptoAddresses([...cryptoAddresses, newCrypto]);
         setSelectedCrypto(newCrypto);
         setCryptoAddress('');
+        setCryptoUID('');
         showMessage('✅ Адрес добавлен');
     };
 
@@ -536,6 +558,9 @@ function Home({ navigateTo, telegramUser }) {
             firstName: userData.firstName,
             lastName: userData.lastName || '',
             cryptoAddress: isBuyMode ? selectedCrypto?.address : null,
+            cryptoUID: isBuyMode && selectedCrypto?.type === 'uid' ? selectedCrypto.address : null,
+            cryptoNetwork: isBuyMode ? selectedCrypto?.network : null,
+            cryptoExchange: isBuyMode && selectedCrypto?.type === 'uid' ? selectedCrypto.exchange : null,
             bankDetails: !isBuyMode ? `${selectedPayment?.bankName}: ${selectedPayment?.formattedNumber}` : null
         };
 
@@ -620,15 +645,6 @@ function Home({ navigateTo, telegramUser }) {
 
     return (
         <div className="home-container">
-            {/* Хедер */}
-            {/* <div className="home-header-new">
-                <div className="header-content">
-                    <div className="header-left">
-                        <h1 className="header-title-new">TetherRabbit 🥕</h1>
-                    </div>
-                </div>
-            </div> */}
-
             {/* Бейдж активного ордера в хедере */}
             {hasActiveOrder && (
                 <div className="active-order-header-badge" onClick={() => navigateTo('history')}>
@@ -790,7 +806,8 @@ function Home({ navigateTo, telegramUser }) {
                                     <label className="amount-label">Вы отдаете</label>
                                     <div className="amount-input-wrapper">
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             placeholder="0"
                                             value={amount}
                                             onChange={handleAmountChange}
@@ -835,34 +852,79 @@ function Home({ navigateTo, telegramUser }) {
                                     <h3 className="section-title">Адрес для получения USDT</h3>
                                 </div>
 
+                                {/* Тип ввода адреса */}
+                                <div className="crypto-type-switcher">
+                                    <button 
+                                        className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
+                                        onClick={() => setCryptoType('address')}
+                                    >
+                                        <span className="crypto-type-icon">📫</span>
+                                        <span className="crypto-type-text">Адрес кошелька</span>
+                                    </button>
+                                    <button 
+                                        className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
+                                        onClick={() => setCryptoType('uid')}
+                                    >
+                                        <span className="crypto-type-icon">🆔</span>
+                                        <span className="crypto-type-text">UID перевод</span>
+                                    </button>
+                                </div>
+
                                 {/* Добавление адреса */}
                                 <div className="add-form">
-                                    <select
-                                        value={cryptoNetwork}
-                                        onChange={(e) => setCryptoNetwork(e.target.value)}
-                                        className="network-select"
-                                    >
-                                        <option value="">Выберите сеть</option>
-                                        {popularNetworks.map(network => (
-                                            <option key={network.value} value={network.value}>
-                                                {network.icon} {network.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    {cryptoType === 'address' ? (
+                                        <>
+                                            <select
+                                                value={cryptoNetwork}
+                                                onChange={(e) => setCryptoNetwork(e.target.value)}
+                                                className="network-select"
+                                            >
+                                                <option value="">Выберите сеть</option>
+                                                {popularNetworks.map(network => (
+                                                    <option key={network.value} value={network.value}>
+                                                        {network.icon} {network.name}
+                                                    </option>
+                                                ))}
+                                            </select>
 
-                                    <input
-                                        type="text"
-                                        placeholder="Введите адрес кошелька"
-                                        value={cryptoAddress}
-                                        onChange={(e) => setCryptoAddress(e.target.value)}
-                                        className="address-input"
-                                    />
+                                            <input
+                                                type="text"
+                                                placeholder="Введите адрес кошелька"
+                                                value={cryptoAddress}
+                                                onChange={(e) => setCryptoAddress(e.target.value)}
+                                                className="address-input"
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <select
+                                                value={selectedExchange}
+                                                onChange={(e) => setSelectedExchange(e.target.value)}
+                                                className="exchange-select"
+                                            >
+                                                <option value="">Выберите биржу</option>
+                                                {availableExchanges.map(exchange => (
+                                                    <option key={exchange.value} value={exchange.value}>
+                                                        {exchange.icon} {exchange.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <input
+                                                type="text"
+                                                placeholder="Введите UID биржи"
+                                                value={cryptoUID}
+                                                onChange={(e) => setCryptoUID(e.target.value)}
+                                                className="uid-input"
+                                            />
+                                        </>
+                                    )}
 
                                     <button
                                         onClick={handleAddCryptoAddress}
                                         className="add-button"
                                     >
-                                        + Добавить адрес
+                                        + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
                                     </button>
                                 </div>
 
@@ -882,12 +944,19 @@ function Home({ navigateTo, telegramUser }) {
                                                             {crypto.name}
                                                         </span>
                                                         <span className="crypto-network-badge">
-                                                            {availableNetworks.find(n => n.value === crypto.network)?.icon}
-                                                            {crypto.network}
+                                                            {crypto.type === 'address' 
+                                                                ? availableNetworks.find(n => n.value === crypto.network)?.icon
+                                                                : availableExchanges.find(e => e.value === crypto.exchange)?.icon
+                                                            }
+                                                            {crypto.type === 'address' ? crypto.network : crypto.exchange}
                                                         </span>
                                                     </div>
                                                     <div className="crypto-address">
-                                                        {crypto.address.slice(0, 12)}...{crypto.address.slice(-8)}
+                                                        {crypto.address.length > 20 
+                                                            ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
+                                                            : crypto.address
+                                                        }
+                                                        {crypto.type === 'uid' && <span className="uid-label"> (UID)</span>}
                                                     </div>
                                                 </div>
                                                 <div className="crypto-actions">
@@ -920,7 +989,12 @@ function Home({ navigateTo, telegramUser }) {
                                 {cryptoAddresses.length === 0 && (
                                     <div className="empty-state">
                                         <div className="empty-icon">🏦</div>
-                                        <p className="empty-text">Добавьте адрес для получения USDT</p>
+                                        <p className="empty-text">
+                                            {cryptoType === 'address' 
+                                                ? 'Добавьте адрес для получения USDT'
+                                                : 'Добавьте UID биржи для получения USDT'
+                                            }
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -1052,39 +1126,6 @@ function Home({ navigateTo, telegramUser }) {
                     <span className="toast-text">{message}</span>
                 </div>
             )}
-
-            {/* Навигация */}
-            {/* <div className="bottom-nav-new">
-                <button
-                    className="nav-item-new"
-                    onClick={() => navigateTo('profile')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <ProfileIcon />
-                    </div>
-                    <span className="nav-label">Профиль</span>
-                </button>
-
-                <button
-                    className="nav-center-item active"
-                    onClick={() => navigateTo('home')}
-                >
-                    <div className="nav-center-circle">
-                        <ExchangeIcon active={true} />
-                    </div>
-                    <span className="nav-center-label">Обмен</span>
-                </button>
-
-                <button
-                    className="nav-item-new"
-                    onClick={() => navigateTo('history')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <HistoryIcon />
-                    </div>
-                    <span className="nav-label">История</span>
-                </button>
-            </div> */}
         </div>
     );
 }

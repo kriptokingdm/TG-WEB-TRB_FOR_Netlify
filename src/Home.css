@@ -223,6 +223,11 @@
     font-weight: 500;
     color: var(--tg-secondary-text);
   }
+
+  [data-theme="dark"]  .currency-rate.light {
+    
+    color:#ffffff;
+  }
   
   /* Кнопка обмена с анимацией */
   .swap-center-button {
@@ -237,33 +242,35 @@
     border-radius: 50%;
     cursor: pointer;
     z-index: 10;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
-  }
+    /* Убрали box-shadow для подсветки */
+    box-shadow: none !important;
+    animation: none !important;
+}
+
   
-  .swap-center-button:hover {
-    transform: translate(-50%, -50%) scale(1.05);
-    box-shadow: 0 6px 20px rgba(51, 144, 236, 0.4);
-  }
+.swap-center-button:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+  /* Убрали box-shadow при наведении */
+  box-shadow: none !important;
+}
   
-  .swap-center-button.swapped {
-    transform: translate(-50%, -50%) rotate(180deg);
-  }
+.swap-center-button.swapped {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+.swap-center-button.swapped:hover {
+  transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
+}
   
-  .swap-center-button.swapped:hover {
-    transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
-  }
-  
-  .swap-center-button svg {
-    width: 24px;
-    height: 24px;
-    color: white;
-    transition: all 0.3s ease;
-  }
-  
+.swap-center-button svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  transition: transform 0.3s ease;
+}
   /* ====================== */
   /* ПОЛЯ ВВОДА СУММЫ TELEGRAM */
   /* ====================== */
@@ -273,14 +280,15 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     margin-bottom: 24px;
-  }
+    align-items: start; /* Выравниваем по верху */
+}
   
-  .amount-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
+.amount-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px; /* Фиксированная минимальная высота */
+}
   .amount-label {
     font-size: 14px;
     color: var(--tg-secondary-text);
@@ -291,22 +299,310 @@
     position: relative;
     display: flex;
     align-items: center;
+    height: 56px; /* Фиксированная высота */
+}
+.amount-input {
+  width: 100%;
+  padding: 16px 52px 16px 16px; /* Отступ для валюты */
+  background: var(--tg-input-bg);
+  border: 0.5px solid var(--tg-border);
+  border-radius: var(--tg-radius);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--tg-header-color);
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: var(--tg-font);
+  height: 100%; /* Заполняем высоту контейнера */
+  box-sizing: border-box;
+}
+  
+
+[data-theme="dark"] .amount-input {
+  background: var(--tg-input-bg);
+  color: var(--tg-header-color);
+  border-color: var(--tg-border);
+}
+
+.amount-input:focus {
+  border-color: var(--tg-accent);
+  background: var(--tg-card-bg);
+}
+
+.amount-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.amount-currency {
+  position: absolute;
+  right: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tg-secondary-text);
+  pointer-events: none;
+}
+
+/* Стили для переключателя типа крипто-адреса */
+.crypto-type-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--tg-input-bg);
+  border-radius: var(--tg-radius);
+  padding: 4px;
+  border: 0.5px solid var(--tg-border);
+}
+
+.crypto-type-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: calc(var(--tg-radius) - 4px);
+  background: transparent;
+  color: var(--tg-secondary-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.crypto-type-btn.active {
+  background: var(--tg-accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.2);
+}
+
+.crypto-type-icon {
+  font-size: 16px;
+}
+
+.crypto-type-text {
+  font-weight: 600;
+}
+
+/* Стили для выбора биржи */
+.exchange-select {
+  width: 100%;
+  padding: 14px;
+  background: var(--tg-input-bg);
+  border: 0.5px solid var(--tg-border);
+  border-radius: var(--tg-radius);
+  font-size: 15px;
+  color: var(--tg-header-color);
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: var(--tg-font);
+}
+
+.exchange-select:focus {
+  border-color: var(--tg-accent);
+  background: var(--tg-card-bg);
+}
+
+.uid-input {
+  width: 100%;
+  padding: 14px;
+  background: var(--tg-input-bg);
+  border: 0.5px solid var(--tg-border);
+  border-radius: var(--tg-radius);
+  font-size: 15px;
+  color: var(--tg-header-color);
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: var(--tg-font);
+}
+
+.uid-input:focus {
+  border-color: var(--tg-accent);
+  background: var(--tg-card-bg);
+}
+
+/* Стили для отображения UID в списке */
+.uid-label {
+  font-size: 11px;
+  color: var(--tg-accent);
+  background: var(--tg-accent-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/* Адаптивность для полей ввода суммы */
+@media (max-width: 480px) {
+  .amount-input-section {
+      grid-template-columns: 1fr; /* Одна колонка на мобильных */
+      gap: 20px; /* Увеличиваем отступ */
+  }
+  
+  .amount-input-group {
+      min-height: auto; /* Убираем фиксированную высоту */
+  }
+  
+  .currency-cards-horizontal {
+      gap: 16px; /* Увеличиваем отступ между карточками */
+      padding: 20px 0;
+  }
+  
+  .swap-center-button {
+      width: 50px;
+      height: 50px;
+  }
+  
+  .swap-center-button svg {
+      width: 20px;
+      height: 20px;
+  }
+}
+
+/* Медиа-запрос для очень маленьких экранов */
+@media (max-width: 300px) {
+  .amount-input-section {
+      grid-template-columns: 1fr; /* Всегда одна колонка */
+      gap: 16px;
+  }
+  
+  .amount-input-wrapper {
+      height: 52px; /* Немного уменьшаем высоту */
   }
   
   .amount-input {
-    width: 100%;
-    padding: 16px;
-    background: var(--tg-input-bg);
-    border: 0.5px solid var(--tg-border);
-    border-radius: var(--tg-radius);
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--tg-header-color);
-    outline: none;
-    transition: all 0.3s ease;
-    font-family: var(--tg-font);
+      padding: 14px 48px 14px 14px;
+      font-size: 16px;
   }
   
+  .amount-currency {
+      right: 14px;
+      font-size: 15px;
+  }
+  
+  .currency-cards-horizontal {
+      flex-direction: column; /* Карточки в столбик */
+      gap: 12px;
+  }
+  
+  .swap-center-button {
+      position: relative;
+      left: auto;
+      top: auto;
+      transform: none;
+      margin: 8px auto;
+  }
+  
+  .swap-center-button.swapped {
+      transform: rotate(180deg);
+  }
+  
+  .swap-center-button:hover,
+  .swap-center-button.swapped:hover {
+      transform: none;
+  }
+}
+
+/* Фикс для темной темы */
+[data-theme="dark"] .crypto-type-switcher {
+  background: var(--tg-input-bg);
+  border-color: var(--tg-border);
+}
+
+[data-theme="dark"] .crypto-type-btn {
+  color: var(--tg-secondary-text);
+}
+
+[data-theme="dark"] .crypto-type-btn.active {
+  background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+  color: white;
+}
+
+/* Улучшаем видимость полей ввода */
+.amount-input::placeholder {
+  color: var(--tg-secondary-text);
+  opacity: 0.7;
+}
+
+/* Убираем стрелки у number input */
+.amount-input::-webkit-inner-spin-button,
+.amount-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.amount-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Сохраняем остальные стили из оригинального Home.css */
+/* Все остальные стили остаются без изменений */
+
+/* ====================== */
+/* ОСТАЛЬНЫЕ СТИЛИ (оставляем как было) */
+/* ====================== */
+
+:root {
+  --tg-bg-color: #ffffff;
+  --tg-header-bg: #ffffff;
+  --tg-header-color: #000000;
+  --tg-chat-bg: #f0f0f0;
+  --tg-message-bg: #ffffff;
+  --tg-message-color: #000000;
+  --tg-accent: #3390ec;
+  --tg-accent-light: rgba(51, 144, 236, 0.1);
+  --tg-secondary-text: #707579;
+  --tg-border: #e6e6e6;
+  --tg-hover: #f7f7f7;
+  --tg-active: #e8e8e8;
+  --tg-success: #34c759;
+  --tg-error: #ff3b30;
+  --tg-warning: #ff9500;
+  --tg-card-bg: #ffffff;
+  --tg-input-bg: #f7f7f7;
+  --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+  --tg-radius: 12px;
+  --tg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+[data-theme="dark"] {
+  --tg-bg-color: #0f0f0f;
+  --tg-header-bg: #1c1c1c;
+  --tg-header-color: #ffffff;
+  --tg-chat-bg: #0f0f0f;
+  --tg-message-bg: #1c1c1c;
+  --tg-message-color: #ffffff;
+  --tg-accent: #3390ec;
+  --tg-accent-light: rgba(51, 144, 236, 0.2);
+  --tg-secondary-text: #8e8e93;
+  --tg-border: #2c2c2c;
+  --tg-hover: #2c2c2c;
+  --tg-active: #3c3c3c;
+  --tg-success: #30d158;
+  --tg-error: #ff453a;
+  --tg-warning: #ff9f0a;
+  --tg-card-bg: #1c1c1c;
+  --tg-input-bg: #2c2c2c;
+  --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.home-container {
+  min-height: 100vh;
+  background: var(--tg-bg-color);
+  font-family: var(--tg-font);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+  position: relative;
+  color: var(--tg-message-color);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
   .amount-input:focus {
     border-color: var(--tg-accent);
     background: var(--tg-card-bg);
@@ -356,6 +652,11 @@
     animation: slideUp 0.3s ease;
   }
   
+
+  /* [data-theme="dark"] .crypto-type-btn {
+    background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+  } */
+
   @keyframes slideUp {
     from {
       opacity: 0;

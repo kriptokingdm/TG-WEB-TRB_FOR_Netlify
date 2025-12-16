@@ -1,4 +1,4 @@
-// App.js - ИСПРАВЛЕННЫЙ
+// App.js - ИСПРАВЛЕННЫЙ С ФИКСОМ СКРОЛЛА
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Home from './Home';
@@ -54,6 +54,76 @@ function App() {
     
   }, []);
 
+  // Функция для исправления скролла
+  const fixScrollIssues = useCallback(() => {
+    console.log('🔧 Исправляем проблемы со скроллом...');
+    
+    // 1. Устанавливаем правильную высоту для body и html
+    document.documentElement.style.height = '100%';
+    document.documentElement.style.overflow = 'auto';
+    
+    document.body.style.height = '100%';
+    document.body.style.overflow = 'auto';
+    document.body.style.webkitOverflowScrolling = 'touch';
+    
+    // 2. Исправляем контейнеры приложения
+    const app = document.querySelector('.app');
+    if (app) {
+      app.style.overflow = 'visible';
+      app.style.height = '100%';
+    }
+    
+    const appWrapper = document.querySelector('.app-wrapper');
+    if (appWrapper) {
+      appWrapper.style.overflow = 'visible';
+      appWrapper.style.height = '100%';
+    }
+    
+    const appContent = document.querySelector('.app-content');
+    if (appContent) {
+      appContent.style.overflowY = 'auto';
+      appContent.style.height = '100%';
+      appContent.style.webkitOverflowScrolling = 'touch';
+    }
+    
+    // 3. Исправляем контейнеры страниц
+    const pageContainers = document.querySelectorAll('.page-container');
+    pageContainers.forEach(container => {
+      container.style.overflowY = 'auto';
+      container.style.height = 'auto';
+      container.style.minHeight = '100%';
+      container.style.webkitOverflowScrolling = 'touch';
+    });
+    
+    // 4. Исправляем контентные контейнеры внутри страниц
+    const contentContainers = [
+      '.profile-content-container',
+      '.orders-container-new',
+      '.profile-container',
+      '.history-container',
+      '.home-container',
+      '.help-container'
+    ];
+    
+    contentContainers.forEach(selector => {
+      const containers = document.querySelectorAll(selector);
+      containers.forEach(container => {
+        container.style.overflowY = 'auto';
+        container.style.webkitOverflowScrolling = 'touch';
+        container.style.maxHeight = 'none';
+      });
+    });
+    
+    // 5. Убираем overscroll-behavior если он блокирует скролл
+    document.documentElement.style.overscrollBehavior = 'auto';
+    document.body.style.overscrollBehavior = 'auto';
+    
+    // 6. Включаем pointer events для всего
+    document.body.style.pointerEvents = 'auto';
+    
+    console.log('✅ Фикс скролла применен');
+  }, []);
+
   // Инициализация приложения
   useEffect(() => {
     console.log('🚀 Запуск TetherRabbit App...');
@@ -96,18 +166,34 @@ function App() {
       tg.onEvent('themeChanged', applyTelegramColors);
     }
     
+    // Применяем фикс скролла с задержкой
+    setTimeout(() => {
+      fixScrollIssues();
+    }, 300);
+    
     setTimeout(() => {
       setIsLoading(false);
       console.log('✅ Инициализация завершена');
     }, 500);
     
-  }, [applyTelegramColors]);
+    // Применяем фикс при ресайзе
+    window.addEventListener('resize', fixScrollIssues);
+    window.addEventListener('orientationchange', fixScrollIssues);
+    
+    return () => {
+      window.removeEventListener('resize', fixScrollIssues);
+      window.removeEventListener('orientationchange', fixScrollIssues);
+    };
+  }, [applyTelegramColors, fixScrollIssues]);
 
   // Навигация
   const navigateTo = (page) => {
     if (page === currentPage) return;
     window.location.hash = page;
     setCurrentPage(page);
+    
+    // После навигации фиксим скролл
+    setTimeout(fixScrollIssues, 100);
   };
 
   // Функция renderPage

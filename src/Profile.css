@@ -31,6 +31,41 @@
     --tg-button-color: #3390ec;
     --tg-button-text-color: #ffffff;
   }
+
+  :root {
+    --tg-button-color: #3390ec; /* Цвет кнопки пользователя */
+    --tg-button-text-color: #ffffff;
+    --tg-success: #34c759; /* Зеленый для реферальной карточки */
+  }
+  
+  [data-theme="dark"] {
+    --tg-button-color: #3390ec;
+    --tg-button-text-color: #ffffff;
+    --tg-success: #30d158; /* Более светлый зеленый в темной теме */
+  }
+  
+  /* Кнопки которые должны использовать цвет пользователя: */
+  .referral-show-btn {
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
+  }
+  
+  .toggle-switch.active {
+    background-color: var(--tg-button-color);
+  }
+  
+  .settings-icon {
+    background: var(--tg-accent-light); /* Использует акцентный цвет с прозрачностью */
+    color: var(--tg-button-color); /* Иконка цвета кнопки */
+  }
+  
+  .settings-header svg {
+    color: var(--tg-button-color); /* Иконка в хедере настроек */
+  }
+  
+  .referral-card {
+    border-left: 4px solid var(--tg-success); /* Зеленая полоса */
+  }
   
   /* Темная тема Telegram */
   [data-theme="dark"] {
@@ -59,234 +94,61 @@
   }
   
   /* ====================== */
-  /* ОСНОВНОЙ КОНТЕЙНЕР */
+  /* ОСНОВНЫЕ СТИЛИ TELEGRAM */
   /* ====================== */
   
   .profile-container {
-    width: 100%;
     min-height: 100vh;
     background: var(--tg-bg-color);
     font-family: var(--tg-font);
-    position: relative;
     padding-top: env(safe-area-inset-top);
-    /* ОТСТУП ДЛЯ НАВИГАЦИИ */
-    padding-bottom: 80px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+    position: relative;
+    color: var(--tg-message-color);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
   /* ====================== */
-  /* НАВИГАЦИЯ - ФИКСИРОВАННАЯ ВНИЗУ */
+  /* ЗАГРУЗКА TELEGRAM */
   /* ====================== */
   
-  .bottom-nav-new {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: var(--tg-header-bg);
-    border-top: 1px solid var(--tg-border);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000;
-    /* Safe area для iPhone */
-    padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  }
-  
-  .nav-item-new {
+  .profile-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-    padding: 8px 12px;
+    padding: 80px 20px;
+    min-height: 100vh;
+  }
+  
+  .loading-spinner-new {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--tg-input-bg);
+    border-top: 3px solid var(--tg-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-text {
     color: var(--tg-secondary-text);
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    min-width: 60px;
-  }
-  
-  .nav-item-new.active {
-    color: var(--tg-button-color);
-    opacity: 1;
-  }
-  
-  .nav-icon-wrapper {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tg-input-bg);
-    border-radius: 50%;
-    margin-bottom: 4px;
-    transition: all 0.2s ease;
-  }
-  
-  .nav-item-new.active .nav-icon-wrapper {
-    background: var(--tg-button-color);
-  }
-  
-  .nav-icon {
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-  
-  .nav-item-new.active .nav-icon {
-    color: var(--tg-button-text-color);
-  }
-  
-  /* ЦЕНТРАЛЬНАЯ КНОПКА - БЕЗ ПОДСВЕТКИ */
-  .nav-center-item {
-    position: relative;
-    top: -15px;
-    width: 60px;
-    height: 60px;
-    background: var(--tg-button-color);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--tg-button-text-color);
-    z-index: 1001;
-    /* УБИРАЕМ АНИМАЦИЮ И ПОДСВЕТКУ */
-    animation: none;
-    box-shadow: none;
-  }
-  
-  .nav-center-item:hover {
-    transform: none;
-    box-shadow: none;
-  }
-  
-  .nav-center-circle {
-    width: 44px;
-    height: 44px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .nav-center-icon {
-    font-size: 20px;
-    color: var(--tg-button-color);
-  }
-  
-  /* ====================== */
-  /* КНОПКИ - БЕЗ ПОДСВЕТКИ */
-  /* ====================== */
-  
-  /* Кнопка помощи */
-  .help-button-new {
-    background: var(--tg-button-color);
-    border: none;
-    border-radius: 12px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--tg-button-text-color);
-    flex-shrink: 0;
-    /* УБИРАЕМ ПОДСВЕТКУ */
-    box-shadow: none;
-    transition: none;
-  }
-  
-  .help-button-new:hover {
-    /* УБИРАЕМ ЭФФЕКТЫ ПРИ НАВЕДЕНИИ */
-    opacity: 1;
-    transform: none;
-    box-shadow: none;
-  }
-  
-  /* Кнопка показа реферальной ссылки */
-  .referral-show-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--tg-button-color);
-    border: none;
-    border-radius: var(--tg-radius);
-    color: var(--tg-button-text-color);
     font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    /* УБИРАЕМ ПОДСВЕТКУ */
-    transition: none;
-    box-shadow: none;
-  }
-  
-  .referral-show-btn:hover {
-    opacity: 1;
-    transform: none;
-  }
-  
-  /* Кнопка копирования */
-  .referral-copy-btn {
-    background: var(--tg-button-color);
-    border: none;
-    padding: 12px 16px;
-    border-radius: var(--tg-radius);
-    color: var(--tg-button-text-color);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    /* УБИРАЕМ ПОДСВЕТКУ */
-    transition: none;
-    flex-shrink: 0;
-  }
-  
-  .referral-copy-btn:hover {
-    opacity: 1;
-    transform: none;
+    font-weight: 500;
   }
   
   /* ====================== */
-  /* ДРУГИЕ ЭЛЕМЕНТЫ С ЦВЕТОМ КНОПКИ */
-  /* ====================== */
-  
-  /* Переключатель темы */
-  .toggle-switch.active {
-    background: var(--tg-button-color) !important;
-  }
-  
-  /* Иконка в настройках */
-  .settings-icon {
-    background: color-mix(in srgb, var(--tg-button-color) 15%, transparent) !important;
-    color: var(--tg-button-color) !important;
-  }
-  
-  /* Иконка в заголовке настроек */
-  .settings-header svg {
-    color: var(--tg-button-color) !important;
-  }
-  
-  /* Зеленая полоса у реферальной карточки */
-  .referral-card {
-    border-left: 4px solid var(--tg-success) !important;
-  }
-  
-  /* ====================== */
-  /* ОСТАЛЬНЫЕ СТИЛИ (без изменений) */
+  /* ХЕДЕР TELEGRAM */
   /* ====================== */
   
   .profile-header-new {
@@ -296,6 +158,8 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   
   .header-content {
@@ -344,17 +208,47 @@
     white-space: nowrap;
   }
   
-  /* Контент профиля */
-  .profile-content-container {
-    padding: 0 16px;
-    padding-bottom: 20px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    /* Высота минус навигация */
-    max-height: calc(100vh - 200px);
+  /* ====================== */
+  /* КНОПКА ПОМОЩИ */
+  /* ====================== */
+  
+  .help-button-new {
+    background: var(--tg-button-color);
+    border: none;
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--tg-button-text-color);
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
   }
   
-  /* Основная карточка профиля */
+  .help-button-new:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(51, 144, 236, 0.4);
+  }
+  
+  .help-button-new:active {
+    transform: scale(0.95);
+  }
+  
+  .help-button-new svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* ====================== */
+  /* ОСНОВНАЯ КАРТОЧКА ПРОФИЛЯ TELEGRAM */
+  /* ====================== */
+  
   .profile-main-card {
     background: var(--tg-card-bg);
     border-radius: var(--tg-radius);
@@ -362,6 +256,18 @@
     margin-bottom: 16px;
     border: 0.5px solid var(--tg-border);
     box-shadow: var(--tg-shadow);
+    animation: slideDown 0.4s ease;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   .profile-avatar-section {
@@ -376,6 +282,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--tg-accent);
+    box-shadow: 0 4px 20px rgba(51, 144, 236, 0.2);
   }
   
   .profile-avatar-fallback {
@@ -390,6 +297,7 @@
     font-weight: 700;
     color: white;
     border: 3px solid var(--tg-accent);
+    box-shadow: 0 4px 20px rgba(51, 144, 236, 0.2);
   }
   
   .profile-info-section {
@@ -411,7 +319,87 @@
     font-weight: 400;
   }
   
-  /* Реферальная система */
+  .profile-id-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--tg-input-bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+  
+  .id-label {
+    font-size: 13px;
+    color: var(--tg-secondary-text);
+    font-weight: 500;
+  }
+  
+  .id-value {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    color: var(--tg-header-color);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+  }
+  
+  .id-value:hover {
+    background: var(--tg-hover);
+  }
+  
+  /* ====================== */
+  /* КОНТЕНТ ПРОФИЛЯ TELEGRAM */
+  /* ====================== */
+  
+  .profile-content-container {
+    padding: 0 16px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-bottom: 80px;
+  }
+  
+  /* ====================== */
+  /* КАРТОЧКИ ПРОФИЛЯ TELEGRAM */
+  /* ====================== */
+  
+  .profile-card-new {
+    background: var(--tg-card-bg);
+    border-radius: var(--tg-radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 0.5px solid var(--tg-border);
+    box-shadow: var(--tg-shadow);
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* ====================== */
+  /* РЕФЕРАЛЬНАЯ СИСТЕМА TELEGRAM */
+  /* ====================== */
+  
   .referral-card {
     border-left: 4px solid var(--tg-success);
   }
@@ -437,6 +425,15 @@
     flex-shrink: 0;
   }
   
+  .referral-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .referral-title {
+    flex: 1;
+  }
+  
   .section-title-profile {
     font-size: 18px;
     font-weight: 700;
@@ -452,7 +449,7 @@
     font-weight: 400;
   }
   
-  /* Статистика */
+  /* Статистика рефералов */
   .referral-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -466,6 +463,12 @@
     background: var(--tg-input-bg);
     border-radius: 8px;
     border: 0.5px solid var(--tg-border);
+    transition: all 0.2s ease;
+  }
+  
+  .referral-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   
   .referral-stat-value {
@@ -484,11 +487,63 @@
     letter-spacing: 0.5px;
   }
   
+  /* ====================== */
+  /* КНОПКИ РЕФЕРАЛЬНОЙ СИСТЕМЫ С ЦВЕТОМ TELEGRAM */
+  /* ====================== */
+  
+  .referral-show-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--tg-button-color);
+    border: none;
+    border-radius: var(--tg-radius);
+    color: var(--tg-button-text-color);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-family: var(--tg-font);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .referral-show-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+  
+  .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tg-button-text-color);
+  }
+  
+  .btn-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .earned-badge {
+    background: var(--tg-success);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+  }
+  
   /* Детали реферальной системы */
   .referral-details {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    animation: fadeIn 0.3s ease;
   }
   
   .referral-input-group {
@@ -518,10 +573,32 @@
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     color: var(--tg-header-color);
     outline: none;
+    transition: all 0.3s ease;
   }
   
   .referral-input:focus {
     border-color: var(--tg-accent);
+    background: var(--tg-card-bg);
+  }
+  
+  /* КНОПКА КОПИРОВАНИЯ С ЦВЕТОМ TELEGRAM */
+  .referral-copy-btn {
+    background: var(--tg-button-color);
+    border: none;
+    padding: 12px 16px;
+    border-radius: var(--tg-radius);
+    color: var(--tg-button-text-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  
+  .referral-copy-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
   }
   
   /* Информация о реферальной системе */
@@ -564,9 +641,18 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--tg-font);
   }
   
-  /* Настройки */
+  .referral-hide-btn:hover {
+    background: var(--tg-hover);
+  }
+  
+  /* ====================== */
+  /* НАСТРОЙКИ TELEGRAM */
+  /* ====================== */
+  
   .settings-header {
     display: flex;
     align-items: center;
@@ -574,6 +660,12 @@
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 0.5px solid var(--tg-border);
+  }
+  
+  .settings-header svg {
+    width: 20px;
+    height: 20px;
+    color: var(--tg-accent);
   }
   
   .settings-list {
@@ -593,23 +685,36 @@
     background: var(--tg-card-bg);
     border: none;
     cursor: pointer;
+    transition: all 0.2s ease;
     width: 100%;
     text-align: left;
     border-bottom: 0.5px solid var(--tg-border);
+    animation: fadeIn 0.3s ease;
   }
   
   .settings-item:last-child {
     border-bottom: none;
   }
   
+  .settings-item:hover {
+    background: var(--tg-hover);
+  }
+  
   .settings-icon {
     width: 40px;
     height: 40px;
+    background: var(--tg-accent-light);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--tg-accent);
     flex-shrink: 0;
+  }
+  
+  .settings-icon svg {
+    width: 20px;
+    height: 20px;
   }
   
   .settings-content {
@@ -663,13 +768,18 @@
     background: white;
     border-radius: 50%;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
   
   .toggle-switch.active .toggle-slider {
     transform: translateX(20px);
+    background: white;
   }
   
-  /* Toast сообщения */
+  /* ====================== */
+  /* TOAST СООБЩЕНИЯ TELEGRAM */
+  /* ====================== */
+  
   .message-toast-new {
     position: fixed;
     top: 80px;
@@ -686,6 +796,8 @@
     animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
     border: 0.5px solid var(--tg-border);
     max-width: 90%;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
   
   @keyframes slideDownToast {
@@ -733,6 +845,156 @@
   }
   
   /* ====================== */
+  /* НАВИГАЦИЯ TELEGRAM */
+  /* ====================== */
+  
+  .bottom-nav-new {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--tg-header-bg);
+    border-top: 0.5px solid var(--tg-border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    animation: slideUpNav 0.3s ease;
+  }
+  
+  @keyframes slideUpNav {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  .nav-item-new {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--tg-secondary-text);
+    font-size: 10px;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    min-width: 60px;
+    opacity: 0.7;
+    position: relative;
+  }
+  
+  .nav-item-new:hover {
+    opacity: 1;
+    background: var(--tg-hover);
+  }
+  
+  .nav-item-new.active {
+    color: var(--tg-button-color);
+    opacity: 1;
+  }
+  
+  .nav-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tg-input-bg);
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+  
+  .nav-item-new.active .nav-icon-wrapper {
+    background: var(--tg-button-color);
+  }
+  
+  .nav-icon {
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .nav-item-new.active .nav-icon {
+    color: var(--tg-button-text-color);
+  }
+  
+  .nav-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  /* Центральная кнопка (как в Telegram) С ЦВЕТОМ TELEGRAM */
+  .nav-center-item {
+    position: relative;
+    top: -20px;
+    background: var(--tg-button-color);
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tg-button-text-color);
+    font-size: 24px;
+    box-shadow: 0 4px 20px rgba(51, 144, 236, 0.4);
+    transition: all 0.2s ease;
+    z-index: 101;
+    animation: pulseCenter 2s infinite;
+  }
+  
+  @keyframes pulseCenter {
+    0% { box-shadow: 0 4px 20px rgba(var(--tg-button-color), 0.3); }
+    50% { box-shadow: 0 4px 30px rgba(var(--tg-button-color), 0.6); }
+    100% { box-shadow: 0 4px 20px rgba(var(--tg-button-color), 0.4); }
+  }
+  
+  .nav-center-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(var(--tg-button-color), 0.5);
+  }
+  
+  .nav-center-circle {
+    width: 44px;
+    height: 44px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .nav-center-icon {
+    font-size: 20px;
+    color: var(--tg-button-color);
+  }
+  
+  .nav-center-label {
+    position: absolute;
+    bottom: -20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tg-button-color);
+    white-space: nowrap;
+  }
+  
+  /* ====================== */
   /* АДАПТИВНОСТЬ */
   /* ====================== */
   
@@ -758,21 +1020,6 @@
     .profile-content-container {
       padding: 0 12px;
     }
-    
-    .bottom-nav-new {
-      height: 65px;
-    }
-    
-    .nav-center-item {
-      width: 55px;
-      height: 55px;
-      top: -12px;
-    }
-    
-    .nav-center-circle {
-      width: 40px;
-      height: 40px;
-    }
   }
   
   @media (max-width: 480px) {
@@ -797,6 +1044,17 @@
       width: 100%;
     }
     
+    .nav-center-item {
+      width: 55px;
+      height: 55px;
+      font-size: 22px;
+    }
+    
+    .nav-center-circle {
+      width: 40px;
+      height: 40px;
+    }
+    
     .nav-icon-wrapper {
       width: 24px;
       height: 24px;
@@ -808,10 +1066,6 @@
     
     .nav-label {
       font-size: 10px;
-    }
-    
-    .bottom-nav-new {
-      height: 60px;
     }
   }
   
@@ -847,22 +1101,33 @@
     }
     
     .bottom-nav-new {
-      padding-bottom: max(0px, env(safe-area-inset-bottom));
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+  }
+  
+  /* Портретная ориентация */
+  @media (orientation: portrait) {
+    .referral-stats {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
   
   /* Ландшафтная ориентация */
   @media (orientation: landscape) {
-    .bottom-nav-new {
-      height: 55px;
+    .referral-stats {
+      grid-template-columns: repeat(2, 1fr);
     }
     
     .profile-content-container {
-      max-height: calc(100vh - 150px);
+      margin-bottom: 70px;
     }
   }
   
   /* Эффект нажатия Telegram */
+  .tg-press {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
   .tg-press:active {
     transform: scale(0.96);
   }
@@ -879,6 +1144,11 @@
   .profile-content-container::-webkit-scrollbar-thumb {
     background: var(--tg-accent);
     border-radius: 2px;
+  }
+  
+  /* Плавные переходы */
+  * {
+    scroll-behavior: smooth;
   }
   
   /* Предотвращение выделения */

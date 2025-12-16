@@ -13,103 +13,143 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);
   const [theme, setTheme] = useState('light');
-  const [telegramThemeParams, setTelegramThemeParams] = useState(null);
+
+  // Функция для определения цвета кнопки из Telegram
+  const getTelegramButtonColor = useCallback(() => {
+    if (!window.Telegram?.WebApp) return '#3390ec';
+    
+    const tg = window.Telegram.WebApp;
+    const themeParams = tg.themeParams;
+    
+    console.log('🔍 Ищем цвет кнопки в Telegram...');
+    console.log('📊 themeParams:', themeParams);
+    
+    // 1. Пробуем взять цвет кнопки напрямую
+    if (themeParams?.button_color) {
+      console.log('✅ Нашли button_color:', themeParams.button_color);
+      return `#${themeParams.button_color}`;
+    }
+    
+    // 2. Пробуем взять цвет ссылки
+    if (themeParams?.link_color) {
+      console.log('✅ Нашли link_color:', themeParams.link_color);
+      return `#${themeParams.link_color}`;
+    }
+    
+    // 3. Если пользователь выбрал зеленую тему в Telegram
+    const bgColor = themeParams?.bg_color || '';
+    const textColor = themeParams?.text_color || '';
+    
+    // Определяем по цветам фона/текста
+    if (bgColor.includes('34c759') || bgColor.includes('30d158') || 
+        textColor.includes('34c759') || textColor.includes('30d158')) {
+      console.log('🎨 Определили зеленую тему');
+      return '#34c759';
+    }
+    
+    if (bgColor.includes('af52de') || bgColor.includes('bf5af2') ||
+        textColor.includes('af52de') || textColor.includes('bf5af2')) {
+      console.log('🎨 Определили фиолетовую тему');
+      return '#af52de';
+    }
+    
+    if (bgColor.includes('ff2d55') || bgColor.includes('ff375f') ||
+        textColor.includes('ff2d55') || textColor.includes('ff375f')) {
+      console.log('🎨 Определили розовую тему');
+      return '#ff2d55';
+    }
+    
+    if (bgColor.includes('ff9500') || bgColor.includes('ff9f0a') ||
+        textColor.includes('ff9500') || textColor.includes('ff9f0a')) {
+      console.log('🎨 Определили оранжевую тему');
+      return '#ff9500';
+    }
+    
+    if (bgColor.includes('ff3b30') || bgColor.includes('ff453a') ||
+        textColor.includes('ff3b30') || textColor.includes('ff453a')) {
+      console.log('🎨 Определили красную тему');
+      return '#ff3b30';
+    }
+    
+    // 4. По умолчанию возвращаем синий
+    console.log('⚪ Используем синий по умолчанию');
+    return '#3390ec';
+  }, []);
+
+  // Функция для определения цвета текста кнопки
+  const getTelegramButtonTextColor = useCallback((buttonColor) => {
+    if (!window.Telegram?.WebApp) return '#ffffff';
+    
+    const tg = window.Telegram.WebApp;
+    
+    // 1. Пробуем взять из Telegram
+    if (tg.themeParams?.button_text_color) {
+      return `#${tg.themeParams.button_text_color}`;
+    }
+    
+    // 2. Автоматически определяем контрастный цвет
+    const hex = buttonColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Формула яркости (YIQ)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128 ? '#000000' : '#ffffff';
+  }, []);
 
   // Функция для применения цветов Telegram
   const applyTelegramColors = useCallback(() => {
-    console.log('🎨 Применяем цвета из Telegram...');
+    console.log('🎨 Применяем цвета Telegram...');
+    
+    let buttonColor = '#3390ec';
+    let buttonTextColor = '#ffffff';
+    let successColor = '#34c759';
+    let currentTheme = 'light';
     
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
-      const themeParams = tg.themeParams;
       
-      console.log('📱 Telegram themeParams:', themeParams);
+      // Получаем тему (светлая/темная)
+      currentTheme = tg.colorScheme || 'light';
+      console.log('🌓 Тема Telegram:', currentTheme);
       
-      if (themeParams) {
-        setTelegramThemeParams(themeParams);
-        
-        // Получаем цвет кнопки пользователя (это его акцентный цвет)
-        const buttonColor = themeParams.button_color ? `#${themeParams.button_color}` : '#3390ec';
-        const buttonTextColor = themeParams.button_text_color ? `#${themeParams.button_text_color}` : '#ffffff';
-        
-        // Получаем цвет успеха/зеленый для border-left
-        const successColor = '#34c759'; // Стандартный зеленый
-        
-        // Устанавливаем CSS переменные
-        const root = document.documentElement;
-        
-        // Цвет кнопок (акцентный цвет пользователя)
-        root.style.setProperty('--tg-button-color', buttonColor);
-        root.style.setProperty('--tg-button-text-color', buttonTextColor);
-        
-        // Цвет успеха (зеленый для реферальной карточки)
-        root.style.setProperty('--tg-success', successColor);
-        
-        // Основные цвета фона и текста
-        if (themeParams.bg_color) {
-          root.style.setProperty('--tg-bg-color', `#${themeParams.bg_color}`);
-        }
-        if (themeParams.text_color) {
-          root.style.setProperty('--tg-text-color', `#${themeParams.text_color}`);
-        }
-        if (themeParams.secondary_bg_color) {
-          root.style.setProperty('--tg-card-bg', `#${themeParams.secondary_bg_color}`);
-          root.style.setProperty('--tg-header-bg', `#${themeParams.secondary_bg_color}`);
-          root.style.setProperty('--tg-input-bg', `#${themeParams.secondary_bg_color}`);
-        }
-        if (themeParams.hint_color) {
-          root.style.setProperty('--tg-secondary-text', `#${themeParams.hint_color}`);
-        }
-        
-        console.log('✅ Установлены цвета:');
-        console.log('   - Цвет кнопки:', buttonColor);
-        console.log('   - Цвет текста кнопки:', buttonTextColor);
-        console.log('   - Цвет успеха:', successColor);
+      // Получаем цвет кнопки
+      buttonColor = getTelegramButtonColor();
+      
+      // Получаем цвет текста кнопки
+      buttonTextColor = getTelegramButtonTextColor(buttonColor);
+      
+      // Для зеленой темы меняем цвет успеха
+      if (buttonColor === '#34c759' || buttonColor === '#30d158') {
+        successColor = '#32d74b'; // Более яркий зеленый
       }
       
-      // Устанавливаем тему (светлая/темная)
-      const tgTheme = tg.colorScheme || 'light';
-      setTheme(tgTheme);
-      document.documentElement.setAttribute('data-theme', tgTheme);
-      localStorage.setItem('appTheme', tgTheme);
-    } else {
-      // Фолбэк для браузера
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const systemTheme = prefersDark ? 'dark' : 'light';
-      setTheme(systemTheme);
-      document.documentElement.setAttribute('data-theme', systemTheme);
-      localStorage.setItem('appTheme', systemTheme);
+      console.log('✅ Установлены цвета:');
+      console.log('   - Цвет кнопки:', buttonColor);
+      console.log('   - Цвет текста кнопки:', buttonTextColor);
+      console.log('   - Цвет успеха:', successColor);
     }
-  }, []);
+    
+    // Устанавливаем тему
+    setTheme(currentTheme);
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('appTheme', currentTheme);
+    
+    // Устанавливаем CSS переменные
+    const root = document.documentElement;
+    root.style.setProperty('--tg-button-color', buttonColor);
+    root.style.setProperty('--tg-button-text-color', buttonTextColor);
+    root.style.setProperty('--tg-success', successColor);
+    
+  }, [getTelegramButtonColor, getTelegramButtonTextColor]);
 
   // Инициализация приложения
   useEffect(() => {
     console.log('🚀 Запуск TetherRabbit App...');
     
-    // Применяем цвета Telegram при загрузке
+    // Применяем цвета Telegram
     applyTelegramColors();
-    
-    // Определяем тему
-    const detectTheme = () => {
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const tgTheme = tg.colorScheme || 'light';
-        console.log('🎨 Telegram тема:', tgTheme);
-        return tgTheme;
-      }
-      
-      const savedTheme = localStorage.getItem('appTheme');
-      if (savedTheme) {
-        return savedTheme;
-      }
-      
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark ? 'dark' : 'light';
-    };
-    
-    const currentTheme = detectTheme();
-    setTheme(currentTheme);
-    document.documentElement.setAttribute('data-theme', currentTheme);
     
     // Hash навигация
     const hash = window.location.hash.replace('#', '');
@@ -125,6 +165,12 @@ function App() {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
+      
+      // Запрашиваем тему у Telegram
+      setTimeout(() => {
+        tg.requestTheme();
+        console.log('📡 Запросили тему у Telegram');
+      }, 100);
       
       // Получаем пользователя Telegram
       if (tg.initDataUnsafe?.user) {
@@ -142,17 +188,67 @@ function App() {
         localStorage.setItem('currentUser', JSON.stringify(userData));
       }
       
-      // Слушаем изменения темы и цветов
-      tg.onEvent('themeChanged', applyTelegramColors);
-      tg.onEvent('themeParamsChanged', applyTelegramColors);
+      // Слушаем изменения темы
+      tg.onEvent('themeChanged', () => {
+        console.log('🔄 Тема изменилась');
+        applyTelegramColors();
+      });
+      
+      // Логируем все параметры для отладки
+      console.log('📊 Все параметры Telegram WebApp:');
+      console.log('   - platform:', tg.platform);
+      console.log('   - version:', tg.version);
+      console.log('   - colorScheme:', tg.colorScheme);
+      
+      if (tg.themeParams) {
+        console.log('🎨 Детали themeParams:');
+        Object.entries(tg.themeParams).forEach(([key, value]) => {
+          console.log(`   - ${key}: #${value}`);
+        });
+      }
+    } else {
+      console.log('⚠️ Telegram WebApp не найден, используем браузерный режим');
     }
     
+    // Таймер для проверки и обновления темы
+    setTimeout(() => {
+      console.log('🔄 Проверяем тему через 1 секунду...');
+      applyTelegramColors();
+      
+      // Проверяем текущие CSS переменные
+      console.log('📝 Текущие CSS переменные:');
+      console.log('   - --tg-button-color:', 
+        getComputedStyle(document.documentElement).getPropertyValue('--tg-button-color'));
+      console.log('   - --tg-success:', 
+        getComputedStyle(document.documentElement).getPropertyValue('--tg-success'));
+    }, 1000);
+    
+    // Завершаем загрузку
     setTimeout(() => {
       setIsLoading(false);
       console.log('✅ Инициализация завершена');
     }, 500);
     
   }, [applyTelegramColors]);
+
+  // Слушаем изменения hash в реальном времени
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      console.log('🔗 Hash changed to:', hash);
+      
+      if (hash && ['home', 'profile', 'history', 'help'].includes(hash) && hash !== currentPage) {
+        console.log('📍 Navigating from hash change:', hash);
+        navigateTo(hash);
+      }
+    };
+    
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [currentPage]);
 
   // Навигация
   const navigateTo = useCallback((page) => {
@@ -163,12 +259,15 @@ function App() {
       return;
     }
     
+    // Обновляем hash в URL
     window.location.hash = page;
     console.log('🔗 URL hash updated to:', page);
     
+    // Анимация перехода
     setIsAnimating(true);
     setPrevPage(currentPage);
     
+    // Небольшая задержка для начала анимации
     setTimeout(() => {
       setCurrentPage(page);
       setIsAnimating(false);
@@ -176,13 +275,12 @@ function App() {
     }, 150);
   }, [currentPage]);
 
-  // Рендер страницы
+  // Функция renderPage
   const renderPage = () => {
     const commonProps = {
       navigateTo: navigateTo,
       telegramUser: telegramUser,
-      theme: theme,
-      telegramThemeParams: telegramThemeParams // Передаем параметры темы в компоненты
+      theme: theme
     };
     
     const getAnimationClass = () => {
@@ -209,6 +307,7 @@ function App() {
       <div className="app-loading">
         <div className="loading-spinner"></div>
         <p className="loading-text">Инициализация TetherRabbit...</p>
+        <p className="loading-subtext">Подключение к Telegram</p>
       </div>
     );
   }

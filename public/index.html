@@ -120,5 +120,31 @@
             if (loader) loader.style.display = 'none';
         }, 5000);
     </script>
+
+<script>
+    // Принудительное обновление темы при загрузке
+    setTimeout(() => {
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        
+        // Принудительно запрашиваем тему
+        tg.requestTheme();
+        
+        // Логируем для отладки
+        console.log('🎨 Тема пользователя:');
+        console.log('   - colorScheme:', tg.colorScheme);
+        console.log('   - button_color:', tg.themeParams?.button_color);
+        console.log('   - link_color:', tg.themeParams?.link_color);
+        
+        // Показываем все доступные цвета
+        if (tg.themeParams) {
+          console.log('   Все доступные цвета:');
+          for (const [key, value] of Object.entries(tg.themeParams)) {
+            console.log(`   - ${key}: #${value}`);
+          }
+        }
+      }
+    }, 1000);
+  </script>
 </body>
 </html>

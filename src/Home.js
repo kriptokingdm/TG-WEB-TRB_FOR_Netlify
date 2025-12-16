@@ -621,13 +621,13 @@ function Home({ navigateTo, telegramUser }) {
     return (
         <div className="home-container">
             {/* Хедер */}
-            <div className="home-header-new">
+            {/* <div className="home-header-new">
                 <div className="header-content">
                     <div className="header-left">
                         <h1 className="header-title-new">TetherRabbit 🥕</h1>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Бейдж активного ордера в хедере */}
             {hasActiveOrder && (

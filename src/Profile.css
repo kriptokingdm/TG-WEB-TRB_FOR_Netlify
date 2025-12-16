@@ -31,6 +31,41 @@
     --tg-button-color: #3390ec;
     --tg-button-text-color: #ffffff;
   }
+
+  :root {
+    --tg-button-color: #3390ec; /* Цвет кнопки пользователя */
+    --tg-button-text-color: #ffffff;
+    --tg-success: #34c759; /* Зеленый для реферальной карточки */
+  }
+  
+  [data-theme="dark"] {
+    --tg-button-color: #3390ec;
+    --tg-button-text-color: #ffffff;
+    --tg-success: #30d158; /* Более светлый зеленый в темной теме */
+  }
+  
+  /* Кнопки которые должны использовать цвет пользователя: */
+  .referral-show-btn {
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
+  }
+  
+  .toggle-switch.active {
+    background-color: var(--tg-button-color);
+  }
+  
+  .settings-icon {
+    background: var(--tg-accent-light); /* Использует акцентный цвет с прозрачностью */
+    color: var(--tg-button-color); /* Иконка цвета кнопки */
+  }
+  
+  .settings-header svg {
+    color: var(--tg-button-color); /* Иконка в хедере настроек */
+  }
+  
+  .referral-card {
+    border-left: 4px solid var(--tg-success); /* Зеленая полоса */
+  }
   
   /* Темная тема Telegram */
   [data-theme="dark"] {

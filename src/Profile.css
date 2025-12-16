@@ -212,7 +212,8 @@
   /* КНОПКА ПОМОЩИ */
   /* ====================== */
   
-  .help-button-new {
+ /* Кнопка помощи - без подсветки */
+.help-button-new {
     background: var(--tg-button-color);
     border: none;
     border-radius: 12px;
@@ -222,23 +223,22 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
     color: var(--tg-button-text-color);
     flex-shrink: 0;
     padding: 0;
     margin: 0;
-    box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
-  }
-  
-  .help-button-new:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(51, 144, 236, 0.4);
-  }
-  
-  .help-button-new:active {
-    transform: scale(0.95);
-  }
+    /* УБРАТЬ box-shadow и transition */
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+.help-button-new:hover,
+.help-button-new:active {
+    /* УБРАТЬ все эффекты при наведении и нажатии */
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
   
   .help-button-new svg {
     width: 20px;
@@ -467,9 +467,10 @@
   }
   
   .referral-stat-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
+    /* УБРАТЬ эффекты при наведении */
+    transform: none !important;
+    box-shadow: none !important;
+}
   
   .referral-stat-value {
     font-size: 20px;
@@ -505,16 +506,19 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.3s ease;
     font-family: var(--tg-font);
     position: relative;
     overflow: hidden;
-  }
+    /* УБРАТЬ transition */
+    transition: none !important;
+}
+
   
-  .referral-show-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-  }
+.referral-show-btn:hover {
+    /* УБРАТЬ эффекты при наведении */
+    opacity: 1 !important;
+    transform: none !important;
+}
   
   .btn-icon {
     display: flex;
@@ -591,15 +595,17 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
     flex-shrink: 0;
     white-space: nowrap;
-  }
+    /* УБРАТЬ transition */
+    transition: none !important;
+}   
   
-  .referral-copy-btn:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
-  }
+.referral-copy-btn:hover {
+    /* УБРАТЬ эффекты при наведении */
+    opacity: 1 !important;
+    transform: none !important;
+}
   
   /* Информация о реферальной системе */
   .referral-info {
@@ -641,13 +647,41 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
     font-family: var(--tg-font);
-  }
+    /* УБРАТЬ transition */
+    transition: none !important;
+}
   
-  .referral-hide-btn:hover {
-    background: var(--tg-hover);
-  }
+.referral-hide-btn:hover {
+    /* УБРАТЬ эффекты при наведении */
+    background: var(--tg-input-bg) !important;
+}
+
+/* Убрать подсветку у ID */
+.id-value:hover {
+    /* УБРАТЬ эффекты при наведении */
+    background: none !important;
+}
+
+/* Убрать подсветку у input */
+.referral-input {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-input-bg);
+    border: 0.5px solid var(--tg-border);
+    border-radius: var(--tg-radius);
+    font-size: 13px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    color: var(--tg-header-color);
+    outline: none;
+    /* УБРАТЬ transition */
+    transition: none !important;
+}
+
+.referral-input:focus {
+    border-color: var(--tg-accent);
+    background: var(--tg-card-bg);
+}
   
   /* ====================== */
   /* НАСТРОЙКИ TELEGRAM */
@@ -685,20 +719,22 @@
     background: var(--tg-card-bg);
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
     width: 100%;
     text-align: left;
     border-bottom: 0.5px solid var(--tg-border);
-    animation: fadeIn 0.3s ease;
-  }
+    /* УБРАТЬ transition */
+    transition: none !important;
+}
+
   
   .settings-item:last-child {
     border-bottom: none;
   }
   
   .settings-item:hover {
-    background: var(--tg-hover);
-  }
+    /* УБРАТЬ эффекты при наведении */
+    background: var(--tg-card-bg) !important;
+}
   
   .settings-icon {
     width: 40px;
@@ -886,17 +922,19 @@
     gap: 4px;
     color: var(--tg-secondary-text);
     font-size: 10px;
-    transition: all 0.2s ease;
+    /* УБРАТЬ transition */
+    transition: none !important;
     border-radius: 8px;
     min-width: 60px;
     opacity: 0.7;
     position: relative;
-  }
-  
-  .nav-item-new:hover {
-    opacity: 1;
-    background: var(--tg-hover);
-  }
+}
+
+.nav-item-new:hover {
+    /* УБРАТЬ эффекты при наведении */
+    opacity: 1 !important;
+    background: none !important;
+}
   
   .nav-item-new.active {
     color: var(--tg-button-color);
@@ -953,11 +991,12 @@
     justify-content: center;
     color: var(--tg-button-text-color);
     font-size: 24px;
-    box-shadow: 0 4px 20px rgba(51, 144, 236, 0.4);
-    transition: all 0.2s ease;
+    /* УБРАТЬ box-shadow и анимацию */
+    box-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
     z-index: 101;
-    animation: pulseCenter 2s infinite;
-  }
+}
   
   @keyframes pulseCenter {
     0% { box-shadow: 0 4px 20px rgba(var(--tg-button-color), 0.3); }
@@ -966,9 +1005,10 @@
   }
   
   .nav-center-item:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 25px rgba(var(--tg-button-color), 0.5);
-  }
+    /* УБРАТЬ эффекты при наведении */
+    transform: none !important;
+    box-shadow: none !important;
+}
   
   .nav-center-circle {
     width: 44px;
@@ -1029,7 +1069,13 @@
     }
     
     .referral-stat-item {
-      padding: 10px;
+        text-align: center;
+        padding: 12px;
+        background: var(--tg-input-bg);
+        border-radius: 8px;
+        border: 0.5px solid var(--tg-border);
+        /* УБРАТЬ transition */
+        transition: none !important;
     }
     
     .referral-stat-value {
@@ -1166,3 +1212,55 @@
       height: -webkit-fill-available;
     }
   }
+
+  /* Profile.css - ФИКС НАВИГАЦИИ */
+
+/* ПЕРЕМЕЩАЕМ НАВИГАЦИЮ В САМЫЙ НИЗ */
+.bottom-nav-new {
+    bottom: 0 !important;
+    transform: translateY(0) !important;
+}
+
+/* УБЕРАЕМ ЛИШНИЙ PADDING В КОНТЕЙНЕРАХ */
+.profile-container {
+    padding-bottom: 0 !important;
+}
+
+.profile-content-container {
+    padding-bottom: 90px !important; /* Отступ для навигации */
+}
+
+/* УБИРАЕМ ПОДСВЕТКУ - только эти стили добавь */
+.help-button-new:hover,
+.help-button-new:active,
+.referral-show-btn:hover,
+.referral-show-btn:active,
+.referral-copy-btn:hover,
+.referral-copy-btn:active,
+.nav-center-item:hover,
+.nav-center-item:active,
+.referral-stat-item:hover,
+.referral-stat-item:active,
+.nav-item-new:hover,
+.nav-item-new:active,
+.settings-item:hover,
+.settings-item:active,
+.referral-hide-btn:hover,
+.referral-hide-btn:active,
+.id-value:hover,
+.id-value:active {
+    opacity: 1 !important;
+    transform: none !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+/* УБИРАЕМ АНИМАЦИИ ПУЛЬСАЦИИ */
+.nav-center-item {
+    animation: none !important;
+}
+
+@keyframes pulseCenter {
+    0%, 100% { box-shadow: none !important; }
+    50% { box-shadow: none !important; }
+}

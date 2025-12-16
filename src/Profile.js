@@ -529,7 +529,7 @@ const handleHelpClick = () => {
             )}
 
             {/* Навигация */}
-            <div className="bottom-nav-new">
+            {/* <div className="bottom-nav-new">
                 <button 
                     className="nav-item-new active" 
                     onClick={() => {
@@ -577,7 +577,7 @@ const handleHelpClick = () => {
                     </div>
                     <span className="nav-label">История</span>
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }

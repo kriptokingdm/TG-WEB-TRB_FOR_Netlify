@@ -1054,7 +1054,7 @@ function Home({ navigateTo, telegramUser }) {
             )}
 
             {/* Навигация */}
-            <div className="bottom-nav-new">
+            {/* <div className="bottom-nav-new">
                 <button
                     className="nav-item-new"
                     onClick={() => navigateTo('profile')}
@@ -1084,7 +1084,7 @@ function Home({ navigateTo, telegramUser }) {
                     </div>
                     <span className="nav-label">История</span>
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }

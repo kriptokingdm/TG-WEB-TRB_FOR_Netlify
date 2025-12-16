@@ -517,7 +517,7 @@ function Help({ navigateTo }) {
                         <div className="support-info-new">
                             <div className="info-item">
                                 <span className="info-icon">⏱️</span>
-                                <span>Поддержка стараеться обработать каждую заявку как можно скорее
+                                <span>Поддержка стараеться обработать каждую заявку как можно скорее.
                                     Мы ценим Ваше время !
                                 </span>
                             </div>

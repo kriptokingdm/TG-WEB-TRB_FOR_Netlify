@@ -308,3 +308,235 @@ html, body, .app, .app-wrapper, .app-content, .page-container {
 * {
   max-width: 100%;
 }
+
+
+/* App.css - добавь в конец */
+
+/* НАВИГАЦИОННАЯ ПАНЕЛЬ */
+.bottom-nav-new {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--tg-header-bg);
+  border-top: 1px solid var(--tg-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  color: var(--tg-secondary-text);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  opacity: 0.7;
+  min-width: 60px;
+}
+
+.nav-item-new.active {
+  color: var(--tg-button-color);
+  opacity: 1;
+}
+
+.nav-icon-wrapper {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tg-input-bg);
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+.nav-item-new.active .nav-icon-wrapper {
+  background: var(--tg-button-color);
+}
+
+.nav-icon-wrapper svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-item-new.active .nav-icon-wrapper svg {
+  color: var(--tg-button-text-color);
+}
+
+/* Центральная кнопка */
+.nav-center-item {
+  position: relative;
+  top: -15px;
+  width: 60px;
+  height: 60px;
+  background: var(--tg-button-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tg-button-text-color);
+  z-index: 1001;
+}
+
+.nav-center-circle {
+  width: 44px;
+  height: 44px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-center-circle svg {
+  width: 20px;
+  height: 20px;
+  color: var(--tg-button-color);
+}
+
+/* ДОБАВЬ ОТСТУП ДЛЯ КОНТЕНТА */
+.page-container {
+  padding-bottom: 90px !important;
+}
+
+.app-content {
+  height: 100%;
+  position: relative;
+}
+
+/* App.css - СТИЛИ НАВИГАЦИИ */
+
+/* НАВИГАЦИОННАЯ ПАНЕЛЬ */
+.bottom-nav-new {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--tg-header-bg);
+  border-top: 1px solid var(--tg-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  color: var(--tg-secondary-text);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  opacity: 0.7;
+  min-width: 60px;
+}
+
+.nav-item-new.active {
+  color: var(--tg-button-color);
+  opacity: 1;
+}
+
+.nav-icon-wrapper {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tg-input-bg);
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+.nav-item-new.active .nav-icon-wrapper {
+  background: var(--tg-button-color);
+}
+
+/* Центральная кнопка */
+.nav-center-item {
+  position: relative;
+  top: -15px;
+  width: 60px;
+  height: 60px;
+  background: var(--tg-button-color);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tg-button-text-color);
+  z-index: 1001;
+}
+
+.nav-center-circle {
+  width: 44px;
+  height: 44px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ДОБАВЬ ОТСТУП ДЛЯ КОНТЕНТА В КОНТЕЙНЕРАХ СТРАНИЦ */
+.page-container {
+  padding-bottom: 90px !important;
+}
+
+/* Убедись что контент виден */
+.app-content {
+  position: relative;
+  height: 100%;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .bottom-nav-new {
+    height: 65px;
+  }
+  
+  .nav-center-item {
+    width: 55px;
+    height: 55px;
+    top: -12px;
+  }
+  
+  .nav-center-circle {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-nav-new {
+    height: 60px;
+  }
+  
+  .nav-icon-wrapper {
+    width: 24px;
+    height: 24px;
+  }
+}

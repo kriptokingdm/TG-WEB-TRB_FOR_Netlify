@@ -332,6 +332,50 @@ function App() {
         {(currentPage === 'home' || !currentPage) && <Home key="home" {...commonProps} />}
       </div>
     );
+    return (
+      <div className="app">
+        <div className="app-wrapper">
+          <div className="app-content">
+            {renderPage()}
+            
+            {/* ОБЩАЯ НАВИГАЦИЯ - ДОБАВЬТЕ ЭТО */}
+            <div className="bottom-nav-new">
+              <button 
+                className={`nav-item-new ${currentPage === 'profile' ? 'active' : ''}`} 
+                onClick={() => navigateTo('profile')}
+              >
+                <div className="nav-icon-wrapper">
+                  {/* Ваша иконка профиля */}
+                  <span className="nav-icon">👤</span>
+                </div>
+                <span className="nav-label">Профиль</span>
+              </button>
+              
+              <button 
+                className="nav-center-item" 
+                onClick={() => navigateTo('home')}
+              >
+                <div className="nav-center-circle">
+                  <span className="nav-center-icon">💱</span>
+                </div>
+                <span className="nav-center-label">Обмен</span>
+              </button>
+              
+              <button 
+                className={`nav-item-new ${currentPage === 'history' ? 'active' : ''}`} 
+                onClick={() => navigateTo('history')}
+              >
+                <div className="nav-icon-wrapper">
+                  {/* Ваша иконка истории */}
+                  <span className="nav-icon">📊</span>
+                </div>
+                <span className="nav-label">История</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Лоадер

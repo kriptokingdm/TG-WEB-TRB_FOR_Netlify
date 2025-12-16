@@ -4,51 +4,61 @@
     /* ТЕМЫ TELEGRAM */
     /* ====================== */
 
-    /* Светлая тема Telegram */
-    :root {
-        --tg-bg-color: #ffffff;
-        --tg-header-bg: #ffffff;
-        --tg-header-color: #000000;
-        --tg-chat-bg: #f0f0f0;
-        --tg-message-bg: #ffffff;
-        --tg-message-color: #000000;
-        --tg-accent: #3390ec;
-        --tg-accent-light: rgba(51, 144, 236, 0.1);
-        --tg-secondary-text: #707579;
-        --tg-border: #e6e6e6;
-        --tg-hover: #f7f7f7;
-        --tg-active: #e8e8e8;
-        --tg-success: #34c759;
-        --tg-error: #ff3b30;
-        --tg-warning: #ff9500;
-        --tg-card-bg: #ffffff;
-        --tg-input-bg: #f7f7f7;
-        --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
-        --tg-radius: 12px;
-        --tg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    }
-    
-    /* Темная тема Telegram */
-    [data-theme="dark"] {
-        --tg-bg-color: #0f0f0f;
-        --tg-header-bg: #1c1c1c;
-        --tg-header-color: #ffffff;
-        --tg-chat-bg: #0f0f0f;
-        --tg-message-bg: #1c1c1c;
-        --tg-message-color: #ffffff;
-        --tg-accent: #3390ec;
-        --tg-accent-light: rgba(51, 144, 236, 0.2);
-        --tg-secondary-text: #8e8e93;
-        --tg-border: #2c2c2c;
-        --tg-hover: #2c2c2c;
-        --tg-active: #3c3c3c;
-        --tg-success: #30d158;
-        --tg-error: #ff453a;
-        --tg-warning: #ff9f0a;
-        --tg-card-bg: #1c1c1c;
-        --tg-input-bg: #2c2c2c;
-        --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
-    }
+   /* Profile.css - ОБНОВЛЕННЫЕ CSS ПЕРЕМЕННЫЕ */
+
+:root {
+    /* Светлая тема Telegram по умолчанию */
+    --tg-bg-color: #ffffff;
+    --tg-header-bg: #ffffff;
+    --tg-header-color: #000000;
+    --tg-chat-bg: #f0f0f0;
+    --tg-message-bg: #ffffff;
+    --tg-message-color: #000000;
+    --tg-accent: #3390ec;
+    --tg-button-color: #3390ec;  /* Добавлено */
+    --tg-button-text-color: #ffffff;  /* Добавлено */
+    --tg-button-hover-color: #2a7bc8;  /* Добавлено */
+    --tg-button-color-rgb: 51, 144, 236;  /* Добавлено */
+    --tg-accent-light: rgba(51, 144, 236, 0.1);
+    --tg-secondary-text: #707579;
+    --tg-border: #e6e6e6;
+    --tg-hover: #f7f7f7;
+    --tg-active: #e8e8e8;
+    --tg-success: #34c759;
+    --tg-error: #ff3b30;
+    --tg-warning: #ff9500;
+    --tg-card-bg: #ffffff;
+    --tg-input-bg: #f7f7f7;
+    --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
+    --tg-radius: 12px;
+    --tg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  /* Темная тема Telegram */
+  [data-theme="dark"] {
+    --tg-bg-color: #0f0f0f;
+    --tg-header-bg: #1c1c1c;
+    --tg-header-color: #ffffff;
+    --tg-chat-bg: #0f0f0f;
+    --tg-message-bg: #1c1c1c;
+    --tg-message-color: #ffffff;
+    --tg-accent: #3390ec;
+    --tg-button-color: #3390ec;  /* Telegram обычно сохраняет синий цвет */
+    --tg-button-text-color: #ffffff;
+    --tg-button-hover-color: #2a7bc8;
+    --tg-button-color-rgb: 51, 144, 236;
+    --tg-accent-light: rgba(51, 144, 236, 0.2);
+    --tg-secondary-text: #8e8e93;
+    --tg-border: #2c2c2c;
+    --tg-hover: #2c2c2c;
+    --tg-active: #3c3c3c;
+    --tg-success: #30d158;
+    --tg-error: #ff453a;
+    --tg-warning: #ff9f0a;
+    --tg-card-bg: #1c1c1c;
+    --tg-input-bg: #2c2c2c;
+    --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
+  }
     
 
     /* Обновите стили для help-button-new в Profile.css */

@@ -1,8 +1,8 @@
-/* App.css - БАЗОВЫЙ КАРКАС БЕЗ СТИЛИЗАЦИИ КОМПОНЕНТОВ */
+/* App.css - МОБИЛЬНАЯ ОПТИМИЗАЦИЯ */
 
-/* === CSS ПЕРЕМЕННЫЕ ДЛЯ ТЕМ === */
+/* === CSS ПЕРЕМЕННЫЕ === */
 :root {
-  /* Светлая тема Telegram (по умолчанию) */
+  /* Светлая тема Telegram */
   --tg-bg-color: #ffffff;
   --tg-secondary-bg: #f8f9fa;
   --tg-header-bg: #ffffff;
@@ -16,6 +16,7 @@
   --tg-warning: #ff9500;
   --tg-radius: 12px;
   --tg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --safe-area-bottom: 0px;
 }
 
 [data-theme="dark"] {
@@ -33,48 +34,92 @@
   --tg-warning: #ff9f0a;
 }
 
-/* === БАЗОВЫЕ СТИЛИ === */
+/* === СБРОС И БАЗОВЫЕ СТИЛИ === */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: fixed;
   font-family: var(--tg-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
   overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   background: var(--tg-bg-color);
   color: var(--tg-text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Предотвращаем масштабирование на iOS */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    min-height: -webkit-fill-available;
+  }
 }
 
 /* === ОСНОВНОЙ КОНТЕЙНЕР APP === */
 .app {
-  width: 100%;
-  height: 100vh;
-  height: -webkit-fill-available;
-  max-width: 100vw;
-  overflow: hidden;
   position: fixed;
   top: 0;
   left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: -webkit-fill-available;
+  height: 100dvh; /* Новый стандарт для мобильных */
+  max-width: 100vw;
+  overflow: hidden;
   background: var(--tg-bg-color);
   color: var(--tg-text-color);
+  /* Предотвращаем горизонтальный скролл */
+  overflow-x: hidden;
+  /* Центрируем содержимое на больших экранах */
+  display: flex;
+  justify-content: center;
 }
 
+/* Контейнер для ограничения ширины на больших экранах */
+.app-wrapper {
+  width: 100%;
+  max-width: 430px; /* Максимальная ширина как у iPhone */
+  height: 100%;
+  position: relative;
+  background: var(--tg-bg-color);
+  overflow: hidden;
+  /* Тень и границы только на больших экранах */
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .app-wrapper {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    border-left: 1px solid var(--tg-border);
+    border-right: 1px solid var(--tg-border);
+  }
+}
+
+/* Основной контент */
 .app-content {
   width: 100%;
   height: 100%;
-  overflow: hidden;
   position: relative;
-  background: var(--tg-bg-color);
+  overflow: hidden;
+  /* Отступ для безопасной зоны iOS */
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 60px); /* + высота навигации */
 }
 
 /* === КОНТЕЙНЕРЫ СТРАНИЦ === */
@@ -90,6 +135,57 @@ html, body {
   background: var(--tg-bg-color);
   color: var(--tg-text-color);
   animation: fadeIn 0.3s ease-out;
+  /* Отступы для безопасной зоны */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 70px); /* Навигация + safe area */
+}
+
+/* Фикс для скролла на iOS */
+.page-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* === НАВИГАЦИЯ (ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КОМПОНЕНТОВ) === */
+.bottom-nav-new {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--tg-header-bg);
+  border-top: 0.5px solid var(--tg-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  z-index: 1000;
+  /* Безопасная зона для iPhone X+ */
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  /* Отступы по бокам */
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
+  /* Тень */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Центральная кнопка навигации */
+.nav-center-item {
+  position: relative;
+  top: -20px;
+  background: var(--tg-accent);
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.4);
+  transition: all 0.2s ease;
+  z-index: 1001;
 }
 
 /* === АНИМАЦИИ === */
@@ -159,17 +255,10 @@ html, body {
   opacity: 0.8;
 }
 
-/* === УТИЛИТЫ === */
-/* Для мобильных браузеров */
-@supports (-webkit-touch-callout: none) {
-  .app {
-    height: -webkit-fill-available;
-  }
-  
-  /* Предотвращаем увеличение шрифта в iOS */
-  input, textarea, select {
-    font-size: 16px !important;
-  }
+/* === ФИКСЫ ДЛЯ МОБИЛЬНЫХ === */
+/* Предотвращаем увеличение шрифта в iOS */
+input, textarea, select {
+  font-size: 16px !important;
 }
 
 /* Разрешаем выделение в полях ввода */
@@ -180,23 +269,24 @@ input, textarea {
   user-select: text;
 }
 
-/* Скрываем скроллбар но оставляем прокрутку */
+/* Скрываем скроллбар */
 ::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
+  display: none;
 }
 
 /* Для больших экранов */
 @media (min-width: 768px) {
   .app {
-    max-width: 430px;
-    margin: 0 auto;
     position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 1px solid var(--tg-border);
-    border-right: 1px solid var(--tg-border);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+  }
+  
+  .app-wrapper {
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -206,23 +296,53 @@ input, textarea {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
-
-/* Предотвращаем зум на мобильных */
-@media (hover: none) and (pointer: coarse) {
-  textarea {
-    font-size: 16px;
+  
+  .page-container {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 70px);
+  }
+  
+  .bottom-nav-new {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
 }
 
-/* Фикс для темной темы - ВСЕ ЭЛЕМЕНТЫ */
+/* Портретная ориентация */
+@media (orientation: portrait) {
+  .app {
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: 100dvh;
+  }
+}
+
+/* Ландшафтная ориентация */
+@media (orientation: landscape) {
+  .app {
+    height: 100vh;
+  }
+  
+  .page-container {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 60px);
+  }
+}
+
+/* Фикс для темной темы */
 [data-theme="dark"] .app,
+[data-theme="dark"] .app-wrapper,
 [data-theme="dark"] .app-content,
 [data-theme="dark"] .page-container {
   background: #0f0f0f !important;
   color: #ffffff !important;
 }
 
-[data-theme="dark"] * {
-  color: inherit !important;
+/* Предотвращаем горизонтальный скролл */
+html, body, .app, .app-wrapper, .app-content, .page-container {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* Фикс для элементов которые могут выходить за границы */
+* {
+  max-width: 100%;
 }

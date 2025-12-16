@@ -18,6 +18,26 @@ function App() {
   useEffect(() => {
     console.log('🚀 Запуск TetherRabbit App...');
     
+    // Предотвращаем масштабирование
+    const preventZoom = () => {
+      document.addEventListener('touchmove', (e) => {
+        if (e.scale !== 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    };
+    
+    preventZoom();
+    
     // Определяем тему
     const detectTheme = () => {
       // 1. Пробуем получить тему из Telegram
@@ -91,6 +111,16 @@ function App() {
       });
     }
     
+    // Исправляем высоту для мобильных браузеров
+    const fixHeight = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    window.addEventListener('resize', fixHeight);
+    window.addEventListener('orientationchange', fixHeight);
+    fixHeight();
+    
     // Завершаем загрузку
     setTimeout(() => {
       setIsLoading(false);
@@ -118,7 +148,7 @@ function App() {
     };
   }, [currentPage]);
 
-  // Навигация - ИСПРАВЛЕННАЯ ВЕРСИЯ
+  // Навигация
   const navigateTo = useCallback((page) => {
     console.log(`📍 Навигация на: ${page} (текущая: ${currentPage})`);
     
@@ -182,8 +212,10 @@ function App() {
 
   return (
     <div className="app">
-      <div className="app-content">
-        {renderPage()}
+      <div className="app-wrapper">
+        <div className="app-content">
+          {renderPage()}
+        </div>
       </div>
     </div>
   );

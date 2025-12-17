@@ -1,4 +1,4 @@
-// App.js - ИСПРАВЛЕННЫЙ С ФИКСОМ СКРОЛЛА
+// App.js - ИСПРАВЛЕННЫЙ С ФИКСОМ СКРОЛЛА И ПРАВИЛЬНОЙ ПЕРЕДАЧЕЙ navigateTo
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Home from './Home';
@@ -186,7 +186,7 @@ function App() {
     };
   }, [applyTelegramColors, fixScrollIssues]);
 
-  // Навигация
+  // НАВИГАЦИОННАЯ ФУНКЦИЯ - ДОЛЖНА БЫТЬ ПЕРЕДАНА КАК ПРОПС
   const navigateTo = (page) => {
     if (page === currentPage) return;
     window.location.hash = page;
@@ -196,22 +196,28 @@ function App() {
     setTimeout(fixScrollIssues, 100);
   };
 
-  // Функция renderPage
+  // Функция renderPage - ИСПРАВЛЕНА
   const renderPage = () => {
+    // Общие пропсы для всех компонентов
     const commonProps = {
       telegramUser: telegramUser,
-      theme: theme
+      theme: theme,
+      navigateTo: navigateTo // ДОБАВЛЯЕМ navigateTo КАК ПРОПС!
     };
     
     switch(currentPage) {
-      case 'history': return <History key="history" {...commonProps} />;
-      case 'profile': return <Profile key="profile" {...commonProps} />;
-      case 'help': return <Help key="help" {...commonProps} />;
-      default: return <Home key="home" {...commonProps} />;
+      case 'history': 
+        return <History key="history" {...commonProps} />;
+      case 'profile': 
+        return <Profile key="profile" {...commonProps} />;
+      case 'help': 
+        return <Help key="help" {...commonProps} />;
+      default: 
+        return <Home key="home" {...commonProps} />;
     }
   };
 
-  // Компонент навигации - теперь он в App.js!
+  // Компонент навигации
   const Navigation = () => (
     <div className="bottom-nav-new">
       <button 
@@ -261,7 +267,7 @@ function App() {
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {/* НАВИГАЦИЯ ДОБАВЛЕНА СЮДА - будет видна на всех страницах! */}
+          {/* НАВИГАЦИЯ - будет видна на всех страницах */}
           <Navigation />
         </div>
       </div>

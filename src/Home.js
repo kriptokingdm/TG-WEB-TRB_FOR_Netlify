@@ -1,4 +1,4 @@
-// Home.js - исправленная версия с определением темы
+// Home.js - исправленная версия
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
@@ -15,74 +15,35 @@ import {
 } from './CryptoIcons';
 
 const simpleFetch = async (endpoint, data = null) => {
-  console.log(`🔗 Запрос ${endpoint}`);
-  const url = API_BASE_URL + endpoint;
-  console.log(`🌐 URL: ${url}`);
-
-  try {
-    const options = {
-      method: data ? 'POST' : 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'omit'
-    };
-
-    if (data) {
-      options.body = JSON.stringify(data);
-    }
-
-    const response = await fetch(url, options);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const result = await response.json();
-    console.log('✅ Ответ:', result);
-    return result;
-
-  } catch (error) {
-    console.error('❌ Ошибка запроса:', error.message);
-    if (endpoint.includes('/exchange-rate')) {
-      return {
-        success: true,
-        rate: 88.0,
-        min_amount: 100,
-        max_amount: 100000
-      };
-    }
-    return { success: false, error: error.message };
-  }
+  // ... (оставляем как есть)
 };
 
-// SVG для светлой темы
-const LightThemeSwapIcon = ({ isSwapped }) => (
-  <svg 
-    width="58" 
-    height="58" 
-    viewBox="0 0 58 58" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
-  >
-    <circle cx="29" cy="29" r="26.5" fill="#36B2FF" stroke="#EFEFF3" strokeWidth="5"/>
-    <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-// SVG для темной темы
-const DarkThemeSwapIcon = ({ isSwapped }) => (
-  <svg 
-    width="58" 
-    height="58" 
-    viewBox="0 0 58 58" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
-  >
-    <circle cx="29" cy="29" r="26.5" fill="#30A353" stroke="#1C1C1C" strokeWidth="5"/>
-    <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+// Компонент SVG для swap-кнопки с динамическими цветами
+const SwapIcon = ({ isSwapped, isDarkTheme }) => {
+  const circleFill = isDarkTheme ? "#30A353" : "#36B2FF";
+  const circleStroke = isDarkTheme ? "#1C1C1C" : "#EFEFF3";
+  
+  return (
+    <svg 
+      width="58" 
+      height="58" 
+      viewBox="0 0 58 58" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ 
+        transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', 
+        transition: 'transform 0.3s ease' 
+      }}
+    >
+      <circle cx="29" cy="29" r="26.5" fill={circleFill} stroke={circleStroke} strokeWidth="5"/>
+      <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" 
+        stroke="#F6F6F6" 
+        strokeWidth="3" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"/>
+    </svg>
+  );
+};
 
 function Home({ navigateTo, telegramUser }) {
   console.log('🏠 Home загружен');
@@ -289,29 +250,54 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  // ПРОСТАЯ ПРОВЕРКА ТЕМЫ
+  // ПРОСТАЯ ПРОВЕРКА ТЕМЫ - БОЛЕЕ НАДЕЖНАЯ ВЕРСИЯ
   const checkTheme = () => {
     try {
-      // Проверяем атрибут data-theme на html элементе
+      // Проверяем непосредственно html элемент
       const htmlElement = document.documentElement;
-      const hasDarkAttribute = htmlElement.getAttribute('data-theme') === 'dark';
-      const hasDarkClass = htmlElement.classList.contains('dark');
       
-      // Проверяем системную тему
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // 1. Проверяем data-theme атрибут
+      const themeFromAttribute = htmlElement.getAttribute('data-theme');
+      if (themeFromAttribute === 'dark') {
+        console.log('🎨 Тема из data-theme атрибута: Темная');
+        setIsDarkTheme(true);
+        return true;
+      }
+      if (themeFromAttribute === 'light') {
+        console.log('🎨 Тема из data-theme атрибута: Светлая');
+        setIsDarkTheme(false);
+        return false;
+      }
       
-      // Если есть явный атрибут или класс, используем его, иначе системную тему
-      const darkTheme = hasDarkAttribute || hasDarkClass || prefersDark;
+      // 2. Проверяем CSS класс
+      if (htmlElement.classList.contains('dark')) {
+        console.log('🎨 Тема из класса .dark: Темная');
+        setIsDarkTheme(true);
+        return true;
+      }
+      if (htmlElement.classList.contains('light')) {
+        console.log('🎨 Тема из класса .light: Светлая');
+        setIsDarkTheme(false);
+        return false;
+      }
       
-      console.log('🎨 Проверка темы:', {
-        hasDarkAttribute,
-        hasDarkClass,
-        prefersDark,
-        result: darkTheme ? 'Темная' : 'Светлая'
-      });
+      // 3. Проверяем цвет фона (эмпирический метод)
+      const computedBg = window.getComputedStyle(htmlElement).backgroundColor;
+      const isDarkByColor = computedBg.includes('15, 15, 15') || 
+                           computedBg.includes('0, 0, 0') || 
+                           computedBg.includes('28, 28, 28');
       
-      setIsDarkTheme(darkTheme);
-      return darkTheme;
+      if (isDarkByColor) {
+        console.log('🎨 Тема по цвету фона: Темная', computedBg);
+        setIsDarkTheme(true);
+        return true;
+      }
+      
+      // 4. По умолчанию - светлая тема
+      console.log('🎨 Тема по умолчанию: Светлая');
+      setIsDarkTheme(false);
+      return false;
+      
     } catch (error) {
       console.error('❌ Ошибка проверки темы:', error);
       setIsDarkTheme(false);
@@ -324,9 +310,11 @@ function Home({ navigateTo, telegramUser }) {
     console.log('🏠 Home компонент загружен');
     fetchExchangeRates();
     
-    // Проверяем тему сразу при загрузке
-    const themeCheck = checkTheme();
-    console.log('🎨 Тема при загрузке:', themeCheck ? 'Темная' : 'Светлая');
+    // Проверяем тему сразу при загрузке с задержкой
+    setTimeout(() => {
+      const theme = checkTheme();
+      console.log('🎨 Начальная тема:', theme ? 'Темная' : 'Светлая');
+    }, 100);
 
     // Простой слушатель для изменения темы
     const htmlElement = document.documentElement;
@@ -335,6 +323,7 @@ function Home({ navigateTo, telegramUser }) {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && 
             (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
+          console.log('🔄 Атрибут темы изменился');
           checkTheme();
         }
       });
@@ -345,19 +334,8 @@ function Home({ navigateTo, telegramUser }) {
       attributeFilter: ['data-theme', 'class']
     });
 
-    // Слушатель системной темы
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleThemeChange = () => {
-      console.log('🔄 Системная тема изменилась');
-      checkTheme();
-    };
-    
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleThemeChange);
-    } else {
-      // Для старых браузеров
-      mediaQuery.addListener(handleThemeChange);
-    }
+    // Также проверяем тему при каждом рендере
+    const interval = setInterval(checkTheme, 1000);
 
     const tgUser = getTelegramUser();
     if (tgUser) {
@@ -389,11 +367,7 @@ function Home({ navigateTo, telegramUser }) {
     // Очистка
     return () => {
       observer.disconnect();
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleThemeChange);
-      } else {
-        mediaQuery.removeListener(handleThemeChange);
-      }
+      clearInterval(interval);
     };
   }, [telegramUser]);
 
@@ -831,8 +805,8 @@ function Home({ navigateTo, telegramUser }) {
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
-  // ДЕБАГ - показываем какая тема определилась
-  console.log('🔍 Состояние темы:', isDarkTheme ? 'Темная' : 'Светлая');
+  // ДЕБАГ - логируем текущую тему
+  console.log('🔍 Текущая тема в состоянии:', isDarkTheme ? 'Темная' : 'Светлая');
 
   return (
     <div className="home-container">
@@ -966,23 +940,26 @@ function Home({ navigateTo, telegramUser }) {
                   </div>
                 </div>
 
-                {/* Кнопка swap с разными SVG для разных тем */}
+                {/* Кнопка swap с динамическими цветами */}
                 <button
                   className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
                   onClick={handleSwap}
                   disabled={hasActiveOrder}
                   title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
                 >
-                  {/* ДЕБАГ - показываем какая тема */}
-                  <div style={{ display: 'none' }}>
+                  {/* ДЕБАГ - показываем текущую тему */}
+                  <div style={{ 
+                    display: 'none',
+                    position: 'absolute',
+                    background: 'red',
+                    color: 'white',
+                    padding: '2px',
+                    fontSize: '10px'
+                  }}>
                     Тема: {isDarkTheme ? 'Темная' : 'Светлая'}
                   </div>
                   
-                  {isDarkTheme ? (
-                    <DarkThemeSwapIcon isSwapped={isSwapped} />
-                  ) : (
-                    <LightThemeSwapIcon isSwapped={isSwapped} />
-                  )}
+                  <SwapIcon isSwapped={isSwapped} isDarkTheme={isDarkTheme} />
                 </button>
 
                 <div className="currency-card-side right-card">

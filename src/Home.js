@@ -1,4 +1,4 @@
-// Home.js - полная версия с иконками
+// Home.js - с разными SVG для светлой и темной темы
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
@@ -54,6 +54,36 @@ const simpleFetch = async (endpoint, data = null) => {
   }
 };
 
+// SVG для светлой темы
+const LightThemeSwapIcon = ({ isSwapped }) => (
+  <svg 
+    width="58" 
+    height="58" 
+    viewBox="0 0 58 58" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
+  >
+    <circle cx="29" cy="29" r="26.5" fill="#36B2FF" stroke="#EFEFF3" strokeWidth="5"/>
+    <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// SVG для темной темы
+const DarkThemeSwapIcon = ({ isSwapped }) => (
+  <svg 
+    width="58" 
+    height="58" 
+    viewBox="0 0 58 58" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
+  >
+    <circle cx="29" cy="29" r="26.5" fill="#30A353" stroke="#1C1C1C" strokeWidth="5"/>
+    <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 function Home({ navigateTo, telegramUser }) {
   console.log('🏠 Home загружен');
 
@@ -73,6 +103,9 @@ function Home({ navigateTo, telegramUser }) {
     minSell: 10,
     maxSell: 10000
   });
+  
+  // Состояние для темы
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   // Реквизиты
   const [cryptoAddress, setCryptoAddress] = useState('');
@@ -256,10 +289,34 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
+  // Проверка темы
+  const checkTheme = () => {
+    const htmlElement = document.documentElement;
+    const isDark = htmlElement.getAttribute('data-theme') === 'dark' || 
+                   htmlElement.classList.contains('dark') ||
+                   window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    setIsDarkTheme(isDark);
+    console.log(`🎨 Тема: ${isDark ? 'Темная' : 'Светлая'}`);
+  };
+
   // Инициализация
   useEffect(() => {
     console.log('🏠 Home компонент загружен');
     fetchExchangeRates();
+    checkTheme();
+
+    // Слушатель изменения темы
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['data-theme', 'class'] 
+    });
+
+    // Слушатель системной темы
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = () => checkTheme();
+    mediaQuery.addEventListener('change', handleThemeChange);
 
     const tgUser = getTelegramUser();
     if (tgUser) {
@@ -287,6 +344,12 @@ function Home({ navigateTo, telegramUser }) {
 
     loadSavedData();
     setTimeout(() => checkActiveOrder(), 1000);
+
+    // Очистка
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', handleThemeChange);
+    };
   }, [telegramUser]);
 
   const loadSavedData = () => {
@@ -315,7 +378,7 @@ function Home({ navigateTo, telegramUser }) {
 
   const calculateConvertedAmount = () => {
     if (!amount) return '';
-    const numAmount = parseFloat(amount);
+    const numAmount = parseFloat(amount.replace(',', '.'));
     if (isNaN(numAmount)) return '';
     const rate = isBuyMode ? rates.buy : rates.sell;
     const converted = isBuyMode ? (numAmount / rate).toFixed(2) : (numAmount * rate).toFixed(2);
@@ -355,9 +418,23 @@ function Home({ navigateTo, telegramUser }) {
 
   const handleAmountChange = (e) => {
     const value = e.target.value;
-    setAmount(value);
-    if (value && value.trim() !== '') {
-      const numAmount = parseFloat(value);
+    
+    // Разрешаем ввод только чисел, точки и запятой
+    const cleanedValue = value.replace(/[^\d.,]/g, '');
+    
+    // Заменяем запятую на точку для правильного парсинга
+    const normalizedValue = cleanedValue.replace(',', '.');
+    
+    // Проверяем, что после точки не больше 2 знаков
+    const parts = normalizedValue.split('.');
+    if (parts.length > 1 && parts[1].length > 2) {
+      return; // Не позволяем вводить больше 2 знаков после запятой
+    }
+    
+    setAmount(cleanedValue);
+    
+    if (cleanedValue && cleanedValue.trim() !== '') {
+      const numAmount = parseFloat(normalizedValue);
       if (!isNaN(numAmount)) {
         if (isBuyMode) {
           if (numAmount < limits.minBuy) {
@@ -530,7 +607,15 @@ function Home({ navigateTo, telegramUser }) {
       return;
     }
 
-    const numAmount = parseFloat(amount);
+    // Нормализуем сумму (заменяем запятую на точку)
+    const normalizedAmount = amount.replace(',', '.');
+    const numAmount = parseFloat(normalizedAmount);
+    
+    if (isNaN(numAmount)) {
+      showMessage('❌ Введите корректную сумму');
+      return;
+    }
+
     if (isBuyMode) {
       if (numAmount < limits.minBuy) {
         showMessage(`❌ Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
@@ -654,7 +739,11 @@ function Home({ navigateTo, telegramUser }) {
   const isExchangeReady = () => {
     if (hasActiveOrder) return false;
     if (!amount || error) return false;
-    const numAmount = parseFloat(amount);
+    
+    // Нормализуем сумму для проверки
+    const normalizedAmount = amount.replace(',', '.');
+    const numAmount = parseFloat(normalizedAmount);
+    
     if (isNaN(numAmount)) return false;
     if (isBuyMode) {
       if (numAmount < limits.minBuy || numAmount > limits.maxBuy) return false;
@@ -829,16 +918,18 @@ function Home({ navigateTo, telegramUser }) {
                   </div>
                 </div>
 
+                {/* Кнопка swap с разными SVG для разных тем */}
                 <button
                   className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
                   onClick={handleSwap}
                   disabled={hasActiveOrder}
+                  title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
                 >
-                  <svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="29" cy="29" r="26.5" fill="#36B2FF" stroke="#EFEFF3" stroke-width="5"/>
-<path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" stroke="#F6F6F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
+                  {isDarkTheme ? (
+                    <DarkThemeSwapIcon isSwapped={isSwapped} />
+                  ) : (
+                    <LightThemeSwapIcon isSwapped={isSwapped} />
+                  )}
                 </button>
 
                 <div className="currency-card-side right-card">

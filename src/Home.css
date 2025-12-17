@@ -231,7 +231,7 @@
 /* SWAP КНОПКА */
 /* ====================== */
 
-.swap-center-button {
+/* .swap-center-button {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -249,7 +249,7 @@
   padding: 0;
   margin: 0;
   background: transparent;
-}
+} */
 
 .swap-center-button:hover:not(:disabled) {
   transform: translate(-50%, -50%) scale(1.05);

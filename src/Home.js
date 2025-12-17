@@ -1,4 +1,4 @@
-// Home.js - с разными SVG для светлой и темной темы
+// Home.js - исправленная версия с определением темы
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
@@ -289,34 +289,75 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  // Проверка темы
+  // ПРОСТАЯ ПРОВЕРКА ТЕМЫ
   const checkTheme = () => {
-    const htmlElement = document.documentElement;
-    const isDark = htmlElement.getAttribute('data-theme') === 'dark' || 
-                   htmlElement.classList.contains('dark') ||
-                   window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    setIsDarkTheme(isDark);
-    console.log(`🎨 Тема: ${isDark ? 'Темная' : 'Светлая'}`);
+    try {
+      // Проверяем атрибут data-theme на html элементе
+      const htmlElement = document.documentElement;
+      const hasDarkAttribute = htmlElement.getAttribute('data-theme') === 'dark';
+      const hasDarkClass = htmlElement.classList.contains('dark');
+      
+      // Проверяем системную тему
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      // Если есть явный атрибут или класс, используем его, иначе системную тему
+      const darkTheme = hasDarkAttribute || hasDarkClass || prefersDark;
+      
+      console.log('🎨 Проверка темы:', {
+        hasDarkAttribute,
+        hasDarkClass,
+        prefersDark,
+        result: darkTheme ? 'Темная' : 'Светлая'
+      });
+      
+      setIsDarkTheme(darkTheme);
+      return darkTheme;
+    } catch (error) {
+      console.error('❌ Ошибка проверки темы:', error);
+      setIsDarkTheme(false);
+      return false;
+    }
   };
 
   // Инициализация
   useEffect(() => {
     console.log('🏠 Home компонент загружен');
     fetchExchangeRates();
-    checkTheme();
+    
+    // Проверяем тему сразу при загрузке
+    const themeCheck = checkTheme();
+    console.log('🎨 Тема при загрузке:', themeCheck ? 'Темная' : 'Светлая');
 
-    // Слушатель изменения темы
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['data-theme', 'class'] 
+    // Простой слушатель для изменения темы
+    const htmlElement = document.documentElement;
+    
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && 
+            (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
+          checkTheme();
+        }
+      });
+    });
+    
+    observer.observe(htmlElement, { 
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
     });
 
     // Слушатель системной темы
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleThemeChange = () => checkTheme();
-    mediaQuery.addEventListener('change', handleThemeChange);
+    const handleThemeChange = () => {
+      console.log('🔄 Системная тема изменилась');
+      checkTheme();
+    };
+    
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleThemeChange);
+    } else {
+      // Для старых браузеров
+      mediaQuery.addListener(handleThemeChange);
+    }
 
     const tgUser = getTelegramUser();
     if (tgUser) {
@@ -348,7 +389,11 @@ function Home({ navigateTo, telegramUser }) {
     // Очистка
     return () => {
       observer.disconnect();
-      mediaQuery.removeEventListener('change', handleThemeChange);
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleThemeChange);
+      } else {
+        mediaQuery.removeListener(handleThemeChange);
+      }
     };
   }, [telegramUser]);
 
@@ -786,6 +831,9 @@ function Home({ navigateTo, telegramUser }) {
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
+  // ДЕБАГ - показываем какая тема определилась
+  console.log('🔍 Состояние темы:', isDarkTheme ? 'Темная' : 'Светлая');
+
   return (
     <div className="home-container">
       {/* Бейдж активного ордера в хедере */}
@@ -925,6 +973,11 @@ function Home({ navigateTo, telegramUser }) {
                   disabled={hasActiveOrder}
                   title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
                 >
+                  {/* ДЕБАГ - показываем какая тема */}
+                  <div style={{ display: 'none' }}>
+                    Тема: {isDarkTheme ? 'Темная' : 'Светлая'}
+                  </div>
+                  
                   {isDarkTheme ? (
                     <DarkThemeSwapIcon isSwapped={isSwapped} />
                   ) : (

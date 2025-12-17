@@ -231,7 +231,7 @@
 /* SWAP КНОПКА */
 /* ====================== */
 
-/* .swap-center-button {
+.swap-center-button {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -249,7 +249,7 @@
   padding: 0;
   margin: 0;
   background: transparent;
-} */
+}
 
 .swap-center-button:hover:not(:disabled) {
   transform: translate(-50%, -50%) scale(1.05);
@@ -1778,10 +1778,7 @@ animation: inputFocus 0.3s ease;
   height: 45px;
 }
 
-.swap-center-button svg {
-  width: 43px;
-  height: 43px;
-}
+
 
 .nav-center-item {
   width: 55px;
@@ -1863,10 +1860,6 @@ animation: inputFocus 0.3s ease;
   height: 40px;
 }
 
-.swap-center-button svg {
-  width: 38px;
-  height: 38px;
-}
 
 .amount-input {
   padding: 12px 44px 12px 12px;

@@ -480,17 +480,82 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  const handleSwap = () => {
+  // Home.js - обновленная функция handleSwap
+const handleSwap = () => {
     if (hasActiveOrder) {
-      showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
-      return;
+        showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+        return;
     }
+    
+    // Вибрация для мобильных устройств
+    const triggerHapticFeedback = () => {
+        // 1. Стандартный Web API (работает на большинстве устройств)
+        if (navigator.vibrate) {
+            // Легкая тактильная обратная связь
+            navigator.vibrate(15); // 15ms - короткий мягкий отклик
+        }
+        
+        // 2. Telegram WebApp haptic feedback (если в Telegram)
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            try {
+                const tg = window.Telegram.WebApp;
+                
+                // Используем разные типы вибрации в зависимости от настроек
+                if (tg.HapticFeedback.impactOccurred) {
+                    // Легкое тактильное воздействие
+                    tg.HapticFeedback.impactOccurred('light');
+                } else if (tg.HapticFeedback.selectionChanged) {
+                    // Или просто изменение выбора
+                    tg.HapticFeedback.selectionChanged();
+                }
+            } catch (e) {
+                console.log('Telegram HapticFeedback не доступен');
+            }
+        }
+        
+        // 3. Для iOS Safari - альтернативный метод
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.haptic) {
+            try {
+                window.webkit.messageHandlers.haptic.postMessage({ type: 'light' });
+            } catch (e) {
+                // Пропускаем ошибку
+            }
+        }
+        
+        // 4. Для Capacitor/Cordova
+        if (window.plugins && window.plugins.haptic) {
+            try {
+                window.plugins.haptic.notification({ type: 'success' });
+            } catch (e) {
+                // Пропускаем ошибку
+            }
+        }
+    };
+    
+    // Вызываем вибрацию
+    triggerHapticFeedback();
+    
+    // Меняем состояние
     setIsSwapped(!isSwapped);
     setIsBuyMode(!isBuyMode);
     setAmount('');
     setError('');
     fetchExchangeRates();
-  };
+    
+    // Опционально: добавляем визуальную обратную связь
+    const button = document.querySelector('.swap-center-button');
+    if (button) {
+        // Легкое увеличение для визуальной обратной связи
+        button.style.transform = 'translate(-50%, -50%) scale(1.15)';
+        setTimeout(() => {
+            if (isSwapped) {
+                button.style.transform = 'translate(-50%, -50%) rotate(180deg) scale(1)';
+            } else {
+                button.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(1)';
+            }
+        }, 150);
+    }
+};
 
   const handleAddPayment = () => {
     const isSBP = bankName === 'СБП (Система быстрых платежей)';

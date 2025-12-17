@@ -652,7 +652,107 @@
     animation: slideUp 0.3s ease;
   }
   
+/*  */
+/* Home.css - добавь эти стили в конец */
 
+/* Стили для селектов с иконками */
+.select-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.selected-network-icon,
+.selected-exchange-icon {
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.selected-network-icon svg,
+.selected-exchange-icon svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Иконка Polygon */
+.polygon-icon {
+  width: 18px;
+  height: 18px;
+  background: #8247E5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Стили для бейджей с иконками */
+.crypto-network-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--tg-accent);
+  background: var(--tg-accent-light);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.crypto-network-badge svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.crypto-network-text {
+  font-size: 12px;
+}
+
+/* Для темной темы */
+[data-theme="dark"] .selected-network-icon svg,
+[data-theme="dark"] .selected-exchange-icon svg {
+  filter: brightness(1.2);
+}
+
+[data-theme="dark"] .polygon-icon {
+  background: #8B5CF6;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .selected-network-icon,
+  .selected-exchange-icon {
+    right: 35px;
+  }
+  
+  .crypto-network-badge {
+    padding: 3px 6px;
+  }
+  
+  .crypto-network-badge svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .crypto-network-text {
+    font-size: 11px;
+  }
+}
+/*  */
   /* [data-theme="dark"] .crypto-type-btn {
     background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
   } */
@@ -2033,4 +2133,64 @@
 
 [data-theme="dark"] .tg-order-detail:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+/* Home.css - добавить стили для иконок */
+
+.crypto-network-badge {
+  font-size: 12px;
+  color: var(--tg-accent);
+  background: var(--tg-accent-light);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crypto-network-text {
+  font-size: 12px;
+}
+
+/* Стили для SVG иконок внутри бейджей */
+.crypto-network-badge svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Для выпадающих списков */
+.network-select option,
+.exchange-select option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* Улучшаем отображение иконок в селектах */
+select {
+  display: flex;
+  align-items: center;
+}
+
+/* Стили для иконок в селектах */
+.network-select {
+  display: flex;
+  align-items: center;
+}
+
+/* Адаптивность для иконок */
+@media (max-width: 480px) {
+  .crypto-network-badge svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .crypto-network-text {
+    font-size: 11px;
+  }
 }

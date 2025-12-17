@@ -762,6 +762,11 @@
     position: relative;
     overflow: hidden;
   }
+
+  [data-theme="dark"] .chat-btn-new {
+    background: #30a353;
+     
+  }
   
   .chat-btn-new:hover {
     opacity: 0.9;

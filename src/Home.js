@@ -15,35 +15,73 @@ import {
 } from './CryptoIcons';
 
 const simpleFetch = async (endpoint, data = null) => {
-  // ... (оставляем как есть)
+  const url = `${API_BASE_URL}${endpoint}`;
+  const options = {
+    method: data ? 'POST' : 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  };
+  
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+  
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`❌ Ошибка fetch ${endpoint}:`, error);
+    throw error;
+  }
 };
 
-// Компонент SVG для swap-кнопки с динамическими цветами
-const SwapIcon = ({ isSwapped, isDarkTheme }) => {
-  const circleFill = isDarkTheme ? "#30A353" : "#36B2FF";
-  const circleStroke = isDarkTheme ? "#1C1C1C" : "#EFEFF3";
-  
-  return (
-    <svg 
-      width="58" 
-      height="58" 
-      viewBox="0 0 58 58" 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ 
-        transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)', 
-        transition: 'transform 0.3s ease' 
-      }}
-    >
-      <circle cx="29" cy="29" r="26.5" fill={circleFill} stroke={circleStroke} strokeWidth="5"/>
-      <path d="M37.3333 17.5423C40.8689 20.1182 43.1667 24.2908 43.1667 29C43.1667 36.824 36.824 43.1667 29 43.1667H28.1667M20.6667 40.4577C17.1311 37.8818 14.8333 33.7092 14.8333 29C14.8333 21.176 21.176 14.8333 29 14.8333H29.8333M30.6667 46.3333L27.3333 43L30.6667 39.6667M27.3333 18.3333L30.6667 15L27.3333 11.6667" 
-        stroke="#F6F6F6" 
-        strokeWidth="3" 
-        strokeLinecap="round" 
-        strokeLinejoin="round"/>
-    </svg>
-  );
-};
+// Компоненты SVG для swap-кнопки
+const LightThemeSwapIcon = ({ isSwapped }) => (
+  <svg 
+    width="52" 
+    height="52" 
+    viewBox="0 0 52 52" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ 
+      transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
+      transition: 'transform 0.3s ease'
+    }}
+  >
+    <circle cx="26" cy="26" r="24" fill="#36B2FF" stroke="#EFEFF3" strokeWidth="3"/>
+    <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
+      stroke="white" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"/>
+  </svg>
+);
+
+const DarkThemeSwapIcon = ({ isSwapped }) => (
+  <svg 
+    width="52" 
+    height="52" 
+    viewBox="0 0 52 52" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ 
+      transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
+      transition: 'transform 0.3s ease'
+    }}
+  >
+    <circle cx="26" cy="26" r="24" fill="#30A353" stroke="#1C1C1C" strokeWidth="3"/>
+    <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
+      stroke="white" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"/>
+  </svg>
+);
 
 function Home({ navigateTo, telegramUser }) {
   console.log('🏠 Home загружен');
@@ -65,10 +103,7 @@ function Home({ navigateTo, telegramUser }) {
     maxSell: 10000
   });
   
-  // Состояние для темы
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-
-  // Реквизиты
   const [cryptoAddress, setCryptoAddress] = useState('');
   const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
   const [cryptoUID, setCryptoUID] = useState('');
@@ -81,11 +116,8 @@ function Home({ navigateTo, telegramUser }) {
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [cryptoType, setCryptoType] = useState('address');
   const [selectedExchange, setSelectedExchange] = useState('Binance');
-
-  // Данные активного ордера
   const [activeOrderData, setActiveOrderData] = useState(null);
 
-  // Списки
   const availableBanks = [
     'СБП (Система быстрых платежей)',
     'Сбербанк',
@@ -222,7 +254,6 @@ function Home({ navigateTo, telegramUser }) {
     return null;
   };
 
-  // Проверка активного ордера
   const checkActiveOrder = async () => {
     try {
       const userId = getUserId();
@@ -250,51 +281,20 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  // ПРОСТАЯ ПРОВЕРКА ТЕМЫ - БОЛЕЕ НАДЕЖНАЯ ВЕРСИЯ
   const checkTheme = () => {
     try {
-      // Проверяем непосредственно html элемент
       const htmlElement = document.documentElement;
-      
-      // 1. Проверяем data-theme атрибут
       const themeFromAttribute = htmlElement.getAttribute('data-theme');
+      
       if (themeFromAttribute === 'dark') {
-        console.log('🎨 Тема из data-theme атрибута: Темная');
         setIsDarkTheme(true);
         return true;
       }
       if (themeFromAttribute === 'light') {
-        console.log('🎨 Тема из data-theme атрибута: Светлая');
         setIsDarkTheme(false);
         return false;
       }
       
-      // 2. Проверяем CSS класс
-      if (htmlElement.classList.contains('dark')) {
-        console.log('🎨 Тема из класса .dark: Темная');
-        setIsDarkTheme(true);
-        return true;
-      }
-      if (htmlElement.classList.contains('light')) {
-        console.log('🎨 Тема из класса .light: Светлая');
-        setIsDarkTheme(false);
-        return false;
-      }
-      
-      // 3. Проверяем цвет фона (эмпирический метод)
-      const computedBg = window.getComputedStyle(htmlElement).backgroundColor;
-      const isDarkByColor = computedBg.includes('15, 15, 15') || 
-                           computedBg.includes('0, 0, 0') || 
-                           computedBg.includes('28, 28, 28');
-      
-      if (isDarkByColor) {
-        console.log('🎨 Тема по цвету фона: Темная', computedBg);
-        setIsDarkTheme(true);
-        return true;
-      }
-      
-      // 4. По умолчанию - светлая тема
-      console.log('🎨 Тема по умолчанию: Светлая');
       setIsDarkTheme(false);
       return false;
       
@@ -310,20 +310,16 @@ function Home({ navigateTo, telegramUser }) {
     console.log('🏠 Home компонент загружен');
     fetchExchangeRates();
     
-    // Проверяем тему сразу при загрузке с задержкой
     setTimeout(() => {
-      const theme = checkTheme();
-      console.log('🎨 Начальная тема:', theme ? 'Темная' : 'Светлая');
+      checkTheme();
     }, 100);
 
-    // Простой слушатель для изменения темы
     const htmlElement = document.documentElement;
     
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && 
             (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
-          console.log('🔄 Атрибут темы изменился');
           checkTheme();
         }
       });
@@ -334,7 +330,6 @@ function Home({ navigateTo, telegramUser }) {
       attributeFilter: ['data-theme', 'class']
     });
 
-    // Также проверяем тему при каждом рендере
     const interval = setInterval(checkTheme, 1000);
 
     const tgUser = getTelegramUser();
@@ -349,7 +344,6 @@ function Home({ navigateTo, telegramUser }) {
       };
       localStorage.setItem('currentUser', JSON.stringify(userData));
       localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-      console.log('✅ Пользователь сохранен:', userData);
     } else if (telegramUser) {
       const userData = {
         id: `user_${telegramUser.id}`,
@@ -364,7 +358,6 @@ function Home({ navigateTo, telegramUser }) {
     loadSavedData();
     setTimeout(() => checkActiveOrder(), 1000);
 
-    // Очистка
     return () => {
       observer.disconnect();
       clearInterval(interval);
@@ -438,16 +431,12 @@ function Home({ navigateTo, telegramUser }) {
   const handleAmountChange = (e) => {
     const value = e.target.value;
     
-    // Разрешаем ввод только чисел, точки и запятой
     const cleanedValue = value.replace(/[^\d.,]/g, '');
-    
-    // Заменяем запятую на точку для правильного парсинга
     const normalizedValue = cleanedValue.replace(',', '.');
     
-    // Проверяем, что после точки не больше 2 знаков
     const parts = normalizedValue.split('.');
     if (parts.length > 1 && parts[1].length > 2) {
-      return; // Не позволяем вводить больше 2 знаков после запятой
+      return;
     }
     
     setAmount(cleanedValue);
@@ -480,82 +469,36 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  // Home.js - обновленная функция handleSwap
-const handleSwap = () => {
+  const handleSwap = () => {
     if (hasActiveOrder) {
-        showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
-        return;
+      showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+      return;
     }
     
-    // Вибрация для мобильных устройств
+    // ВИБРАЦИЯ
     const triggerHapticFeedback = () => {
-        // 1. Стандартный Web API (работает на большинстве устройств)
-        if (navigator.vibrate) {
-            // Легкая тактильная обратная связь
-            navigator.vibrate(15); // 15ms - короткий мягкий отклик
-        }
-        
-        // 2. Telegram WebApp haptic feedback (если в Telegram)
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-            try {
-                const tg = window.Telegram.WebApp;
-                
-                // Используем разные типы вибрации в зависимости от настроек
-                if (tg.HapticFeedback.impactOccurred) {
-                    // Легкое тактильное воздействие
-                    tg.HapticFeedback.impactOccurred('light');
-                } else if (tg.HapticFeedback.selectionChanged) {
-                    // Или просто изменение выбора
-                    tg.HapticFeedback.selectionChanged();
-                }
-            } catch (e) {
-                console.log('Telegram HapticFeedback не доступен');
-            }
-        }
-        
-        // 3. Для iOS Safari - альтернативный метод
-        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.haptic) {
-            try {
-                window.webkit.messageHandlers.haptic.postMessage({ type: 'light' });
-            } catch (e) {
-                // Пропускаем ошибку
-            }
-        }
-        
-        // 4. Для Capacitor/Cordova
-        if (window.plugins && window.plugins.haptic) {
-            try {
-                window.plugins.haptic.notification({ type: 'success' });
-            } catch (e) {
-                // Пропускаем ошибку
-            }
-        }
+      if (navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        try {
+          const tg = window.Telegram.WebApp;
+          if (tg.HapticFeedback.selectionChanged) {
+            tg.HapticFeedback.selectionChanged();
+          }
+        } catch (e) {}
+      }
     };
     
-    // Вызываем вибрацию
     triggerHapticFeedback();
     
-    // Меняем состояние
     setIsSwapped(!isSwapped);
     setIsBuyMode(!isBuyMode);
     setAmount('');
     setError('');
     fetchExchangeRates();
-    
-    // Опционально: добавляем визуальную обратную связь
-    const button = document.querySelector('.swap-center-button');
-    if (button) {
-        // Легкое увеличение для визуальной обратной связи
-        button.style.transform = 'translate(-50%, -50%) scale(1.15)';
-        setTimeout(() => {
-            if (isSwapped) {
-                button.style.transform = 'translate(-50%, -50%) rotate(180deg) scale(1)';
-            } else {
-                button.style.transform = 'translate(-50%, -50%) rotate(0deg) scale(1)';
-            }
-        }, 150);
-    }
-};
+  };
 
   const handleAddPayment = () => {
     const isSBP = bankName === 'СБП (Система быстрых платежей)';
@@ -691,7 +634,6 @@ const handleSwap = () => {
       return;
     }
 
-    // Нормализуем сумму (заменяем запятую на точку)
     const normalizedAmount = amount.replace(',', '.');
     const numAmount = parseFloat(normalizedAmount);
     
@@ -824,7 +766,6 @@ const handleSwap = () => {
     if (hasActiveOrder) return false;
     if (!amount || error) return false;
     
-    // Нормализуем сумму для проверки
     const normalizedAmount = amount.replace(',', '.');
     const numAmount = parseFloat(normalizedAmount);
     
@@ -853,29 +794,21 @@ const handleSwap = () => {
   const currentRate = isBuyMode ? rates.buy : rates.sell;
   const convertedAmount = calculateConvertedAmount();
   const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
+  const statusInfo = getStatusInfo(activeOrderStatus);
+  const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
+  const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
-  // Статус тексты и иконки
-  const getStatusInfo = (status) => {
+  function getStatusInfo(status) {
     switch (status) {
       case 'pending': return { text: '⏳ Ожидание', color: '#FF9500', bg: '#FF9500' };
       case 'processing': return { text: '🔄 В обработке', color: '#007AFF', bg: '#007AFF' };
       case 'accepted': return { text: '✅ Принят', color: '#34C759', bg: '#34C759' };
       default: return { text: '⏳ В обработке', color: '#FF9500', bg: '#FF9500' };
     }
-  };
-
-  const statusInfo = getStatusInfo(activeOrderStatus);
-
-  // Получаем выбранную сеть и биржу для отображения иконок
-  const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
-  const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
-
-  // ДЕБАГ - логируем текущую тему
-  console.log('🔍 Текущая тема в состоянии:', isDarkTheme ? 'Темная' : 'Светлая');
+  }
 
   return (
     <div className="home-container">
-      {/* Бейдж активного ордера в хедере */}
       {hasActiveOrder && (
         <div className="active-order-header-badge" onClick={() => navigateTo('history')}>
           <div className="badge-icon">📊</div>
@@ -889,12 +822,9 @@ const handleSwap = () => {
         </div>
       )}
 
-      {/* Контент */}
       <div className="home-content">
         {hasActiveOrder ? (
-          // ТЕЛЕГРАМ-СТИЛЬ ДЛЯ АКТИВНОГО ОРДЕРА
           <div className="tg-active-order-container">
-            {/* Заголовок */}
             <div className="tg-order-header">
               <div className="tg-order-icon">📋</div>
               <div className="tg-order-title">
@@ -903,7 +833,6 @@ const handleSwap = () => {
               </div>
             </div>
 
-            {/* Карточка ордера */}
             <div className="tg-order-card">
               <div className="tg-order-card-header">
                 <div className="tg-order-id">
@@ -952,7 +881,6 @@ const handleSwap = () => {
                 )}
               </div>
 
-              {/* Кнопки действий */}
               <div className="tg-order-actions">
                 <button 
                   className="tg-action-btn primary"
@@ -968,7 +896,6 @@ const handleSwap = () => {
                 </button>
               </div>
 
-              {/* Информация */}
               <div className="tg-order-info">
                 <div className="tg-info-icon">💬</div>
                 <div className="tg-info-text">
@@ -977,7 +904,6 @@ const handleSwap = () => {
               </div>
             </div>
 
-            {/* Предупреждение */}
             <div className="tg-order-warning">
               <div className="tg-warning-icon">⚠️</div>
               <div className="tg-warning-text">
@@ -987,9 +913,7 @@ const handleSwap = () => {
             </div>
           </div>
         ) : (
-          // ОБЫЧНЫЙ ИНТЕРФЕЙС ОБМЕНА
           <>
-            {/* Карточки валют */}
             <div className="currency-cards-section">
               <div className="currency-cards-horizontal">
                 <div className="currency-card-side left-card">
@@ -1005,26 +929,17 @@ const handleSwap = () => {
                   </div>
                 </div>
 
-                {/* Кнопка swap с динамическими цветами */}
                 <button
                   className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
                   onClick={handleSwap}
                   disabled={hasActiveOrder}
                   title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
                 >
-                  {/* ДЕБАГ - показываем текущую тему */}
-                  <div style={{ 
-                    display: 'none',
-                    position: 'absolute',
-                    background: 'red',
-                    color: 'white',
-                    padding: '2px',
-                    fontSize: '10px'
-                  }}>
-                    Тема: {isDarkTheme ? 'Темная' : 'Светлая'}
-                  </div>
-                  
-                  <SwapIcon isSwapped={isSwapped} isDarkTheme={isDarkTheme} />
+                  {isDarkTheme ? (
+                    <DarkThemeSwapIcon isSwapped={isSwapped} />
+                  ) : (
+                    <LightThemeSwapIcon isSwapped={isSwapped} />
+                  )}
                 </button>
 
                 <div className="currency-card-side right-card">
@@ -1041,7 +956,6 @@ const handleSwap = () => {
                 </div>
               </div>
 
-              {/* Поля ввода суммы */}
               <div className="amount-input-section">
                 <div className="amount-input-group">
                   <label className="amount-label">Вы отдаете</label>
@@ -1086,14 +1000,12 @@ const handleSwap = () => {
               </div>
             </div>
 
-            {/* Реквизиты для покупки USDT */}
             {isBuyMode && (
               <div className="payment-section-new">
                 <div className="payment-header-new">
                   <h3 className="section-title">Адрес для получения USDT</h3>
                 </div>
 
-                {/* Тип ввода адреса */}
                 <div className="crypto-type-switcher">
                   <button 
                     className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
@@ -1111,7 +1023,6 @@ const handleSwap = () => {
                   </button>
                 </div>
 
-                {/* Добавление адреса */}
                 <div className="add-form">
                   {cryptoType === 'address' ? (
                     <>
@@ -1183,7 +1094,6 @@ const handleSwap = () => {
                   </button>
                 </div>
 
-                {/* Список адресов */}
                 {cryptoAddresses.length > 0 && (
                   <div className="crypto-list">
                     <h4>Ваши адреса:</h4>
@@ -1266,14 +1176,12 @@ const handleSwap = () => {
               </div>
             )}
 
-            {/* Реквизиты для продажи USDT */}
             {!isBuyMode && (
               <div className="payment-section-new">
                 <div className="payment-header-new">
                   <h3 className="section-title">Реквизиты для получения RUB</h3>
                 </div>
 
-                {/* Добавление реквизитов */}
                 <div className="add-form">
                   <select
                     value={bankName}
@@ -1314,7 +1222,6 @@ const handleSwap = () => {
                   </button>
                 </div>
 
-                {/* Список реквизитов */}
                 {paymentMethods.length > 0 && (
                   <div className="payments-list">
                     <h4>Ваши реквизиты:</h4>
@@ -1361,7 +1268,6 @@ const handleSwap = () => {
               </div>
             )}
 
-            {/* Кнопка обмена */}
             <button
               className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
               disabled={!isExchangeReady() || isLoading}
@@ -1375,7 +1281,6 @@ const handleSwap = () => {
               </span>
             </button>
 
-            {/* Информация */}
             <div className="security-info">
               <div className="security-icon">🔒</div>
               <div className="security-text">
@@ -1386,7 +1291,6 @@ const handleSwap = () => {
         )}
       </div>
 
-      {/* Сообщение */}
       {message && (
         <div className={`message-toast-new ${message.includes('✅') ? 'success' : message.includes('❌') ? 'error' : message.includes('⚠️') ? 'warning' : 'info'}`}>
           <span className="toast-text">{message}</span>

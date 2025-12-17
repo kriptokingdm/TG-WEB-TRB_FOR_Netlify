@@ -570,6 +570,11 @@
     transition: all 0.3s ease;
 }
 
+[data-theme="dark"] .rule-item-new{
+    background: var(--tg-secondary-bg, 0f0f0f);
+
+}
+
 .rule-item-new:hover {
     background: #f0f2f5;
     transform: translateY(-2px);
@@ -1088,4 +1093,221 @@
 
 [data-theme="dark"] .search-results-new::-webkit-scrollbar-thumb:hover {
     background: #777;
+}
+
+/* Дополнительные исправления для Help.css */
+
+/* Исправление для активной секции */
+.help-section-new.active .section-content-new {
+    max-height: 5000px !important;
+    transition: max-height 0.8s cubic-bezier(0, 1, 0, 1) !important;
+}
+
+/* Плавная анимация раскрытия */
+.section-content-new {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+/* Исправление для активных кнопок */
+.category-card-new.active {
+    background: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+/* Темная тема */
+[data-theme="dark"] .category-card-new.active {
+    background: rgba(48, 163, 83, 0.3) !important;
+    color: white !important;
+    border: 1px solid rgba(48, 163, 83, 0.4) !important;
+}
+
+/* Кнопка назад */
+.back-button-new {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 12px;
+    color: white !important;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 40px;
+}
+
+.back-button-new:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateX(-3px);
+}
+
+/* Темная тема для кнопки назад */
+[data-theme="dark"] .back-button-new {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Подвал навигации */
+.bottom-nav-help {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--tg-card-bg, #ffffff);
+    border-top: 1px solid var(--tg-border, #e0e0e0);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Кнопки навигации */
+.nav-btn-help {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--tg-secondary-text);
+    font-size: 12px;
+    transition: all 0.3s ease;
+    min-width: 70px;
+    font-family: inherit;
+    text-decoration: none;
+}
+
+.nav-btn-help:hover {
+    background: var(--tg-accent-light);
+    color: var(--tg-accent);
+}
+
+.nav-btn-help.active {
+    background: var(--tg-accent);
+    color: white !important;
+}
+
+.nav-icon-help {
+    font-size: 20px;
+}
+
+.nav-label-help {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Исправление для контейнера */
+.help-container-new {
+    padding-bottom: 70px !important;
+    min-height: calc(100vh - 70px);
+}
+
+/* Улучшение адаптивности */
+@media (max-width: 480px) {
+    .help-container-new {
+        padding-bottom: 60px !important;
+    }
+    
+    .categories-grid-new {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px;
+    }
+    
+    .category-card-new {
+        padding: 12px !important;
+        border-radius: 12px !important;
+    }
+    
+    .category-icon-new {
+        font-size: 20px !important;
+    }
+    
+    .category-name-new {
+        font-size: 11px !important;
+    }
+    
+    .questions-grid-new {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .question-chip-new {
+        padding: 10px !important;
+        font-size: 12px !important;
+    }
+    
+    .support-contacts-new {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    .back-button-new {
+        padding: 8px 12px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Анимация для FAQ */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.faq-answer-new {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Исправление для подсветки результатов поиска */
+.search-result-item-new:hover {
+    background: var(--tg-accent-light) !important;
+    cursor: pointer;
+}
+
+/* Улучшение скроллбара */
+.search-results-new::-webkit-scrollbar {
+    width: 4px;
+}
+
+.search-results-new::-webkit-scrollbar-track {
+    background: var(--tg-input-bg);
+    border-radius: 2px;
+}
+
+.search-results-new::-webkit-scrollbar-thumb {
+    background: var(--tg-accent);
+    border-radius: 2px;
+}
+
+/* Для темной темы */
+[data-theme="dark"] .search-results-new::-webkit-scrollbar-track {
+    background: #2c2c2e;
+}
+
+[data-theme="dark"] .search-results-new::-webkit-scrollbar-thumb {
+    background: #30a353;
+}
+
+/* Исправление для заголовка */
+.header-subtitle {
+    margin-top: 4px;
+    opacity: 0.9;
+    font-size: 14px;
 }

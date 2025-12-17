@@ -3,42 +3,42 @@ import './Profile.css';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // Используем порт 3002 как в вашем API
-const API_BASE_URL = 'https://tethrab.shop'; 
+const API_BASE_URL = 'https://tethrab.shop';
 
 // SVG иконки
 const ProfileSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="8" r="4" fill="currentColor"/>
-    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" fill="currentColor"/>
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="8" r="4" fill="currentColor" />
+        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" fill="currentColor" />
+    </svg>
 );
 
 const ReferralSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17 11L22 6L17 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M22 6H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M17 11L22 6L17 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22 6H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
 );
 
 const SettingsSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M19.4 15C19.2663 15.3031 19.1335 15.6063 19 15.9L21 17.9C21.5 18.2 21.9 18.6 21.9 19.4C21.8 20.2 21.3 20.6 20.7 21L18.7 19C18.4 19.1 18.1 19.2 17.8 19.3C17.5 19.4 17.2 19.5 16.9 19.6L16.5 22H15.5L15.1 19.6C14.8 19.5 14.5 19.4 14.2 19.3C13.9 19.2 13.6 19.1 13.3 19L11.3 21C10.7 20.6 10.2 20.2 10.1 19.4C10 18.6 10.4 18.2 10.9 17.9L12.9 15.9C12.8 15.6 12.7 15.3 12.6 15H12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M19.4 15C19.2663 15.3031 19.1335 15.6063 19 15.9L21 17.9C21.5 18.2 21.9 18.6 21.9 19.4C21.8 20.2 21.3 20.6 20.7 21L18.7 19C18.4 19.1 18.1 19.2 17.8 19.3C17.5 19.4 17.2 19.5 16.9 19.6L16.5 22H15.5L15.1 19.6C14.8 19.5 14.5 19.4 14.2 19.3C13.9 19.2 13.6 19.1 13.3 19L11.3 21C10.7 20.6 10.2 20.2 10.1 19.4C10 18.6 10.4 18.2 10.9 17.9L12.9 15.9C12.8 15.6 12.7 15.3 12.6 15H12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
 );
 
 const MoonSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 12.79C20.8427 14.4922 20.2039 16.1144 19.1582 17.4668C18.1125 18.8192 16.7035 19.8458 15.0957 20.4265C13.4879 21.0073 11.748 21.1181 10.0795 20.7461C8.41104 20.3741 6.88203 19.5345 5.67418 18.3267C4.46634 17.1188 3.62675 15.5898 3.25475 13.9214C2.88276 12.2529 2.99354 10.513 3.57432 8.90523C4.1551 7.29745 5.18168 5.88842 6.53407 4.84272C7.88647 3.79702 9.50862 3.15824 11.2108 3.00101C10.2134 4.34827 9.73375 6.00945 9.85843 7.68141C9.98312 9.35338 10.7039 10.9251 11.8894 12.1106C13.0749 13.2961 14.6466 14.0169 16.3186 14.1416C17.9906 14.2663 19.6518 13.7866 21 12.7892V12.79Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12.79C20.8427 14.4922 20.2039 16.1144 19.1582 17.4668C18.1125 18.8192 16.7035 19.8458 15.0957 20.4265C13.4879 21.0073 11.748 21.1181 10.0795 20.7461C8.41104 20.3741 6.88203 19.5345 5.67418 18.3267C4.46634 17.1188 3.62675 15.5898 3.25475 13.9214C2.88276 12.2529 2.99354 10.513 3.57432 8.90523C4.1551 7.29745 5.18168 5.88842 6.53407 4.84272C7.88647 3.79702 9.50862 3.15824 11.2108 3.00101C10.2134 4.34827 9.73375 6.00945 9.85843 7.68141C9.98312 9.35338 10.7039 10.9251 11.8894 12.1106C13.0749 13.2961 14.6466 14.0169 16.3186 14.1416C17.9906 14.2663 19.6518 13.7866 21 12.7892V12.79Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
 );
 
 // Ваша SVG иконка Help
 const HelpSVG = () => (
     <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 13C0 5.8203 5.8203 0 13 0C20.1797 0 26 5.8203 26 13C26 20.1797 20.1797 26 13 26C5.8203 26 0 20.1797 0 13ZM8.66667 13C8.66667 14.0833 7.58333 15.1667 6.5 15.1667C5.41667 15.1667 4.33333 14.0833 4.33333 13C4.33333 11.9167 5.41667 10.8333 6.5 10.8333C7.58333 10.8333 8.66667 11.9167 8.66667 13ZM15.1667 13C15.1667 14.0833 14.0833 15.1667 13 15.1667C11.9167 15.1667 10.8333 14.0833 10.8333 13C10.8333 11.9167 11.9167 10.8333 13 10.8333C14.0833 10.8333 15.1667 11.9167 15.1667 13ZM19.5 15.1667C20.5833 15.1667 21.6667 14.0833 21.6667 13C21.6667 11.9167 20.5833 10.8333 19.5 10.8333C18.4167 10.8333 17.3333 11.9167 17.3333 13C17.3333 14.0833 18.4167 15.1667 19.5 15.1667Z" fill="#3C3C43" fill-opacity="0.6"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M0 13C0 5.8203 5.8203 0 13 0C20.1797 0 26 5.8203 26 13C26 20.1797 20.1797 26 13 26C5.8203 26 0 20.1797 0 13ZM8.66667 13C8.66667 14.0833 7.58333 15.1667 6.5 15.1667C5.41667 15.1667 4.33333 14.0833 4.33333 13C4.33333 11.9167 5.41667 10.8333 6.5 10.8333C7.58333 10.8333 8.66667 11.9167 8.66667 13ZM15.1667 13C15.1667 14.0833 14.0833 15.1667 13 15.1667C11.9167 15.1667 10.8333 14.0833 10.8333 13C10.8333 11.9167 11.9167 10.8333 13 10.8333C14.0833 10.8333 15.1667 11.9167 15.1667 13ZM19.5 15.1667C20.5833 15.1667 21.6667 14.0833 21.6667 13C21.6667 11.9167 20.5833 10.8333 19.5 10.8333C18.4167 10.8333 17.3333 11.9167 17.3333 13C17.3333 14.0833 18.4167 15.1667 19.5 15.1667Z" fill="#3C3C43" fill-opacity="0.6" />
     </svg>
 );
 
@@ -69,7 +69,7 @@ function Profile({ navigateTo, telegramUser }) {
             if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
                 const tgUser = tg.initDataUnsafe?.user;
-                
+
                 if (tgUser) {
                     console.log('🤖 Telegram Web App User:', tgUser);
                     return tgUser.id.toString();
@@ -115,7 +115,7 @@ function Profile({ navigateTo, telegramUser }) {
             if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
                 const tgUser = tg.initDataUnsafe?.user;
-                
+
                 if (tgUser) {
                     const userData = {
                         id: tgUser.id.toString(),
@@ -128,11 +128,11 @@ function Profile({ navigateTo, telegramUser }) {
 
                     console.log('✅ Telegram данные:', userData);
                     setUserData(userData);
-                    
+
                     // Сохраняем в localStorage
                     localStorage.setItem('telegramUser', JSON.stringify(tgUser));
                     localStorage.setItem('currentUser', JSON.stringify(userData));
-                    
+
                     return;
                 }
             }
@@ -140,15 +140,15 @@ function Profile({ navigateTo, telegramUser }) {
             // АДАПТИРОВАННЫЙ ЗАПРОС: используем существующий endpoint для получения ордеров пользователя
             // Из ордеров мы можем извлечь данные о пользователе
             const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`);
-            
+
             if (response.ok) {
                 const result = await response.json();
                 console.log('📊 Ответ от API ордеров:', result);
-                
+
                 if (result.success && result.orders && result.orders.length > 0) {
                     // Берем данные из первого ордера
                     const firstOrder = result.orders[0];
-                    
+
                     const userData = {
                         id: userId,
                         telegramId: firstOrder.telegram_id || userId,
@@ -163,13 +163,13 @@ function Profile({ navigateTo, telegramUser }) {
                     console.log('✅ Данные пользователя из ордеров:', userData);
                     setUserData(userData);
                     localStorage.setItem('currentUser', JSON.stringify(userData));
-                    
+
                     // Сохраняем ордера для статистики
                     setUserOrders(result.orders);
-                    
+
                     // Рассчитываем статистику из ордеров
                     calculateUserStats(result.orders);
-                    
+
                     return;
                 }
             }
@@ -191,7 +191,7 @@ function Profile({ navigateTo, telegramUser }) {
 
         } catch (error) {
             console.error('❌ Ошибка загрузки данных пользователя:', error);
-            
+
             // Пробуем загрузить из localStorage
             try {
                 const savedUser = localStorage.getItem('currentUser');
@@ -209,18 +209,18 @@ function Profile({ navigateTo, telegramUser }) {
     // Рассчитываем статистику пользователя из его ордеров
     const calculateUserStats = (orders) => {
         if (!orders || orders.length === 0) return;
-        
+
         // Подсчитываем общую сумму сделок
         let totalAmount = 0;
         let completedOrders = 0;
-        
+
         orders.forEach(order => {
             if (order.admin_status === 'completed') {
                 totalAmount += parseFloat(order.amount) || 0;
                 completedOrders++;
             }
         });
-        
+
         // Здесь можно добавить расчет заработанного по рефералам
         // Пока используем заглушку
     };
@@ -241,19 +241,19 @@ function Profile({ navigateTo, telegramUser }) {
                 referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
                 referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
             };
-            
+
             // Пробуем рассчитать из ордеров пользователя
             if (userOrders.length > 0) {
                 // Здесь можно добавить логику расчета, если в будущем будет реферальная система
             }
-            
+
             setReferralStats(stats);
-            
+
             console.log('📊 Установлена реферальная статистика:', stats);
 
         } catch (error) {
             console.error('❌ Ошибка загрузки статистики:', error);
-            
+
             // Даже при ошибке устанавливаем базовые данные
             const userId = getUserId();
             setReferralStats({
@@ -271,15 +271,15 @@ function Profile({ navigateTo, telegramUser }) {
         const loadData = async () => {
             await loadUserData();
             await loadReferralStats();
-            
+
             // Таймер для скрытия загрузки
             const timer = setTimeout(() => {
                 setIsLoading(false);
             }, 1000);
-            
+
             return () => clearTimeout(timer);
         };
-        
+
         loadData();
     }, []);
 
@@ -309,20 +309,20 @@ function Profile({ navigateTo, telegramUser }) {
 
     // Простой обработчик для кнопки помощи
     // Profile.js - исправленный handleHelpClick
-const handleHelpClick = () => {
-    console.log('🆘 Help button clicked');
-    
-    // Вариант 1: Используем navigateTo из props если он есть
-    if (navigateTo && typeof navigateTo === 'function') {
-        navigateTo('help');
-    } 
-    // Вариант 2: Если navigateTo не передан, меняем hash
-    else {
-        window.location.hash = 'help';
-        // Принудительно обновляем страницу чтобы App.js увидел hash
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-    }
-};
+    const handleHelpClick = () => {
+        console.log('🆘 Help button clicked');
+
+        // Вариант 1: Используем navigateTo из props если он есть
+        if (navigateTo && typeof navigateTo === 'function') {
+            navigateTo('help');
+        }
+        // Вариант 2: Если navigateTo не передан, меняем hash
+        else {
+            window.location.hash = 'help';
+            // Принудительно обновляем страницу чтобы App.js увидел hash
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        }
+    };
 
     if (isLoading) {
         return (
@@ -346,17 +346,17 @@ const handleHelpClick = () => {
                             <p className="header-subtitle">Управление вашим аккаунтом</p>
                         </div>
                     </div>
-                    
+
                     {/* Кнопка помощи с вашей SVG иконкой */}
-                    <button 
+                    <button
                         className="help-button-new"
-                        onClick={handleHelpClick}
-                        title="Помощь и поддержка"
+                        onClick={() => navigateTo('help')}
+                        title="Перейти в раздел помощи"
                     >
-                        <HelpSVG />
+                        <span className="help-icon"> <HelpSVG /></span>
                     </button>
                 </div>
-
+               
                 {/* Карточка профиля */}
                 <div className="profile-main-card">
                     <div className="profile-avatar-section">

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import './Help.css';
 
 function Help({ navigateTo }) {
@@ -280,6 +279,13 @@ function Help({ navigateTo }) {
         return category ? category.name : 'Общее';
     };
 
+    // Автоматически открываем FAQ при загрузке
+    useEffect(() => {
+        if (!activeSection) {
+            setActiveSection('faq');
+        }
+    }, []);
+
     return (
         <div className="help-container-new">
             {/* Хедер */}
@@ -287,10 +293,12 @@ function Help({ navigateTo }) {
                 <div className="header-content">
                     <div className="header-left">
                         <h1 className="header-title-new">Помощь</h1>
+                        <p className="header-subtitle">Все ответы на ваши вопросы</p>
                     </div>
                     <button 
                         className="back-button-new"
                         onClick={() => navigateTo('profile')}
+                        title="Вернуться в профиль"
                     >
                         ← Назад
                     </button>
@@ -306,6 +314,7 @@ function Help({ navigateTo }) {
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="search-input-new"
+                            autoComplete="off"
                         />
                         {searchQuery && (
                             <button 
@@ -314,6 +323,7 @@ function Help({ navigateTo }) {
                                     setSearchQuery('');
                                     setShowSearchResults(false);
                                 }}
+                                title="Очистить поиск"
                             >
                                 ✕
                             </button>
@@ -327,7 +337,7 @@ function Help({ navigateTo }) {
                             </div>
                             {searchResults.map((result, index) => (
                                 <div
-                                    key={index}
+                                    key={`result-${index}`}
                                     className="search-result-item-new"
                                     onClick={() => handleResultClick(result)}
                                 >
@@ -354,9 +364,10 @@ function Help({ navigateTo }) {
                     <div className="categories-grid-new">
                         {categories.map(category => (
                             <button
-                                key={category.id}
+                                key={`category-${category.id}`}
                                 className={`category-card-new ${selectedCategory === category.id ? 'active' : ''}`}
                                 onClick={() => handleCategoryClick(category.id)}
+                                title={`Категория: ${category.name}`}
                             >
                                 <div className="category-icon-new">{category.icon}</div>
                                 <div className="category-name-new">{category.name}</div>
@@ -372,9 +383,10 @@ function Help({ navigateTo }) {
                         <div className="questions-grid-new">
                             {popularQuestions.map((question, index) => (
                                 <button
-                                    key={index}
+                                    key={`popular-${index}`}
                                     className="question-chip-new"
                                     onClick={() => handlePopularQuestionClick(question)}
+                                    title={`Поиск: ${question}`}
                                 >
                                     {question}
                                 </button>
@@ -398,58 +410,57 @@ function Help({ navigateTo }) {
                         </span>
                     </div>
 
-                    {activeSection === 'faq' && (
-                        <div className="section-content-new">
-                            {filteredFaqItems.length === 0 ? (
-                                <div className="empty-state-new">
-                                    <div className="empty-icon-new">📭</div>
-                                    <h4>Нет вопросов в этой категории</h4>
-                                    <p>Попробуйте выбрать другую категорию или использовать поиск</p>
-                                </div>
-                            ) : (
-                                <div className="faq-list-new">
-                                    {filteredFaqItems.map((item) => (
-                                        <div 
-                                            key={item.id} 
-                                            id={item.id}
-                                            className="faq-item-new"
+                    <div className={`section-content-new ${activeSection === 'faq' ? 'active' : ''}`}>
+                        {filteredFaqItems.length === 0 ? (
+                            <div className="empty-state-new">
+                                <div className="empty-icon-new">📭</div>
+                                <h4>Нет вопросов в этой категории</h4>
+                                <p>Попробуйте выбрать другую категорию или использовать поиск</p>
+                            </div>
+                        ) : (
+                            <div className="faq-list-new">
+                                {filteredFaqItems.map((item) => (
+                                    <div 
+                                        key={item.id} 
+                                        id={item.id}
+                                        className="faq-item-new"
+                                    >
+                                        <button 
+                                            className="faq-question-new"
+                                            onClick={() => toggleFaq(item.id)}
+                                            aria-expanded={expandedFaqs[item.id] || false}
                                         >
-                                            <button 
-                                                className="faq-question-new"
-                                                onClick={() => toggleFaq(item.id)}
-                                            >
-                                                <div className="question-content">
-                                                    <div className="question-icon-new">Q</div>
-                                                    <div className="question-text-new">{item.question}</div>
-                                                </div>
-                                                <span className={`faq-toggle ${expandedFaqs[item.id] ? 'expanded' : ''}`}>
-                                                    ▼
-                                                </span>
-                                            </button>
-                                            
-                                            {expandedFaqs[item.id] && (
-                                                <div className="faq-answer-new">
-                                                    <div className="answer-content">
-                                                        <div className="answer-icon-new">A</div>
-                                                        <div className="answer-text-new">
-                                                            {item.answer.split('\n').map((line, i) => (
-                                                                <div key={i} className="answer-line">{line}</div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    <div className="faq-meta">
-                                                        <span className="faq-category-new">
-                                                            {getCategoryIcon(item.category)} {getCategoryName(item.category)}
-                                                        </span>
+                                            <div className="question-content">
+                                                <div className="question-icon-new">Q</div>
+                                                <div className="question-text-new">{item.question}</div>
+                                            </div>
+                                            <span className={`faq-toggle ${expandedFaqs[item.id] ? 'expanded' : ''}`}>
+                                                ▼
+                                            </span>
+                                        </button>
+                                        
+                                        {expandedFaqs[item.id] && (
+                                            <div className="faq-answer-new">
+                                                <div className="answer-content">
+                                                    <div className="answer-icon-new">A</div>
+                                                    <div className="answer-text-new">
+                                                        {item.answer.split('\n').map((line, i) => (
+                                                            <div key={i} className="answer-line">{line}</div>
+                                                        ))}
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                                <div className="faq-meta">
+                                                    <span className="faq-category-new">
+                                                        {getCategoryIcon(item.category)} {getCategoryName(item.category)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Правила секция */}
@@ -464,25 +475,23 @@ function Help({ navigateTo }) {
                         </span>
                     </div>
 
-                    {activeSection === 'rules' && (
-                        <div className="section-content-new">
-                            <div className="rules-list-new">
-                                {rulesContent.map((rule) => (
-                                    <div key={rule.id} id={rule.id} className="rule-item-new">
-                                        <div className="rule-header-new">
-                                            <div className="rule-number-new">{rule.id.split('-')[1]}</div>
-                                            <h4 className="rule-title-new">{rule.title}</h4>
-                                        </div>
-                                        <div className="rule-content-new">
-                                            {rule.content.split('\n').map((line, i) => (
-                                                <div key={i} className="rule-line-new">{line}</div>
-                                            ))}
-                                        </div>
+                    <div className={`section-content-new ${activeSection === 'rules' ? 'active' : ''}`}>
+                        <div className="rules-list-new">
+                            {rulesContent.map((rule) => (
+                                <div key={rule.id} id={rule.id} className="rule-item-new">
+                                    <div className="rule-header-new">
+                                        <div className="rule-number-new">{rule.id.split('-')[1]}</div>
+                                        <h4 className="rule-title-new">{rule.title}</h4>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="rule-content-new">
+                                        {rule.content.split('\n').map((line, i) => (
+                                            <div key={i} className="rule-line-new">{line}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* Секция поддержки */}
@@ -500,6 +509,7 @@ function Help({ navigateTo }) {
                             <button 
                                 className="support-btn-new primary"
                                 onClick={handleContactSupport}
+                                title="Открыть чат поддержки"
                             >
                                 <span className="btn-icon">💬</span>
                                 Чат поддержки
@@ -507,68 +517,26 @@ function Help({ navigateTo }) {
                             <button 
                                 className="support-btn-new secondary"
                                 onClick={handleOpenChannel}
+                                title="Открыть официальный канал"
                             >
                                 <span className="btn-icon">📢</span>
                                 Официальный канал
                             </button>
-
                         </div>
                         
                         <div className="support-info-new">
                             <div className="info-item">
                                 <span className="info-icon">⏱️</span>
-                                <span>Поддержка стараеться обработать каждую заявку как можно скорее.
-                                    Мы ценим Ваше время !
-                                </span>
+                                <span>Поддержка старается обработать каждую заявку как можно скорее.</span>
                             </div>
-                            
+                            <div className="info-item">
+                                <span className="info-icon">🕒</span>
+                                <span>Время ответа: 5-15 минут</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Навигация */}
-            {/* <div className="bottom-nav-new">
-                <button 
-                    className="nav-item-new" 
-                    onClick={() => navigateTo('home')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <ExchangeIcon />
-                    </div>
-                    <span className="nav-label">Обмен</span>
-                </button>
-                
-                <button 
-                    className="nav-item-new" 
-                    onClick={() => navigateTo('profile')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <ProfileIcon />
-                    </div>
-                    <span className="nav-label">Профиль</span>
-                </button>
-                
-                <button 
-                    className="nav-item-new" 
-                    onClick={() => navigateTo('history')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <HistoryIcon />
-                    </div>
-                    <span className="nav-label">История</span>
-                </button>
-                
-                <button 
-                    className="nav-item-new active" 
-                    onClick={() => navigateTo('help')}
-                >
-                    <div className="nav-icon-wrapper">
-                        <span className="nav-icon-custom">❓</span>
-                    </div>
-                    <span className="nav-label">Помощь</span>
-                </button>
-            </div> */}
         </div>
     );
 }

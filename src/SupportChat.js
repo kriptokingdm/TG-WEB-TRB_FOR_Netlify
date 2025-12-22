@@ -252,6 +252,29 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
+    // Определяем, является ли сообщение от текущего пользователя
+    const isUserMessage = (msg) => {
+        return msg.sender_id === userId || msg.sender_type === 'user';
+    };
+
+    // Получаем имя отправителя для отображения
+    const getSenderDisplayName = (msg) => {
+        if (msg.sender_id === userId) {
+            return 'Вы';
+        }
+        
+        switch(msg.sender_type) {
+            case 'user':
+                return 'Пользователь';
+            case 'admin':
+                return 'Оператор';
+            case 'system':
+                return 'Система';
+            default:
+                return msg.sender_id === userId ? 'Вы' : 'Оператор';
+        }
+    };
+
     // Группировка сообщений по датам
     const groupMessagesByDate = () => {
         const groups = {};
@@ -269,7 +292,7 @@ function SupportChat({ orderId, onClose }) {
                 const prevTime = new Date(prevMsg.created_at);
                 const currentTime = new Date(msg.created_at);
                 const timeDiff = (currentTime - prevTime) / 1000; // разница в секундах
-                const isSameSender = prevMsg.sender_type === msg.sender_type;
+                const isSameSender = prevMsg.sender_id === msg.sender_id;
                 
                 if (isSameSender && timeDiff < 60) { // меньше минуты между сообщениями
                     marginTop = 'small';
@@ -280,7 +303,8 @@ function SupportChat({ orderId, onClose }) {
             
             groups[date].push({
                 ...msg,
-                marginTop
+                marginTop,
+                isUser: isUserMessage(msg)
             });
         });
         return groups;
@@ -391,7 +415,7 @@ function SupportChat({ orderId, onClose }) {
                                     <div 
                                         key={msg.id} 
                                         className={`chat-message-new ${
-                                            msg.sender_type === 'user' ? 'user-message-new' : 'admin-message-new'
+                                            msg.isUser ? 'user-message-new' : 'admin-message-new'
                                         } ${msg.sender_type === 'system' ? 'system-message-new' : ''} 
                                         message-margin-${msg.marginTop}`}
                                     >
@@ -409,8 +433,7 @@ function SupportChat({ orderId, onClose }) {
                                             </div>
                                             {msgIndex === dateMessages.length - 1 && (
                                                 <div className="message-sender">
-                                                    {msg.sender_type === 'user' ? 'Вы' : 
-                                                     msg.sender_type === 'admin' ? 'Оператор' : 'Система'}
+                                                    {getSenderDisplayName(msg)}
                                                 </div>
                                             )}
                                         </div>

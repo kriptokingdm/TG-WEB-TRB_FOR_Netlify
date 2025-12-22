@@ -1,24 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Profile.css';
-import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
+import './ReferralSystem.css';
 
-// Используем порт 3002 как в вашем API
 const API_BASE_URL = 'https://tethrab.shop';
 
 // SVG иконки
-const ProfileSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="8" r="4" fill="currentColor" />
-        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" fill="currentColor" />
-    </svg>
-);
-
-const ReferralSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M17 11L22 6L17 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M22 6H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+const HelpSVG = () => (
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fillRule="evenodd" clipRule="evenodd" d="M0 13C0 5.8203 5.8203 0 13 0C20.1797 0 26 5.8203 26 13C26 20.1797 20.1797 26 13 26C5.8203 26 0 20.1797 0 13ZM8.66667 13C8.66667 14.0833 7.58333 15.1667 6.5 15.1667C5.41667 15.1667 4.33333 14.0833 4.33333 13C4.33333 11.9167 5.41667 10.8333 6.5 10.8333C7.58333 10.8333 8.66667 11.9167 8.66667 13ZM15.1667 13C15.1667 14.0833 14.0833 15.1667 13 15.1667C11.9167 15.1667 10.8333 14.0833 10.8333 13C10.8333 11.9167 11.9167 10.8333 13 10.8333C14.0833 10.8333 15.1667 11.9167 15.1667 13ZM19.5 15.1667C20.5833 15.1667 21.6667 14.0833 21.6667 13C21.6667 11.9167 20.5833 10.8333 19.5 10.8333C18.4167 10.8333 17.3333 11.9167 17.3333 13C17.3333 14.0833 18.4167 15.1667 19.5 15.1667Z" fill="currentColor" fillOpacity="0.6" />
     </svg>
 );
 
@@ -35,56 +24,26 @@ const MoonSVG = () => (
     </svg>
 );
 
-// Ваша SVG иконка Help
-const HelpSVG = () => (
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M0 13C0 5.8203 5.8203 0 13 0C20.1797 0 26 5.8203 26 13C26 20.1797 20.1797 26 13 26C5.8203 26 0 20.1797 0 13ZM8.66667 13C8.66667 14.0833 7.58333 15.1667 6.5 15.1667C5.41667 15.1667 4.33333 14.0833 4.33333 13C4.33333 11.9167 5.41667 10.8333 6.5 10.8333C7.58333 10.8333 8.66667 11.9167 8.66667 13ZM15.1667 13C15.1667 14.0833 14.0833 15.1667 13 15.1667C11.9167 15.1667 10.8333 14.0833 10.8333 13C10.8333 11.9167 11.9167 10.8333 13 10.8333C14.0833 10.8333 15.1667 11.9167 15.1667 13ZM19.5 15.1667C20.5833 15.1667 21.6667 14.0833 21.6667 13C21.6667 11.9167 20.5833 10.8333 19.5 10.8333C18.4167 10.8333 17.3333 11.9167 17.3333 13C17.3333 14.0833 18.4167 15.1667 19.5 15.1667Z" fill="#3C3C43" fill-opacity="0.6" />
-    </svg>
-);
-
-
-
-
-
 function Profile({ navigateTo, telegramUser }) {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [showReferral, setShowReferral] = useState(false);
-    const [referralStats, setReferralStats] = useState({
-        totalReferrals: 0,
-        activeReferrals: 0,
-        earned: 0,
-        pendingEarned: 0,
-        referralLink: '',
-        referralCode: ''
-    });
     const [photoError, setPhotoError] = useState(false);
     const [userOrders, setUserOrders] = useState([]);
+    const [referralData, setReferralData] = useState(null);
+    const [activeTab, setActiveTab] = useState('profile');
 
-    // Получаем ID пользователя из Telegram Web App
+    // Получаем ID пользователя
     const getUserId = () => {
         try {
-            // Пробуем получить из Telegram Web App
             if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
                 const tgUser = tg.initDataUnsafe?.user;
-
-                if (tgUser) {
-                    console.log('🤖 Telegram Web App User:', tgUser);
+                if (tgUser?.id) {
                     return tgUser.id.toString();
                 }
             }
 
-            // Пробуем получить из URL параметров (для тестирования)
-            const urlParams = new URLSearchParams(window.location.search);
-            const testUserId = urlParams.get('test_user_id');
-            if (testUserId) {
-                console.log('🧪 Тестовый пользователь из URL:', testUserId);
-                return testUserId;
-            }
-
-            // Пробуем получить из localStorage
             const savedTelegramUser = localStorage.getItem('telegramUser');
             if (savedTelegramUser) {
                 const parsed = JSON.parse(savedTelegramUser);
@@ -101,186 +60,75 @@ function Profile({ navigateTo, telegramUser }) {
             console.error('❌ Ошибка получения ID:', error);
         }
 
-        // Дефолтный пользователь для админа
         return '7879866656';
     };
 
-    // Получение данных пользователя из его ордеров
+    // Загрузка данных
     const loadUserData = async () => {
         try {
             const userId = getUserId();
             console.log('👤 Загружаем данные для ID:', userId);
 
-            // Если есть Telegram Web App данные, используем их
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                const tgUser = tg.initDataUnsafe?.user;
-
-                if (tgUser) {
-                    const userData = {
-                        id: tgUser.id.toString(),
-                        telegramId: tgUser.id,
-                        username: tgUser.username || `user_${tgUser.id}`,
-                        firstName: tgUser.first_name || 'Пользователь',
-                        lastName: tgUser.last_name || '',
-                        photoUrl: tgUser.photo_url
-                    };
-
-                    console.log('✅ Telegram данные:', userData);
-                    setUserData(userData);
-
-                    // Сохраняем в localStorage
-                    localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-
-                    return;
+            // Загружаем данные пользователя
+            const userResponse = await fetch(`${API_BASE_URL}/api/user?userId=${userId}`);
+            if (userResponse.ok) {
+                const userResult = await userResponse.json();
+                if (userResult.success) {
+                    setUserData(userResult.user);
                 }
             }
 
-            // АДАПТИРОВАННЫЙ ЗАПРОС: используем существующий endpoint для получения ордеров пользователя
-            // Из ордеров мы можем извлечь данные о пользователе
-            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`);
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('📊 Ответ от API ордеров:', result);
-
-                if (result.success && result.orders && result.orders.length > 0) {
-                    // Берем данные из первого ордера
-                    const firstOrder = result.orders[0];
-
-                    const userData = {
-                        id: userId,
-                        telegramId: firstOrder.telegram_id || userId,
-                        username: firstOrder.username || `user_${userId}`,
-                        firstName: firstOrder.first_name || 'Пользователь',
-                        lastName: '',
-                        photoUrl: null,
-                        totalOrders: result.count,
-                        lastOrderDate: firstOrder.created_at
-                    };
-
-                    console.log('✅ Данные пользователя из ордеров:', userData);
-                    setUserData(userData);
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-
-                    // Сохраняем ордера для статистики
-                    setUserOrders(result.orders);
-
-                    // Рассчитываем статистику из ордеров
-                    calculateUserStats(result.orders);
-
-                    return;
+            // Загружаем ордера
+            const ordersResponse = await fetch(`${API_BASE_URL}/user-orders/${userId}`);
+            if (ordersResponse.ok) {
+                const ordersResult = await ordersResponse.json();
+                if (ordersResult.success) {
+                    setUserOrders(ordersResult.orders || []);
                 }
             }
 
-            // Если нет данных в API, создаем пользователя на основе ID
-            const defaultUserData = {
+            // Загружаем реферальные данные
+            const referralResponse = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
+            if (referralResponse.ok) {
+                const referralResult = await referralResponse.json();
+                if (referralResult.success) {
+                    setReferralData(referralResult.data);
+                }
+            }
+
+        } catch (error) {
+            console.error('❌ Ошибка загрузки:', error);
+            // Данные по умолчанию
+            const userId = getUserId();
+            setUserData({
                 id: userId,
-                telegramId: userId,
                 username: `user_${userId}`,
-                firstName: 'Пользователь',
-                lastName: '',
-                photoUrl: null,
-                totalOrders: 0
-            };
-
-            console.log('⚙️ Создаем пользователя по умолчанию:', defaultUserData);
-            setUserData(defaultUserData);
-            localStorage.setItem('currentUser', JSON.stringify(defaultUserData));
-
-        } catch (error) {
-            console.error('❌ Ошибка загрузки данных пользователя:', error);
-
-            // Пробуем загрузить из localStorage
-            try {
-                const savedUser = localStorage.getItem('currentUser');
-                if (savedUser) {
-                    const parsed = JSON.parse(savedUser);
-                    console.log('📱 Данные из localStorage:', parsed);
-                    setUserData(parsed);
+                firstName: 'Пользователь'
+            });
+            setReferralData({
+                referral_link: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
+                stats: {
+                    total_referrals: 0,
+                    total_earnings: 0,
+                    available_earnings: 0,
+                    commission_rate: 1
                 }
-            } catch (localError) {
-                console.error('❌ Ошибка локальных данных:', localError);
-            }
-        }
-    };
-
-    // Рассчитываем статистику пользователя из его ордеров
-    const calculateUserStats = (orders) => {
-        if (!orders || orders.length === 0) return;
-
-        // Подсчитываем общую сумму сделок
-        let totalAmount = 0;
-        let completedOrders = 0;
-
-        orders.forEach(order => {
-            if (order.admin_status === 'completed') {
-                totalAmount += parseFloat(order.amount) || 0;
-                completedOrders++;
-            }
-        });
-
-        // Здесь можно добавить расчет заработанного по рефералам
-        // Пока используем заглушку
-    };
-
-    // Загрузка статистики рефералов - временная заглушка
-    const loadReferralStats = async () => {
-        try {
-            const userId = getUserId();
-            console.log('📊 Загрузка реферальной статистики для ID:', userId);
-
-            // ВРЕМЕННАЯ ЗАГЛУШКА - можно будет доработать когда добавите endpoint
-            // Пока используем статические данные
-            const stats = {
-                totalReferrals: 0,
-                activeReferrals: 0,
-                earned: 0,
-                pendingEarned: 0,
-                referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
-                referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
-            };
-
-            // Пробуем рассчитать из ордеров пользователя
-            if (userOrders.length > 0) {
-                // Здесь можно добавить логику расчета, если в будущем будет реферальная система
-            }
-
-            setReferralStats(stats);
-
-            console.log('📊 Установлена реферальная статистика:', stats);
-
-        } catch (error) {
-            console.error('❌ Ошибка загрузки статистики:', error);
-
-            // Даже при ошибке устанавливаем базовые данные
-            const userId = getUserId();
-            setReferralStats({
-                totalReferrals: 0,
-                activeReferrals: 0,
-                earned: 0,
-                pendingEarned: 0,
-                referralLink: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
-                referralCode: `REF-${String(userId).slice(-6).toUpperCase()}`
             });
         }
     };
 
     useEffect(() => {
         const loadData = async () => {
+            setIsLoading(true);
             await loadUserData();
-            await loadReferralStats();
-
-            // Таймер для скрытия загрузки
-            const timer = setTimeout(() => {
-                setIsLoading(false);
-            }, 1000);
-
-            return () => clearTimeout(timer);
+            setIsLoading(false);
         };
 
         loadData();
+        
+        // Обновляем каждые 30 секунд
+        const interval = setInterval(loadUserData, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const showMessage = (type, text) => {
@@ -297,7 +145,6 @@ function Profile({ navigateTo, telegramUser }) {
     const toggleTheme = () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
@@ -307,21 +154,216 @@ function Profile({ navigateTo, telegramUser }) {
         setPhotoError(true);
     };
 
-    // Простой обработчик для кнопки помощи
-    // Profile.js - исправленный handleHelpClick
-    const handleHelpClick = () => {
-        console.log('🆘 Help button clicked');
+    // Компонент реферальной системы
+    const ReferralSystem = ({ referralData, showMessage, userId, onRefresh }) => {
+        const [isWithdrawing, setIsWithdrawing] = useState(false);
+        const [withdrawAmount, setWithdrawAmount] = useState('');
 
-        // Вариант 1: Используем navigateTo из props если он есть
-        if (navigateTo && typeof navigateTo === 'function') {
-            navigateTo('help');
-        }
-        // Вариант 2: Если navigateTo не передан, меняем hash
-        else {
-            window.location.hash = 'help';
-            // Принудительно обновляем страницу чтобы App.js увидел hash
-            window.dispatchEvent(new HashChangeEvent('hashchange'));
-        }
+        const copyReferralLink = () => {
+            copyToClipboard(referralData.referral_link, 'Реферальная ссылка');
+        };
+
+        const handleWithdraw = async () => {
+            if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+                showMessage('error', 'Введите корректную сумму');
+                return;
+            }
+
+            if (parseFloat(withdrawAmount) < referralData.min_withdrawal) {
+                showMessage('error', `Минимальная сумма вывода: ${referralData.min_withdrawal} RUB`);
+                return;
+            }
+
+            if (parseFloat(withdrawAmount) > referralData.stats.available_earnings) {
+                showMessage('error', 'Недостаточно средств для вывода');
+                return;
+            }
+
+            setIsWithdrawing(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/referrals/withdraw`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        amount: withdrawAmount
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showMessage('success', 'Запрос на вывод отправлен');
+                        setWithdrawAmount('');
+                        onRefresh();
+                    } else {
+                        showMessage('error', result.error || 'Ошибка вывода');
+                    }
+                }
+            } catch (error) {
+                showMessage('error', 'Ошибка соединения');
+            }
+            setIsWithdrawing(false);
+        };
+
+        return (
+            <div className="referral-telegram-style">
+                {/* Заголовок */}
+                <div className="referral-header-telegram">
+                    <div className="referral-header-icon">💰</div>
+                    <div className="referral-header-text">
+                        <h2>Реферальная система</h2>
+                        <p>Приглашайте друзей и получайте 1% от их сделок</p>
+                    </div>
+                </div>
+
+                {/* Статистика */}
+                <div className="referral-stats-telegram">
+                    <div className="stat-card-telegram">
+                        <div className="stat-icon-telegram">👥</div>
+                        <div className="stat-info-telegram">
+                            <div className="stat-value-telegram">{referralData.stats.total_referrals}</div>
+                            <div className="stat-label-telegram">Рефералов</div>
+                        </div>
+                    </div>
+                    
+                    <div className="stat-card-telegram">
+                        <div className="stat-icon-telegram">💵</div>
+                        <div className="stat-info-telegram">
+                            <div className="stat-value-telegram">{referralData.stats.total_earnings.toFixed(2)} ₽</div>
+                            <div className="stat-label-telegram">Всего заработано</div>
+                        </div>
+                    </div>
+                    
+                    {/* <div className="stat-card-telegram">
+                        <div className="stat-icon-telegram">📈</div>
+                        <div className="stat-info-telegram">
+                            <div className="stat-value-telegram">{referralData.stats.available_earnings.toFixed(2)} ₽</div>
+                            <div className="stat-label-telegram">Доступно</div>
+                        </div>
+                    </div> */}
+                </div>
+
+                {/* Реферальная ссылка */}
+                <div className="referral-link-telegram-card">
+                    <div className="referral-link-header">
+                        <div className="link-icon">🔗</div>
+                        <div className="link-info">
+                            <h3>Ваша реферальная ссылка</h3>
+                            <p>Поделитесь с друзьями</p>
+                        </div>
+                    </div>
+                    
+                    <div className="referral-link-container-telegram">
+                        <div className="referral-link-text-telegram">
+                            {referralData.referral_link}
+                        </div>
+                        <button 
+                            className="copy-btn-telegram"
+                            onClick={copyReferralLink}
+                        >
+                            Копировать
+                        </button>
+                    </div>
+                </div>
+
+                {/* Вывод средств */}
+                <div className="withdraw-telegram-card">
+                    <div className="withdraw-header">
+                        <div className="withdraw-icon">💸</div>
+                        <div className="withdraw-info">
+                            <h3>Вывод средств</h3>
+                            <p>Доступно: {referralData.stats.available_earnings.toFixed(2)} RUB</p>
+                        </div>
+                    </div>
+                    
+                    <div className="withdraw-info-text">
+                        <p>🚀 Вывод доступен каждое <strong>воскресенье в 12:00 по МСК</strong></p>
+                        <p>💰 Минимальная сумма: <strong>{referralData.min_withdrawal} RUB</strong></p>
+                        {referralData.next_withdrawal && (
+                            <p>📅 Следующий вывод: <strong>{referralData.next_withdrawal}</strong></p>
+                        )}
+                    </div>
+                    
+                    <div className="withdraw-form-telegram">
+                        <input
+                            type="number"
+                            value={withdrawAmount}
+                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                            placeholder={`Сумма (мин. ${referralData.min_withdrawal} RUB)`}
+                            className="withdraw-input-telegram"
+                            disabled={!referralData.can_withdraw}
+                        />
+                        <button
+                            className="withdraw-btn-telegram"
+                            onClick={handleWithdraw}
+                            disabled={!referralData.can_withdraw || isWithdrawing}
+                        >
+                            {isWithdrawing ? 'Отправка...' : 
+                             referralData.can_withdraw ? 'Запросить вывод' : 'Вывод временно недоступен'}
+                        </button>
+                    </div>
+                    
+                    {referralData.withdrawal && (
+                        <div className="withdrawal-status-telegram">
+                            <div className="status-label">Текущий запрос:</div>
+                            <div className="status-info">
+                                <span className={`status-${referralData.withdrawal.status}`}>
+                                    {referralData.withdrawal.status === 'pending' ? '⏳ В обработке' :
+                                     referralData.withdrawal.status === 'completed' ? '✅ Выплачено' :
+                                     '❌ Отклонено'}
+                                </span>
+                                <span className="status-amount">{referralData.withdrawal.amount} RUB</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Информация */}
+                <div className="referral-info-telegram">
+                    <div className="info-header">
+                        <div className="info-icon">📋</div>
+                        <h3>Как работает система</h3>
+                    </div>
+                    
+                    <div className="info-list-telegram">
+                        <div className="info-item-telegram">
+                            <span className="info-number">1</span>
+                            <div className="info-text">
+                                <strong>Приглашайте друзей</strong>
+                                <p>Поделитесь вашей реферальной ссылкой</p>
+                            </div>
+                        </div>
+                        
+                        <div className="info-item-telegram">
+                            <span className="info-number">2</span>
+                            <div className="info-text">
+                                <strong>Ваш друг совершает сделку</strong>
+                                <p>Любая покупка или продажа USDT</p>
+                            </div>
+                        </div>
+                        
+                        <div className="info-item-telegram">
+                            <span className="info-number">3</span>
+                            <div className="info-text">
+                                <strong>Вы получаете 1% комиссии</strong>
+                                <p>Автоматическое начисление на ваш баланс</p>
+                            </div>
+                        </div>
+                        
+                        <div className="info-item-telegram">
+                            <span className="info-number">4</span>
+                            <div className="info-text">
+                                <strong>Вывод по воскресеньям</strong>
+                                <p>Каждое воскресенье в 12:00 по МСК</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     if (isLoading) {
@@ -329,34 +371,29 @@ function Profile({ navigateTo, telegramUser }) {
             <div className="profile-container">
                 <div className="profile-loading">
                     <div className="loading-spinner-new"></div>
-                    <p className="loading-text">Загрузка профиля...</p>
+                    <p>Загрузка профиля...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="profile-container">
-            {/* Хедер профиля */}
+        <div className="profile-container" data-theme={document.documentElement.getAttribute('data-theme')}>
+            {/* Хедер */}
             <div className="profile-header-new">
                 <div className="header-content">
                     <div className="header-left">
-                        <div className="header-titles">
-                            <h1 className="header-title-new">Профиль</h1>
-                            <p className="header-subtitle">Управление вашим аккаунтом</p>
-                        </div>
+                        <h1>Профиль</h1>
                     </div>
-
-                    {/* Кнопка помощи с вашей SVG иконкой */}
                     <button
                         className="help-button-new"
                         onClick={() => navigateTo('help')}
-                        title="Перейти в раздел помощи"
+                        title="Помощь"
                     >
-                        <span className="help-icon"> <HelpSVG /></span>
+                        <HelpSVG />
                     </button>
                 </div>
-               
+                
                 {/* Карточка профиля */}
                 <div className="profile-main-card">
                     <div className="profile-avatar-section">
@@ -369,152 +406,126 @@ function Profile({ navigateTo, telegramUser }) {
                             />
                         ) : (
                             <div className="profile-avatar-fallback">
-                                {userData?.firstName?.[0]?.toUpperCase() || userData?.username?.[0]?.toUpperCase() || '👤'}
+                                {userData?.firstName?.[0]?.toUpperCase() || '👤'}
                             </div>
                         )}
                     </div>
 
                     <div className="profile-info-section">
-                        <h2 className="profile-display-name">
-                            {userData?.firstName || 'Пользователь'}
-                        </h2>
-                        <p className="profile-username">
-                            @{userData?.username || 'user'}
-                        </p>
-
+                        <h2>{userData?.firstName || 'Пользователь'}</h2>
+                        <p>@{userData?.username || 'user'}</p>
                         <div className="profile-id-section">
-                            <span className="id-label">Ваш ID:</span>
-                            <button
-                                className="id-value"
-                                onClick={() => copyToClipboard(userData?.id, 'ID пользователя')}
-                            >
+                            <span>ID:</span>
+                            <button onClick={() => copyToClipboard(userData?.id, 'ID')}>
                                 {userData?.id || '—'}
                             </button>
                         </div>
-                        {/* Дополнительная статистика если есть */}
-                        {userData?.totalOrders > 0 && (
-                            <div className="user-stats-brief">
-                                <span className="stat-brief">
-                                    Всего сделок: <strong>{userData.totalOrders}</strong>
-                                </span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Контент профиля */}
-            <div className="profile-content-container">
-                {/* Реферальная система */}
-                <div className="profile-card-new referral-card">
-                    <div className="referral-header">
-                        <div className="referral-icon">
-                            <ReferralSVG />
-                        </div>
-                        <div className="referral-title">
-                            <h3 className="section-title-profile">Реферальная система</h3>
-                            <p className="referral-subtitle">Приглашайте друзей и получайте 0.5% от каждой их сделки</p>
-                        </div>
-                    </div>
-
-                    <div className="referral-stats">
-                        <div className="referral-stat-item">
-                            <div className="referral-stat-value">{referralStats.totalReferrals}</div>
-                            <div className="referral-stat-label">Всего рефералов</div>
-                        </div>
-                        <div className="referral-stat-item">
-                            <div className="referral-stat-value">{referralStats.activeReferrals}</div>
-                            <div className="referral-stat-label">Активных</div>
-                        </div>
-                        <div className="referral-stat-item">
-                            <div className="referral-stat-value">{referralStats.earned || 0} $</div>
-                            <div className="referral-stat-label">Заработано</div>
-                        </div>
-                    </div>
-
-                    {showReferral ? (
-                        <div className="referral-details">
-                            {/* Реферальная ссылка */}
-                            <div className="referral-input-group">
-                                <label className="referral-label">Ваша реферальная ссылка</label>
-                                <div className="referral-input-wrapper">
-                                    <input
-                                        type="text"
-                                        value={referralStats.referralLink}
-                                        readOnly
-                                        className="referral-input"
-                                    />
-                                    <button
-                                        className="referral-copy-btn"
-                                        onClick={() => copyToClipboard(referralStats.referralLink, 'Реферальная ссылка')}
-                                    >
-                                        📋 Копировать
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="referral-info">
-                                <div className="info-icon">💡</div>
-                                <div className="info-text">
-                                    <strong>Как это работает:</strong>
-                                    <br />1. Приглашайте друзей по вашей ссылке
-                                    <br />2. Когда они делают обмен USDT/RUB
-                                    <br />3. Вы получаете 0.5% от суммы каждой их сделки
-                                    <br />4. Выводите заработанные средства
-                                </div>
-                            </div>
-
-                            <button
-                                className="referral-hide-btn"
-                                onClick={() => setShowReferral(false)}
-                            >
-                                Скрыть детали
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            className="referral-show-btn"
-                            onClick={() => setShowReferral(true)}
-                        >
-                            <span className="btn-icon">
-                                <ReferralSVG />
-                            </span>
-                            <span>Показать реферальную ссылку</span>
-                            {referralStats.earned > 0 && (
-                                <span className="earned-badge">+{referralStats.earned} $</span>
-                            )}
-                        </button>
+            {/* Вкладки */}
+            <div className="profile-tabs">
+                <button 
+                    className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('profile')}
+                >
+                    <span className="tab-icon">👤</span>
+                    <span>Профиль</span>
+                </button>
+                
+                <button 
+                    className={`profile-tab ${activeTab === 'referrals' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('referrals')}
+                >
+                    <span className="tab-icon">💰</span>
+                    <span>Рефералы</span>
+                    {referralData?.stats.total_earnings > 0 && (
+                        <span className="tab-badge">{referralData.stats.total_earnings.toFixed(0)} ₽</span>
                     )}
-                </div>
+                </button>
+            </div>
 
-                {/* Настройки */}
-                <div className="profile-card-new">
-                    <div className="settings-header">
-                        <SettingsSVG />
-                        <h3 className="section-title-profile">Настройки</h3>
-                    </div>
-                    <div className="settings-list">
-                        <button
-                            className="settings-item"
-                            onClick={toggleTheme}
-                        >
-                            <div className="settings-icon">
-                                <MoonSVG />
-                            </div>
-                            <div className="settings-content">
-                                <div className="settings-title">Тема оформления</div>
-                                <div className="settings-description">
-                                    Переключить между светлой и тёмной темой
+            {/* Контент */}
+            <div className="profile-content-container">
+                {activeTab === 'profile' ? (
+                    <>
+                        {/* Реферальная карточка */}
+                        {/* {referralData && (
+                            <div className="profile-card-new referral-quick">
+                                <div className="card-header">
+                                    <div className="header-left">
+                                        <div className="referral-icon-small">💰</div>
+                                        <h3>Реферальная система</h3>
+                                    </div>
+                                    <div className="commission-badge">1% комиссия</div>
                                 </div>
-                            </div>
-                            <div className="settings-action">
-                                <div className={`toggle-switch ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'active' : ''}`}>
-                                    <div className="toggle-slider"></div>
+                                
+                                <div className="referral-stats-quick">
+                                    <div className="stat-quick">
+                                        <div className="stat-value-quick">{referralData.stats.total_referrals}</div>
+                                        <div className="stat-label-quick">Рефералов</div>
+                                    </div>
+                                    <div className="stat-quick">
+                                        <div className="stat-value-quick">{referralData.stats.total_earnings.toFixed(2)} ₽</div>
+                                        <div className="stat-label-quick">Заработано</div>
+                                    </div>
                                 </div>
+                                
+                                <button
+                                    className="show-referrals-btn"
+                                    onClick={() => setActiveTab('referrals')}
+                                >
+                                    Перейти к рефералам
+                                </button>
                             </div>
-                        </button>
-                    </div>
-                </div>
+                        )} */}
+
+                        {/* Настройки */}
+                        <div className="profile-card-new">
+                            <div className="settings-header">
+                                <SettingsSVG />
+                                <h3>Настройки</h3>
+                            </div>
+                            <div className="settings-list">
+                                <button
+                                    className="settings-item"
+                                    onClick={toggleTheme}
+                                >
+                                    <div className="settings-icon">
+                                        <MoonSVG />
+                                    </div>
+                                    <div className="settings-content">
+                                        <div className="settings-title">Тема оформления</div>
+                                        <div className="settings-description">
+                                            Светлая/тёмная тема
+                                        </div>
+                                    </div>
+                                    <div className="settings-action">
+                                        <div className={`toggle-switch ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'active' : ''}`}>
+                                            <div className="toggle-slider"></div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    /* Реферальная система */
+                    referralData ? (
+                        <ReferralSystem 
+                            referralData={referralData}
+                            showMessage={showMessage}
+                            userId={getUserId()}
+                            onRefresh={loadUserData}
+                        />
+                    ) : (
+                        <div className="referral-loading">
+                            <div className="spinner"></div>
+                            <p>Загрузка реферальной системы...</p>
+                        </div>
+                    )
+                )}
             </div>
 
             {/* Toast сообщения */}
@@ -522,62 +533,11 @@ function Profile({ navigateTo, telegramUser }) {
                 <div className={`message-toast-new message-${message.type}`}>
                     <span className="toast-icon">
                         {message.type === 'success' ? '✅' :
-                            message.type === 'error' ? '❌' : '⚠️'}
+                         message.type === 'error' ? '❌' : '⚠️'}
                     </span>
                     <span className="toast-text">{message.text}</span>
                 </div>
             )}
-
-            {/* Навигация */}
-            {/* <div className="bottom-nav-new">
-                <button 
-                    className="nav-item-new active" 
-                    onClick={() => {
-                        if (navigateTo && typeof navigateTo === 'function') {
-                            navigateTo('profile');
-                        } else {
-                            window.location.hash = 'profile';
-                        }
-                    }}
-                >
-                    <div className="nav-icon-wrapper">
-                        <ProfileIcon active={true} />
-                    </div>
-                    <span className="nav-label">Профиль</span>
-                </button>
-                
-                <button 
-                    className="nav-center-item" 
-                    onClick={() => {
-                        if (navigateTo && typeof navigateTo === 'function') {
-                            navigateTo('home');
-                        } else {
-                            window.location.hash = '';
-                        }
-                    }}
-                >
-                    <div className="nav-center-circle">
-                        <ExchangeIcon />
-                    </div>
-                    <span className="nav-center-label">Обмен</span>
-                </button>
-                
-                <button 
-                    className="nav-item-new" 
-                    onClick={() => {
-                        if (navigateTo && typeof navigateTo === 'function') {
-                            navigateTo('history');
-                        } else {
-                            window.location.hash = 'history';
-                        }
-                    }}
-                >
-                    <div className="nav-icon-wrapper">
-                        <HistoryIcon />
-                    </div>
-                    <span className="nav-label">История</span>
-                </button>
-            </div> */}
         </div>
     );
 }

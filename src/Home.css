@@ -432,13 +432,15 @@
 .tg-action-btn.primary {
   background: var(--tg-accent);
   color: white;
-  box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
+}
+
+[data-theme="dark"] .tg-action-btn.primary {
+  background: #30a353;
 }
 
 .tg-action-btn.primary:hover {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(51, 144, 236, 0.4);
 }
 
 .tg-action-btn.secondary {
@@ -450,7 +452,6 @@
 .tg-action-btn.secondary:hover {
   background: var(--tg-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .tg-btn-icon {

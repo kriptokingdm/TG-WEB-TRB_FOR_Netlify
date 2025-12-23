@@ -68,7 +68,7 @@ function Profile({ navigateTo, telegramUser }) {
         try {
             const userId = getUserId();
             console.log('👤 Загружаем данные для ID:', userId);
-
+    
             // Загружаем данные пользователя
             const userResponse = await fetch(`${API_BASE_URL}/api/user?userId=${userId}`);
             if (userResponse.ok) {
@@ -77,7 +77,7 @@ function Profile({ navigateTo, telegramUser }) {
                     setUserData(userResult.user);
                 }
             }
-
+    
             // Загружаем ордера
             const ordersResponse = await fetch(`${API_BASE_URL}/user-orders/${userId}`);
             if (ordersResponse.ok) {
@@ -86,18 +86,29 @@ function Profile({ navigateTo, telegramUser }) {
                     setUserOrders(ordersResult.orders || []);
                 }
             }
-
-            // Загружаем реферальные данные
-            const referralResponse = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
-            if (referralResponse.ok) {
-                const referralResult = await referralResponse.json();
-                if (referralResult.success) {
-                    setReferralData(referralResult.data);
+    
+            // Загружаем реферальные данные - ОБРАБАТЫВАЕМ ОШИБКИ
+            try {
+                const referralResponse = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
+                if (referralResponse.ok) {
+                    const referralResult = await referralResponse.json();
+                    if (referralResult.success) {
+                        setReferralData(referralResult.data);
+                    } else {
+                        // Если API вернуло ошибку, но с данными по умолчанию
+                        setReferralData(referralResult.data || getDefaultReferralData(userId));
+                    }
+                } else {
+                    // Если сервер вернул ошибку
+                    setReferralData(getDefaultReferralData(userId));
                 }
+            } catch (referralError) {
+                console.error('Ошибка загрузки реферальных данных:', referralError);
+                setReferralData(getDefaultReferralData(userId));
             }
-
+    
         } catch (error) {
-            console.error('❌ Ошибка загрузки:', error);
+            console.error('❌ Общая ошибка загрузки:', error);
             // Данные по умолчанию
             const userId = getUserId();
             setUserData({
@@ -105,17 +116,28 @@ function Profile({ navigateTo, telegramUser }) {
                 username: `user_${userId}`,
                 firstName: 'Пользователь'
             });
-            setReferralData({
-                referral_link: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
-                stats: {
-                    total_referrals: 0,
-                    total_earnings: 0,
-                    available_earnings: 0,
-                    commission_rate: 1
-                }
-            });
+            setReferralData(getDefaultReferralData(userId));
         }
     };
+    
+    // Функция для данных по умолчанию
+const getDefaultReferralData = (userId) => {
+    return {
+        referral_link: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
+        stats: {
+            total_referrals: 0,
+            total_earnings: 0,
+            available_earnings: 0,
+            commission_rate: 1
+        },
+        referrals: [],
+        earnings: [],
+        withdrawal: null,
+        can_withdraw: false,
+        min_withdrawal: 500,
+        next_withdrawal: 'Воскресенье в 12:00 МСК'
+    };
+};
 
     useEffect(() => {
         const loadData = async () => {
@@ -232,7 +254,7 @@ function Profile({ navigateTo, telegramUser }) {
                     <div className="stat-card-telegram">
                         <div className="stat-icon-telegram">💵</div>
                         <div className="stat-info-telegram">
-                            <div className="stat-value-telegram">{referralData.stats.total_earnings.toFixed(2)} ₽</div>
+                            <div className="stat-value-telegram">{referralData.stats.total_earnings.toFixed(2)} $</div>
                             <div className="stat-label-telegram">Всего заработано</div>
                         </div>
                     </div>

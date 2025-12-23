@@ -63,6 +63,7 @@ function SupportChat({ orderId, onClose }) {
         };
         
         const id = getUserData();
+        console.log('👤 ID пользователя в чате:', id);
         setUserId(id);
     }, []);
 
@@ -107,7 +108,7 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
-    // Автообновление сообщений - РЕЖЕ!
+    // Автообновление сообщений
     useEffect(() => {
         if (!orderId || !userId) {
             return;
@@ -116,10 +117,10 @@ function SupportChat({ orderId, onClose }) {
         // Первоначальная загрузка
         loadMessages();
         
-        // Устанавливаем интервал на 30 секунд вместо 5
+        // Устанавливаем интервал
         updateIntervalRef.current = setInterval(() => {
-            loadMessages(true); // silent update
-        }, 30000); // 30 секунд
+            loadMessages(true);
+        }, 30000);
         
         return () => {
             if (updateIntervalRef.current) {
@@ -128,7 +129,7 @@ function SupportChat({ orderId, onClose }) {
         };
     }, [orderId, userId]);
 
-    // Прокрутка к последнему сообщению при загрузке
+    // Прокрутка к последнему сообщению
     useEffect(() => {
         if (messages.length > 0 && !isLoading) {
             setTimeout(() => {
@@ -139,18 +140,6 @@ function SupportChat({ orderId, onClose }) {
             }, 100);
         }
     }, [messages, isLoading]);
-
-    // Прокрутка вниз при отправке нового сообщения
-    useEffect(() => {
-        if (messages.length > 0) {
-            setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'end'
-                });
-            }, 50);
-        }
-    }, [messages.length]);
 
     // Отправка сообщения
     const handleSendMessage = async () => {
@@ -208,7 +197,7 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
-    // Отправка по Enter (Shift+Enter для новой строки)
+    // Отправка по Enter
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -219,12 +208,17 @@ function SupportChat({ orderId, onClose }) {
     // Форматирование времени
     const formatTime = (dateString) => {
         try {
-            const date = new Date(dateString);
-            return date.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch (e) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString.replace(' ', 'T') + 'Z');
+            
+            if (isNaN(date.getTime())) return '';
+            
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        } catch (error) {
+            console.error('❌ Ошибка времени:', error);
             return '';
         }
     };
@@ -232,7 +226,11 @@ function SupportChat({ orderId, onClose }) {
     // Форматирование даты
     const formatDate = (dateString) => {
         try {
-            const date = new Date(dateString);
+            if (!dateString) return '';
+            
+            const date = new Date(dateString.replace(' ', 'T') + 'Z');
+            if (isNaN(date.getTime())) return '';
+            
             const today = new Date();
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
@@ -242,36 +240,51 @@ function SupportChat({ orderId, onClose }) {
             } else if (date.toDateString() === yesterday.toDateString()) {
                 return 'Вчера';
             } else {
-                return date.toLocaleDateString('ru-RU', {
-                    day: 'numeric',
-                    month: 'long'
-                });
+                const day = date.getDate();
+                const monthNames = [
+                    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+                ];
+                return `${day} ${monthNames[date.getMonth()]}`;
             }
-        } catch (e) {
+        } catch (error) {
+            console.error('❌ Ошибка даты:', error);
             return '';
         }
     };
 
-    // Определяем, является ли сообщение от текущего пользователя
-    const isUserMessage = (msg) => {
-        return msg.sender_id === userId || msg.sender_type === 'user';
+    // ВАЖНО: Правильная логика определения типа сообщения
+    const getMessageType = (msg) => {
+        if (!msg) return 'admin';
+        
+        // Используем как sender_type, так и senderType для совместимости
+        const senderType = msg.sender_type || msg.senderType;
+        
+        console.log('🔍 Определение типа сообщения:', {
+            id: msg.id,
+            sender_type: senderType,
+            sender_id: msg.sender_id || msg.senderId,
+            userId: userId
+        });
+        
+        // Простая логика:
+        return senderType === 'user' ? 'user' : 'admin';
     };
 
-    // Получаем имя отправителя для отображения
+    // ВАЖНО: Правильное определение имени отправителя
     const getSenderDisplayName = (msg) => {
-        if (msg.sender_id === userId) {
-            return 'Вы';
-        }
+        if (!msg) return 'Неизвестно';
         
-        switch(msg.sender_type) {
-            case 'user':
-                return 'Пользователь';
-            case 'admin':
-                return 'Оператор';
-            case 'system':
-                return 'Система';
-            default:
-                return msg.sender_id === userId ? 'Вы' : 'Оператор';
+        const senderType = msg.sender_type || msg.senderType;
+        
+        if (senderType === 'user') {
+            return 'Вы';
+        } else if (senderType === 'admin') {
+            return 'Оператор';
+        } else if (senderType === 'system') {
+            return 'Система';
+        } else {
+            return 'Неизвестно';
         }
     };
 
@@ -291,20 +304,19 @@ function SupportChat({ orderId, onClose }) {
             if (prevMsg) {
                 const prevTime = new Date(prevMsg.created_at);
                 const currentTime = new Date(msg.created_at);
-                const timeDiff = (currentTime - prevTime) / 1000; // разница в секундах
-                const isSameSender = prevMsg.sender_id === msg.sender_id;
+                const timeDiff = (currentTime - prevTime) / 1000;
+                const isSameSender = prevMsg.sender_type === msg.sender_type;
                 
-                if (isSameSender && timeDiff < 60) { // меньше минуты между сообщениями
+                if (isSameSender && timeDiff < 60) {
                     marginTop = 'small';
-                } else if (timeDiff > 300) { // больше 5 минут
+                } else if (timeDiff > 300) {
                     marginTop = 'large';
                 }
             }
             
             groups[date].push({
                 ...msg,
-                marginTop,
-                isUser: isUserMessage(msg)
+                marginTop
             });
         });
         return groups;
@@ -411,34 +423,45 @@ function SupportChat({ orderId, onClose }) {
                                 <div className="date-divider">
                                     <span className="date-text">{date}</span>
                                 </div>
-                                {dateMessages.map((msg, msgIndex) => (
-                                    <div 
-                                        key={msg.id} 
-                                        className={`chat-message-new ${
-                                            msg.isUser ? 'user-message-new' : 'admin-message-new'
-                                        } ${msg.sender_type === 'system' ? 'system-message-new' : ''} 
-                                        message-margin-${msg.marginTop}`}
-                                    >
-                                        <div className="message-bubble">
-                                            <div className="message-content-new">
-                                                <p className="message-text">{msg.message}</p>
-                                                <div className="message-meta">
-                                                    <span className="message-time-new">
-                                                        {formatTime(msg.created_at)}
-                                                    </span>
-                                                    {msg.sender_type === 'admin' && !msg.is_read && (
-                                                        <span className="unread-dot" title="Непрочитано"></span>
-                                                    )}
+                                {dateMessages.map((msg, msgIndex) => {
+                                    const messageType = getMessageType(msg);
+                                    const senderName = getSenderDisplayName(msg);
+                                    
+                                    console.log('💬 Отображение сообщения:', {
+                                        id: msg.id,
+                                        sender_type: msg.sender_type,
+                                        sender_id: msg.sender_id,
+                                        messageType: messageType,
+                                        senderName: senderName,
+                                        message: msg.message?.substring(0, 20)
+                                    });
+                                    
+                                    return (
+                                        <div 
+                                            key={msg.id} 
+                                            className={`chat-message-new ${messageType}-message-new message-margin-${msg.marginTop}`}
+                                        >
+                                            <div className="message-bubble">
+                                                <div className="message-content-new">
+                                                    <p className="message-text">{msg.message}</p>
+                                                    <div className="message-meta">
+                                                        <span className="message-time-new">
+                                                            {formatTime(msg.created_at)}
+                                                        </span>
+                                                        {messageType === 'admin' && !msg.is_read && (
+                                                            <span className="unread-dot" title="Непрочитано"></span>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                                {msgIndex === dateMessages.length - 1 && (
+                                                    <div className="message-sender">
+                                                        {senderName}
+                                                    </div>
+                                                )}
                                             </div>
-                                            {msgIndex === dateMessages.length - 1 && (
-                                                <div className="message-sender">
-                                                    {getSenderDisplayName(msg)}
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ))}
                         <div ref={messagesEndRef} className="messages-end" />

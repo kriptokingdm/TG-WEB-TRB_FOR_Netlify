@@ -1,100 +1,108 @@
-/* ReferralSystem.css - Современные стили для реферальной системы */
+/* ReferralSystem.css - Telegram стиль */
 
 .referral-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 16px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 0;
+    background: var(--tg-bg-color, #ffffff);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-/* Хедер */
+/* Хедер в Telegram стиле */
 .referral-header {
-    background: linear-gradient(135deg, var(--tg-accent, #007AFF) 0%, #0056CC 100%);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 20px;
-    color: white;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     position: relative;
 }
 
 .referral-header .header-content {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    flex: 1;
 }
 
 .referral-header .header-icon {
-    font-size: 40px;
-    animation: pulse 2s infinite;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--tg-accent, #3390ec) 0%, #2375d9 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
 }
 
 .referral-header .header-text h1 {
     margin: 0;
-    font-size: 24px;
+    font-size: 17px;
     font-weight: 700;
+    color: var(--tg-text-color, #000000);
+    line-height: 1.2;
 }
 
 .referral-header .header-text p {
-    margin: 4px 0 0;
-    font-size: 15px;
-    opacity: 0.9;
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--tg-hint-color, #8e8e93);
 }
 
 .close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--tg-text-color, #000000);
+    font-size: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
     cursor: pointer;
-    font-size: 20px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    transition: background 0.15s ease;
 }
 
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: rotate(90deg);
+.close-btn:active {
+    background: var(--tg-secondary-bg-color, #f5f5f7);
 }
 
-/* Сетка статистики */
+/* Сетка статистики в Telegram стиле */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 16px;
+    padding-top: 8px;
 }
 
 .stat-card {
-    background: var(--tg-bg-color, #ffffff);
-    border-radius: 16px;
-    padding: 16px;
+    background: var(--tg-secondary-bg-color, #f5f5f7);
+    border-radius: 12px;
+    padding: 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease;
+    gap: 10px;
+    transition: background 0.2s ease;
 }
 
-.stat-card:hover {
-    transform: translateY(-2px);
+.stat-card:active {
+    background: var(--tg-border-color, #e7e8ec);
 }
 
 .stat-card .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    background: var(--tg-secondary-bg-color, #f5f5f7);
+    font-size: 18px;
+    background: var(--tg-accent, #3390ec);
+    color: white;
 }
 
 .stat-card .stat-content {
@@ -102,109 +110,112 @@
 }
 
 .stat-card .stat-value {
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
     line-height: 1.2;
 }
 
 .stat-card .stat-label {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--tg-hint-color, #8e8e93);
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
-/* Карточки секций */
+/* Карточки секций в Telegram стиле */
 .section-card {
     background: var(--tg-bg-color, #ffffff);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
+    padding: 16px;
+    margin-bottom: 0;
+}
+
+.section-card:first-of-type {
+    border-top: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
 .section-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 .section-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    font-size: 20px;
+    background: var(--tg-accent, #3390ec);
     color: white;
 }
 
 .section-title h3 {
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--tg-text-color, #000000);
 }
 
 .section-title p {
-    margin: 4px 0 0;
+    margin: 2px 0 0;
     font-size: 14px;
     color: var(--tg-hint-color, #8e8e93);
 }
 
-/* Реферальная ссылка */
+/* Реферальная ссылка в Telegram стиле */
 .referral-link-container {
-    background: var(--tg-secondary-bg-color, #f5f5f7);
-    border-radius: 16px;
-    padding: 16px;
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
 }
 
 .link-input-group {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 12px;
 }
 
 .link-input {
     flex: 1;
-    background: var(--tg-bg-color, #ffffff);
-    border: 2px solid var(--tg-border-color, #e9ecef);
-    border-radius: 12px;
+    background: var(--tg-secondary-bg-color, #f5f5f7);
+    border: none;
+    border-radius: 10px;
     padding: 14px 16px;
     font-size: 15px;
     color: var(--tg-text-color, #000000);
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     cursor: pointer;
+    outline: none;
 }
 
-.link-input:focus {
-    outline: none;
-    border-color: var(--tg-accent, #007AFF);
+.link-input:active {
+    background: var(--tg-border-color, #e7e8ec);
 }
 
 .copy-btn {
-    background: var(--tg-accent, #007AFF);
+    background: var(--tg-accent, #3390ec);
     color: white;
     border: none;
-    border-radius: 12px;
-    padding: 0 20px;
-    font-size: 16px;
-    font-weight: 600;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 56px;
+    transition: all 0.15s ease;
+    min-width: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 48px;
 }
 
-.copy-btn:hover {
-    opacity: 0.9;
+.copy-btn:active {
+    opacity: 0.8;
     transform: scale(0.98);
 }
 
@@ -217,15 +228,15 @@
     align-items: center;
     gap: 8px;
     padding: 12px 0 0;
-    border-top: 1px solid var(--tg-border-color, #e9ecef);
+    border-top: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
 .commission-badge {
-    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    background: var(--tg-accent, #3390ec);
     color: #fff;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -234,13 +245,13 @@
     color: var(--tg-hint-color, #8e8e93);
 }
 
-/* Вывод средств */
+/* Вывод средств в Telegram стиле */
 .withdrawal-info {
-    background: var(--tg-secondary-bg-color, #f5f5f7);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 20px;
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 16px;
+    border: none;
 }
 
 .info-item {
@@ -251,7 +262,7 @@
 }
 
 .info-item:not(:last-child) {
-    border-bottom: 1px solid var(--tg-border-color, #e9ecef);
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
 .info-label {
@@ -261,17 +272,18 @@
 
 .info-value {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--tg-text-color, #000000);
 }
 
 .info-value.highlight {
-    color: var(--tg-accent, #007AFF);
+    color: var(--tg-accent, #3390ec);
 }
 
 .withdrawal-form {
     display: flex;
-    gap: 12px;
+    gap: 8px;
+    margin-top: 16px;
 }
 
 .input-group {
@@ -284,54 +296,55 @@
 .input-prefix {
     position: absolute;
     left: 16px;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 500;
     color: var(--tg-text-color, #000000);
     z-index: 2;
 }
 
 .withdraw-input {
     flex: 1;
-    background: var(--tg-bg-color, #ffffff);
-    border: 2px solid var(--tg-border-color, #e9ecef);
-    border-radius: 12px;
-    padding: 14px 16px 14px 40px;
-    font-size: 18px;
-    font-weight: 600;
+    background: var(--tg-secondary-bg-color, #f5f5f7);
+    border: none;
+    border-radius: 10px;
+    padding: 14px 16px 14px 36px;
+    font-size: 16px;
+    font-weight: 500;
     color: var(--tg-text-color, #000000);
     outline: none;
 }
 
 .withdraw-input:focus {
-    border-color: var(--tg-accent, #007AFF);
+    background: var(--tg-border-color, #e7e8ec);
 }
 
 .withdraw-btn {
-    background: var(--tg-accent, #007AFF);
+    background: var(--tg-accent, #3390ec);
     color: white;
     border: none;
-    border-radius: 12px;
-    padding: 0 24px;
-    font-size: 16px;
-    font-weight: 600;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 160px;
+    transition: all 0.15s ease;
+    min-width: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
+    height: 48px;
 }
 
-.withdraw-btn:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
+.withdraw-btn:active:not(:disabled) {
+    opacity: 0.8;
+    transform: scale(0.98);
 }
 
 .withdraw-btn:disabled {
     background: var(--tg-hint-color, #8e8e93);
     cursor: not-allowed;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .spinner-small {
@@ -344,47 +357,50 @@
 }
 
 .withdrawal-notice {
-    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-    border-radius: 12px;
-    padding: 16px;
+    background: var(--tg-secondary-bg-color, #f5f5f7);
+    border-radius: 10px;
+    padding: 12px;
     text-align: center;
-    color: #e65100;
+    color: var(--tg-hint-color, #8e8e93);
     font-weight: 500;
     margin-top: 16px;
+    font-size: 14px;
 }
 
-/* Вкладки */
+/* Вкладки в Telegram стиле */
 .tabs-container {
     background: var(--tg-bg-color, #ffffff);
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    margin-bottom: 0;
+    box-shadow: none;
+    border: none;
 }
 
 .tabs-header {
     display: flex;
     background: var(--tg-secondary-bg-color, #f5f5f7);
-    border-bottom: 1px solid var(--tg-border-color, #e9ecef);
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
+    padding: 0 16px;
 }
 
 .tab-btn {
     flex: 1;
     background: none;
     border: none;
-    padding: 18px 16px;
+    padding: 14px 0;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--tg-hint-color, #8e8e93);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
     position: relative;
+    text-align: center;
 }
 
 .tab-btn.active {
-    color: var(--tg-accent, #007AFF);
-    background: var(--tg-bg-color, #ffffff);
+    color: var(--tg-accent, #3390ec);
+    background: transparent;
 }
 
 .tab-btn.active::after {
@@ -394,111 +410,135 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--tg-accent, #007AFF);
-    border-radius: 3px 3px 0 0;
+    background: var(--tg-accent, #3390ec);
+}
+
+.tab-btn:active {
+    background: var(--tg-border-color, #e7e8ec);
 }
 
 .tab-content {
-    padding: 20px;
+    padding: 16px;
 }
 
 .tab-pane h4 {
-    margin: 0 0 16px 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--tg-text-color, #000000);
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tg-hint-color, #8e8e93);
 }
 
-/* Таблицы */
+/* Таблицы в Telegram стиле */
 .data-table {
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    border: none;
+    background: var(--tg-bg-color, #ffffff);
 }
 
 .table-header {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     background: var(--tg-secondary-bg-color, #f5f5f7);
-    padding: 16px;
+    padding: 12px 16px;
     font-weight: 600;
     color: var(--tg-hint-color, #8e8e93);
-    font-size: 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
 .table-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    padding: 16px;
-    border-top: 1px solid var(--tg-border-color, #e9ecef);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
     align-items: center;
-    transition: background 0.2s ease;
+    transition: background 0.15s ease;
 }
 
-.table-row:hover {
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-row:active {
     background: var(--tg-secondary-bg-color, #f5f5f7);
 }
 
 .table-col {
-    padding: 0 8px;
+    padding: 0 4px;
 }
 
 .user-cell {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--tg-text-color, #000000);
+    flex-shrink: 0;
+}
+
+.user-info {
+    overflow: hidden;
 }
 
 .user-name {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--tg-text-color, #000000);
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-username {
     font-size: 13px;
     color: var(--tg-hint-color, #8e8e93);
-    margin-top: 2px;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .date-cell {
     font-size: 14px;
     color: var(--tg-text-color, #000000);
+    text-align: center;
 }
 
 .date-cell .time {
     font-size: 12px;
     color: var(--tg-hint-color, #8e8e93);
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .amount-cell {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--tg-text-color, #000000);
+    text-align: center;
 }
 
 .amount-cell strong {
-    color: var(--tg-accent, #007AFF);
+    color: var(--tg-accent, #3390ec);
 }
 
 .status-badge {
     display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
+    text-align: center;
 }
 
 .status-badge.active {
@@ -526,26 +566,22 @@
     color: #34c759;
 }
 
-.status-badge.paid {
-    background: rgba(52, 199, 89, 0.1);
-    color: #34c759;
-}
-
-/* Пустое состояние */
+/* Пустое состояние в Telegram стиле */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 40px 16px;
 }
 
 .empty-state .empty-icon {
     font-size: 48px;
-    opacity: 0.3;
-    margin-bottom: 16px;
+    opacity: 0.2;
+    margin-bottom: 12px;
+    color: var(--tg-hint-color, #8e8e93);
 }
 
 .empty-state p {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--tg-text-color, #000000);
     margin: 0 0 8px 0;
 }
@@ -556,43 +592,44 @@
     display: block;
 }
 
-/* Шаги как это работает */
+/* Шаги как это работает в Telegram стиле */
 .steps-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .step-item {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: flex-start;
 }
 
 .step-number {
-    width: 36px;
-    height: 36px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--tg-accent, #007AFF) 0%, #0056CC 100%);
+    background: var(--tg-accent, #3390ec);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .step-content {
     flex: 1;
-    padding-top: 4px;
 }
 
 .step-content strong {
     display: block;
     font-size: 15px;
     color: var(--tg-text-color, #000000);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+    font-weight: 500;
 }
 
 .step-content p {
@@ -602,23 +639,22 @@
     line-height: 1.4;
 }
 
-/* Сообщения */
+/* Сообщения в Telegram стиле */
 .message-toast {
     position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 16px;
+    right: 16px;
     background: var(--tg-bg-color, #ffffff);
-    border-radius: 12px;
-    padding: 12px 20px;
+    border-radius: 10px;
+    padding: 12px 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     gap: 12px;
     z-index: 1000;
     animation: slideUp 0.3s ease;
-    max-width: 90%;
-    border: 1px solid var(--tg-border-color, #e9ecef);
+    border: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
 .message-success {
@@ -635,47 +671,38 @@
 
 .toast-icon {
     font-size: 18px;
+    flex-shrink: 0;
 }
 
 .toast-text {
     font-size: 15px;
     font-weight: 500;
     color: var(--tg-text-color, #000000);
+    flex: 1;
 }
 
-/* Загрузка */
+/* Загрузка в Telegram стиле */
 .referral-loading {
     text-align: center;
-    padding: 60px 20px;
+    padding: 60px 16px;
 }
 
 .loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid rgba(0, 122, 255, 0.1);
-    border-top-color: var(--tg-accent, #007AFF);
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--tg-border-color, #e7e8ec);
+    border-top-color: var(--tg-accent, #3390ec);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 16px;
 }
 
 .referral-loading p {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--tg-hint-color, #8e8e93);
 }
 
 /* Анимации */
-@keyframes pulse {
-    0%, 100% { 
-        opacity: 1; 
-        transform: scale(1); 
-    }
-    50% { 
-        opacity: 0.8; 
-        transform: scale(1.05); 
-    }
-}
-
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -683,33 +710,31 @@
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(20px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
 }
 
-/* Темная тема */
+/* Темная тема Telegram */
 [data-theme="dark"] .stat-card,
-[data-theme="dark"] .section-card,
-[data-theme="dark"] .tabs-container {
+[data-theme="dark"] .referral-link-container,
+[data-theme="dark"] .withdrawal-info,
+[data-theme="dark"] .withdrawal-notice,
+[data-theme="dark"] .data-table {
     background: #1c1c1e;
-    border-color: #38383a;
 }
 
 [data-theme="dark"] .stat-card .stat-icon,
-[data-theme="dark"] .referral-link-container,
-[data-theme="dark"] .withdrawal-info {
-    background: #2c2c2e;
-    border-color: #38383a;
+[data-theme="dark"] .section-icon {
+    background: var(--tg-accent, #3390ec);
 }
 
 [data-theme="dark"] .link-input,
 [data-theme="dark"] .withdraw-input {
     background: #2c2c2e;
-    border-color: #38383a;
     color: white;
 }
 
@@ -725,22 +750,15 @@
 
 [data-theme="dark"] .tabs-header {
     background: #2c2c2e;
-    border-color: #38383a;
 }
 
 [data-theme="dark"] .tab-btn.active {
-    background: #1c1c1e;
+    background: transparent;
 }
 
 [data-theme="dark"] .table-header {
     background: #2c2c2e;
     color: #8e8e93;
-}
-
-[data-theme="dark"] .withdrawal-notice {
-    background: linear-gradient(135deg, #2c2c2e 0%, #38383a 100%);
-    color: #ff9500;
-    border: 1px solid #38383a;
 }
 
 [data-theme="dark"] .message-toast {
@@ -756,38 +774,34 @@
 /* Адаптивность */
 @media (max-width: 768px) {
     .referral-container {
-        padding: 12px;
-    }
-    
-    .referral-header {
-        padding: 20px;
-        border-radius: 16px;
-    }
-    
-    .referral-header .header-text h1 {
-        font-size: 20px;
-    }
-    
-    .referral-header .header-text p {
-        font-size: 14px;
+        padding: 0;
     }
     
     .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        padding: 12px;
+        gap: 6px;
     }
     
     .stat-card {
-        padding: 14px;
+        padding: 10px;
+    }
+    
+    .stat-card .stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
     }
     
     .stat-card .stat-value {
-        font-size: 20px;
+        font-size: 14px;
+    }
+    
+    .stat-card .stat-label {
+        font-size: 11px;
     }
     
     .section-card {
-        padding: 16px;
-        border-radius: 16px;
+        padding: 12px;
     }
     
     .withdrawal-form {
@@ -796,36 +810,33 @@
     
     .withdraw-btn {
         min-width: 100%;
-        padding: 16px;
+        height: 44px;
     }
     
     .tabs-header {
-        overflow-x: auto;
-        flex-wrap: nowrap;
+        padding: 0 8px;
     }
     
     .tab-btn {
-        white-space: nowrap;
-        min-width: 120px;
-        padding: 16px 12px;
+        padding: 12px 0;
         font-size: 14px;
     }
     
     .table-header {
-        grid-template-columns: 2fr 1fr 1fr;
-        padding: 12px;
+        grid-template-columns: 1.5fr 1fr 1fr;
+        padding: 10px 12px;
         font-size: 12px;
     }
     
     .table-row {
-        grid-template-columns: 2fr 1fr 1fr;
-        padding: 12px;
+        grid-template-columns: 1.5fr 1fr 1fr;
+        padding: 10px 12px;
     }
     
     .user-avatar {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
     
     .user-name {
@@ -833,7 +844,7 @@
     }
     
     .date-cell {
-        font-size: 12px;
+        font-size: 13px;
     }
     
     .amount-cell {
@@ -842,101 +853,93 @@
     
     .status-badge {
         font-size: 11px;
-        padding: 4px 8px;
-    }
-}
-
-@media (max-width: 360px) {
-    .referral-header {
-        padding: 16px;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .section-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
-    }
-    
-    .link-input-group {
-        flex-direction: column;
-    }
-    
-    .copy-btn {
-        width: 100%;
-        padding: 14px;
-    }
-    
-    .table-header,
-    .table-row {
-        grid-template-columns: 1.5fr 1fr 1fr;
-    }
-    
-    .step-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .step-number {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
+        padding: 3px 6px;
     }
 }
 
 /* Скроллбар для таблицы */
 .data-table {
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .data-table::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .data-table::-webkit-scrollbar-track {
-    background: var(--tg-secondary-bg-color, #f5f5f7);
-    border-radius: 3px;
+    background: transparent;
 }
 
 .data-table::-webkit-scrollbar-thumb {
     background: var(--tg-hint-color, #8e8e93);
-    border-radius: 3px;
-}
-
-[data-theme="dark"] .data-table::-webkit-scrollbar-track {
-    background: #2c2c2e;
+    border-radius: 2px;
 }
 
 [data-theme="dark"] .data-table::-webkit-scrollbar-thumb {
     background: #8e8e93;
 }
 
-/* Эффекты при наведении */
+/* Микро-интерактивность */
+.link-input:active,
+.stat-card:active,
+.tab-btn:active {
+    transition: none;
+}
+
+/* Telegram-подобные тени и границы */
+.referral-header,
+.section-card {
+    border-color: var(--tg-border-color, #e7e8ec);
+}
+
+/* Акцентные цвета как в Telegram */
+:root {
+    --tg-accent: #3390ec;
+    --tg-bg-color: #ffffff;
+    --tg-secondary-bg-color: #f5f5f7;
+    --tg-text-color: #000000;
+    --tg-hint-color: #8e8e93;
+    --tg-border-color: #e7e8ec;
+}
+
+[data-theme="dark"] {
+    --tg-accent: #3390ec;
+    --tg-bg-color: #1c1c1e;
+    --tg-secondary-bg-color: #2c2c2e;
+    --tg-text-color: #ffffff;
+    --tg-hint-color: #8e8e93;
+    --tg-border-color: #38383a;
+}
+
+/* Плавные переходы */
+.stat-card,
+.section-card,
+.tab-btn,
 .copy-btn,
 .withdraw-btn,
-.tab-btn {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.link-input,
+.withdraw-input {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.stat-card,
-.section-card {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Микро-интерактивность */
-.link-input:active {
-    transform: scale(0.99);
-}
-
+/* Убираем outline на мобильных */
+.link-input:focus,
 .withdraw-input:focus {
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    outline: none;
 }
 
+/* Улучшаем touch-области на мобильных */
+@media (max-width: 768px) {
+    .copy-btn,
+    .withdraw-btn,
+    .tab-btn {
+        min-height: 44px;
+    }
+    
+    .link-input,
+    .withdraw-input {
+        min-height: 44px;
+    }
+}

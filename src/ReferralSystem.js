@@ -145,15 +145,7 @@ const ReferralSystem = ({ onClose }) => {
     if (loading) {
         return (
             <div className="referral-container">
-                <div className="referral-header">
-                    <div className="header-content">
-                        <div className="header-icon">💰</div>
-                        <div className="header-text">
-                            <h1>Реферальная система</h1>
-                            <p>Загрузка данных...</p>
-                        </div>
-                    </div>
-                </div>
+               
                 <div className="referral-loading">
                     <div className="loading-spinner"></div>
                     <p>Загрузка данных...</p>
@@ -193,13 +185,13 @@ const ReferralSystem = ({ onClose }) => {
                     </div>
                 </div>
                 
-                <div className="stat-card">
+                {/* <div className="stat-card">
                     <div className="stat-icon">📈</div>
                     <div className="stat-content">
                         <div className="stat-value">{stats.active_referrals || 0}</div>
                         <div className="stat-label">Активных</div>
                     </div>
-                </div>
+                </div> */}
                 
                 <div className="stat-card">
                     <div className="stat-icon">💵</div>
@@ -219,7 +211,7 @@ const ReferralSystem = ({ onClose }) => {
             </div>
 
             {/* Реферальная ссылка */}
-            <div className="section-card">
+            {/* <div className="section-card">
                 <div className="section-header">
                     <div className="section-icon">🔗</div>
                     <div className="section-title">
@@ -250,7 +242,7 @@ const ReferralSystem = ({ onClose }) => {
                         <span className="commission-text">с каждой сделки реферала</span>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Вывод средств */}
             <div className="section-card">
@@ -527,3 +519,4 @@ const ReferralSystem = ({ onClose }) => {
 };
 
 export default ReferralSystem;
+

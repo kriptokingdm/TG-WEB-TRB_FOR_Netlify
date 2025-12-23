@@ -1,23 +1,22 @@
-/* Profile.css - Точный Telegram стиль */
+/* Profile.css - Telegram стиль */
 
 /* ==================== */
-/* ОСНОВНЫЕ СТИЛИ TELEGRAM */
+/* ОСНОВНЫЕ СТИЛИ */
 /* ==================== */
 
-.profile-container-telegram {
+.profile-container {
     min-height: 100vh;
     background: var(--tg-bg-color, #ffffff);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ==================== */
-/* ХЕДЕР TELEGRAM */
+/* ХЕДЕР */
 /* ==================== */
 
-.profile-header-telegram {
-    padding: 60px 16px 20px;
+.profile-header {
     background: var(--tg-header-bg, #ffffff);
+    padding: 60px 16px 20px;
     border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
     position: sticky;
     top: 0;
@@ -25,36 +24,26 @@
     backdrop-filter: blur(10px);
 }
 
-.header-content-telegram {
+.header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.header-left-telegram {
+.header-left {
     flex: 1;
 }
 
-.header-title-telegram {
+.profile-header h1 {
     font-size: 22px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
-    margin: 0 0 4px 0;
+    margin: 0;
     letter-spacing: -0.4px;
 }
 
-.header-subtitle-telegram {
-    font-size: 13px;
-    color: var(--tg-hint-color, #8e8e93);
-    margin: 0;
-    font-weight: 400;
-}
-
-/* ==================== */
-/* КНОПКИ В ХЕДЕРЕ */
-/* ==================== */
-
-.header-button-telegram {
+/* Кнопки в хедере */
+.help-button {
     background: transparent;
     border: none;
     width: 40px;
@@ -67,11 +56,11 @@
     border-radius: 8px;
 }
 
-.header-button-telegram:active {
+.help-button:active {
     background: var(--tg-secondary-bg-color, #f5f5f7);
 }
 
-.help-button-telegram svg {
+.help-button svg {
     width: 20px;
     height: 20px;
     color: var(--tg-text-color, #000000);
@@ -82,27 +71,19 @@
 /* КАРТОЧКА ПРОФИЛЯ */
 /* ==================== */
 
-.profile-card-telegram {
+.profile-card {
     background: var(--tg-bg-color, #ffffff);
     padding: 20px 16px;
     border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
-.profile-avatar-telegram {
+.profile-avatar {
     display: flex;
     justify-content: center;
     margin-bottom: 16px;
 }
 
-.avatar-image-telegram {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--tg-accent, #3390ec);
-}
-
-.avatar-placeholder-telegram {
+.avatar-placeholder {
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -116,42 +97,31 @@
     border: 3px solid var(--tg-accent, #3390ec);
 }
 
-.profile-info-telegram {
+.profile-info {
     text-align: center;
 }
 
-.profile-name-telegram {
+.profile-name {
     font-size: 20px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
     margin: 0 0 4px 0;
 }
 
-.profile-username-telegram {
+.profile-username {
     font-size: 14px;
     color: var(--tg-hint-color, #8e8e93);
     margin: 0 0 16px 0;
     font-weight: 400;
 }
 
-/* ==================== */
-/* ID ПОЛЬЗОВАТЕЛЯ */
-/* ==================== */
-
-.profile-id-telegram {
+/* ID пользователя */
+.profile-id {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
+    justify-content: center;
 }
 
-.id-label-telegram {
-    font-size: 13px;
-    color: var(--tg-hint-color, #8e8e93);
-    font-weight: 500;
-}
-
-.id-button-telegram {
+.id-button {
     background: var(--tg-secondary-bg-color, #f5f5f7);
     border: none;
     border-radius: 8px;
@@ -160,41 +130,24 @@
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
     color: var(--tg-text-color, #000000);
     cursor: pointer;
-    position: relative;
-    min-width: 200px;
     transition: background 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
 }
 
-.id-button-telegram:active {
+.id-button:active {
     background: var(--tg-border-color, #e7e8ec);
 }
 
-.copy-hint-telegram {
-    font-size: 11px;
-    color: var(--tg-hint-color, #8e8e93);
-    font-weight: 400;
-    font-family: inherit;
-}
-
 /* ==================== */
-/* ВКЛАДКИ TELEGRAM */
+/* ВКЛАДКИ */
 /* ==================== */
 
-.tabs-container-telegram {
+.profile-tabs {
     background: var(--tg-bg-color, #ffffff);
     border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
-}
-
-.tabs-header-telegram {
-    display: flex;
     padding: 0 16px;
 }
 
-.tab-button-telegram {
+.tab-button {
     flex: 1;
     background: none;
     border: none;
@@ -210,11 +163,11 @@
     font-weight: 500;
 }
 
-.tab-button-telegram.active {
+.tab-button.active {
     color: var(--tg-accent, #3390ec);
 }
 
-.tab-button-telegram.active::after {
+.tab-button.active::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -225,12 +178,12 @@
     border-radius: 3px 3px 0 0;
 }
 
-.tab-button-telegram svg {
+.tab-button svg {
     width: 24px;
     height: 24px;
 }
 
-.tab-badge-telegram {
+.tab-badge {
     position: absolute;
     top: 8px;
     right: calc(50% - 40px);
@@ -248,7 +201,7 @@
 /* КОНТЕНТ ВКЛАДОК */
 /* ==================== */
 
-.tab-content-telegram {
+.tab-content {
     padding: 16px;
 }
 
@@ -256,79 +209,80 @@
 /* КРАТКАЯ РЕФЕРАЛЬНАЯ ИНФОРМАЦИЯ */
 /* ==================== */
 
-.referral-quick-telegram {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+.referral-quick {
+    background: var(--tg-bg-color, #ffffff);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 16px;
-    border: 1px solid rgba(102, 126, 234, 0.2);
+    border: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
-.referral-quick-header-telegram {
+.referral-quick-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
 }
 
-.referral-quick-icon-telegram {
+.referral-quick-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgba(102, 126, 234, 0.1);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    color: white;
+    color: #667eea;
 }
 
-.referral-quick-info-telegram h3 {
+.referral-quick-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.referral-quick-info h3 {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
     margin: 0 0 4px 0;
 }
 
-.referral-quick-info-telegram p {
+.referral-quick-info p {
     font-size: 14px;
     color: var(--tg-hint-color, #8e8e93);
     margin: 0;
 }
 
-.referral-quick-stats-telegram {
+.referral-quick-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 20px;
 }
 
-.referral-quick-stat-telegram {
+.referral-quick-stat {
     text-align: center;
     padding: 12px;
-    background: var(--tg-bg-color, #ffffff);
+    background: var(--tg-secondary-bg-color, #f5f5f7);
     border-radius: 12px;
     border: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
-.stat-value-telegram {
+.stat-value {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-accent, #3390ec);
     margin-bottom: 4px;
 }
 
-.stat-label-telegram {
+.stat-label {
     font-size: 12px;
     color: var(--tg-hint-color, #8e8e93);
     font-weight: 500;
 }
 
-/* ==================== */
-/* КНОПКА ПЕРЕХОДА К РЕФЕРАЛАМ */
-/* ==================== */
-
-.show-referrals-button-telegram {
+/* Кнопка перехода к рефералам */
+.show-referrals-button {
     width: 100%;
     padding: 16px;
     background: var(--tg-accent, #3390ec);
@@ -341,7 +295,7 @@
     transition: opacity 0.2s ease;
 }
 
-.show-referrals-button-telegram:active {
+.show-referrals-button:active {
     opacity: 0.8;
 }
 
@@ -349,14 +303,14 @@
 /* НАСТРОЙКИ */
 /* ==================== */
 
-.settings-card-telegram {
+.settings-card {
     background: var(--tg-bg-color, #ffffff);
     border-radius: 16px;
     padding: 20px;
     border: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
-.settings-header-telegram {
+.settings-header {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -365,26 +319,26 @@
     border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
 }
 
-.settings-header-telegram svg {
+.settings-header svg {
     width: 20px;
     height: 20px;
     color: var(--tg-accent, #3390ec);
 }
 
-.settings-header-telegram h3 {
+.settings-header h3 {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
     margin: 0;
 }
 
-.settings-list-telegram {
+.settings-list {
     background: var(--tg-secondary-bg-color, #f5f5f7);
     border-radius: 12px;
     overflow: hidden;
 }
 
-.settings-item-telegram {
+.settings-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -397,18 +351,18 @@
     text-align: left;
 }
 
-.settings-item-telegram:last-child {
+.settings-item:last-child {
     border-bottom: none;
 }
 
-.settings-item-telegram:active {
+.settings-item:active {
     background: var(--tg-secondary-bg-color, #f5f5f7);
 }
 
-.settings-icon-telegram {
+.settings-icon {
     width: 36px;
     height: 36px;
-    background: var(--tg-accent-light, rgba(51, 144, 236, 0.1));
+    background: rgba(51, 144, 236, 0.1);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -416,36 +370,33 @@
     color: var(--tg-accent, #3390ec);
 }
 
-.settings-icon-telegram svg {
+.settings-icon svg {
     width: 20px;
     height: 20px;
 }
 
-.settings-content-telegram {
+.settings-content {
     flex: 1;
 }
 
-.settings-title-telegram {
+.settings-title {
     font-size: 16px;
     font-weight: 500;
     color: var(--tg-text-color, #000000);
     margin-bottom: 2px;
 }
 
-.settings-description-telegram {
+.settings-description {
     font-size: 13px;
     color: var(--tg-hint-color, #8e8e93);
 }
 
-.settings-action-telegram {
+.settings-action {
     margin-left: 8px;
 }
 
-/* ==================== */
-/* ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ */
-/* ==================== */
-
-.toggle-switch-telegram {
+/* Переключатель темы */
+.toggle-switch {
     width: 44px;
     height: 24px;
     background: var(--tg-border-color, #e7e8ec);
@@ -454,11 +405,11 @@
     transition: background 0.3s ease;
 }
 
-.toggle-switch-telegram.active {
+.toggle-switch.active {
     background: var(--tg-accent, #3390ec);
 }
 
-.toggle-slider-telegram {
+.toggle-slider {
     position: absolute;
     top: 2px;
     left: 2px;
@@ -470,7 +421,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.toggle-switch-telegram.active .toggle-slider-telegram {
+.toggle-switch.active .toggle-slider {
     transform: translateX(20px);
 }
 
@@ -487,7 +438,7 @@
     padding: 0 20px;
 }
 
-.loading-spinner-telegram {
+.loading-spinner {
     width: 40px;
     height: 40px;
     border: 3px solid var(--tg-border-color, #e7e8ec);
@@ -501,7 +452,7 @@
     to { transform: rotate(360deg); }
 }
 
-.loading-text-telegram {
+.profile-loading p {
     font-size: 15px;
     color: var(--tg-hint-color, #8e8e93);
     font-weight: 500;
@@ -511,7 +462,7 @@
 /* TOAST СООБЩЕНИЯ */
 /* ==================== */
 
-.message-toast-telegram {
+.message-toast {
     position: fixed;
     top: 80px;
     left: 50%;
@@ -548,12 +499,12 @@
     }
 }
 
-.toast-icon-telegram {
+.toast-icon {
     font-size: 18px;
     flex-shrink: 0;
 }
 
-.toast-text-telegram {
+.toast-text {
     font-size: 15px;
     font-weight: 500;
     color: var(--tg-text-color, #000000);
@@ -562,58 +513,65 @@
     white-space: nowrap;
 }
 
-.message-toast-telegram.message-success {
+.message-toast.message-success {
     border-left: 4px solid #34c759;
 }
 
-.message-toast-telegram.message-error {
+.message-toast.message-error {
     border-left: 4px solid #ff3b30;
 }
 
 /* ==================== */
-/* ТЕМНАЯ ТЕМА TELEGRAM */
+/* ТЕМНАЯ ТЕМА */
 /* ==================== */
 
-[data-theme="dark"] .profile-container-telegram,
-[data-theme="dark"] .profile-card-telegram,
-[data-theme="dark"] .profile-header-telegram,
-[data-theme="dark"] .tabs-container-telegram,
-[data-theme="dark"] .referral-quick-telegram,
-[data-theme="dark"] .settings-card-telegram {
+[data-theme="dark"] .profile-container,
+[data-theme="dark"] .profile-card,
+[data-theme="dark"] .profile-header,
+[data-theme="dark"] .profile-tabs,
+[data-theme="dark"] .referral-quick,
+[data-theme="dark"] .settings-card {
     background: #1c1c1e;
     border-color: #38383a;
 }
 
-[data-theme="dark"] .id-button-telegram,
-[data-theme="dark"] .settings-list-telegram,
-[data-theme="dark"] .referral-quick-stat-telegram {
+[data-theme="dark"] .id-button,
+[data-theme="dark"] .settings-list,
+[data-theme="dark"] .referral-quick-stat {
     background: #2c2c2e;
     border-color: #38383a;
 }
 
-[data-theme="dark"] .header-title-telegram,
-[data-theme="dark"] .profile-name-telegram,
-[data-theme="dark"] .id-button-telegram,
-[data-theme="dark"] .settings-title-telegram,
-[data-theme="dark"] .referral-quick-info-telegram h3,
-[data-theme="dark"] .settings-header-telegram h3 {
+[data-theme="dark"] .profile-header h1,
+[data-theme="dark"] .profile-name,
+[data-theme="dark"] .id-button,
+[data-theme="dark"] .settings-title,
+[data-theme="dark"] .referral-quick-info h3,
+[data-theme="dark"] .settings-header h3 {
     color: white;
 }
 
-[data-theme="dark"] .toggle-switch-telegram {
+[data-theme="dark"] .profile-username,
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .settings-description,
+[data-theme="dark"] .referral-quick-info p {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .toggle-switch {
     background: #38383a;
 }
 
-[data-theme="dark"] .toggle-switch-telegram.active {
+[data-theme="dark"] .toggle-switch.active {
     background: var(--tg-accent, #3390ec);
 }
 
-[data-theme="dark"] .message-toast-telegram {
+[data-theme="dark"] .message-toast {
     background: #2c2c2e;
     border-color: #38383a;
 }
 
-[data-theme="dark"] .toast-text-telegram {
+[data-theme="dark"] .toast-text {
     color: white;
 }
 
@@ -622,65 +580,64 @@
 /* ==================== */
 
 @media (max-width: 768px) {
-    .profile-header-telegram {
+    .profile-header {
         padding-top: 50px;
     }
     
-    .header-title-telegram {
+    .profile-header h1 {
         font-size: 20px;
     }
     
-    .profile-avatar-telegram img,
-    .profile-avatar-telegram .avatar-placeholder-telegram {
+    .avatar-placeholder {
         width: 70px;
         height: 70px;
     }
     
-    .profile-name-telegram {
+    .profile-name {
         font-size: 18px;
     }
     
-    .referral-quick-stats-telegram {
+    .referral-quick-stats {
         grid-template-columns: repeat(3, 1fr);
     }
     
-    .stat-value-telegram {
+    .stat-value {
         font-size: 16px;
     }
     
-    .show-referrals-button-telegram {
+    .show-referrals-button {
         padding: 14px;
         font-size: 15px;
     }
 }
 
 @media (max-width: 480px) {
-    .profile-header-telegram {
+    .profile-header {
         padding: 45px 12px 16px;
     }
     
-    .tab-content-telegram {
+    .tab-content {
         padding: 12px;
     }
     
-    .referral-quick-telegram {
+    .referral-quick {
         padding: 16px;
     }
     
-    .referral-quick-stats-telegram {
+    .referral-quick-stats {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
     
-    .referral-quick-stat-telegram {
+    .referral-quick-stat {
         padding: 10px;
     }
     
-    .settings-card-telegram {
+    .settings-card {
         padding: 16px;
     }
     
-    .settings-item-telegram {
+    .settings-item {
         padding: 14px;
     }
 }

@@ -43,8 +43,6 @@ function Profile({ navigateTo, telegramUser }) {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [photoError, setPhotoError] = useState(false);
-    const [userOrders, setUserOrders] = useState([]);
     const [referralData, setReferralData] = useState(null);
     const [activeTab, setActiveTab] = useState('profile');
 
@@ -180,21 +178,6 @@ function Profile({ navigateTo, telegramUser }) {
         return () => clearInterval(interval);
     }, []);
 
-    // Форматирование даты
-    const formatDate = (dateString) => {
-        if (!dateString) return '—';
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        } catch (e) {
-            return '—';
-        }
-    };
-
     // Форматирование USD
     const formatUSD = (num) => {
         const value = parseFloat(num || 0);
@@ -205,24 +188,23 @@ function Profile({ navigateTo, telegramUser }) {
         return (
             <div className="profile-container">
                 <div className="profile-loading">
-                    <div className="loading-spinner-telegram"></div>
-                    <p className="loading-text-telegram">Загрузка...</p>
+                    <div className="loading-spinner"></div>
+                    <p>Загрузка...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="profile-container-telegram">
+        <div className="profile-container">
             {/* Хедер */}
-            <div className="profile-header-telegram">
-                <div className="header-content-telegram">
-                    <div className="header-left-telegram">
-                        <h1 className="header-title-telegram">Профиль</h1>
-                        {/* <p className="header-subtitle-telegram">ID: {userData?.id || '—'}</p> */}
+            <div className="profile-header">
+                <div className="header-content">
+                    <div className="header-left">
+                        <h1>Профиль</h1>
                     </div>
                     <button
-                        className="header-button-telegram help-button-telegram"
+                        className="help-button"
                         onClick={() => navigateTo('help')}
                         title="Помощь"
                     >
@@ -232,128 +214,117 @@ function Profile({ navigateTo, telegramUser }) {
             </div>
 
             {/* Информация профиля */}
-            <div className="profile-card-telegram">
-                <div className="profile-avatar-telegram">
-                    {userData?.photoUrl && !photoError ? (
-                        <img
-                            src={userData.photoUrl}
-                            alt="Avatar"
-                            className="avatar-image-telegram"
-                            onError={() => setPhotoError(true)}
-                        />
-                    ) : (
-                        <div className="avatar-placeholder-telegram">
-                            {userData?.firstName?.[0]?.toUpperCase() || '👤'}
-                        </div>
-                    )}
+            <div className="profile-card">
+                <div className="profile-avatar">
+                    <div className="avatar-placeholder">
+                        {userData?.firstName?.[0]?.toUpperCase() || 'U'}
+                    </div>
                 </div>
 
-                <div className="profile-info-telegram">
-                    <h2 className="profile-name-telegram">{userData?.firstName || 'Пользователь'}</h2>
-                    <p className="profile-username-telegram">@{userData?.username || 'user'}</p>
+                <div className="profile-info">
+                    <h2 className="profile-name">{userData?.firstName || 'Пользователь'}</h2>
+                    <p className="profile-username">@{userData?.username || 'user'}</p>
                     
-                    <div className="profile-id-telegram">
-                        {/* <span className="id-label-telegram">Telegram ID:</span> */}
+                    <div className="profile-id">
                         <button 
-                            className="id-button-telegram"
+                            className="id-button"
                             onClick={() => copyToClipboard(userData?.id, 'ID')}
                         >
-                            {userData?.id || '—'}
-                            {/* <span className="copy-hint-telegram">Нажмите чтобы скопировать</span> */}
+                            ID: {userData?.id || '—'}
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Вкладки */}
-            <div className="tabs-container-telegram">
-                <div className="tabs-header-telegram">
-                    <button 
-                        className={`tab-button-telegram ${activeTab === 'profile' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('profile')}
-                    >
-                        <UserSVG />
-                        <span>Профиль</span>
-                    </button>
-                    
-                    <button 
-                        className={`tab-button-telegram ${activeTab === 'referrals' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('referrals')}
-                    >
-                        <ReferralSVG />
-                        <span>Рефералы</span>
-                        {referralData?.stats.total_earnings > 0 && (
-                            <span className="tab-badge-telegram">
-                                {formatUSD(referralData.stats.total_earnings)}
-                            </span>
-                        )}
-                    </button>
-                </div>
+            <div className="profile-tabs">
+                <button 
+                    className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('profile')}
+                >
+                    <UserSVG />
+                    <span>Профиль</span>
+                </button>
+                
+                <button 
+                    className={`tab-button ${activeTab === 'referrals' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('referrals')}
+                >
+                    <ReferralSVG />
+                    <span>Рефералы</span>
+                    {referralData?.stats.total_earnings > 0 && (
+                        <span className="tab-badge">
+                            {formatUSD(referralData.stats.total_earnings)}
+                        </span>
+                    )}
+                </button>
             </div>
 
             {/* Контент вкладок */}
-            <div className="tab-content-telegram">
+            <div className="tab-content">
                 {activeTab === 'profile' ? (
                     <>
                         {/* Краткая реферальная информация */}
-                        {/* {referralData && (
-                            <div className="referral-quick-telegram">
-                                <div className="referral-quick-header-telegram">
-                                    <div className="referral-quick-icon-telegram">💰</div>
-                                    <div className="referral-quick-info-telegram">
+                        {referralData && (
+                            <div className="referral-quick">
+                                <div className="referral-quick-header">
+                                    <div className="referral-quick-icon">
+                                        <ReferralSVG />
+                                    </div>
+                                    <div className="referral-quick-info">
                                         <h3>Реферальная система</h3>
                                         <p>1% комиссия с каждой сделки реферала</p>
                                     </div>
                                 </div>
                                 
-                                <div className="referral-quick-stats-telegram">
-                                    <div className="referral-quick-stat-telegram">
-                                        <div className="stat-value-telegram">{referralData.stats.total_referrals}</div>
-                                        <div className="stat-label-telegram">Рефералов</div>
+                                <div className="referral-quick-stats">
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{referralData.stats.total_referrals}</div>
+                                        <div className="stat-label">Рефералов</div>
                                     </div>
-                                    <div className="referral-quick-stat-telegram">
-                                        <div className="stat-value-telegram">{formatUSD(referralData.stats.total_earnings)}</div>
-                                        <div className="stat-label-telegram">Заработано</div>
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{formatUSD(referralData.stats.total_earnings)}</div>
+                                        <div className="stat-label">Заработано</div>
                                     </div>
-                                    <div className="referral-quick-stat-telegram">
-                                        <div className="stat-value-telegram">{formatUSD(referralData.stats.available_earnings)}</div>
-                                        <div className="stat-label-telegram">Доступно</div>
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{formatUSD(referralData.stats.available_earnings)}</div>
+                                        <div className="stat-label">Доступно</div>
                                     </div>
                                 </div>
                                 
                                 <button
-                                    className="show-referrals-button-telegram"
+                                    className="show-referrals-button"
                                     onClick={() => setActiveTab('referrals')}
                                 >
                                     Перейти к рефералам
                                 </button>
                             </div>
-                        )} */}
+                        )}
 
                         {/* Настройки */}
-                        <div className="settings-card-telegram">
-                            <div className="settings-header-telegram">
+                        <div className="settings-card">
+                            <div className="settings-header">
                                 <SettingsSVG />
                                 <h3>Настройки</h3>
                             </div>
                             
-                            <div className="settings-list-telegram">
+                            <div className="settings-list">
                                 <button
-                                    className="settings-item-telegram"
+                                    className="settings-item"
                                     onClick={toggleTheme}
                                 >
-                                    <div className="settings-icon-telegram">
+                                    <div className="settings-icon">
                                         <MoonSVG />
                                     </div>
-                                    <div className="settings-content-telegram">
-                                        <div className="settings-title-telegram">Тема оформления</div>
-                                        <div className="settings-description-telegram">
+                                    <div className="settings-content">
+                                        <div className="settings-title">Тема оформления</div>
+                                        <div className="settings-description">
                                             Светлая/тёмная тема
                                         </div>
                                     </div>
-                                    <div className="settings-action-telegram">
-                                        <div className={`toggle-switch-telegram ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'active' : ''}`}>
-                                            <div className="toggle-slider-telegram"></div>
+                                    <div className="settings-action">
+                                        <div className={`toggle-switch ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'active' : ''}`}>
+                                            <div className="toggle-slider"></div>
                                         </div>
                                     </div>
                                 </button>
@@ -371,12 +342,12 @@ function Profile({ navigateTo, telegramUser }) {
 
             {/* Toast сообщения */}
             {message.text && (
-                <div className={`message-toast-telegram message-${message.type}`}>
-                    <span className="toast-icon-telegram">
+                <div className={`message-toast message-${message.type}`}>
+                    <span className="toast-icon">
                         {message.type === 'success' ? '✅' :
                          message.type === 'error' ? '❌' : '⚠️'}
                     </span>
-                    <span className="toast-text-telegram">{message.text}</span>
+                    <span className="toast-text">{message.text}</span>
                 </div>
             )}
         </div>

@@ -3,14 +3,13 @@ import './ReferralSystem.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
-const ReferralSystem = ({ onClose }) => {
+const ReferralSystem = ({ onClose, showMessage }) => {
     const [referralData, setReferralData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [withdrawing, setWithdrawing] = useState(false);
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [message, setMessage] = useState({ type: '', text: '' });
 
     // Получение ID пользователя
     const getUserId = () => {
@@ -34,20 +33,10 @@ const ReferralSystem = ({ onClose }) => {
         }
     };
 
-    // Показать сообщение
-    const showMessage = (type, text) => {
-        setMessage({ type, text });
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    };
-
     // Форматирование чисел в USD
     const formatUSD = (num) => {
         const value = parseFloat(num || 0);
         return `$${value.toFixed(2)}`;
-    };
-
-    const formatNumber = (num) => {
-        return parseFloat(num || 0).toFixed(2);
     };
 
     // Форматирование даты
@@ -145,7 +134,6 @@ const ReferralSystem = ({ onClose }) => {
     if (loading) {
         return (
             <div className="referral-container">
-               
                 <div className="referral-loading">
                     <div className="loading-spinner"></div>
                     <p>Загрузка данных...</p>
@@ -162,7 +150,6 @@ const ReferralSystem = ({ onClose }) => {
             {/* Хедер */}
             <div className="referral-header">
                 <div className="header-content">
-                    <div className="header-icon">💰</div>
                     <div className="header-text">
                         <h1>Реферальная система</h1>
                         <p>Приглашайте друзей и зарабатывайте 1% с их сделок</p>
@@ -178,23 +165,13 @@ const ReferralSystem = ({ onClose }) => {
             {/* Основная статистика */}
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon">👥</div>
                     <div className="stat-content">
                         <div className="stat-value">{stats.total_referrals || 0}</div>
                         <div className="stat-label">Всего рефералов</div>
                     </div>
                 </div>
                 
-                {/* <div className="stat-card">
-                    <div className="stat-icon">📈</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats.active_referrals || 0}</div>
-                        <div className="stat-label">Активных</div>
-                    </div>
-                </div> */}
-                
                 <div className="stat-card">
-                    <div className="stat-icon">💵</div>
                     <div className="stat-content">
                         <div className="stat-value">{formatUSD(stats.total_earnings)}</div>
                         <div className="stat-label">Заработано</div>
@@ -202,25 +179,21 @@ const ReferralSystem = ({ onClose }) => {
                 </div>
                 
                 <div className="stat-card">
-                    <div className="stat-icon">💳</div>
                     <div className="stat-content">
                         <div className="stat-value">{formatUSD(stats.available_earnings)}</div>
-                        <div className="stat-label">Доступно</div>
+                        <div className="stat-label">Доступно для вывода</div>
                     </div>
                 </div>
             </div>
 
             {/* Реферальная ссылка */}
-            {/* <div className="section-card">
-                <div className="section-header">
-                    <div className="section-icon">🔗</div>
-                    <div className="section-title">
-                        <h3>Ваша реферальная ссылка</h3>
-                        <p>Поделитесь с друзьями и получайте 1% комиссии</p>
-                    </div>
+            <div className="referral-link-card">
+                <div className="referral-link-header">
+                    <h3>Ваша реферальная ссылка</h3>
+                    <p>Поделитесь с друзьями и получайте 1% комиссии</p>
                 </div>
                 
-                <div className="referral-link-container">
+                <div className="referral-link-content">
                     <div className="link-input-group">
                         <input 
                             type="text" 
@@ -236,25 +209,17 @@ const ReferralSystem = ({ onClose }) => {
                             {copied ? '✅ Скопировано' : '📋 Копировать'}
                         </button>
                     </div>
-                    
-                    <div className="commission-info">
-                        <span className="commission-badge">1% комиссия</span>
-                        <span className="commission-text">с каждой сделки реферала</span>
-                    </div>
                 </div>
-            </div> */}
+            </div>
 
             {/* Вывод средств */}
-            <div className="section-card">
-                <div className="section-header">
-                    <div className="section-icon">🏦</div>
-                    <div className="section-title">
-                        <h3>Вывод средств</h3>
-                        <p>Доступно: {formatUSD(stats.available_earnings)}</p>
-                    </div>
+            <div className="withdraw-card">
+                <div className="withdraw-header">
+                    <h3>Вывод средств</h3>
+                    <p>Доступно: {formatUSD(stats.available_earnings)}</p>
                 </div>
                 
-                <div className="withdrawal-info">
+                <div className="withdraw-info">
                     <div className="info-item">
                         <span className="info-label">Минимальный вывод:</span>
                         <span className="info-value">$10</span>
@@ -265,8 +230,8 @@ const ReferralSystem = ({ onClose }) => {
                     </div>
                 </div>
                 
-                {canWithdraw && (
-                    <div className="withdrawal-form">
+                {canWithdraw ? (
+                    <div className="withdraw-form">
                         <div className="input-group">
                             <span className="input-prefix">$</span>
                             <input
@@ -293,13 +258,11 @@ const ReferralSystem = ({ onClose }) => {
                             ) : 'Запросить вывод'}
                         </button>
                     </div>
-                )}
-                
-                {!canWithdraw && stats.available_earnings > 0 && (
-                    <div className="withdrawal-notice">
-                        ⏳ Необходимо накопить минимум $10 для вывода
+                ) : stats.available_earnings > 0 ? (
+                    <div className="withdraw-notice">
+                        Необходимо накопить минимум $10 для вывода
                     </div>
-                )}
+                ) : null}
             </div>
 
             {/* Вкладки */}
@@ -309,19 +272,19 @@ const ReferralSystem = ({ onClose }) => {
                         className={`tab-btn ${activeTab === 'referrals' ? 'active' : ''}`}
                         onClick={() => setActiveTab('referrals')}
                     >
-                        👥 Рефералы
+                        Рефералы
                     </button>
                     <button 
                         className={`tab-btn ${activeTab === 'earnings' ? 'active' : ''}`}
                         onClick={() => setActiveTab('earnings')}
                     >
-                        💰 Начисления
+                        Начисления
                     </button>
                     <button 
                         className={`tab-btn ${activeTab === 'withdrawals' ? 'active' : ''}`}
                         onClick={() => setActiveTab('withdrawals')}
                     >
-                        🏦 Выводы
+                        Выводы
                     </button>
                 </div>
                 
@@ -341,7 +304,7 @@ const ReferralSystem = ({ onClose }) => {
                                             <div className="table-col">
                                                 <div className="user-cell">
                                                     <div className="user-avatar">
-                                                        {ref.first_name?.[0]?.toUpperCase() || '👤'}
+                                                        {ref.first_name?.[0]?.toUpperCase() || 'U'}
                                                     </div>
                                                     <div className="user-info">
                                                         <div className="user-name">
@@ -368,7 +331,6 @@ const ReferralSystem = ({ onClose }) => {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">👥</div>
                                     <p>У вас еще нет рефералов</p>
                                     <small>Поделитесь своей реферальной ссылкой с друзьями</small>
                                 </div>
@@ -395,7 +357,7 @@ const ReferralSystem = ({ onClose }) => {
                                             </div>
                                             <div className="table-col">
                                                 <div className="amount-cell">
-                                                    <strong>${formatNumber(earning.commission)}</strong>
+                                                    <strong>${parseFloat(earning.commission || 0).toFixed(2)}</strong>
                                                 </div>
                                             </div>
                                             <div className="table-col">
@@ -409,7 +371,6 @@ const ReferralSystem = ({ onClose }) => {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">💰</div>
                                     <p>Начислений пока нет</p>
                                     <small>Приглашайте друзей для получения комиссии</small>
                                 </div>
@@ -435,7 +396,7 @@ const ReferralSystem = ({ onClose }) => {
                                         </div>
                                         <div className="table-col">
                                             <div className="amount-cell">
-                                                <strong>${formatNumber(referralData.withdrawals.amount)}</strong>
+                                                <strong>${parseFloat(referralData.withdrawals.amount || 0).toFixed(2)}</strong>
                                             </div>
                                         </div>
                                         <div className="table-col">
@@ -449,7 +410,6 @@ const ReferralSystem = ({ onClose }) => {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">🏦</div>
                                     <p>Выводов еще не было</p>
                                     <small>Запросите вывод средств, когда накопите $10</small>
                                 </div>
@@ -460,13 +420,10 @@ const ReferralSystem = ({ onClose }) => {
             </div>
 
             {/* Информация о системе */}
-            <div className="section-card">
-                <div className="section-header">
-                    <div className="section-icon">📚</div>
-                    <div className="section-title">
-                        <h3>Как это работает</h3>
-                        <p>Простая система заработка</p>
-                    </div>
+            <div className="info-card">
+                <div className="info-header">
+                    <h3>Как это работает</h3>
+                    <p>Простая система заработка</p>
                 </div>
                 
                 <div className="steps-list">
@@ -503,20 +460,8 @@ const ReferralSystem = ({ onClose }) => {
                     </div>
                 </div>
             </div>
-
-            {/* Toast сообщения */}
-            {message.text && (
-                <div className={`message-toast message-${message.type}`}>
-                    <span className="toast-icon">
-                        {message.type === 'success' ? '✅' :
-                         message.type === 'error' ? '❌' : '⚠️'}
-                    </span>
-                    <span className="toast-text">{message.text}</span>
-                </div>
-            )}
         </div>
     );
 };
 
 export default ReferralSystem;
-

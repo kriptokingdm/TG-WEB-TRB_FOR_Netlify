@@ -181,7 +181,7 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                 <div className="stat-card">
                     <div className="stat-content">
                         <div className="stat-value">{formatUSD(stats.available_earnings)}</div>
-                        <div className="stat-label">Доступно для вывода</div>
+                        <div className="stat-label">Доступно</div>
                     </div>
                 </div>
             </div>
@@ -219,17 +219,6 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                     <p>Доступно: {formatUSD(stats.available_earnings)}</p>
                 </div>
                 
-                <div className="withdraw-info">
-                    <div className="info-item">
-                        <span className="info-label">Минимальный вывод:</span>
-                        <span className="info-value">$10</span>
-                    </div>
-                    <div className="info-item">
-                        <span className="info-label">Когда можно выводить:</span>
-                        <span className="info-value highlight">Доступно в любое время</span>
-                    </div>
-                </div>
-                
                 {canWithdraw ? (
                     <div className="withdraw-form">
                         <div className="input-group">
@@ -263,6 +252,17 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                         Необходимо накопить минимум $10 для вывода
                     </div>
                 ) : null}
+                
+                <div className="withdraw-info">
+                    <div className="info-item">
+                        <span className="info-label">Минимальный вывод:</span>
+                        <span className="info-value">$10</span>
+                    </div>
+                    <div className="info-item">
+                        <span className="info-label">Когда можно выводить:</span>
+                        <span className="info-value highlight">Доступно в любое время</span>
+                    </div>
+                </div>
             </div>
 
             {/* Вкладки */}
@@ -423,7 +423,6 @@ const ReferralSystem = ({ onClose, showMessage }) => {
             <div className="info-card">
                 <div className="info-header">
                     <h3>Как это работает</h3>
-                    <p>Простая система заработка</p>
                 </div>
                 
                 <div className="steps-list">

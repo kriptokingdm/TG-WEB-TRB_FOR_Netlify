@@ -174,40 +174,10 @@
     margin: 0 0 16px 0;
 }
 
-.withdraw-info {
-    margin-bottom: 20px;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
-}
-
-.info-item:last-child {
-    border-bottom: none;
-}
-
-.info-label {
-    font-size: 15px;
-    color: var(--tg-hint-color, #8e8e93);
-}
-
-.info-value {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--tg-text-color, #000000);
-}
-
-.info-value.highlight {
-    color: var(--tg-accent, #3390ec);
-}
-
 .withdraw-form {
     display: flex;
     gap: 8px;
+    margin-bottom: 20px;
 }
 
 .input-group {
@@ -281,7 +251,41 @@
     text-align: center;
     color: var(--tg-hint-color, #8e8e93);
     font-weight: 500;
+    margin-bottom: 20px;
     font-size: 14px;
+}
+
+.withdraw-info {
+    background: var(--tg-secondary-bg-color, #f5f5f7);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 15px;
+    color: var(--tg-hint-color, #8e8e93);
+}
+
+.info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tg-text-color, #000000);
+}
+
+.info-value.highlight {
+    color: var(--tg-accent, #3390ec);
 }
 
 /* ==================== */
@@ -487,12 +491,6 @@
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-text-color, #000000);
-    margin: 0 0 4px 0;
-}
-
-.info-header p {
-    font-size: 14px;
-    color: var(--tg-hint-color, #8e8e93);
     margin: 0 0 20px 0;
 }
 
@@ -561,6 +559,10 @@
     color: var(--tg-hint-color, #8e8e93);
 }
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* ==================== */
 /* ТЕМНАЯ ТЕМА */
 /* ==================== */
@@ -576,7 +578,9 @@
 }
 
 [data-theme="dark"] .stat-card,
-[data-theme="dark"] .data-table {
+[data-theme="dark"] .data-table,
+[data-theme="dark"] .withdraw-info,
+[data-theme="dark"] .withdraw-notice {
     background: #2c2c2e;
     border-color: #38383a;
 }
@@ -603,12 +607,6 @@
 [data-theme="dark"] .table-header {
     background: #2c2c2e;
     color: #8e8e93;
-}
-
-[data-theme="dark"] .withdraw-notice {
-    background: #2c2c2e;
-    color: #8e8e93;
-    border: 1px solid #38383a;
 }
 
 /* ==================== */

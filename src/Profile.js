@@ -24,21 +24,6 @@ const MoonSVG = () => (
     </svg>
 );
 
-const ReferralSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4Z" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M8.5 14.5L15.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M15.5 14.5L8.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-);
-
-const UserSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M20 21C20 18.2386 16.4183 16 12 16C7.58172 16 4 18.2386 4 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-);
-
 function Profile({ navigateTo, telegramUser }) {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -239,21 +224,21 @@ function Profile({ navigateTo, telegramUser }) {
             {/* Вкладки */}
             <div className="profile-tabs">
                 <button 
-                    className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
                     onClick={() => setActiveTab('profile')}
                 >
-                    <UserSVG />
-                    <span>Профиль</span>
+                    <span className="profile-tab-icon">👤</span>
+                    <span className="profile-tab-text">Профиль</span>
                 </button>
                 
                 <button 
-                    className={`tab-button ${activeTab === 'referrals' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'referrals' ? 'active' : ''}`}
                     onClick={() => setActiveTab('referrals')}
                 >
-                    <ReferralSVG />
-                    <span>Рефералы</span>
+                    <span className="profile-tab-icon">💰</span>
+                    <span className="profile-tab-text">Рефералы</span>
                     {referralData?.stats.total_earnings > 0 && (
-                        <span className="tab-badge">
+                        <span className="profile-tab-badge">
                             {formatUSD(referralData.stats.total_earnings)}
                         </span>
                     )}
@@ -261,16 +246,14 @@ function Profile({ navigateTo, telegramUser }) {
             </div>
 
             {/* Контент вкладок */}
-            <div className="tab-content">
+            <div className="profile-content">
                 {activeTab === 'profile' ? (
                     <>
                         {/* Краткая реферальная информация */}
                         {referralData && (
                             <div className="referral-quick">
                                 <div className="referral-quick-header">
-                                    <div className="referral-quick-icon">
-                                        <ReferralSVG />
-                                    </div>
+                                    <div className="referral-quick-icon">💰</div>
                                     <div className="referral-quick-info">
                                         <h3>Реферальная система</h3>
                                         <p>1% комиссия с каждой сделки реферала</p>

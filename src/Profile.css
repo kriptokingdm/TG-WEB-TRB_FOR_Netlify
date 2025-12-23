@@ -138,16 +138,17 @@
 }
 
 /* ==================== */
-/* ВКЛАДКИ */
+/* ВКЛАДКИ ПРОФИЛЯ */
 /* ==================== */
 
 .profile-tabs {
+    display: flex;
     background: var(--tg-bg-color, #ffffff);
     border-bottom: 1px solid var(--tg-border-color, #e7e8ec);
-    padding: 0 16px;
+    padding: 0;
 }
 
-.tab-button {
+.profile-tab {
     flex: 1;
     background: none;
     border: none;
@@ -155,19 +156,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     cursor: pointer;
     color: var(--tg-hint-color, #8e8e93);
     position: relative;
-    font-size: 13px;
-    font-weight: 500;
+    gap: 6px;
 }
 
-.tab-button.active {
+.profile-tab.active {
     color: var(--tg-accent, #3390ec);
 }
 
-.tab-button.active::after {
+.profile-tab.active::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -175,15 +175,23 @@
     right: 0;
     height: 3px;
     background: var(--tg-accent, #3390ec);
-    border-radius: 3px 3px 0 0;
 }
 
-.tab-button svg {
-    width: 24px;
+.profile-tab-icon {
+    font-size: 20px;
     height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.tab-badge {
+.profile-tab-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.profile-tab-badge {
     position: absolute;
     top: 8px;
     right: calc(50% - 40px);
@@ -201,7 +209,7 @@
 /* КОНТЕНТ ВКЛАДОК */
 /* ==================== */
 
-.tab-content {
+.profile-content {
     padding: 16px;
 }
 
@@ -232,12 +240,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 20px;
     color: #667eea;
-}
-
-.referral-quick-icon svg {
-    width: 20px;
-    height: 20px;
 }
 
 .referral-quick-info h3 {
@@ -616,7 +620,7 @@
         padding: 45px 12px 16px;
     }
     
-    .tab-content {
+    .profile-content {
         padding: 12px;
     }
     

@@ -1,4 +1,32 @@
-/* App.css - iOS Floating Navigation с Telegram API интеграцией */
+/* App.css - Telegram WebApp с правильными переменными */
+
+/* === ТЕЛЕГРАМ ПЕРЕМЕННЫЕ ПО УМОЛЧАНИЮ === */
+:root {
+  /* Основные цвета Telegram (light theme) */
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-bg-color-rgb: 255, 255, 255;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #8e8e93;
+  --tg-theme-link-color: #3390ec;
+  --tg-theme-button-color: #3390ec;
+  --tg-theme-button-color-rgb: 51, 144, 236;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f1f1f1;
+  --tg-theme-header-bg-color: #ffffff;
+  --tg-theme-section-bg-color: #e7e8ec;
+}
+
+[data-theme="dark"] {
+  --tg-theme-bg-color: #0f0f0f;
+  --tg-theme-bg-color-rgb: 15, 15, 15;
+  --tg-theme-text-color: #ffffff;
+  --tg-theme-hint-color: #8e8e93;
+  --tg-theme-button-color: #3390ec;
+  --tg-theme-button-color-rgb: 51, 144, 236;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #1c1c1e;
+  --tg-theme-section-bg-color: #2c2c2e;
+}
 
 /* === РЕСЕТ === */
 * {
@@ -21,24 +49,6 @@ html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-}
-
-/* === TELEGRAM THEME VARIABLES === */
-:root {
-  /* Telegram WebApp colors (fallbacks) */
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-text-color: #000000;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-link-color: #3390ec;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f1f1f1;
-  --tg-theme-header-bg-color: #ffffff;
-  --tg-theme-accent-text-color: #3390ec;
-  --tg-theme-section-bg-color: #ffffff;
-  --tg-theme-section-header-text-color: #6d6d71;
-  --tg-theme-subtitle-text-color: #6d6d71;
-  --tg-theme-destructive-text-color: #ff3b30;
 }
 
 /* === АНИМАЦИИ ПЕРЕХОДОВ === */
@@ -100,10 +110,11 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 94px; /* Место для плавающей навигации */
+  padding-bottom: 94px;
+  transition: opacity 0.2s ease;
 }
 
-/* === ПЛАВАЮЩАЯ iOS НАВИГАЦИЯ (Frosted Glass) === */
+/* === ПЛАВАЮЩАЯ НАВИГАЦИЯ (Frosted Glass) === */
 .floating-nav {
   position: fixed;
   bottom: 20px;
@@ -111,7 +122,7 @@ html, body {
   transform: translateX(-50%);
   width: 320px;
   height: 70px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(var(--tg-theme-bg-color-rgb), 0.85);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 22px;
@@ -124,42 +135,20 @@ html, body {
     0 10px 40px rgba(0, 0, 0, 0.08),
     0 2px 10px rgba(0, 0, 0, 0.04),
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
-  border: 0.5px solid rgba(255, 255, 255, 0.25);
+  border: 0.5px solid rgba(var(--tg-theme-text-color-rgb, 0, 0, 0), 0.1);
   overflow: hidden;
   animation: fadeInUp 0.4s ease-out;
 }
 
-/* Эффект матового стекла */
-.floating-nav::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  padding: 0.5px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Темная тема */
 [data-theme="dark"] .floating-nav {
-  background: rgba(28, 28, 30, 0.85);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(var(--tg-theme-bg-color-rgb), 0.85);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.3),
-    0 2px 10px rgba(0, 0, 0, 0.15),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+    0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
-[data-theme="dark"] .floating-nav::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-}
-
-/* === iOS КНОПКИ В ПЛАВАЮЩЕЙ НАВИГАЦИИ === */
+/* Кнопки навигации */
 .nav-item-floating {
   flex: 1;
   display: flex;
@@ -194,18 +183,13 @@ html, body {
   width: 48px;
   height: 48px;
   background: var(--tg-theme-button-color);
-  border-radius: 50%; /* КРУГЛАЯ! */
+  border-radius: 50%;
   opacity: 0.12;
   z-index: -1;
-  transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .nav-item-floating.active::after {
   opacity: 0.15;
-}
-
-.nav-item-floating:active .nav-icon-floating {
-  transform: scale(0.9);
 }
 
 .nav-icon-floating {
@@ -222,14 +206,12 @@ html, body {
 .nav-icon-floating svg {
   width: 100%;
   height: 100%;
-  fill: currentColor;
 }
 
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: -0.2px;
-  opacity: 0.9;
   z-index: 1;
 }
 
@@ -266,7 +248,7 @@ html, body {
   z-index: 2;
 }
 
-/* === ПЛАВАЮЩАЯ ЦЕНТРАЛЬНАЯ КНОПКА === */
+/* Центральная кнопка */
 .nav-center-floating {
   position: relative;
   margin: 0 -12px;
@@ -282,46 +264,22 @@ html, body {
   align-items: center;
   justify-content: center;
   box-shadow: 
-    0 8px 24px rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.25),
-    0 2px 8px rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.15),
+    0 8px 24px rgba(var(--tg-theme-button-color-rgb), 0.25),
+    0 2px 8px rgba(var(--tg-theme-button-color-rgb), 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-/* Эффект свечения */
-.nav-center-circle-floating::after {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: radial-gradient(circle at center, rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.15) 0%, transparent 70%);
-  border-radius: 22px;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .nav-center-circle-floating:active {
   transform: scale(0.92);
-  box-shadow: 
-    0 4px 12px rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.25),
-    0 1px 4px rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.nav-center-circle-floating:active::after {
-  opacity: 1;
 }
 
 .nav-center-circle-floating svg {
   width: 24px;
   height: 24px;
-  fill: white;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  fill: var(--tg-theme-button-text-color);
 }
 
 .nav-center-label-floating {
@@ -334,78 +292,9 @@ html, body {
   color: var(--tg-theme-button-color);
   white-space: nowrap;
   opacity: 0.9;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-[data-theme="dark"] .nav-center-label-floating {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* === iOS HEADER СТИЛЬ (матовое стекло) === */
-.floating-header {
-  position: sticky;
-  top: 20px;
-  z-index: 100;
-  width: calc(100% - 32px);
-  margin: 20px 16px 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-radius: 16px;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
-  border: 0.5px solid rgba(255, 255, 255, 0.25);
-}
-
-[data-theme="dark"] .floating-header {
-  background: rgba(28, 28, 30, 0.85);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
-}
-
-.floating-header-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color);
-  letter-spacing: -0.3px;
-  margin: 0;
-}
-
-.floating-header-button {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.1);
-  border: none;
-  color: var(--tg-theme-button-color);
-  cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-}
-
-.floating-header-button:active {
-  transform: scale(0.95);
-  background: rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.15);
-}
-
-.floating-header-button svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* === ЗАГРУЗКА С БЛЮРОМ === */
+/* === ЗАГРУЗКА === */
 .app-loading {
   position: fixed;
   top: 0;
@@ -425,7 +314,7 @@ html, body {
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 2.5px solid rgba(var(--tg-theme-button-color-rgb, 0, 122, 255), 0.1);
+  border: 2.5px solid rgba(var(--tg-theme-button-color-rgb), 0.1);
   border-top-color: var(--tg-theme-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -442,13 +331,13 @@ html, body {
   opacity: 0.9;
 }
 
-/* === УВЕДОМЛЕНИЯ (Frosted Glass) === */
+/* === УВЕДОМЛЕНИЯ === */
 .telegram-toast {
   position: fixed;
   top: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--tg-theme-bg-color-rgb), 0.9);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 14px;
@@ -459,13 +348,8 @@ html, body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 0.5px solid rgba(255, 255, 255, 0.25);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
   max-width: 90%;
-}
-
-[data-theme="dark"] .telegram-toast {
-  background: rgba(28, 28, 30, 0.9);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
 }
 
 .telegram-toast-icon {
@@ -527,10 +411,6 @@ html, body {
   .floating-nav {
     bottom: calc(20px + env(safe-area-inset-bottom));
   }
-  
-  .floating-header {
-    margin-top: calc(20px + env(safe-area-inset-top));
-  }
 }
 
 /* === АДАПТИВНОСТЬ === */
@@ -555,13 +435,6 @@ html, body {
   .nav-label-floating {
     font-size: 9px;
   }
-  
-  .floating-header {
-    width: calc(100% - 24px);
-    margin: 16px 12px 0;
-    border-radius: 14px;
-    padding: 14px 16px;
-  }
 }
 
 @media (min-width: 768px) {
@@ -569,13 +442,8 @@ html, body {
     max-width: 430px;
     left: 50%;
     transform: translateX(-50%);
-    border-left: 0.5px solid rgba(0, 0, 0, 0.08);
-    border-right: 0.5px solid rgba(0, 0, 0, 0.08);
-  }
-  
-  [data-theme="dark"] .app {
-    border-left: 0.5px solid rgba(255, 255, 255, 0.08);
-    border-right: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-left: 0.5px solid var(--tg-theme-section-bg-color);
+    border-right: 0.5px solid var(--tg-theme-section-bg-color);
   }
   
   .floating-nav {
@@ -583,18 +451,7 @@ html, body {
   }
 }
 
-/* === СКРОЛЛБАР === */
-.app-content::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
-
-.app-content {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-/* === АНИМАЦИЯ ПОЯВЛЕНИЯ НАВИГАЦИИ === */
+/* === АНИМАЦИЯ ПОЯВЛЕНИЯ === */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -606,73 +463,13 @@ html, body {
   }
 }
 
-/* === ОБЩИЕ КНОПКИ В СТИЛЕ TELEGRAM === */
-.telegram-button {
-  background: var(--tg-theme-button-color);
-  color: var(--tg-theme-button-text-color);
-  border: none;
-  border-radius: 10px;
-  padding: 14px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.telegram-button:active:not(:disabled) {
-  opacity: 0.8;
-  transform: scale(0.98);
-}
-
-.telegram-button:disabled {
-  background: var(--tg-theme-hint-color);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.telegram-button-secondary {
-  background: var(--tg-theme-secondary-bg-color);
-  color: var(--tg-theme-text-color);
-}
-
-.telegram-button-outline {
+/* === SCROLLBAR === */
+.app-content::-webkit-scrollbar {
+  width: 0;
   background: transparent;
-  border: 1px solid var(--tg-theme-button-color);
-  color: var(--tg-theme-button-color);
 }
 
-/* === ИНПУТЫ В СТИЛЕ TELEGRAM === */
-.telegram-input {
-  background: var(--tg-theme-secondary-bg-color);
-  border: 1px solid var(--tg-theme-section-bg-color);
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 16px;
-  color: var(--tg-theme-text-color);
-  outline: none;
-  width: 100%;
-  transition: border-color 0.2s ease;
-}
-
-.telegram-input:focus {
-  border-color: var(--tg-theme-button-color);
-}
-
-/* === КАРТОЧКИ В СТИЛЕ TELEGRAM === */
-.telegram-card {
-  background: var(--tg-theme-bg-color);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 16px;
-  border: 0.5px solid var(--tg-theme-section-bg-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-[data-theme="dark"] .telegram-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.app-content {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }

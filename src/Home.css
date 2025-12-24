@@ -1,66 +1,14 @@
-/* Home.css - Точный стиль Telegram */
-/* ====================== */
-/* ТЕМЫ TELEGRAM */
-/* ====================== */
+/* Home.css - Telegram стиль с переменными */
 
-/* Светлая тема Telegram */
-:root {
-  --tg-bg-color: #ffffff;
-  --tg-header-bg: #ffffff;
-  --tg-header-color: #000000;
-  --tg-chat-bg: #f0f0f0;
-  --tg-message-bg: #ffffff;
-  --tg-message-color: #000000;
-  --tg-accent: #3390ec;
-  --tg-accent-light: rgba(51, 144, 236, 0.1);
-  --tg-secondary-text: #707579;
-  --tg-border: #e6e6e6;
-  --tg-hover: #f7f7f7;
-  --tg-active: #e8e8e8;
-  --tg-success: #34c759;
-  --tg-error: #ff3b30;
-  --tg-warning: #ff9500;
-  --tg-card-bg: #ffffff;
-  --tg-input-bg: #f7f7f7;
-  --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.08);
-  --tg-radius: 12px;
-  --tg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-/* Темная тема Telegram */
-[data-theme="dark"] {
-  --tg-bg-color: #0f0f0f;
-  --tg-header-bg: #1c1c1c;
-  --tg-header-color: #ffffff;
-  --tg-chat-bg: #0f0f0f;
-  --tg-message-bg: #1c1c1c;
-  --tg-message-color: #ffffff;
-  --tg-accent: #3390ec;
-  --tg-accent-light: rgba(51, 144, 236, 0.2);
-  --tg-secondary-text: #8e8e93;
-  --tg-border: #2c2c2c;
-  --tg-hover: #2c2c2c;
-  --tg-active: #3c3c3c;
-  --tg-success: #30d158;
-  --tg-error: #ff453a;
-  --tg-warning: #ff9f0a;
-  --tg-card-bg: #1c1c1c;
-  --tg-input-bg: #2c2c2c;
-  --tg-shadow: 0px 4px 14px rgba(0, 0, 0, 0.25);
-}
-
-/* ====================== */
-/* ОСНОВНЫЕ СТИЛИ TELEGRAM */
-/* ====================== */
-
+/* Используем CSS переменные, установленные в App.js */
 .home-container {
   min-height: 100vh;
   background: var(--tg-bg-color);
-  font-family: var(--tg-font);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
   position: relative;
-  color: var(--tg-message-color);
+  color: var(--tg-text-color);
   animation: fadeIn 0.3s ease;
 }
 
@@ -69,669 +17,27 @@
   to { opacity: 1; }
 }
 
-/* ====================== */
-/* TELEGRAM СТИЛЬ ДЛЯ АКТИВНОГО ОРДЕРА */
-/* ====================== */
-
-.tg-home-container {
-  min-height: 100vh;
-  background: var(--tg-bg-color);
-  font-family: var(--tg-font);
-  color: var(--tg-message-color);
-  animation: fadeIn 0.3s ease;
-}
-
-/* Шапка Telegram */
-.tg-header {
-  background: var(--tg-header-bg);
-  border-bottom: 0.5px solid var(--tg-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding-top: env(safe-area-inset-top);
-}
-
-.tg-header-content {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  gap: 16px;
-}
-
-.tg-back-btn {
-  background: none;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--tg-accent);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.tg-back-btn:hover {
-  background: var(--tg-hover);
-}
-
-.tg-back-btn svg {
-  width: 24px;
-  height: 24px;
-}
-
-.tg-header-titles {
-  flex: 1;
-  min-width: 0;
-}
-
-.tg-header-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--tg-header-color);
-  margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.3px;
-}
-
-.tg-header-subtitle {
-  font-size: 13px;
-  color: var(--tg-secondary-text);
-  margin: 2px 0 0 0;
-  font-weight: 400;
-  line-height: 1.2;
-}
-
-.tg-header-status {
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: var(--tg-input-bg);
-  white-space: nowrap;
-  flex-shrink: 0;
-  animation: pulseStatus 2s infinite;
-}
-
-@keyframes pulseStatus {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-/* Основной контент */
-.tg-main-content {
-  padding: 16px;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Карточка ордера */
-.tg-order-card {
-  background: var(--tg-card-bg);
-  border-radius: 20px;
-  padding: 20px;
-  border: 0.5px solid var(--tg-border);
-  box-shadow: var(--tg-shadow);
-  margin-bottom: 16px;
-  animation: scaleIn 0.3s ease;
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.tg-card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 0.5px solid var(--tg-border);
-}
-
-.tg-order-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.tg-order-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.tg-order-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--tg-header-color);
-  margin: 0 0 4px 0;
-  letter-spacing: -0.5px;
-}
-
-.tg-order-subtitle {
-  font-size: 15px;
-  color: var(--tg-secondary-text);
-  margin: 0;
-  line-height: 1.4;
-}
-
-/* Детали ордера */
-.tg-order-details {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.tg-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  background: var(--tg-input-bg);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  animation: fadeInRow 0.3s ease;
-}
-
-@keyframes fadeInRow {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.tg-detail-row:hover {
-  background: var(--tg-hover);
-  transform: translateX(2px);
-}
-
-.tg-detail-label {
-  font-size: 15px;
-  color: var(--tg-secondary-text);
-  font-weight: 500;
-}
-
-.tg-detail-value {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--tg-header-color);
-  text-align: right;
-}
-
-.tg-detail-value strong {
-  font-weight: 700;
-  color: var(--tg-accent);
-}
-
-.tg-detail-mono {
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  word-break: break-all;
-  max-width: 200px;
-  text-align: right;
-}
-
-/* Прогресс бар */
-.tg-progress-section {
-  background: var(--tg-input-bg);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  animation: slideUp 0.4s ease;
-}
-
-.tg-progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.tg-progress-header span:first-child {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-secondary-text);
-}
-
-.tg-progress-percent {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--tg-accent);
-}
-
-.tg-progress-bar {
-  height: 8px;
-  background: var(--tg-border);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.tg-progress-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.tg-progress-steps {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-}
-
-.tg-progress-steps::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 15px;
-  right: 15px;
-  height: 2px;
-  background: var(--tg-border);
-  z-index: 1;
-}
-
-.tg-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  flex: 1;
-}
-
-.tg-step-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--tg-border);
-  margin-bottom: 8px;
-  transition: all 0.3s ease;
-}
-
-.tg-step.active .tg-step-dot {
-  background: var(--tg-accent);
-  box-shadow: 0 0 0 4px var(--tg-accent-light);
-  animation: pulseDot 2s infinite;
-}
-
-@keyframes pulseDot {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.tg-step-text {
-  font-size: 12px;
-  color: var(--tg-secondary-text);
-  font-weight: 500;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.tg-step.active .tg-step-text {
-  color: var(--tg-accent);
-  font-weight: 600;
-}
-
-/* Кнопки действий */
-.tg-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.tg-action-btn {
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-family: var(--tg-font);
-}
-
-.tg-action-btn.primary {
-  background: var(--tg-accent);
-  color: white;
-}
-
-[data-theme="dark"] .tg-action-btn.primary {
-  background: #30a353;
-}
-
-.tg-action-btn.primary:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-}
-
-.tg-action-btn.secondary {
-  background: var(--tg-input-bg);
-  color: var(--tg-header-color);
-  border: 0.5px solid var(--tg-border);
-}
-
-.tg-action-btn.secondary:hover {
-  background: var(--tg-hover);
-  transform: translateY(-2px);
-}
-
-.tg-btn-icon {
-  font-size: 20px;
-}
-
-/* Информационная заметка */
-.tg-info-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background: linear-gradient(135deg, var(--tg-accent-light), transparent);
-  border-radius: 12px;
-  border: 0.5px solid var(--tg-accent-light);
-  animation: slideUp 0.5s ease;
-}
-
-.tg-info-icon {
-  font-size: 24px;
-  color: var(--tg-accent);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.tg-info-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tg-info-text strong {
-  font-size: 16px;
-  color: var(--tg-header-color);
-  font-weight: 600;
-}
-
-.tg-info-text span {
-  font-size: 14px;
-  color: var(--tg-secondary-text);
-  line-height: 1.4;
-}
-
-/* Карточка предупреждения */
-.tg-warning-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.1), transparent);
-  border-radius: 12px;
-  border: 0.5px solid rgba(255, 149, 0, 0.2);
-  margin-bottom: 16px;
-  animation: slideUp 0.4s ease;
-}
-
-.tg-warning-icon {
-  font-size: 24px;
-  color: #FF9500;
-  flex-shrink: 0;
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.tg-warning-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tg-warning-content strong {
-  font-size: 16px;
-  color: #FF9500;
-  font-weight: 700;
-}
-
-.tg-warning-content span {
-  font-size: 14px;
-  color: var(--tg-secondary-text);
-  line-height: 1.4;
-}
-
-/* Карточка статистики */
-.tg-stats-card {
-  background: var(--tg-card-bg);
-  border-radius: 16px;
-  padding: 20px;
-  border: 0.5px solid var(--tg-border);
-  box-shadow: var(--tg-shadow);
-  animation: slideUp 0.6s ease;
-}
-
-.tg-stats-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-header-color);
-  margin: 0 0 16px 0;
-  padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--tg-border);
-}
-
-.tg-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.tg-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--tg-input-bg);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.tg-stat-item:hover {
-  background: var(--tg-hover);
-  transform: translateY(-2px);
-}
-
-.tg-stat-icon {
-  font-size: 20px;
-  color: var(--tg-accent);
-  width: 40px;
-  height: 40px;
-  background: var(--tg-accent-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.tg-stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.tg-stat-label {
-  font-size: 13px;
-  color: var(--tg-secondary-text);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tg-stat-value {
-  font-size: 15px;
-  color: var(--tg-header-color);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Нижняя навигация Telegram */
-.tg-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--tg-header-bg);
-  border-top: 0.5px solid var(--tg-border);
-  display: flex;
-  justify-content: space-around;
-  padding: 12px 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding-bottom: env(safe-area-inset-bottom);
-  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
-  animation: slideUpNav 0.3s ease;
-}
-
-@keyframes slideUpNav {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.tg-nav-btn {
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: var(--tg-secondary-text);
-  font-size: 11px;
-  transition: all 0.2s ease;
-  border-radius: 8px;
-  min-width: 70px;
-  opacity: 0.7;
-}
-
-.tg-nav-btn:hover {
-  opacity: 1;
-  background: var(--tg-hover);
-}
-
-.tg-nav-btn.active {
-  color: var(--tg-accent);
-  opacity: 1;
-}
-
-.tg-nav-icon {
-  font-size: 20px;
-  width: 32px;
-  height: 32px;
-  background: var(--tg-input-bg);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.tg-nav-btn.active .tg-nav-icon {
-  background: var(--tg-accent);
-  color: white;
-  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
-}
-
-.tg-nav-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-/* ====================== */
-/* ОБЫЧНЫЙ ИНТЕРФЕЙС ОБМЕНА */
-/* ====================== */
+/* ==================== */
+/* ОБЩИЕ СТИЛИ */
+/* ==================== */
 
 .home-content {
   padding: 16px;
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
-/* ====================== */
-/* КАРТОЧКИ ВАЛЮТ TELEGRAM */
-/* ====================== */
-
-.currency-cards-section {
-  background: var(--tg-card-bg);
-  border-radius: var(--tg-radius);
+/* Карточки */
+.currency-cards-section,
+.payment-section-new {
+  background: var(--tg-bg-color);
+  border-radius: 12px;
   padding: 16px;
-  margin: 0 0 16px 0;
-  border: 0.5px solid var(--tg-border);
-  box-shadow: var(--tg-shadow);
-  animation: slideDown 0.3s ease;
+  margin-bottom: 16px;
+  border: 0.5px solid var(--tg-secondary-bg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Валютные карточки */
 .currency-cards-horizontal {
   display: flex;
   align-items: center;
@@ -743,20 +49,18 @@
 
 .currency-card-side {
   flex: 1;
-  background: var(--tg-accent-light);
-  border-radius: var(--tg-radius);
+  border-radius: 12px;
   padding: 20px;
   min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  border: 0.5px solid var(--tg-border);
+  border: 0.5px solid transparent;
 }
 
 .currency-card-side:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .currency-content {
@@ -771,23 +75,16 @@
 .currency-name {
   font-size: 24px;
   font-weight: 700;
-  color: var(--tg-header-color);
+  color: var(--tg-text-color);
 }
 
 .currency-rate.light {
   font-size: 15px;
   font-weight: 500;
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
 }
 
-[data-theme="dark"] .currency-rate.light {
-  color: #ffffff;
-}
-
-/* ====================== */
-/* SWAP КНОПКА - ЧИСТАЯ ВЕРСИЯ */
-/* ====================== */
-
+/* Swap кнопка */
 .swap-center-button {
   position: absolute;
   left: 50%;
@@ -805,7 +102,6 @@
   justify-content: center;
   padding: 0;
   margin: 0;
-  background: #36B2FF;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   outline: none;
@@ -834,42 +130,23 @@
   transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
 }
 
-/* Темная тема */
-[data-theme="dark"] .swap-center-button {
-  background: #30A353;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* SVG иконка */
-.swap-center-button svg {
-  width: 52px;
-  height: 52px;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-/* ====================== */
-/* ПОЛЯ ВВОДА СУММЫ TELEGRAM */
-/* ====================== */
-
+/* Поля ввода */
 .amount-input-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 24px;
-  align-items: start;
 }
 
 .amount-input-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 100px;
 }
 
 .amount-label {
   font-size: 14px;
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
   font-weight: 500;
 }
 
@@ -883,28 +160,27 @@
 .amount-input {
   width: 100%;
   padding: 16px 52px 16px 16px;
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: var(--tg-radius);
+  border: 0.5px solid var(--tg-secondary-bg-color);
+  border-radius: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--tg-header-color);
   outline: none;
   transition: all 0.3s ease;
-  font-family: var(--tg-font);
+  font-family: inherit;
   height: 100%;
   box-sizing: border-box;
+  background: var(--tg-secondary-bg-color);
+  color: var(--tg-text-color);
 }
 
 .amount-input::placeholder {
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
   opacity: 0.7;
 }
 
 .amount-input:focus {
-  border-color: var(--tg-accent);
-  background: var(--tg-card-bg);
-  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+  border-color: var(--tg-button-color);
+  background: var(--tg-bg-color);
 }
 
 .amount-input:disabled {
@@ -912,58 +188,116 @@
   cursor: not-allowed;
 }
 
-[data-theme="dark"] .amount-input {
-  background: var(--tg-input-bg);
-  color: var(--tg-header-color);
-  border-color: var(--tg-border);
-}
-
 .amount-currency {
   position: absolute;
   right: 16px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
   pointer-events: none;
 }
 
 .min-limit-hint {
   font-size: 12px;
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
   margin-top: 4px;
   opacity: 0.8;
 }
 
 .error-message {
-  color: var(--tg-error);
+  color: #ff3b30;
   font-size: 13px;
   font-weight: 500;
   margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  animation: fadeInError 0.3s ease;
 }
 
-@keyframes fadeInError {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Убираем стрелки у number input */
-.amount-input::-webkit-inner-spin-button,
-.amount-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+/* Заголовки */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--tg-text-color);
   margin: 0;
 }
 
-.amount-input[type=number] {
-  -moz-appearance: textfield;
+.payment-header-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
 }
 
-/* ====================== */
-/* СТИЛИ ДЛЯ СЕЛЕКТОВ С ИКОНКАМИ */
-/* ====================== */
+/* Switcher */
+.crypto-type-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  padding: 4px;
+  border: 0.5px solid var(--tg-secondary-bg-color);
+}
+
+.crypto-type-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.crypto-type-icon {
+  font-size: 16px;
+}
+
+.crypto-type-text {
+  font-weight: 600;
+}
+
+/* Формы */
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.network-select,
+.bank-select,
+.address-input,
+.card-input,
+.phone-input,
+.exchange-select,
+.uid-input {
+  width: 100%;
+  padding: 14px;
+  border: 0.5px solid var(--tg-secondary-bg-color);
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  background: var(--tg-secondary-bg-color);
+  color: var(--tg-text-color);
+}
+
+.network-select:focus,
+.bank-select:focus,
+.address-input:focus,
+.card-input:focus,
+.phone-input:focus,
+.exchange-select:focus,
+.uid-input:focus {
+  border-color: var(--tg-button-color);
+  background: var(--tg-bg-color);
+}
 
 .select-with-icon {
   position: relative;
@@ -984,227 +318,36 @@
   height: 20px;
 }
 
-.selected-network-icon svg,
-.selected-exchange-icon svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .selected-network-icon svg,
-[data-theme="dark"] .selected-exchange-icon svg {
-  filter: brightness(1.2);
-}
-
-/* ====================== */
-/* СТИЛИ ДЛЯ БЕЙДЖЕЙ С ИКОНКАМИ */
-/* ====================== */
-
-.crypto-network-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--tg-accent);
-  background: var(--tg-accent-light);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
-.crypto-network-badge svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-.crypto-network-text {
-  font-size: 12px;
-}
-
-/* ====================== */
-/* СТИЛИ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ ТИПА КРИПТО-АДРЕСА */
-/* ====================== */
-
-.crypto-type-switcher {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  background: var(--tg-input-bg);
-  border-radius: var(--tg-radius);
-  padding: 4px;
-  border: 0.5px solid var(--tg-border);
-}
-
-.crypto-type-btn {
-  flex: 1;
-  padding: 10px 12px;
-  border: none;
-  border-radius: calc(var(--tg-radius) - 4px);
-  background: transparent;
-  color: var(--tg-secondary-text);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
-
-.crypto-type-btn.active {
-  background: var(--tg-accent);
-  color: white;
-  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.2);
-}
-
-.crypto-type-icon {
-  font-size: 16px;
-}
-
-.crypto-type-text {
-  font-weight: 600;
-}
-
-/* Темная тема для switcher */
-[data-theme="dark"] .crypto-type-switcher {
-  background: var(--tg-input-bg);
-  border-color: var(--tg-border);
-}
-
-[data-theme="dark"] .crypto-type-btn {
-  color: var(--tg-secondary-text);
-}
-
-[data-theme="dark"] .crypto-type-btn.active {
-  background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
-  color: white;
-}
-
-/* ====================== */
-/* СЕКЦИИ ОПЛАТЫ TELEGRAM */
-/* ====================== */
-
-.payment-section-new {
-  background: var(--tg-card-bg);
-  border-radius: var(--tg-radius);
-  padding: 16px;
-  margin: 0 0 16px 0;
-  border: 0.5px solid var(--tg-border);
-  box-shadow: var(--tg-shadow);
-  animation: slideUp 0.3s ease;
-}
-
-.payment-header-new {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--tg-border);
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-header-color);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.network-select,
-.bank-select,
-.address-input,
-.card-input,
-.phone-input,
-.exchange-select,
-.uid-input {
-  width: 100%;
-  padding: 14px;
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: var(--tg-radius);
-  font-size: 15px;
-  color: var(--tg-header-color);
-  outline: none;
-  transition: all 0.3s ease;
-  font-family: var(--tg-font);
-}
-
-.network-select:focus,
-.bank-select:focus,
-.address-input:focus,
-.card-input:focus,
-.phone-input:focus,
-.exchange-select:focus,
-.uid-input:focus {
-  border-color: var(--tg-accent);
-  background: var(--tg-card-bg);
-}
-
+/* Кнопки */
 .add-button {
   width: 100%;
   padding: 14px;
-  background: var(--tg-accent);
   border: none;
-  border-radius: var(--tg-radius);
-  color: white;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: var(--tg-font);
-}
-
-[data-theme="dark"] .add-button {
-  background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
+  font-family: inherit;
 }
 
 .add-button:hover {
   opacity: 0.9;
 }
 
-/* Списки реквизитов */
+/* Списки */
 .crypto-list,
 .payments-list {
   margin-top: 20px;
   max-height: 200px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--tg-accent) transparent;
-}
-
-.crypto-list::-webkit-scrollbar,
-.payments-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.crypto-list::-webkit-scrollbar-track,
-.payments-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.crypto-list::-webkit-scrollbar-thumb,
-.payments-list::-webkit-scrollbar-thumb {
-  background: var(--tg-accent);
-  border-radius: 2px;
 }
 
 .crypto-list h4,
 .payments-list h4 {
   font-size: 16px;
   font-weight: 600;
-  color: var(--tg-secondary-text);
+  color: var(--tg-hint-color);
   margin-bottom: 12px;
 }
 
@@ -1214,25 +357,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: var(--tg-radius);
+  border-radius: 12px;
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  animation: fadeIn 0.3s ease;
+  border: 0.5px solid transparent;
 }
 
 .crypto-item:hover,
 .payment-item:hover {
-  background: var(--tg-hover);
-  border-color: var(--tg-accent);
-}
-
-.crypto-item.selected,
-.payment-item.selected {
-  background: var(--tg-accent-light);
-  border-color: var(--tg-accent);
+  border-color: var(--tg-button-color);
 }
 
 .crypto-info,
@@ -1253,19 +387,19 @@
 .bank-name {
   font-size: 15px;
   font-weight: 600;
-  color: var(--tg-header-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sbp-badge {
-  background: var(--tg-success);
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+.crypto-network-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
   flex-shrink: 0;
   margin-left: 8px;
 }
@@ -1273,7 +407,6 @@
 .crypto-address,
 .payment-number {
   font-size: 13px;
-  color: var(--tg-secondary-text);
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   word-break: break-all;
   overflow: hidden;
@@ -1300,24 +433,88 @@
   justify-content: center;
 }
 
-.copy-btn {
-  color: var(--tg-accent);
-}
-
-.delete-btn {
-  color: var(--tg-error);
-}
-
 .action-btn:hover {
-  background: var(--tg-hover);
+  background: var(--tg-secondary-bg-color);
+}
+
+.sbp-badge {
+  background: #34c759;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* Кнопка обмена */
+.exchange-button-new {
+  width: 100%;
+  margin: 0 0 16px 0;
+  padding: 18px;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: inherit;
+}
+
+.exchange-button-new:hover:not(.disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.exchange-button-new.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.exchange-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.exchange-text {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Инфо блок */
+.security-info {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 16px 0;
+}
+
+.security-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.security-text {
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.security-text strong {
+  font-weight: 600;
 }
 
 /* Пустое состояние */
 .empty-state {
   text-align: center;
   padding: 32px 20px;
-  color: var(--tg-secondary-text);
-  animation: fadeIn 0.5s ease;
 }
 
 .empty-icon {
@@ -1332,160 +529,19 @@
   font-weight: 500;
 }
 
-/* Иконка Polygon */
-.polygon-icon {
-  width: 18px;
-  height: 18px;
-  background: #8247E5;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 10px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .polygon-icon {
-  background: #8B5CF6;
-}
-
-/* UID лейбл */
-.uid-label {
-  font-size: 11px;
-  color: var(--tg-accent);
-  background: var(--tg-accent-light);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
-  font-weight: 600;
-}
-
-/* ====================== */
-/* КНОПКА ОБМЕНА TELEGRAM */
-/* ====================== */
-
-.exchange-button-new {
-  width: 100%;
-  margin: 0 0 16px 0;
-  padding: 18px;
-  border: none;
-  border-radius: var(--tg-radius);
-  font-size: 17px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-family: var(--tg-font);
-  position: relative;
-  overflow: hidden;
-}
-
-.exchange-button-new.buy {
-  background: var(--tg-success);
-  color: white;
-  box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
-}
-
-.exchange-button-new.sell {
-  background: #ec3333;
-  color: white;
-  box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
-}
-
-.exchange-button-new:hover:not(.disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.exchange-button-new.buy:hover:not(.disabled) {
-  box-shadow: 0 6px 20px rgba(52, 199, 89, 0.4);
-}
-
-.exchange-button-new.sell:hover:not(.disabled) {
-  box-shadow: 0 6px 20px rgba(51, 144, 236, 0.4);
-}
-
-.exchange-button-new.disabled {
-  background: var(--tg-input-bg);
-  color: var(--tg-secondary-text);
-  cursor: not-allowed;
-  opacity: 0.5;
-  box-shadow: none;
-}
-
-.exchange-button-new.disabled:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.exchange-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.exchange-text {
-  font-size: 17px;
-  font-weight: 700;
-}
-
-/* ====================== */
-/* ИНФОРМАЦИЯ О БЕЗОПАСНОСТИ */
-/* ====================== */
-
-.security-info {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  background: var(--tg-input-bg);
-  border-radius: var(--tg-radius);
-  border: 0.5px solid var(--tg-border);
-  margin: 16px 0;
-  animation: slideUp 0.4s ease;
-}
-
-.security-icon {
-  font-size: 20px;
-  color: var(--tg-accent);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.security-text {
-  font-size: 14px;
-  color: var(--tg-secondary-text);
-  line-height: 1.4;
-  margin: 0;
-}
-
-.security-text strong {
-  color: var(--tg-header-color);
-  font-weight: 600;
-}
-
-/* ====================== */
-/* TOAST СООБЩЕНИЯ TELEGRAM */
-/* ====================== */
-
+/* Toast сообщения */
 .message-toast-new {
   position: fixed;
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--tg-card-bg);
-  border-radius: var(--tg-radius);
+  background: var(--tg-bg-color);
+  border-radius: 12px;
   padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 0.5px solid var(--tg-border);
+  border: 0.5px solid var(--tg-secondary-bg-color);
   max-width: 90%;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1512,136 +568,241 @@
 .toast-text {
   font-size: 15px;
   font-weight: 500;
-  color: var(--tg-header-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.message-success {
-  border-left: 4px solid var(--tg-success);
+.message-toast-new.success {
+  border-left: 4px solid #34c759;
 }
 
-.message-error {
-  border-left: 4px solid var(--tg-error);
+.message-toast-new.error {
+  border-left: 4px solid #ff3b30;
 }
 
-.message-info {
-  border-left: 4px solid var(--tg-accent);
+.message-toast-new.warning {
+  border-left: 4px solid #ff9500;
 }
 
-/* ====================== */
-/* ТЕМНАЯ ТЕМА ДЛЯ TELEGRAM СТИЛЯ */
-/* ====================== */
-
-[data-theme="dark"] .tg-order-card {
-  background: linear-gradient(135deg, #1c1c1c 0%, #2c2c2c 100%);
-  border: 0.5px solid #3c3c3c;
+.message-toast-new.info {
+  border-left: 4px solid var(--tg-button-color);
 }
 
-[data-theme="dark"] .tg-stats-card {
-  background: linear-gradient(135deg, #1c1c1c 0%, #2c2c2c 100%);
-  border: 0.5px solid #3c3c3c;
+/* Telegram стиль для активного ордера */
+.tg-home-container {
+  min-height: 100vh;
+  background: var(--tg-bg-color);
+  font-family: inherit;
+  color: var(--tg-text-color);
 }
 
-[data-theme="dark"] .tg-detail-row {
-  background: rgba(255, 255, 255, 0.05);
+.tg-header {
+  background: var(--tg-bg-color);
+  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding-top: env(safe-area-inset-top);
 }
 
-[data-theme="dark"] .tg-detail-row:hover {
-  background: rgba(255, 255, 255, 0.1);
+.tg-header-content {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 16px;
 }
 
-[data-theme="dark"] .tg-progress-section {
-  background: rgba(255, 255, 255, 0.05);
+.tg-back-btn {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-[data-theme="dark"] .tg-progress-bar {
-  background: rgba(255, 255, 255, 0.1);
+.tg-back-btn:hover {
+  background: var(--tg-secondary-bg-color);
 }
 
-[data-theme="dark"] .tg-step-dot {
-  background: rgba(255, 255, 255, 0.2);
+.tg-back-btn svg {
+  width: 24px;
+  height: 24px;
 }
 
-[data-theme="dark"] .tg-progress-steps::before {
-  background: rgba(255, 255, 255, 0.1);
+.tg-header-titles {
+  flex: 1;
+  min-width: 0;
 }
 
-[data-theme="dark"] .tg-action-btn.secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 0.5px solid #3c3c3c;
+.tg-header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tg-text-color);
+  margin: 0;
+  line-height: 1.2;
 }
 
-[data-theme="dark"] .tg-action-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+.tg-header-subtitle {
+  font-size: 13px;
+  color: var(--tg-hint-color);
+  margin: 2px 0 0 0;
+  font-weight: 400;
 }
 
-[data-theme="dark"] .tg-stat-item {
-  background: rgba(255, 255, 255, 0.05);
+.tg-header-status {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--tg-secondary-bg-color);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-[data-theme="dark"] .tg-stat-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+.tg-main-content {
+  padding: 16px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
-[data-theme="dark"] .tg-info-note {
-  background: linear-gradient(135deg, rgba(51, 144, 236, 0.15), transparent);
-  border: 0.5px solid rgba(51, 144, 236, 0.2);
+.tg-order-card {
+  background: var(--tg-bg-color);
+  border-radius: 20px;
+  padding: 20px;
+  border: 0.5px solid var(--tg-secondary-bg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
 }
 
-[data-theme="dark"] .tg-warning-card {
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), transparent);
-  border: 0.5px solid rgba(255, 149, 0, 0.2);
+.tg-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
 }
 
-[data-theme="dark"] .tg-bottom-nav {
-  background: rgba(28, 28, 30, 0.95);
-  border-top: 0.5px solid #3c3c3c;
+.tg-order-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* ====================== */
-/* АДАПТИВНОСТЬ */
-/* ====================== */
+.tg-order-info {
+  flex: 1;
+  min-width: 0;
+}
 
+.tg-order-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--tg-text-color);
+  margin: 0 0 4px 0;
+}
+
+.tg-order-subtitle {
+  font-size: 15px;
+  color: var(--tg-hint-color);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.tg-order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tg-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--tg-secondary-bg-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.tg-detail-label {
+  font-size: 15px;
+  color: var(--tg-hint-color);
+  font-weight: 500;
+}
+
+.tg-detail-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tg-text-color);
+  text-align: right;
+}
+
+.tg-detail-value strong {
+  font-weight: 700;
+  color: var(--tg-button-color);
+}
+
+.tg-detail-mono {
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  word-break: break-all;
+  max-width: 200px;
+  text-align: right;
+}
+
+.tg-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.tg-action-btn {
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: inherit;
+}
+
+.tg-action-btn.primary {
+  background: var(--tg-button-color);
+  color: var(--tg-button-text-color);
+}
+
+.tg-action-btn.primary:hover {
+  opacity: 0.9;
+}
+
+.tg-btn-icon {
+  font-size: 20px;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
-  .tg-header-title {
-    font-size: 18px;
-  }
-  
-  .tg-order-title {
-    font-size: 20px;
-  }
-  
-  .tg-stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .tg-actions {
-    grid-template-columns: 1fr;
-  }
-  
-  .currency-card-side {
-    padding: 16px;
-    min-height: 90px;
-  }
-  
-  [data-theme="dark"] .currency-card-side {
-    background: linear-gradient(135deg, #30a353 0%, #1a7c3c 100%);
-  }
-  
-  .currency-name {
-    font-size: 20px;
-  }
-  
-  .swap-center-button {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .swap-center-button svg {
-    width: 48px;
-    height: 48px;
+  .currency-cards-horizontal {
+    gap: 12px;
   }
   
   .amount-input-section {
@@ -1649,18 +810,8 @@
     gap: 20px;
   }
   
-  .amount-input-wrapper {
-    height: 52px;
-  }
-  
-  .amount-input {
-    padding: 14px 48px 14px 14px;
-    font-size: 16px;
-  }
-  
-  .amount-currency {
-    right: 14px;
-    font-size: 15px;
+  .tg-order-title {
+    font-size: 20px;
   }
 }
 
@@ -1671,108 +822,6 @@
     padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
   
-  .currency-cards-section,
-  .payment-section-new,
-  .security-info {
-    margin-left: 0;
-    margin-right: 0;
-  }
-  
-  .exchange-button-new {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  
-  .currency-cards-horizontal {
-    gap: 12px;
-  }
-  
-  .swap-center-button {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .swap-center-button svg {
-    width: 43px;
-    height: 43px;
-  }
-  
-  .tg-order-card {
-    padding: 16px;
-  }
-  
-  .tg-card-header {
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  
-  .tg-order-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-  }
-  
-  .tg-order-title {
-    font-size: 18px;
-  }
-  
-  .tg-order-subtitle {
-    font-size: 14px;
-  }
-  
-  .tg-detail-row {
-    padding: 12px;
-  }
-  
-  .tg-detail-label {
-    font-size: 14px;
-  }
-  
-  .tg-detail-value {
-    font-size: 15px;
-  }
-  
-  .tg-detail-mono {
-    font-size: 12px;
-    max-width: 150px;
-  }
-  
-  .tg-nav-btn {
-    min-width: 60px;
-    padding: 6px 10px;
-  }
-  
-  .tg-nav-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 18px;
-  }
-  
-  .tg-nav-label {
-    font-size: 10px;
-  }
-  
-  .selected-network-icon,
-  .selected-exchange-icon {
-    right: 35px;
-  }
-  
-  .crypto-network-badge {
-    padding: 3px 6px;
-  }
-  
-  .crypto-network-badge svg {
-    width: 12px;
-    height: 12px;
-  }
-  
-  .crypto-network-text {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 320px) {
   .currency-card-side {
     padding: 12px;
     min-height: 80px;
@@ -1782,55 +831,29 @@
     font-size: 18px;
   }
   
-  .currency-rate.light {
-    font-size: 13px;
-  }
-  
   .swap-center-button {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
   }
   
-  .swap-center-button svg {
-    width: 38px;
-    height: 38px;
-  }
-  
-  .amount-input {
-    padding: 12px 44px 12px 12px;
-    font-size: 15px;
-  }
-  
-  .amount-currency {
-    right: 12px;
-    font-size: 14px;
-  }
-  
-  .exchange-button-new {
+  .tg-order-card {
     padding: 16px;
-    font-size: 16px;
   }
   
-  .tg-header-title {
-    font-size: 16px;
+  .tg-order-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
   }
   
-  .tg-order-title {
-    font-size: 16px;
-  }
-  
-  .tg-detail-value {
-    font-size: 14px;
-  }
-  
-  .tg-action-btn {
-    padding: 14px;
-    font-size: 15px;
+  .tg-detail-mono {
+    font-size: 12px;
+    max-width: 150px;
   }
 }
 
 /* Для очень маленьких экранов */
-@media (max-width: 300px) {
+@media (max-width: 320px) {
   .currency-cards-horizontal {
     flex-direction: column;
     gap: 12px;
@@ -1847,20 +870,10 @@
   .swap-center-button.swapped {
     transform: rotate(180deg);
   }
-  
-  .swap-center-button:hover:not(:disabled),
-  .swap-center-button.swapped:hover:not(:disabled) {
-    transform: none;
-  }
 }
 
-/* iPhone X и выше с Safe Area */
+/* Safe Area для iOS */
 @supports (padding: max(0px)) {
-  .tg-bottom-nav,
-  .bottom-nav-new {
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-  }
-  
   .home-container,
   .tg-home-container {
     padding-bottom: calc(max(0px, env(safe-area-inset-bottom)) + 80px);
@@ -1872,39 +885,7 @@
   }
 }
 
-/* Портретная ориентация */
-@media (orientation: portrait) {
-  .currency-cards-horizontal {
-    gap: 16px;
-  }
-}
-
-/* Ландшафтная ориентация */
-@media (orientation: landscape) {
-  .amount-input-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .currency-cards-horizontal {
-    gap: 24px;
-  }
-}
-
-/* Плавные переходы */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Предотвращение выделения */
-button, .nav-item-new, .nav-center-item, .tg-nav-btn, .tg-back-btn {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Исправление для Safari */
+/* Safari fix */
 @supports (-webkit-touch-callout: none) {
   .home-container,
   .tg-home-container {

@@ -1,4 +1,3 @@
-// Home.js - обновленная версия с Telegram стилем для активного ордера
 import React from "react";
 import { useState, useEffect } from 'react';
 import './Home.css';
@@ -40,50 +39,35 @@ const simpleFetch = async (endpoint, data = null) => {
   }
 };
 
-// Компоненты SVG для swap-кнопки
-const LightThemeSwapIcon = ({ isSwapped }) => (
-  <svg 
-    width="52" 
-    height="52" 
-    viewBox="0 0 52 52" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ 
-      transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
-      transition: 'transform 0.3s ease'
-    }}
-  >
-    <circle cx="26" cy="26" r="24" fill="#36B2FF" stroke="#EFEFF3" strokeWidth="3"/>
-    <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
-      stroke="white" 
-      strokeWidth="2.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"/>
-  </svg>
-);
+// Компонент SVG для swap-кнопки
+const SwapIcon = ({ isSwapped }) => {
+  const buttonColor = getComputedStyle(document.documentElement).getPropertyValue('--tg-button-color').trim() || '#3390ec';
+  const buttonTextColor = getComputedStyle(document.documentElement).getPropertyValue('--tg-button-text-color').trim() || '#ffffff';
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  
+  return (
+    <svg 
+      width="52" 
+      height="52" 
+      viewBox="0 0 52 52" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ 
+        transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
+        transition: 'transform 0.3s ease'
+      }}
+    >
+      <circle cx="26" cy="26" r="24" fill={buttonColor} stroke={theme === 'dark' ? '#2c2c2c' : '#EFEFF3'} strokeWidth="3"/>
+      <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
+        stroke={buttonTextColor} 
+        strokeWidth="2.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"/>
+    </svg>
+  );
+};
 
-const DarkThemeSwapIcon = ({ isSwapped }) => (
-  <svg 
-    width="52" 
-    height="52" 
-    viewBox="0 0 52 52" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ 
-      transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
-      transition: 'transform 0.3s ease'
-    }}
-  >
-    <circle cx="26" cy="26" r="24" fill="#30A353" stroke="#1C1C1C" strokeWidth="3"/>
-    <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
-      stroke="white" 
-      strokeWidth="2.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"/>
-  </svg>
-);
-
-function Home({ navigateTo, telegramUser }) {
+function Home({ navigateTo, telegramUser, showToast }) {
   console.log('🏠 Home загружен');
 
   const [isBuyMode, setIsBuyMode] = useState(true);
@@ -103,7 +87,6 @@ function Home({ navigateTo, telegramUser }) {
     maxSell: 10000
   });
   
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [cryptoAddress, setCryptoAddress] = useState('');
   const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
   const [cryptoUID, setCryptoUID] = useState('');
@@ -210,6 +193,19 @@ function Home({ navigateTo, telegramUser }) {
 
   const popularNetworks = availableNetworks.filter(n => n.popular);
 
+  // Получение текущих цветов темы
+  const getThemeColors = () => {
+    return {
+      bgColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-bg-color').trim() || '#ffffff',
+      textColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-text-color').trim() || '#000000',
+      hintColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-hint-color').trim() || '#8e8e93',
+      buttonColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-button-color').trim() || '#3390ec',
+      buttonTextColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-button-text-color').trim() || '#ffffff',
+      secondaryBgColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-secondary-bg-color').trim() || '#f1f1f1',
+      sectionBgColor: getComputedStyle(document.documentElement).getPropertyValue('--tg-section-bg-color').trim() || '#e7e8ec'
+    };
+  };
+
   // Функции
   const getTelegramUser = () => {
     if (window.Telegram?.WebApp) {
@@ -281,27 +277,13 @@ function Home({ navigateTo, telegramUser }) {
     }
   };
 
-  const checkTheme = () => {
-    try {
-      const htmlElement = document.documentElement;
-      const themeFromAttribute = htmlElement.getAttribute('data-theme');
-      
-      if (themeFromAttribute === 'dark') {
-        setIsDarkTheme(true);
-        return true;
-      }
-      if (themeFromAttribute === 'light') {
-        setIsDarkTheme(false);
-        return false;
-      }
-      
-      setIsDarkTheme(false);
-      return false;
-      
-    } catch (error) {
-      console.error('❌ Ошибка проверки темы:', error);
-      setIsDarkTheme(false);
-      return false;
+  // Показать сообщение
+  const showMessage = (type, text) => {
+    if (showToast) {
+      showToast(text, type);
+    } else {
+      setMessage(text);
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
@@ -309,28 +291,6 @@ function Home({ navigateTo, telegramUser }) {
   useEffect(() => {
     console.log('🏠 Home компонент загружен');
     fetchExchangeRates();
-    
-    setTimeout(() => {
-      checkTheme();
-    }, 100);
-
-    const htmlElement = document.documentElement;
-    
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && 
-            (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
-          checkTheme();
-        }
-      });
-    });
-    
-    observer.observe(htmlElement, { 
-      attributes: true,
-      attributeFilter: ['data-theme', 'class']
-    });
-
-    const interval = setInterval(checkTheme, 1000);
 
     const tgUser = getTelegramUser();
     if (tgUser) {
@@ -358,10 +318,7 @@ function Home({ navigateTo, telegramUser }) {
     loadSavedData();
     setTimeout(() => checkActiveOrder(), 1000);
 
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
+    return () => {};
   }, [telegramUser]);
 
   const loadSavedData = () => {
@@ -395,11 +352,6 @@ function Home({ navigateTo, telegramUser }) {
     const rate = isBuyMode ? rates.buy : rates.sell;
     const converted = isBuyMode ? (numAmount / rate).toFixed(2) : (numAmount * rate).toFixed(2);
     return converted;
-  };
-
-  const showMessage = (text) => {
-    setMessage(text);
-    setTimeout(() => setMessage(''), 3000);
   };
 
   const fetchExchangeRates = async () => {
@@ -471,7 +423,7 @@ function Home({ navigateTo, telegramUser }) {
 
   const handleSwap = () => {
     if (hasActiveOrder) {
-      showMessage(`⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+      showMessage('warning', `⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
       return;
     }
     
@@ -505,13 +457,13 @@ function Home({ navigateTo, telegramUser }) {
     if (isSBP) {
       const cleanPhone = phoneNumber.replace(/\D/g, '');
       if (cleanPhone.length !== 11 || !cleanPhone.startsWith('7')) {
-        showMessage('❌ Введите корректный номер телефона (+7XXXXXXXXXX)');
+        showMessage('error', '❌ Введите корректный номер телефона (+7XXXXXXXXXX)');
         return;
       }
     } else {
       const cleanCardNumber = cardNumber.replace(/\s/g, '');
       if (cleanCardNumber.length !== 16) {
-        showMessage('❌ Номер карты должен содержать 16 цифр');
+        showMessage('error', '❌ Номер карты должен содержать 16 цифр');
         return;
       }
     }
@@ -529,7 +481,7 @@ function Home({ navigateTo, telegramUser }) {
     setBankName('СБП (Система быстрых платежей)');
     setCardNumber('');
     setPhoneNumber('');
-    showMessage('✅ Реквизиты добавлены');
+    showMessage('success', '✅ Реквизиты добавлены');
   };
 
   const formatPhoneNumber = (phone) => {
@@ -575,12 +527,12 @@ function Home({ navigateTo, telegramUser }) {
   const handleAddCryptoAddress = () => {
     if (cryptoType === 'address') {
       if (!cryptoAddress || cryptoAddress.length < 10) {
-        showMessage('❌ Введите корректный адрес');
+        showMessage('error', '❌ Введите корректный адрес');
         return;
       }
     } else {
       if (!cryptoUID || cryptoUID.length < 5) {
-        showMessage('❌ Введите корректный UID');
+        showMessage('error', '❌ Введите корректный UID');
         return;
       }
     }
@@ -600,37 +552,37 @@ function Home({ navigateTo, telegramUser }) {
     setSelectedCrypto(newCrypto);
     setCryptoAddress('');
     setCryptoUID('');
-    showMessage('✅ Адрес добавлен');
+    showMessage('success', '✅ Адрес добавлен');
   };
 
   const handleDeletePayment = (id) => {
     const updated = paymentMethods.filter(p => p.id !== id);
     setPaymentMethods(updated);
     if (selectedPayment?.id === id) setSelectedPayment(updated.length > 0 ? updated[0] : null);
-    showMessage('✅ Реквизиты удалены');
+    showMessage('success', '✅ Реквизиты удалены');
   };
 
   const handleDeleteCrypto = (id) => {
     const updated = cryptoAddresses.filter(c => c.id !== id);
     setCryptoAddresses(updated);
     if (selectedCrypto?.id === id) setSelectedCrypto(updated.length > 0 ? updated[0] : null);
-    showMessage('✅ Адрес удален');
+    showMessage('success', '✅ Адрес удален');
   };
 
   const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => showMessage('✅ Скопировано'));
+    navigator.clipboard.writeText(text).then(() => showMessage('success', '✅ Скопировано'));
   };
 
   const handleExchange = async () => {
     console.log('🎯 Создание ордера');
     if (hasActiveOrder) {
-      showMessage(`⚠️ У вас уже есть активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+      showMessage('warning', `⚠️ У вас уже есть активный ордер ${activeOrderId}. Дождитесь его завершения.`);
       navigateTo('history');
       return;
     }
 
     if (!amount) {
-      showMessage('❌ Введите сумму');
+      showMessage('error', '❌ Введите сумму');
       return;
     }
 
@@ -638,41 +590,41 @@ function Home({ navigateTo, telegramUser }) {
     const numAmount = parseFloat(normalizedAmount);
     
     if (isNaN(numAmount)) {
-      showMessage('❌ Введите корректную сумму');
+      showMessage('error', '❌ Введите корректную сумму');
       return;
     }
 
     if (isBuyMode) {
       if (numAmount < limits.minBuy) {
-        showMessage(`❌ Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
+        showMessage('error', `❌ Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
         return;
       }
       if (numAmount > limits.maxBuy) {
-        showMessage(`❌ Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
+        showMessage('error', `❌ Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
         return;
       }
       if (!selectedCrypto) {
-        showMessage('❌ Добавьте адрес для получения USDT');
+        showMessage('error', '❌ Добавьте адрес для получения USDT');
         return;
       }
     } else {
       if (numAmount < limits.minSell) {
-        showMessage(`❌ Минимальная сумма: ${limits.minSell} USDT`);
+        showMessage('error', `❌ Минимальная сумма: ${limits.minSell} USDT`);
         return;
       }
       if (numAmount > limits.maxSell) {
-        showMessage(`❌ Максимальная сумма: ${limits.maxSell} USDT`);
+        showMessage('error', `❌ Максимальная сумма: ${limits.maxSell} USDT`);
         return;
       }
       if (!selectedPayment) {
-        showMessage('❌ Добавьте реквизиты для получения RUB');
+        showMessage('error', '❌ Добавьте реквизиты для получения RUB');
         return;
       }
     }
 
     const userId = getUserId();
     if (!userId) {
-      showMessage('❌ Не удалось определить ID пользователя. Обновите страницу.');
+      showMessage('error', '❌ Не удалось определить ID пользователя. Обновите страницу.');
       return;
     }
 
@@ -729,11 +681,11 @@ function Home({ navigateTo, telegramUser }) {
 
     try {
       setIsLoading(true);
-      showMessage('🔄 Создание ордера...');
+      showMessage('info', '🔄 Создание ордера...');
       const result = await simpleFetch('/create-order', orderData);
 
       if (result.success) {
-        showMessage(`✅ Ордер создан! ID: ${result.order?.id}`);
+        showMessage('success', `✅ Ордер создан! ID: ${result.order?.id}`);
         setAmount('');
         const fullUserData = {
           id: userId,
@@ -752,11 +704,11 @@ function Home({ navigateTo, telegramUser }) {
         setActiveOrderId(result.order?.id);
         setTimeout(() => navigateTo('history'), 2000);
       } else {
-        showMessage(`❌ Ошибка: ${result.error}`);
+        showMessage('error', `❌ Ошибка: ${result.error}`);
       }
     } catch (error) {
       console.error('❌ Ошибка сети:', error);
-      showMessage('❌ Ошибка сети');
+      showMessage('error', '❌ Ошибка сети');
     } finally {
       setIsLoading(false);
     }
@@ -797,37 +749,51 @@ function Home({ navigateTo, telegramUser }) {
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
-  // Функция для получения статуса
-  const getStatusInfo = (status) => {
-    switch (status) {
-      case 'pending': return { 
-        text: '⏳ Ожидание', 
-        color: isDarkTheme ? '#FF9500' : '#FF9500',
-        bg: isDarkTheme ? '#2C2C2C' : '#FFF5E6',
-        icon: '⏳'
-      };
-      case 'processing': return { 
-        text: '🔄 В обработке', 
-        color: isDarkTheme ? '#0A84FF' : '#007AFF',
-        bg: isDarkTheme ? '#1C283C' : '#E6F2FF',
-        icon: '🔄'
-      };
-      case 'accepted': return { 
-        text: '✅ Принят', 
-        color: isDarkTheme ? '#30D158' : '#34C759',
-        bg: isDarkTheme ? '#1C3425' : '#E6F9EC',
-        icon: '✅'
-      };
-      default: return { 
-        text: '⏳ Обрабатывается', 
-        color: isDarkTheme ? '#FF9500' : '#FF9500',
-        bg: isDarkTheme ? '#2C2C2C' : '#FFF5E6',
-        icon: '⏳'
-      };
-    }
+  // Получаем цвета темы
+  const themeColors = getThemeColors();
+
+  // Стили для элементов
+  const cardStyle = {
+    background: themeColors.bgColor,
+    borderColor: themeColors.sectionBgColor,
+    color: themeColors.textColor
   };
 
-  const statusInfo = getStatusInfo(activeOrderStatus);
+  const inputStyle = {
+    background: themeColors.secondaryBgColor,
+    borderColor: themeColors.sectionBgColor,
+    color: themeColors.textColor
+  };
+
+  const buttonStyle = {
+    background: themeColors.buttonColor,
+    color: themeColors.buttonTextColor
+  };
+
+  const accentButtonStyle = {
+    background: '#30d158',
+    color: themeColors.buttonTextColor
+  };
+
+  const warningButtonStyle = {
+    background: '#ff9500',
+    color: themeColors.buttonTextColor
+  };
+
+  const errorButtonStyle = {
+    background: '#ff3b30',
+    color: themeColors.buttonTextColor
+  };
+
+  const secondaryButtonStyle = {
+    background: themeColors.secondaryBgColor,
+    color: themeColors.textColor,
+    borderColor: themeColors.sectionBgColor
+  };
+
+  const hintStyle = {
+    color: themeColors.hintColor
+  };
 
   return (
     <div className="home-container">
@@ -835,23 +801,24 @@ function Home({ navigateTo, telegramUser }) {
         // ТЕЛЕГРАМ СТИЛЬ ДЛЯ АКТИВНОГО ОРДЕРА
         <div className="tg-home-container">
           {/* Шапка в стиле Telegram */}
-          <div className="tg-header">
+          <div className="tg-header" style={cardStyle}>
             <div className="tg-header-content">
               <button 
                 className="tg-back-btn"
                 onClick={() => navigateTo('history')}
                 title="К истории операций"
+                style={{ color: themeColors.buttonColor }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
               <div className="tg-header-titles">
-                <h1 className="tg-header-title">Активная заявка</h1>
-                <p className="tg-header-subtitle">Ваш ордер в обработке</p>
+                <h1 className="tg-header-title" style={{ color: themeColors.textColor }}>Активная заявка</h1>
+                <p className="tg-header-subtitle" style={hintStyle}>Ваш ордер в обработке</p>
               </div>
-              <div className="tg-header-status" style={{ color: statusInfo.color }}>
-                 {statusInfo.text}
+              <div className="tg-header-status" style={{ color: themeColors.buttonColor }}>
+                ⏳ Обрабатывается
               </div>
             </div>
           </div>
@@ -859,14 +826,16 @@ function Home({ navigateTo, telegramUser }) {
           {/* Основной контент */}
           <div className="tg-main-content">
             {/* Карточка ордера */}
-            <div className="tg-order-card">
+            <div className="tg-order-card" style={cardStyle}>
               <div className="tg-card-header">
-                <div className="tg-order-icon" style={{ background: statusInfo.bg, color: statusInfo.color }}>
-                  {statusInfo.icon}
+                <div className="tg-order-icon" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}>
+                  ⏳
                 </div>
                 <div className="tg-order-info">
-                  <h2 className="tg-order-title">Заявка #{activeOrderId?.substring(0, 8)}</h2>
-                  <p className="tg-order-subtitle">
+                  <h2 className="tg-order-title" style={{ color: themeColors.textColor }}>
+                    Заявка #{activeOrderId?.substring(0, 8)}
+                  </h2>
+                  <p className="tg-order-subtitle" style={hintStyle}>
                     {activeOrderData?.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                   </p>
                 </div>
@@ -874,21 +843,23 @@ function Home({ navigateTo, telegramUser }) {
 
               {/* Детали ордера */}
               <div className="tg-order-details">
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">Сумма</span>
-                  <span className="tg-detail-value">
+                <div className="tg-detail-row" style={secondaryButtonStyle}>
+                  <span className="tg-detail-label" style={hintStyle}>Сумма</span>
+                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
                     <strong>{activeOrderData?.amount} {activeOrderData?.operation_type === 'buy' ? 'RUB' : 'USDT'}</strong>
                   </span>
                 </div>
                 
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">Курс</span>
-                  <span className="tg-detail-value">{activeOrderData?.rate} ₽/USDT</span>
+                <div className="tg-detail-row" style={secondaryButtonStyle}>
+                  <span className="tg-detail-label" style={hintStyle}>Курс</span>
+                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
+                    {activeOrderData?.rate} ₽/USDT
+                  </span>
                 </div>
                 
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">К получению</span>
-                  <span className="tg-detail-value">
+                <div className="tg-detail-row" style={secondaryButtonStyle}>
+                  <span className="tg-detail-label" style={hintStyle}>К получению</span>
+                  <span className="tg-detail-value" style={{ color: themeColors.buttonColor }}>
                     <strong>
                       {activeOrderData?.operation_type === 'buy' 
                         ? `${(activeOrderData?.amount / activeOrderData?.rate).toFixed(2)} USDT`
@@ -897,61 +868,30 @@ function Home({ navigateTo, telegramUser }) {
                   </span>
                 </div>
                 
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">Создано</span>
-                  <span className="tg-detail-value">
+                <div className="tg-detail-row" style={secondaryButtonStyle}>
+                  <span className="tg-detail-label" style={hintStyle}>Создано</span>
+                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
                     {activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleString('ru-RU') : '-'}
                   </span>
                 </div>
                 
                 {activeOrderData?.bank_details && (
-                  <div className="tg-detail-row">
-                    <span className="tg-detail-label">Реквизиты</span>
-                    <span className="tg-detail-value tg-detail-mono">
+                  <div className="tg-detail-row" style={secondaryButtonStyle}>
+                    <span className="tg-detail-label" style={hintStyle}>Реквизиты</span>
+                    <span className="tg-detail-value tg-detail-mono" style={{ color: themeColors.textColor }}>
                       {activeOrderData.bank_details}
                     </span>
                   </div>
                 )}
                 
                 {activeOrderData?.crypto_address && (
-                  <div className="tg-detail-row">
-                    <span className="tg-detail-label">Адрес USDT</span>
-                    <span className="tg-detail-value tg-detail-mono">
+                  <div className="tg-detail-row" style={secondaryButtonStyle}>
+                    <span className="tg-detail-label" style={hintStyle}>Адрес USDT</span>
+                    <span className="tg-detail-value tg-detail-mono" style={{ color: themeColors.textColor }}>
                       {activeOrderData.crypto_address}
                     </span>
                   </div>
                 )}
-              </div>
-
-              {/* Прогресс бар */}
-              <div className="tg-progress-section">
-                <div className="tg-progress-header">
-                  <span>Статус обработки</span>
-                  <span className="tg-progress-percent">75%</span>
-                </div>
-                <div className="tg-progress-bar">
-                  <div 
-                    className="tg-progress-fill" 
-                    style={{ 
-                      width: '75%',
-                      background: statusInfo.color
-                    }}
-                  ></div>
-                </div>
-                <div className="tg-progress-steps">
-                  <div className="tg-step active">
-                    <div className="tg-step-dot"></div>
-                    <span className="tg-step-text">Создана</span>
-                  </div>
-                  <div className="tg-step active">
-                    <div className="tg-step-dot"></div>
-                    <span className="tg-step-text">Обработка</span>
-                  </div>
-                  <div className="tg-step">
-                    <div className="tg-step-dot"></div>
-                    <span className="tg-step-text">Завершена</span>
-                  </div>
-                </div>
               </div>
 
               {/* Кнопки действий */}
@@ -959,91 +899,28 @@ function Home({ navigateTo, telegramUser }) {
                 <button 
                   className="tg-action-btn primary"
                   onClick={() => navigateTo('history')}
+                  style={buttonStyle}
                 >
                   <span className="tg-btn-icon">📋</span>
                   Детали заявки
                 </button>
               </div>
-
-              {/* Информация */}
-              <div className="tg-info-note">
-                <div className="tg-info-icon">💬</div>
-                <div className="tg-info-text">
-                  <strong>Общайтесь с оператором</strong>
-                  <span>Все вопросы по заявке решаются в чате с оператором</span>
-                </div>
-              </div>
             </div>
-
-            {/* Предупреждение */}
-            {/* <div className="tg-warning-card">
-              <div className="tg-warning-icon">⚠️</div>
-              <div className="tg-warning-content">
-                <strong>Новая заявка недоступна</strong>
-                <span>Дождитесь завершения текущей операции</span>
-              </div>
-            </div> */}
-
-            {/* Статистика */}
-            {/* <div className="tg-stats-card">
-              <h3 className="tg-stats-title">Информация</h3>
-              <div className="tg-stats-grid">
-                <div className="tg-stat-item">
-                  <div className="tg-stat-icon">⏱️</div>
-                  <div className="tg-stat-content">
-                    <span className="tg-stat-label">Время ожидания</span>
-                    <span className="tg-stat-value">5-15 минут</span>
-                  </div>
-                </div>
-                <div className="tg-stat-item">
-                  <div className="tg-stat-icon">🔒</div>
-                  <div className="tg-stat-content">
-                    <span className="tg-stat-label">Безопасность</span>
-                    <span className="tg-stat-value">Средства резервируются</span>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-          </div>
-
-          {/* Нижняя панель */}
-          <div className="tg-bottom-nav">
-            <button 
-              className="tg-nav-btn active"
-              onClick={() => navigateTo('history')}
-            >
-              <span className="tg-nav-icon">📋</span>
-              <span className="tg-nav-label">История</span>
-            </button>
-            <button 
-              className="tg-nav-btn"
-              onClick={() => navigateTo('profile')}
-            >
-              <span className="tg-nav-icon">👤</span>
-              <span className="tg-nav-label">Профиль</span>
-            </button>
-            <button 
-              className="tg-nav-btn"
-              onClick={() => checkActiveOrder()}
-            >
-              <span className="tg-nav-icon">🔄</span>
-              <span className="tg-nav-label">Обновить</span>
-            </button>
           </div>
         </div>
       ) : (
         // ОБЫЧНЫЙ ИНТЕРФЕЙС ОБМЕНА
         <div className="home-content">
           {/* Карточки валют */}
-          <div className="currency-cards-section">
+          <div className="currency-cards-section" style={cardStyle}>
             <div className="currency-cards-horizontal">
-              <div className="currency-card-side left-card">
+              <div className="currency-card-side left-card" style={{ background: `${themeColors.buttonColor}15`, borderColor: themeColors.sectionBgColor }}>
                 <div className="currency-content">
-                  <span className="currency-name">
+                  <span className="currency-name" style={{ color: themeColors.textColor }}>
                     {isBuyMode ? "RUB" : "USDT"}
                   </span>
                   {isBuyMode && (
-                    <span className="currency-rate light">
+                    <span className="currency-rate light" style={hintStyle}>
                       {currentRate.toFixed(2)} ₽
                     </span>
                   )}
@@ -1056,20 +933,16 @@ function Home({ navigateTo, telegramUser }) {
                 disabled={hasActiveOrder}
                 title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
               >
-                {isDarkTheme ? (
-                  <DarkThemeSwapIcon isSwapped={isSwapped} />
-                ) : (
-                  <LightThemeSwapIcon isSwapped={isSwapped} />
-                )}
+                <SwapIcon isSwapped={isSwapped} />
               </button>
 
-              <div className="currency-card-side right-card">
+              <div className="currency-card-side right-card" style={{ background: `${themeColors.buttonColor}15`, borderColor: themeColors.sectionBgColor }}>
                 <div className="currency-content">
-                  <span className="currency-name">
+                  <span className="currency-name" style={{ color: themeColors.textColor }}>
                     {isBuyMode ? "USDT" : "RUB"}
                   </span>
                   {!isBuyMode && (
-                    <span className="currency-rate light">
+                    <span className="currency-rate light" style={hintStyle}>
                       {currentRate.toFixed(2)} ₽
                     </span>
                   )}
@@ -1079,7 +952,7 @@ function Home({ navigateTo, telegramUser }) {
 
             <div className="amount-input-section">
               <div className="amount-input-group">
-                <label className="amount-label">Вы отдаете</label>
+                <label className="amount-label" style={hintStyle}>Вы отдаете</label>
                 <div className="amount-input-wrapper">
                   <input
                     type="text"
@@ -1089,22 +962,23 @@ function Home({ navigateTo, telegramUser }) {
                     onChange={handleAmountChange}
                     className="amount-input"
                     disabled={isLoading}
+                    style={inputStyle}
                   />
-                  <span className="amount-currency">
+                  <span className="amount-currency" style={hintStyle}>
                     {isBuyMode ? "RUB" : "USDT"}
                   </span>
                 </div>
-                <div className="min-limit-hint">
+                <div className="min-limit-hint" style={hintStyle}>
                   {isBuyMode
                     ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} RUB`
                     : `${limits.minSell} - ${limits.maxSell} USDT`
                   }
                 </div>
-                {error && <div className="error-message">{error}</div>}
+                {error && <div className="error-message" style={{ color: '#ff3b30' }}>{error}</div>}
               </div>
 
               <div className="amount-input-group">
-                <label className="amount-label">Вы получаете</label>
+                <label className="amount-label" style={hintStyle}>Вы получаете</label>
                 <div className="amount-input-wrapper">
                   <input
                     type="text"
@@ -1112,8 +986,9 @@ function Home({ navigateTo, telegramUser }) {
                     value={convertedAmount}
                     readOnly
                     className="amount-input"
+                    style={inputStyle}
                   />
-                  <span className="amount-currency">
+                  <span className="amount-currency" style={hintStyle}>
                     {isBuyMode ? "USDT" : "RUB"}
                   </span>
                 </div>
@@ -1122,15 +997,16 @@ function Home({ navigateTo, telegramUser }) {
           </div>
 
           {isBuyMode && (
-            <div className="payment-section-new">
+            <div className="payment-section-new" style={cardStyle}>
               <div className="payment-header-new">
-                <h3 className="section-title">Адрес для получения USDT</h3>
+                <h3 className="section-title" style={{ color: themeColors.textColor }}>Адрес для получения USDT</h3>
               </div>
 
-              <div className="crypto-type-switcher">
+              <div className="crypto-type-switcher" style={secondaryButtonStyle}>
                 <button 
                   className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
                   onClick={() => setCryptoType('address')}
+                  style={cryptoType === 'address' ? buttonStyle : { background: 'transparent', color: themeColors.hintColor }}
                 >
                   <span className="crypto-type-icon">📫</span>
                   <span className="crypto-type-text">Адрес кошелька</span>
@@ -1138,6 +1014,7 @@ function Home({ navigateTo, telegramUser }) {
                 <button 
                   className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
                   onClick={() => setCryptoType('uid')}
+                  style={cryptoType === 'uid' ? buttonStyle : { background: 'transparent', color: themeColors.hintColor }}
                 >
                   <span className="crypto-type-icon">🆔</span>
                   <span className="crypto-type-text">UID перевод</span>
@@ -1152,6 +1029,7 @@ function Home({ navigateTo, telegramUser }) {
                         value={cryptoNetwork}
                         onChange={(e) => setCryptoNetwork(e.target.value)}
                         className="network-select"
+                        style={inputStyle}
                       >
                         <option value="">Выберите сеть</option>
                         {popularNetworks.map(network => (
@@ -1173,6 +1051,7 @@ function Home({ navigateTo, telegramUser }) {
                       value={cryptoAddress}
                       onChange={(e) => setCryptoAddress(e.target.value)}
                       className="address-input"
+                      style={inputStyle}
                     />
                   </>
                 ) : (
@@ -1182,6 +1061,7 @@ function Home({ navigateTo, telegramUser }) {
                         value={selectedExchange}
                         onChange={(e) => setSelectedExchange(e.target.value)}
                         className="exchange-select"
+                        style={inputStyle}
                       >
                         <option value="">Выберите биржу</option>
                         {availableExchanges.map(exchange => (
@@ -1203,6 +1083,7 @@ function Home({ navigateTo, telegramUser }) {
                       value={cryptoUID}
                       onChange={(e) => setCryptoUID(e.target.value)}
                       className="uid-input"
+                      style={inputStyle}
                     />
                   </>
                 )}
@@ -1210,6 +1091,7 @@ function Home({ navigateTo, telegramUser }) {
                 <button
                   onClick={handleAddCryptoAddress}
                   className="add-button"
+                  style={buttonStyle}
                 >
                   + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
                 </button>
@@ -1217,7 +1099,7 @@ function Home({ navigateTo, telegramUser }) {
 
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
-                  <h4>Ваши адреса:</h4>
+                  <h4 style={hintStyle}>Ваши адреса:</h4>
                   {cryptoAddresses.map((crypto) => {
                     const network = crypto.type === 'address' 
                       ? availableNetworks.find(n => n.value === crypto.network)
@@ -1231,13 +1113,17 @@ function Home({ navigateTo, telegramUser }) {
                         key={crypto.id}
                         className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
                         onClick={() => setSelectedCrypto(crypto)}
+                        style={selectedCrypto?.id === crypto.id ? 
+                          { background: `${themeColors.buttonColor}15`, borderColor: themeColors.buttonColor } : 
+                          secondaryButtonStyle
+                        }
                       >
                         <div className="crypto-info">
                           <div className="crypto-header">
-                            <span className="crypto-name">
+                            <span className="crypto-name" style={{ color: themeColors.textColor }}>
                               {crypto.name}
                             </span>
-                            <span className="crypto-network-badge">
+                            <span className="crypto-network-badge" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}>
                               {crypto.type === 'address' 
                                 ? (network?.icon || crypto.network)
                                 : (exchange?.icon || crypto.exchange)
@@ -1247,12 +1133,12 @@ function Home({ navigateTo, telegramUser }) {
                               </span>
                             </span>
                           </div>
-                          <div className="crypto-address">
+                          <div className="crypto-address" style={hintStyle}>
                             {crypto.address.length > 20 
                               ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
                               : crypto.address
                             }
-                            {crypto.type === 'uid' && <span className="uid-label"> (UID)</span>}
+                            {crypto.type === 'uid' && <span className="uid-label" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}> (UID)</span>}
                           </div>
                         </div>
                         <div className="crypto-actions">
@@ -1263,6 +1149,7 @@ function Home({ navigateTo, telegramUser }) {
                             }}
                             className="action-btn copy-btn"
                             title="Копировать"
+                            style={{ color: themeColors.buttonColor }}
                           >
                             📋
                           </button>
@@ -1273,6 +1160,7 @@ function Home({ navigateTo, telegramUser }) {
                             }}
                             className="action-btn delete-btn"
                             title="Удалить"
+                            style={{ color: '#ff3b30' }}
                           >
                             🗑️
                           </button>
@@ -1285,8 +1173,8 @@ function Home({ navigateTo, telegramUser }) {
 
               {cryptoAddresses.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-icon">🏦</div>
-                  <p className="empty-text">
+                  <div className="empty-icon" style={hintStyle}>🏦</div>
+                  <p className="empty-text" style={hintStyle}>
                     {cryptoType === 'address' 
                       ? 'Добавьте адрес для получения USDT'
                       : 'Добавьте UID биржи для получения USDT'
@@ -1298,9 +1186,9 @@ function Home({ navigateTo, telegramUser }) {
           )}
 
           {!isBuyMode && (
-            <div className="payment-section-new">
+            <div className="payment-section-new" style={cardStyle}>
               <div className="payment-header-new">
-                <h3 className="section-title">Реквизиты для получения RUB</h3>
+                <h3 className="section-title" style={{ color: themeColors.textColor }}>Реквизиты для получения RUB</h3>
               </div>
 
               <div className="add-form">
@@ -1308,6 +1196,7 @@ function Home({ navigateTo, telegramUser }) {
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   className="bank-select"
+                  style={inputStyle}
                 >
                   {availableBanks.map(bank => (
                     <option key={bank} value={bank}>
@@ -1323,6 +1212,7 @@ function Home({ navigateTo, telegramUser }) {
                     value={phoneNumber}
                     onChange={handlePhoneChange}
                     className="phone-input"
+                    style={inputStyle}
                   />
                 ) : (
                   <input
@@ -1332,12 +1222,14 @@ function Home({ navigateTo, telegramUser }) {
                     onChange={handleCardChange}
                     className="card-input"
                     maxLength={19}
+                    style={inputStyle}
                   />
                 )}
 
                 <button
                   onClick={handleAddPayment}
                   className="add-button"
+                  style={buttonStyle}
                 >
                   + Добавить реквизиты
                 </button>
@@ -1345,23 +1237,27 @@ function Home({ navigateTo, telegramUser }) {
 
               {paymentMethods.length > 0 && (
                 <div className="payments-list">
-                  <h4>Ваши реквизиты:</h4>
+                  <h4 style={hintStyle}>Ваши реквизиты:</h4>
                   {paymentMethods.map((payment) => (
                     <div
                       key={payment.id}
                       className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
                       onClick={() => setSelectedPayment(payment)}
+                      style={selectedPayment?.id === payment.id ? 
+                        { background: `${themeColors.buttonColor}15`, borderColor: themeColors.buttonColor } : 
+                        secondaryButtonStyle
+                      }
                     >
                       <div className="payment-info">
                         <div className="payment-header">
-                          <span className="bank-name">
+                          <span className="bank-name" style={{ color: themeColors.textColor }}>
                             {payment.bankName}
                           </span>
                           {payment.type === 'sbp' && (
-                            <span className="sbp-badge">СБП</span>
+                            <span className="sbp-badge" style={{ background: '#34c759', color: '#ffffff' }}>СБП</span>
                           )}
                         </div>
-                        <div className="payment-number">
+                        <div className="payment-number" style={hintStyle}>
                           {payment.formattedNumber}
                         </div>
                       </div>
@@ -1372,6 +1268,7 @@ function Home({ navigateTo, telegramUser }) {
                         }}
                         className="action-btn delete-btn"
                         title="Удалить"
+                        style={{ color: '#ff3b30' }}
                       >
                         🗑️
                       </button>
@@ -1382,8 +1279,8 @@ function Home({ navigateTo, telegramUser }) {
 
               {paymentMethods.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-icon">💳</div>
-                  <p className="empty-text">Добавьте реквизиты для получения RUB</p>
+                  <div className="empty-icon" style={hintStyle}>💳</div>
+                  <p className="empty-text" style={hintStyle}>Добавьте реквизиты для получения RUB</p>
                 </div>
               )}
             </div>
@@ -1393,6 +1290,10 @@ function Home({ navigateTo, telegramUser }) {
             className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
             disabled={!isExchangeReady() || isLoading}
             onClick={handleExchange}
+            style={!isExchangeReady() || isLoading ? 
+              { background: themeColors.hintColor, color: themeColors.buttonTextColor } : 
+              isBuyMode ? accentButtonStyle : buttonStyle
+            }
           >
             <span className="exchange-icon">
               {isBuyMode ? '🛒' : '💰'}
@@ -1402,16 +1303,16 @@ function Home({ navigateTo, telegramUser }) {
             </span>
           </button>
 
-          <div className="security-info">
-            <div className="security-icon">🔒</div>
-            <div className="security-text">
-              <strong>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
+          <div className="security-info" style={secondaryButtonStyle}>
+            <div className="security-icon" style={{ color: themeColors.buttonColor }}>🔒</div>
+            <div className="security-text" style={hintStyle}>
+              <strong style={{ color: themeColors.textColor }}>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
             </div>
           </div>
         </div>
       )}
 
-      {message && (
+      {message && !showToast && (
         <div className={`message-toast-new ${message.includes('✅') ? 'success' : message.includes('❌') ? 'error' : message.includes('⚠️') ? 'warning' : 'info'}`}>
           <span className="toast-text">{message}</span>
         </div>

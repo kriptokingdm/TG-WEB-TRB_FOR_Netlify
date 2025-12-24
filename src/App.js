@@ -14,6 +14,13 @@ function App() {
   const [telegramUser, setTelegramUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [referralData, setReferralData] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Показ уведомлений
+  const showToast = useCallback((message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   // Загрузка реферальных данных для бейджа
   const loadReferralData = useCallback(async () => {
@@ -53,62 +60,136 @@ function App() {
     }
   };
 
-  // Применяем тему Telegram
+  // Применяем тему Telegram с полной интеграцией
   const applyTelegramTheme = useCallback(() => {
-    console.log('🎨 Применяем iOS тему...');
+    console.log('🎨 Применяем тему Telegram...');
     
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       const currentTheme = tg.colorScheme || 'light';
       
+      // Устанавливаем тему
       document.documentElement.setAttribute('data-theme', currentTheme);
       
+      // Применяем все цвета Telegram
       if (tg.themeParams) {
         const root = document.documentElement;
         
+        // Основные цвета
         if (tg.themeParams.bg_color) {
           root.style.setProperty('--tg-theme-bg-color', `#${tg.themeParams.bg_color}`);
         }
-        
         if (tg.themeParams.text_color) {
           root.style.setProperty('--tg-theme-text-color', `#${tg.themeParams.text_color}`);
         }
-        
         if (tg.themeParams.hint_color) {
           root.style.setProperty('--tg-theme-hint-color', `#${tg.themeParams.hint_color}`);
         }
-        
+        if (tg.themeParams.link_color) {
+          root.style.setProperty('--tg-theme-link-color', `#${tg.themeParams.link_color}`);
+        }
         if (tg.themeParams.button_color) {
-          root.style.setProperty('--tg-theme-button-color', `#${tg.themeParams.button_color}`);
+          const buttonColor = `#${tg.themeParams.button_color}`;
+          root.style.setProperty('--tg-theme-button-color', buttonColor);
+          
+          // Конвертируем hex в RGB для rgba()
+          const rgb = hexToRgb(buttonColor);
+          if (rgb) {
+            root.style.setProperty('--tg-theme-button-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+          }
+        }
+        if (tg.themeParams.button_text_color) {
+          root.style.setProperty('--tg-theme-button-text-color', `#${tg.themeParams.button_text_color}`);
+        }
+        
+        // Дополнительные цвета (если есть)
+        if (tg.themeParams.secondary_bg_color) {
+          root.style.setProperty('--tg-theme-secondary-bg-color', `#${tg.themeParams.secondary_bg_color}`);
+        }
+        if (tg.themeParams.header_bg_color) {
+          root.style.setProperty('--tg-theme-header-bg-color', `#${tg.themeParams.header_bg_color}`);
+        }
+        if (tg.themeParams.accent_text_color) {
+          root.style.setProperty('--tg-theme-accent-text-color', `#${tg.themeParams.accent_text_color}`);
+        }
+        if (tg.themeParams.section_bg_color) {
+          root.style.setProperty('--tg-theme-section-bg-color', `#${tg.themeParams.section_bg_color}`);
+        }
+        if (tg.themeParams.section_header_text_color) {
+          root.style.setProperty('--tg-theme-section-header-text-color', `#${tg.themeParams.section_header_text_color}`);
+        }
+        if (tg.themeParams.subtitle_text_color) {
+          root.style.setProperty('--tg-theme-subtitle-text-color', `#${tg.themeParams.subtitle_text_color}`);
+        }
+        if (tg.themeParams.destructive_text_color) {
+          root.style.setProperty('--tg-theme-destructive-text-color', `#${tg.themeParams.destructive_text_color}`);
         }
       }
+      
+      // Устанавливаем стиль навигации
+      tg.setHeaderColor('secondary_bg_color');
+      tg.setBackgroundColor('secondary_bg_color');
+      
     } else {
-      // iOS цвета по умолчанию
-      document.documentElement.style.setProperty('--tg-theme-button-color', '#007AFF');
+      // Для разработки - симуляция Telegram WebApp
+      document.documentElement.style.setProperty('--tg-theme-button-color', '#3390ec');
+      document.documentElement.style.setProperty('--tg-theme-button-color-rgb', '51, 144, 236');
       document.documentElement.style.setProperty('--tg-theme-bg-color', '#ffffff');
       document.documentElement.style.setProperty('--tg-theme-text-color', '#000000');
       document.documentElement.style.setProperty('--tg-theme-hint-color', '#8e8e93');
+      document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff');
     }
   }, []);
 
-  // Инициализация
-  useEffect(() => {
-    console.log('🚀 Инициализация TetherRabbit iOS...');
-    
-    applyTelegramTheme();
-    
-    // Hash навигация
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
-      setCurrentPage(hash);
-    }
-    
-    // Telegram WebApp
+  // Конвертер hex в RGB
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
+
+  // Инициализация Telegram WebApp
+  const initTelegramWebApp = useCallback(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
+      
+      // Основные настройки
       tg.ready();
       tg.expand();
       
+      // Устанавливаем стили
+      tg.setHeaderColor('secondary_bg_color');
+      tg.setBackgroundColor('secondary_bg_color');
+      
+      // Инициализируем Main Button если нужен
+      if (tg.MainButton) {
+        tg.MainButton.hide();
+      }
+      
+      // Инициализируем Back Button
+      if (tg.BackButton) {
+        tg.BackButton.onClick(() => {
+          navigateTo('home');
+        });
+        
+        // Показываем кнопку назад если не на домашней странице
+        if (currentPage !== 'home') {
+          tg.BackButton.show();
+        } else {
+          tg.BackButton.hide();
+        }
+      }
+      
+      // Слушаем события
+      tg.onEvent('themeChanged', applyTelegramTheme);
+      tg.onEvent('viewportChanged', () => {
+        tg.expand();
+      });
+      
+      // Инициализация пользователя
       if (tg.initDataUnsafe?.user) {
         const tgUser = tg.initDataUnsafe.user;
         const userData = {
@@ -117,26 +198,23 @@ function App() {
           username: tgUser.username || `user_${tgUser.id}`,
           firstName: tgUser.first_name || 'Пользователь',
           lastName: tgUser.last_name || '',
-          photoUrl: tgUser.photo_url || null
+          photoUrl: tgUser.photo_url || null,
+          languageCode: tgUser.language_code || 'ru'
         };
         
         setTelegramUser(userData);
         localStorage.setItem('telegramUser', JSON.stringify(userData));
         localStorage.setItem('currentUser', JSON.stringify(userData));
+        
+        // Показываем приветствие
+        setTimeout(() => {
+          showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success');
+        }, 1000);
       }
       
-      tg.onEvent('themeChanged', applyTelegramTheme);
-      
-      if (tg.BackButton) {
-        tg.BackButton.onClick(() => {
-          if (currentPage !== 'home') {
-            navigateTo('home');
-          } else {
-            tg.BackButton.hide();
-          }
-        });
-      }
+      console.log('✅ Telegram WebApp инициализирован');
     } else {
+      // Для разработки
       setTelegramUser({
         id: '7879866656',
         telegramId: '7879866656',
@@ -144,14 +222,36 @@ function App() {
         firstName: 'Тестовый',
         photoUrl: null
       });
+      
+      console.log('⚠️ Telegram WebApp не найден, используем режим разработки');
+    }
+  }, [applyTelegramTheme, currentPage, showToast]);
+
+  // Инициализация приложения
+  useEffect(() => {
+    console.log('🚀 Инициализация TetherRabbit...');
+    
+    // Применяем тему Telegram
+    applyTelegramTheme();
+    
+    // Инициализируем Telegram WebApp
+    initTelegramWebApp();
+    
+    // Hash навигация
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
+      setCurrentPage(hash);
     }
     
     // Загружаем реферальные данные для бейджа
     loadReferralData();
     
+    // Обновляем данные каждые 30 секунд
+    const referralInterval = setInterval(loadReferralData, 30000);
+    
     setTimeout(() => {
       setIsLoading(false);
-      console.log('✅ iOS инициализация завершена');
+      console.log('✅ Инициализация завершена');
     }, 500);
     
     const handleHashChange = () => {
@@ -165,16 +265,18 @@ function App() {
     
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
+      clearInterval(referralInterval);
     };
-  }, [applyTelegramTheme, loadReferralData]);
+  }, [applyTelegramTheme, initTelegramWebApp, loadReferralData]);
 
-  // Навигация
-  const navigateTo = (page) => {
+  // Навигация с поддержкой Telegram BackButton
+  const navigateTo = useCallback((page) => {
     if (page === currentPage) return;
     
     window.location.hash = page;
     setCurrentPage(page);
     
+    // Управление кнопкой "Назад" в Telegram
     if (window.Telegram?.WebApp && window.Telegram.WebApp.BackButton) {
       if (page === 'home') {
         window.Telegram.WebApp.BackButton.hide();
@@ -182,35 +284,65 @@ function App() {
         window.Telegram.WebApp.BackButton.show();
       }
     }
-  };
+    
+    // Плавная анимация перехода
+    document.querySelector('.app-content').style.opacity = '0.5';
+    setTimeout(() => {
+      document.querySelector('.app-content').style.opacity = '1';
+    }, 150);
+    
+    console.log(`➡️ Переход на страницу: ${page}`);
+  }, [currentPage]);
 
-  // Рендер
+  // Рендер страниц с анимацией
   const renderPage = () => {
     const commonProps = {
       telegramUser: telegramUser,
       navigateTo: navigateTo,
-      API_BASE_URL: API_BASE_URL
+      API_BASE_URL: API_BASE_URL,
+      showToast: showToast
     };
     
     switch(currentPage) {
-      case 'history': return <History key="history" {...commonProps} />;
-      case 'profile': return <Profile key="profile" {...commonProps} />;
-      case 'help': return <Help key="help" {...commonProps} />;
-      default: return <Home key="home" {...commonProps} />;
+      case 'history': 
+        return (
+          <div className="page-transition page-enter-active">
+            <History key="history" {...commonProps} />
+          </div>
+        );
+      case 'profile': 
+        return (
+          <div className="page-transition page-enter-active">
+            <Profile key="profile" {...commonProps} />
+          </div>
+        );
+      case 'help': 
+        return (
+          <div className="page-transition page-enter-active">
+            <Help key="help" {...commonProps} />
+          </div>
+        );
+      default: 
+        return (
+          <div className="page-transition page-enter-active">
+            <Home key="home" {...commonProps} />
+          </div>
+        );
     }
   };
 
-  // Плавающая навигация iOS
+  // Плавающая навигация iOS с Telegram стилем
   const Navigation = () => {
     // Доступная сумма для бейджа
     const availableEarnings = referralData?.stats?.available_earnings || 0;
-    const showBadge = availableEarnings >= 10; // Показывать если >= $10
+    const showBadge = availableEarnings >= 10;
     
     return (
       <div className="floating-nav">
         <button 
           className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
           onClick={() => navigateTo('profile')}
+          aria-label="Профиль"
         >
           <div className="nav-icon-floating">
             <ProfileIcon active={currentPage === 'profile'} />
@@ -227,6 +359,7 @@ function App() {
           <button 
             className="nav-center-circle-floating" 
             onClick={() => navigateTo('home')}
+            aria-label="Обмен"
           >
             <ExchangeIcon active={true} />
           </button>
@@ -236,6 +369,7 @@ function App() {
         <button 
           className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
           onClick={() => navigateTo('history')}
+          aria-label="История"
         >
           <div className="nav-icon-floating">
             <HistoryIcon active={currentPage === 'history'} />
@@ -262,6 +396,17 @@ function App() {
         <div className="app-content">
           {renderPage()}
           {currentPage !== 'help' && <Navigation />}
+          
+          {/* Уведомления */}
+          {toast && (
+            <div className={`telegram-toast ${toast.type}`}>
+              <span className="telegram-toast-icon">
+                {toast.type === 'success' ? '✅' :
+                 toast.type === 'error' ? '❌' : 'ℹ️'}
+              </span>
+              <span className="telegram-toast-text">{toast.message}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,30 +1,15 @@
-/* App.css - Рабочий Telegram WebApp */
+/* App.css - Простой с использованием переменных */
 
-/* ВАЖНО: Только fallback значения, основные устанавливаются через JS */
 :root {
-  /* Fallback цвета для браузера */
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-bg-color-rgb: 255, 255, 255;
-  --tg-theme-text-color: #000000;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-link-color: #3390ec;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-color-rgb: 51, 144, 236;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f1f1f1;
-  --tg-theme-section-bg-color: #e7e8ec;
-}
-
-[data-theme="dark"] {
-  --tg-theme-bg-color: #0f0f0f;
-  --tg-theme-bg-color-rgb: 15, 15, 15;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-color-rgb: 51, 144, 236;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #1c1c1e;
-  --tg-theme-section-bg-color: #2c2c2e;
+  /* Эти переменные будут установлены через JS */
+  --tg-bg-color: #ffffff;
+  --tg-text-color: #000000;
+  --tg-hint-color: #8e8e93;
+  --tg-button-color: #3390ec;
+  --tg-button-text-color: #ffffff;
+  --tg-secondary-bg-color: #f1f1f1;
+  --tg-bg-color-rgb: 255, 255, 255;
+  --tg-button-color-rgb: 51, 144, 236;
 }
 
 /* === БАЗОВЫЕ СТИЛИ === */
@@ -59,8 +44,8 @@ html, body {
   height: 100vh;
   height: -webkit-fill-available;
   height: 100dvh;
-  background: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
+  background: var(--tg-bg-color);
+  color: var(--tg-text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
@@ -87,7 +72,6 @@ html, body {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 94px;
-  transition: opacity 0.2s ease;
 }
 
 /* === НАВИГАЦИЯ === */
@@ -98,7 +82,7 @@ html, body {
   transform: translateX(-50%);
   width: 320px;
   height: 70px;
-  background: rgba(var(--tg-theme-bg-color-rgb), 0.85);
+  background: rgba(var(--tg-bg-color-rgb), 0.85);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 22px;
@@ -109,11 +93,9 @@ html, body {
   padding: 0 16px;
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.08),
-    0 2px 10px rgba(0, 0, 0, 0.04),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
-  border: 0.5px solid var(--tg-theme-section-bg-color);
+    0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid var(--tg-secondary-bg-color);
   overflow: hidden;
-  animation: fadeInUp 0.4s ease-out;
 }
 
 /* Кнопки навигации */
@@ -127,7 +109,6 @@ html, body {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--tg-theme-hint-color);
   transition: all 0.2s ease;
   padding: 12px 0 8px;
   position: relative;
@@ -135,10 +116,6 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   border-radius: 12px;
   margin: 0 2px;
-}
-
-.nav-item-floating.active {
-  color: var(--tg-theme-button-color);
 }
 
 .nav-item-floating.active::after {
@@ -149,14 +126,10 @@ html, body {
   transform: translate(-50%, -50%);
   width: 48px;
   height: 48px;
-  background: var(--tg-theme-button-color);
+  background: var(--tg-button-color);
   border-radius: 50%;
   opacity: 0.12;
   z-index: -1;
-}
-
-[data-theme="dark"] .nav-item-floating.active::after {
-  opacity: 0.15;
 }
 
 .nav-icon-floating {
@@ -190,7 +163,7 @@ html, body {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--tg-theme-button-color);
+  background: var(--tg-button-color);
   z-index: 2;
 }
 
@@ -226,14 +199,13 @@ html, body {
 .nav-center-circle-floating {
   width: 58px;
   height: 58px;
-  background: var(--tg-theme-button-color);
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 
-    0 8px 24px rgba(var(--tg-theme-button-color-rgb), 0.25),
-    0 2px 8px rgba(var(--tg-theme-button-color-rgb), 0.15);
+    0 8px 24px rgba(var(--tg-button-color-rgb), 0.25),
+    0 2px 8px rgba(var(--tg-button-color-rgb), 0.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -244,7 +216,7 @@ html, body {
 .nav-center-circle-floating svg {
   width: 24px;
   height: 24px;
-  fill: var(--tg-theme-button-text-color);
+  fill: var(--tg-button-text-color);
 }
 
 .nav-center-label-floating {
@@ -254,7 +226,6 @@ html, body {
   transform: translateX(-50%);
   font-size: 10px;
   font-weight: 600;
-  color: var(--tg-theme-button-color);
   white-space: nowrap;
 }
 
@@ -265,7 +236,7 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--tg-theme-bg-color);
+  background: var(--tg-bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -278,8 +249,8 @@ html, body {
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 2.5px solid rgba(var(--tg-theme-button-color-rgb), 0.1);
-  border-top-color: var(--tg-theme-button-color);
+  border: 2.5px solid rgba(var(--tg-button-color-rgb), 0.1);
+  border-top-color: var(--tg-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -291,7 +262,7 @@ html, body {
 
 .app-loading p {
   font-size: 15px;
-  color: var(--tg-theme-hint-color);
+  color: var(--tg-hint-color);
   opacity: 0.9;
 }
 
@@ -301,7 +272,7 @@ html, body {
   top: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(var(--tg-theme-bg-color-rgb), 0.9);
+  background: rgba(var(--tg-bg-color-rgb), 0.9);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-radius: 14px;
@@ -312,7 +283,7 @@ html, body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 0.5px solid var(--tg-theme-section-bg-color);
+  border: 0.5px solid var(--tg-secondary-bg-color);
   max-width: 90%;
 }
 
@@ -324,7 +295,7 @@ html, body {
 .telegram-toast-text {
   font-size: 15px;
   font-weight: 500;
-  color: var(--tg-theme-text-color);
+  color: var(--tg-text-color);
 }
 
 .telegram-toast.success {
@@ -336,7 +307,7 @@ html, body {
 }
 
 .telegram-toast.info {
-  border-left: 4px solid var(--tg-theme-button-color);
+  border-left: 4px solid var(--tg-button-color);
 }
 
 @keyframes slideDownToast {
@@ -406,8 +377,8 @@ html, body {
     max-width: 430px;
     left: 50%;
     transform: translateX(-50%);
-    border-left: 0.5px solid var(--tg-theme-section-bg-color);
-    border-right: 0.5px solid var(--tg-theme-section-bg-color);
+    border-left: 0.5px solid var(--tg-secondary-bg-color);
+    border-right: 0.5px solid var(--tg-secondary-bg-color);
   }
   
   .floating-nav {
@@ -415,19 +386,7 @@ html, body {
   }
 }
 
-/* === АНИМАЦИИ === */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* === СКРОЛЛБАР === */
+/* === SCROLLBAR === */
 .app-content::-webkit-scrollbar {
   width: 0;
   background: transparent;

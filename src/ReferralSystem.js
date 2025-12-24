@@ -90,41 +90,83 @@ const ReferralSystem = ({ onClose, showMessage }) => {
     };
 
     // Запрос на вывод средств
-    const handleWithdraw = async () => {
-        if (!withdrawAmount || parseFloat(withdrawAmount) < 10) {
-            showMessage('error', 'Минимальная сумма вывода: $10');
-            return;
-        }
+   // Запрос на вывод средств (исправленная версия)
+const handleWithdraw = async () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) < 10) {
+        showMessage('error', 'Минимальная сумма вывода: $10');
+        return;
+    }
 
-        if (parseFloat(withdrawAmount) > parseFloat(referralData?.stats.available_earnings || 0)) {
-            showMessage('error', 'Недостаточно средств для вывода');
-            return;
-        }
+    if (parseFloat(withdrawAmount) > parseFloat(referralData?.stats.available_earnings || 0)) {
+        showMessage('error', 'Недостаточно средств для вывода');
+        return;
+    }
 
-        setWithdrawing(true);
-        try {
-            const userId = getUserId();
-            const response = await fetch(`${API_BASE_URL}/api/referrals/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, amount: withdrawAmount })
-            });
+    setWithdrawing(true);
+    try {
+        const userId = getUserId();
+        const response = await fetch(`${API_BASE_URL}/api/referrals/withdraw`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                userId: userId, 
+                amount: withdrawAmount 
+            })
+        });
 
-            const result = await response.json();
-            if (result.success) {
-                showMessage('success', result.message || 'Запрос на вывод создан');
-                setWithdrawAmount('');
+        const result = await response.json();
+        
+        if (result.success) {
+            // Показываем детали успешного запроса
+            showMessage('success', 
+                `✅ ${result.message || 'Запрос на вывод создан'}\n\n` +
+                `💰 Сумма: $${parseFloat(withdrawAmount).toFixed(2)}\n` +
+                `📅 ID запроса: ${result.withdrawal?.id || 'не указан'}\n` +
+                `⏳ Ожидайте выплаты в течение 24 часов`
+            );
+            
+            setWithdrawAmount('');
+            
+            // Обновляем данные
+            setTimeout(() => {
                 loadReferralData();
-            } else {
-                showMessage('error', result.error || 'Ошибка вывода');
+            }, 1500);
+            
+            // Показываем новый баланс если есть
+            if (result.balance) {
+                setTimeout(() => {
+                    showMessage('info', 
+                        `📊 Новый доступный баланс: $${result.balance.available.toFixed(2)}\n` +
+                        `💰 Всего заработано: $${result.balance.total_earnings.toFixed(2)}\n` +
+                        `💸 Уже выведено: $${result.balance.withdrawn.toFixed(2)}`
+                    );
+                }, 2000);
             }
-        } catch (error) {
-            console.error('❌ Ошибка вывода:', error);
-            showMessage('error', 'Ошибка соединения');
-        } finally {
-            setWithdrawing(false);
+        } else {
+            // Детализированная обработка ошибок
+            let errorMessage = result.error || 'Ошибка вывода';
+            
+            if (errorMessage.includes('Недостаточно средств')) {
+                errorMessage += `\nДоступно: $${referralData?.stats.available_earnings.toFixed(2)}`;
+            } else if (errorMessage.includes('активный запрос')) {
+                errorMessage += '\nДождитесь обработки текущего запроса';
+            }
+            
+            showMessage('error', errorMessage);
         }
-    };
+    } catch (error) {
+        console.error('❌ Ошибка вывода:', error);
+        showMessage('error', 
+            `Ошибка соединения: ${error.message}\n\n` +
+            'Проверьте интернет-соединение и попробуйте снова.'
+        );
+    } finally {
+        setWithdrawing(false);
+    }
+};
 
     // Инициализация
     useEffect(() => {
@@ -378,44 +420,47 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                         </div>
                     )}
 
-                    {activeTab === 'withdrawals' && (
-                        <div className="tab-pane">
-                            <h4>История выводов</h4>
-                            {referralData?.withdrawals ? (
-                                <div className="data-table">
-                                    <div className="table-header">
-                                        <div className="table-col">Дата</div>
-                                        <div className="table-col">Сумма</div>
-                                        <div className="table-col">Статус</div>
-                                    </div>
-                                    <div className="table-row">
-                                        <div className="table-col">
-                                            <div className="date-cell">
-                                                {formatDate(referralData.withdrawals.created_at)}
-                                            </div>
-                                        </div>
-                                        <div className="table-col">
-                                            <div className="amount-cell">
-                                                <strong>${parseFloat(referralData.withdrawals.amount || 0).toFixed(2)}</strong>
-                                            </div>
-                                        </div>
-                                        <div className="table-col">
-                                            <span className={`status-badge ${referralData.withdrawals.status}`}>
-                                                {referralData.withdrawals.status === 'pending' ? '⏳ Ожидание' :
-                                                 referralData.withdrawals.status === 'completed' ? '✅ Выплачено' :
-                                                 '❌ Отклонено'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="empty-state">
-                                    <p>Выводов еще не было</p>
-                                    <small>Запросите вывод средств, когда накопите $10</small>
-                                </div>
-                            )}
+{activeTab === 'withdrawals' && (
+    <div className="tab-pane">
+        <h4>История выводов</h4>
+        {referralData?.withdrawals?.length > 0 ? (
+            <div className="data-table">
+                <div className="table-header">
+                    <div className="table-col">Дата</div>
+                    <div className="table-col">Сумма</div>
+                    <div className="table-col">Статус</div>
+                </div>
+                {referralData.withdrawals.map((withdrawal, index) => (
+                    <div className="table-row" key={index}>
+                        <div className="table-col">
+                            <div className="date-cell">
+                                {formatDate(withdrawal.created_at)}
+                            </div>
                         </div>
-                    )}
+                        <div className="table-col">
+                            <div className="amount-cell">
+                                <strong>${parseFloat(withdrawal.amount || 0).toFixed(2)}</strong>
+                            </div>
+                        </div>
+                        <div className="table-col">
+                            <span className={`status-badge ${withdrawal.status}`}>
+                                {withdrawal.status === 'pending' ? '⏳ Ожидание' :
+                                 withdrawal.status === 'completed' ? '✅ Выплачено' :
+                                 withdrawal.status === 'rejected' ? '❌ Отклонено' :
+                                 withdrawal.status}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <div className="empty-state">
+                <p>Выводов еще не было</p>
+                <small>Запросите вывод средств, когда накопите $10</small>
+            </div>
+        )}
+    </div>
+)}
                 </div>
             </div>
 

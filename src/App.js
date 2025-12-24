@@ -80,42 +80,29 @@ function App() {
   };
 
   // Применяем тему Telegram
-  const applyTelegramTheme = useCallback(() => {
+  const applyTelegramTheme = () => {
     console.log('🎨 Применяем тему Telegram...');
     
     const colors = getTelegramThemeColors();
     setThemeColors(colors);
     
-    // Сохраняем тему в localStorage
-    localStorage.setItem('telegramTheme', JSON.stringify(colors));
-    
-    // Устанавливаем CSS переменные
+    // Применяем стили к корневому элементу
     const root = document.documentElement;
     
-    root.style.setProperty('--tg-bg-color', colors.bg_color);
-    root.style.setProperty('--tg-text-color', colors.text_color);
-    root.style.setProperty('--tg-hint-color', colors.hint_color);
-    root.style.setProperty('--tg-button-color', colors.button_color);
-    root.style.setProperty('--tg-button-text-color', colors.button_text_color);
-    root.style.setProperty('--tg-secondary-bg-color', colors.secondary_bg_color);
-    root.style.setProperty('--tg-section-bg-color', colors.section_bg_color);
-    
-    // Устанавливаем атрибут data-theme
-    const isDark = colors.bg_color === '#0f0f0f' || 
-                   colors.bg_color === '#1c1c1c' || 
-                   colors.bg_color === '#000000' ||
-                   colors.bg_color.toLowerCase().includes('0f') ||
-                   colors.bg_color.toLowerCase().includes('1c');
-    
-    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    // Устанавливаем CSS переменные в правильном формате
+    root.style.setProperty('--tg-theme-bg-color', colors.bg_color);
+    root.style.setProperty('--tg-theme-text-color', colors.text_color);
+    root.style.setProperty('--tg-theme-hint-color', colors.hint_color);
+    root.style.setProperty('--tg-theme-button-color', colors.button_color);
+    root.style.setProperty('--tg-theme-button-text-color', colors.button_text_color);
+    root.style.setProperty('--tg-theme-secondary-bg-color', colors.secondary_bg_color);
+    root.style.setProperty('--tg-theme-section-bg-color', colors.section_bg_color || '#e7e8ec');
     
     console.log('✅ Тема применена:', colors);
-    console.log('📊 CSS переменные установлены');
-    console.log('🎭 data-theme:', isDark ? 'dark' : 'light');
     
-    // Форсируем обновление
-    forceThemeUpdate();
-  }, []);
+    // Принудительно обновляем все компоненты
+    document.dispatchEvent(new CustomEvent('themeChanged'));
+  };
 
   // Показ уведомлений
   const showToast = useCallback((message, type = 'info') => {

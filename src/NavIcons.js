@@ -30,3 +30,30 @@ export const HistoryIcon = ({ active = false }) => (
     />
   </svg>
 );
+
+// Пример iOS иконок
+export const ProfileIconIOS = ({ active }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" 
+            fill={active ? "#007AFF" : "currentColor"} 
+            fillOpacity={active ? "1" : "0.6"}/>
+  </svg>
+);
+
+export const ExchangeIconIOS = ({ active }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M16 17.01V10H14V17.01H11L15 21L19 17.01H16ZM9 3L5 6.99H8V14H10V6.99H13L9 3Z" 
+            fill="currentColor"/>
+  </svg>
+);
+
+export const HistoryIconIOS = ({ active }) => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M11.99 2C6.47 2 2 6.48 2 12C2 17.52 6.47 22 11.99 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 11.99 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" 
+            fill={active ? "#007AFF" : "currentColor"} 
+            fillOpacity={active ? "1" : "0.6"}/>
+      <path d="M12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z" 
+            fill={active ? "#007AFF" : "currentColor"} 
+            fillOpacity={active ? "1" : "0.6"}/>
+  </svg>
+);

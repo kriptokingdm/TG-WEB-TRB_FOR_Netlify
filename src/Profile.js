@@ -237,11 +237,12 @@ function Profile({ navigateTo, telegramUser }) {
                 >
                     <span className="profile-tab-icon">💰</span>
                     <span className="profile-tab-text">Рефералы</span>
-                    {referralData?.stats.total_earnings > 0 && (
-                        <span className="profile-tab-badge">
-                            {formatUSD(referralData.stats.total_earnings)}
-                        </span>
-                    )}
+{referralData?.stats.total_earnings > 0 && (
+    <span className="profile-tab-badge">
+        {/* ПОМЕНЯЙТЕ ЭТУ СТРОКУ: */}
+        {formatUSD(referralData.stats.available_earnings)} {/* Было: total_earnings */}
+    </span>
+)}
                 </button>
             </div>
 

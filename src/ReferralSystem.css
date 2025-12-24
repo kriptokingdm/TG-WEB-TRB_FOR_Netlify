@@ -1,136 +1,18 @@
-/* ReferralSystem.css - Идеальный Telegram стиль */
+/* ReferralSystem.css - Упрощенный */
 
 .referral-container {
     padding: 0;
     background: var(--tg-theme-bg-color, #ffffff);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
 }
 
 /* ==================== */
-/* ХЕДЕР */
-/* ==================== */
-
-.referral-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--tg-theme-bg-color, #ffffff);
-    padding: 12px 16px;
-    border-bottom: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-}
-
-.header-content {
-    flex: 1;
-}
-
-.header-text h1 {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-    margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.3px;
-}
-
-.header-text p {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin: 4px 0 0 0;
-    opacity: 0.9;
-}
-
-.close-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: transparent;
-    color: var(--tg-theme-text-color, #000000);
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 6px;
-    opacity: 0.8;
-    margin-left: 8px;
-    flex-shrink: 0;
-}
-
-.close-btn:active {
-    background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.08));
-    opacity: 0.5;
-}
-
-/* ==================== */
-/* СТАТИСТИКА */
-/* ==================== */
-
-.stats-section {
-    padding: 16px 16px 8px;
-}
-
-.section-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin: 0 0 12px 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.stat-card {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 12px;
-    padding: 16px 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease;
-    border: 0.5px solid var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.stat-card:active {
-    transform: scale(0.98);
-}
-
-.stat-value {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 2px;
-    line-height: 1.2;
-    font-variant-numeric: tabular-nums;
-}
-
-.stat-label {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    text-align: center;
-    letter-spacing: -0.2px;
-    opacity: 0.9;
-}
-
-/* ==================== */
-/* РЕФЕРАЛЬНАЯ ССЫЛКА */
+/* СЕКЦИИ */
 /* ==================== */
 
 .referral-section {
-    padding: 8px 16px 16px;
+    padding: 12px 16px;
 }
 
 .section-card {
@@ -138,6 +20,7 @@
     border-radius: 14px;
     padding: 16px;
     border: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
+    margin-bottom: 8px;
 }
 
 .card-header {
@@ -159,6 +42,42 @@
     opacity: 0.9;
     line-height: 1.4;
 }
+
+/* ==================== */
+/* СТАТИСТИКА */
+/* ==================== */
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 12px 8px;
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    border-radius: 12px;
+    border: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    opacity: 0.9;
+}
+
+/* ==================== */
+/* РЕФЕРАЛЬНАЯ ССЫЛКА */
+/* ==================== */
 
 .link-container {
     background: var(--tg-theme-secondary-bg-color, #f2f2f7);
@@ -183,10 +102,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.link-input::placeholder {
-    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .copy-btn {
@@ -215,10 +130,6 @@
 
 .copy-btn.copied {
     background: #30d158;
-}
-
-.copy-btn.copied:active {
-    background: #2ac651;
 }
 
 /* ==================== */
@@ -283,10 +194,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-.withdraw-input:focus {
-    border-color: var(--tg-theme-button-color, #2a7df7);
-}
-
 .withdraw-btn {
     width: 100%;
     background: var(--tg-theme-button-color, #2a7df7);
@@ -302,13 +209,11 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    letter-spacing: -0.2px;
 }
 
 .withdraw-btn:active:not(:disabled) {
     opacity: 0.9;
     background: var(--tg-theme-button-color, #2672e0);
-    transform: scale(0.99);
 }
 
 .withdraw-btn:disabled {
@@ -380,10 +285,6 @@
 /* ТАБЫ */
 /* ==================== */
 
-.tabs-section {
-    padding: 8px 16px 16px;
-}
-
 .tabs-container {
     background: var(--tg-theme-bg-color, #ffffff);
     border-radius: 14px;
@@ -409,7 +310,6 @@
     position: relative;
     text-align: center;
     transition: all 0.2s ease;
-    letter-spacing: -0.2px;
 }
 
 .tab-btn:active:not(.active) {
@@ -448,35 +348,35 @@
 /* СПИСКИ */
 /* ==================== */
 
-.data-list {
+.referrals-list,
+.earnings-list,
+.withdrawals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.referral-item,
+.earning-item,
+.withdrawal-item {
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
     border-radius: 12px;
-    overflow: hidden;
+    padding: 16px;
     border: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
 }
 
-.list-item {
-    padding: 16px;
-    border-bottom: 0.5px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
-    background: var(--tg-theme-bg-color, #ffffff);
-    transition: background-color 0.2s ease;
-}
-
-.list-item:last-child {
-    border-bottom: none;
-}
-
-.list-item:active {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-}
-
-.user-row {
+.referral-header,
+.earning-header,
+.withdrawal-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
 }
 
-.user-avatar {
+.referral-avatar,
+.earning-icon,
+.withdrawal-icon {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -490,12 +390,16 @@
     flex-shrink: 0;
 }
 
-.user-info {
+.referral-info,
+.earning-info,
+.withdrawal-info {
     flex: 1;
     min-width: 0;
 }
 
-.user-name {
+.referral-name,
+.earning-title,
+.withdrawal-title {
     font-weight: 500;
     color: var(--tg-theme-text-color, #000000);
     font-size: 16px;
@@ -505,7 +409,9 @@
     text-overflow: ellipsis;
 }
 
-.user-username {
+.referral-username,
+.earning-subtitle,
+.withdrawal-subtitle {
     font-size: 14px;
     color: var(--tg-theme-hint-color, #8e8e93);
     white-space: nowrap;
@@ -513,73 +419,45 @@
     text-overflow: ellipsis;
 }
 
-.list-row {
+/* Детали */
+.referral-details,
+.earning-details,
+.withdrawal-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
 }
 
-.list-label {
+.detail-label {
     font-size: 14px;
     color: var(--tg-theme-hint-color, #8e8e93);
 }
 
-.list-value {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-    font-variant-numeric: tabular-nums;
-}
-
-.amount-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--tg-theme-button-color, #2a7df7);
-    font-variant-numeric: tabular-nums;
-}
-
-.date-value {
+.detail-value {
     font-size: 14px;
-    color: var(--tg-theme-text-color, #000000);
-    opacity: 0.8;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 13px;
     font-weight: 500;
-    text-align: center;
-    letter-spacing: -0.2px;
+    color: var(--tg-theme-text-color, #000000);
+    font-variant-numeric: tabular-nums;
 }
 
-.status-badge.active {
-    background: rgba(52, 199, 89, 0.12);
+.detail-value.active {
     color: #30d158;
 }
 
-.status-badge.inactive {
-    background: rgba(142, 142, 147, 0.12);
+.detail-value.inactive {
     color: #8e8e93;
 }
 
-.status-badge.pending {
-    background: rgba(255, 149, 0, 0.12);
-    color: #ff9500;
-}
-
-.status-badge.completed,
-.status-badge.paid,
-.status-badge.available {
-    background: rgba(52, 199, 89, 0.12);
-    color: #30d158;
-}
-
-.status-badge.rejected {
-    background: rgba(255, 59, 48, 0.12);
-    color: #ff3b30;
+.detail-value.amount,
+.detail-value.earnings {
+    color: var(--tg-theme-button-color, #2a7df7);
+    font-weight: 600;
 }
 
 /* ==================== */
@@ -622,10 +500,6 @@
 /* ==================== */
 /* ИНФОРМАЦИОННЫЙ БЛОК */
 /* ==================== */
-
-.info-section {
-    padding: 8px 16px 24px;
-}
 
 .steps-list {
     display: flex;
@@ -703,249 +577,175 @@
     opacity: 0.9;
 }
 
-/* ==================== */
-/* АНИМАЦИИ */
-/* ==================== */
-
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* ==================== */
 /* ТЕМНАЯ ТЕМА */
 /* ==================== */
 
-@media (prefers-color-scheme: dark) {
-    .referral-container {
-        background: #000000;
-    }
-    
-    .referral-header {
-        background: #000000;
-        border-bottom-color: #1c1c1e;
-    }
-    
-    .header-text h1 {
-        color: #ffffff;
-    }
-    
-    .header-text p {
-        color: #8e8e93;
-    }
-    
-    .close-btn {
-        color: #ffffff;
-    }
-    
-    .close-btn:active {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .stat-card {
-        background: #1c1c1e;
-        border-color: #2c2c2e;
-    }
-    
-    .stat-value {
-        color: #ffffff;
-    }
-    
-    .stat-label {
-        color: #8e8e93;
-    }
-    
-    .section-card {
-        background: #1c1c1e;
-        border-color: #2c2c2e;
-    }
-    
-    .card-title {
-        color: #ffffff;
-    }
-    
-    .card-subtitle {
-        color: #8e8e93;
-    }
-    
-    .link-container {
-        background: #2c2c2e;
-        border-color: #3a3a3c;
-    }
-    
-    .link-input {
-        color: #ffffff;
-    }
-    
-    .link-input::placeholder {
-        color: #8e8e93;
-    }
-    
-    .balance-info {
-        background: #1c1c1e;
-        border-color: #2c2c2e;
-    }
-    
-    .balance-label {
-        color: #ffffff;
-    }
-    
-    .balance-value {
-        color: #ffffff;
-    }
-    
-    .currency-symbol {
-        color: #ffffff;
-    }
-    
-    .withdraw-input {
-        background: #2c2c2e;
-        border-color: #3a3a3c;
-        color: #ffffff;
-    }
-    
-    .withdraw-notice {
-        background: rgba(255, 149, 0, 0.15);
-        border-color: rgba(255, 149, 0, 0.3);
-        color: #ff9500;
-    }
-    
-    .withdraw-info {
-        background: #1c1c1e;
-        border-color: #2c2c2e;
-    }
-    
-    .info-row {
-        border-bottom-color: #2c2c2e;
-    }
-    
-    .info-label {
-        color: #ffffff;
-    }
-    
-    .info-value {
-        color: #ffffff;
-    }
-    
-    .info-value.highlight {
-        color: #0a84ff;
-    }
-    
-    .tabs-container {
-        background: #1c1c1e;
-        border-color: #2c2c2e;
-    }
-    
-    .tabs-header {
-        background: #2c2c2e;
-        border-bottom-color: #3a3a3c;
-    }
-    
-    .tab-btn {
-        color: #8e8e93;
-    }
-    
-    .tab-btn:active:not(.active) {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .tab-btn.active {
-        color: #0a84ff;
-    }
-    
-    .tab-btn.active::after {
-        background: #0a84ff;
-    }
-    
-    .tab-title {
-        color: #ffffff;
-    }
-    
-    .data-list {
-        border-color: #2c2c2e;
-    }
-    
-    .list-item {
-        background: #1c1c1e;
-        border-bottom-color: #2c2c2e;
-    }
-    
-    .list-item:active {
-        background: #2c2c2e;
-    }
-    
-    .user-avatar {
-        background: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
-    }
-    
-    .user-name {
-        color: #ffffff;
-    }
-    
-    .user-username {
-        color: #8e8e93;
-    }
-    
-    .list-label {
-        color: #8e8e93;
-    }
-    
-    .list-value {
-        color: #ffffff;
-    }
-    
-    .amount-value {
-        color: #0a84ff;
-    }
-    
-    .date-value {
-        color: #ffffff;
-        opacity: 0.8;
-    }
-    
-    .empty-icon {
-        background: #2c2c2e;
-        color: #8e8e93;
-    }
-    
-    .empty-title {
-        color: #ffffff;
-    }
-    
-    .empty-subtitle {
-        color: #8e8e93;
-    }
-    
-    .step-title {
-        color: #ffffff;
-    }
-    
-    .step-description {
-        color: #8e8e93;
-    }
-    
-    .loading-spinner {
-        border-color: #2c2c2e;
-        border-top-color: #0a84ff;
-    }
-    
-    .loading-text {
-        color: #8e8e93;
-    }
+[data-theme="dark"] .referral-container {
+    background: #000000;
+}
+
+[data-theme="dark"] .section-card {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+}
+
+[data-theme="dark"] .card-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .card-subtitle {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .stat-item {
+    background: #2c2c2e;
+    border-color: #38383a;
+}
+
+[data-theme="dark"] .stat-value {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .stat-label {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .link-container {
+    background: #2c2c2e;
+    border-color: #3a3a3c;
+}
+
+[data-theme="dark"] .link-input {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .balance-info {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+}
+
+[data-theme="dark"] .balance-label {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .balance-value {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .currency-symbol {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .withdraw-input {
+    background: #2c2c2e;
+    border-color: #3a3a3c;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .withdraw-notice {
+    background: rgba(255, 149, 0, 0.15);
+    border-color: rgba(255, 149, 0, 0.3);
+    color: #ff9500;
+}
+
+[data-theme="dark"] .withdraw-info {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+}
+
+[data-theme="dark"] .info-row {
+    border-bottom-color: #2c2c2e;
+}
+
+[data-theme="dark"] .info-label {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .info-value {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .info-value.highlight {
+    color: #0a84ff;
+}
+
+[data-theme="dark"] .tabs-container {
+    background: #1c1c1e;
+    border-color: #2c2c2e;
+}
+
+[data-theme="dark"] .tabs-header {
+    background: #2c2c2e;
+    border-bottom-color: #3a3a3c;
+}
+
+[data-theme="dark"] .tab-btn {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .tab-btn.active {
+    color: #0a84ff;
+}
+
+[data-theme="dark"] .tab-btn.active::after {
+    background: #0a84ff;
+}
+
+[data-theme="dark"] .tab-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .referral-item,
+[data-theme="dark"] .earning-item,
+[data-theme="dark"] .withdrawal-item {
+    background: #2c2c2e;
+    border-color: #38383a;
+}
+
+[data-theme="dark"] .referral-name,
+[data-theme="dark"] .earning-title,
+[data-theme="dark"] .withdrawal-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .referral-username,
+[data-theme="dark"] .earning-subtitle,
+[data-theme="dark"] .withdrawal-subtitle {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .detail-label {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .detail-value {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .empty-icon {
+    background: #2c2c2e;
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .empty-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .empty-subtitle {
+    color: #8e8e93;
+}
+
+[data-theme="dark"] .step-title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .step-description {
+    color: #8e8e93;
 }
 
 /* ==================== */
@@ -953,24 +753,16 @@
 /* ==================== */
 
 @media (max-width: 375px) {
-    .referral-header {
-        padding: 12px 14px;
+    .referral-section {
+        padding: 10px 14px;
     }
     
-    .stats-section,
-    .referral-section,
-    .tabs-section,
-    .info-section {
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-    
-    .stat-card {
-        padding: 14px 6px;
+    .stat-item {
+        padding: 10px 6px;
     }
     
     .stat-value {
-        font-size: 18px;
+        font-size: 16px;
     }
     
     .link-input {
@@ -990,58 +782,23 @@
         font-size: 14px;
     }
     
-    .user-avatar {
+    .referral-avatar,
+    .earning-icon,
+    .withdrawal-icon {
         width: 36px;
         height: 36px;
         font-size: 15px;
     }
     
-    .user-name {
+    .referral-name,
+    .earning-title,
+    .withdrawal-title {
         font-size: 15px;
     }
     
-    .user-username {
+    .referral-username,
+    .earning-subtitle,
+    .withdrawal-subtitle {
         font-size: 13px;
     }
-}
-
-/* ==================== */
-/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ TELEGRAM WEBAPP */
-/* ==================== */
-
-body[data-theme="dark"] .referral-container,
-body.theme-dark .referral-container {
-    background: #000000;
-}
-
-body[data-theme="dark"] .stat-card,
-body.theme-dark .stat-card {
-    background: #1c1c1e;
-}
-
-body[data-theme="dark"] .link-container,
-body.theme-dark .link-container {
-    background: #2c2c2e;
-}
-
-body[data-theme="dark"] .withdraw-input,
-body.theme-dark .withdraw-input {
-    background: #2c2c2e;
-}
-
-/* ==================== */
-/* УЛУЧШЕННЫЕ СТИЛИ ДЛЯ КНОПОК */
-/* ==================== */
-
-button {
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-input, button {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }

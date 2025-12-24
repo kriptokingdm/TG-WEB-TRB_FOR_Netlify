@@ -13,19 +13,56 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [telegramUser, setTelegramUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [referralData, setReferralData] = useState(null);
+
+  // Загрузка реферальных данных для бейджа
+  const loadReferralData = useCallback(async () => {
+    try {
+      const userId = getUserId();
+      const response = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setReferralData(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки реферальных данных:', error);
+    }
+  }, []);
+
+  // Получение ID пользователя
+  const getUserId = () => {
+    try {
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        const tgUser = tg.initDataUnsafe?.user;
+        if (tgUser?.id) return tgUser.id.toString();
+      }
+
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        return parsed.telegramId?.toString() || parsed.id?.toString();
+      }
+
+      return '7879866656';
+    } catch (error) {
+      console.error('❌ Ошибка получения ID:', error);
+      return '7879866656';
+    }
+  };
 
   // Применяем тему Telegram
   const applyTelegramTheme = useCallback(() => {
-    console.log('🎨 Применяем тему Telegram...');
+    console.log('🎨 Применяем iOS тему...');
     
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       const currentTheme = tg.colorScheme || 'light';
       
-      // Устанавливаем тему
       document.documentElement.setAttribute('data-theme', currentTheme);
       
-      // Применяем цвета Telegram
       if (tg.themeParams) {
         const root = document.documentElement;
         
@@ -41,30 +78,23 @@ function App() {
           root.style.setProperty('--tg-theme-hint-color', `#${tg.themeParams.hint_color}`);
         }
         
-        if (tg.themeParams.link_color) {
-          root.style.setProperty('--tg-theme-link-color', `#${tg.themeParams.link_color}`);
-        }
-        
         if (tg.themeParams.button_color) {
           root.style.setProperty('--tg-theme-button-color', `#${tg.themeParams.button_color}`);
         }
-        
-        if (tg.themeParams.button_text_color) {
-          root.style.setProperty('--tg-theme-button-text-color', `#${tg.themeParams.button_text_color}`);
-        }
-        
-        if (tg.themeParams.secondary_bg_color) {
-          root.style.setProperty('--tg-theme-secondary-bg-color', `#${tg.themeParams.secondary_bg_color}`);
-        }
       }
+    } else {
+      // iOS цвета по умолчанию
+      document.documentElement.style.setProperty('--tg-theme-button-color', '#007AFF');
+      document.documentElement.style.setProperty('--tg-theme-bg-color', '#ffffff');
+      document.documentElement.style.setProperty('--tg-theme-text-color', '#000000');
+      document.documentElement.style.setProperty('--tg-theme-hint-color', '#8e8e93');
     }
   }, []);
 
   // Инициализация
   useEffect(() => {
-    console.log('🚀 Инициализация TetherRabbit...');
+    console.log('🚀 Инициализация TetherRabbit iOS...');
     
-    // Применяем тему Telegram
     applyTelegramTheme();
     
     // Hash навигация
@@ -95,10 +125,8 @@ function App() {
         localStorage.setItem('currentUser', JSON.stringify(userData));
       }
       
-      // Слушаем изменения темы
       tg.onEvent('themeChanged', applyTelegramTheme);
       
-      // BackButton
       if (tg.BackButton) {
         tg.BackButton.onClick(() => {
           if (currentPage !== 'home') {
@@ -109,7 +137,6 @@ function App() {
         });
       }
     } else {
-      // Для разработки
       setTelegramUser({
         id: '7879866656',
         telegramId: '7879866656',
@@ -119,13 +146,14 @@ function App() {
       });
     }
     
-    // Завершаем загрузку
+    // Загружаем реферальные данные для бейджа
+    loadReferralData();
+    
     setTimeout(() => {
       setIsLoading(false);
-      console.log('✅ Инициализация завершена');
+      console.log('✅ iOS инициализация завершена');
     }, 500);
     
-    // Hash изменения
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help'].includes(hash)) {
@@ -138,7 +166,7 @@ function App() {
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [applyTelegramTheme]);
+  }, [applyTelegramTheme, loadReferralData]);
 
   // Навигация
   const navigateTo = (page) => {
@@ -147,7 +175,6 @@ function App() {
     window.location.hash = page;
     setCurrentPage(page);
     
-    // BackButton
     if (window.Telegram?.WebApp && window.Telegram.WebApp.BackButton) {
       if (page === 'home') {
         window.Telegram.WebApp.BackButton.hide();
@@ -173,40 +200,51 @@ function App() {
     }
   };
 
-  // Навигация
-  const Navigation = () => (
-    <div className="bottom-nav">
-      <button 
-        className={`nav-item ${currentPage === 'profile' ? 'active' : ''}`} 
-        onClick={() => navigateTo('profile')}
-      >
-        <div className="nav-icon">
-          <ProfileIcon active={currentPage === 'profile'} />
+  // Плавающая навигация iOS
+  const Navigation = () => {
+    // Доступная сумма для бейджа
+    const availableEarnings = referralData?.stats?.available_earnings || 0;
+    const showBadge = availableEarnings >= 10; // Показывать если >= $10
+    
+    return (
+      <div className="floating-nav">
+        <button 
+          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
+          onClick={() => navigateTo('profile')}
+        >
+          <div className="nav-icon-floating">
+            <ProfileIcon active={currentPage === 'profile'} />
+          </div>
+          <span className="nav-label-floating">Профиль</span>
+          {showBadge && (
+            <span className="nav-badge-floating">
+              ${availableEarnings.toFixed(0)}
+            </span>
+          )}
+        </button>
+        
+        <div className="nav-center-floating">
+          <button 
+            className="nav-center-circle-floating" 
+            onClick={() => navigateTo('home')}
+          >
+            <ExchangeIcon active={true} />
+          </button>
+          <span className="nav-center-label-floating">Обмен</span>
         </div>
-        <span className="nav-label">Профиль</span>
-      </button>
-      
-      <button 
-        className="nav-center" 
-        onClick={() => navigateTo('home')}
-      >
-        <div className="nav-center-circle">
-          <ExchangeIcon active={true} />
-        </div>
-        <span className="nav-center-label">Обмен</span>
-      </button>
-      
-      <button 
-        className={`nav-item ${currentPage === 'history' ? 'active' : ''}`} 
-        onClick={() => navigateTo('history')}
-      >
-        <div className="nav-icon">
-          <HistoryIcon active={currentPage === 'history'} />
-        </div>
-        <span className="nav-label">История</span>
-      </button>
-    </div>
-  );
+        
+        <button 
+          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
+          onClick={() => navigateTo('history')}
+        >
+          <div className="nav-icon-floating">
+            <HistoryIcon active={currentPage === 'history'} />
+          </div>
+          <span className="nav-label-floating">История</span>
+        </button>
+      </div>
+    );
+  };
 
   // Лоадер
   if (isLoading) {

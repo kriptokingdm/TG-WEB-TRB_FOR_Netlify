@@ -1,4 +1,4 @@
-/* App.css - Telegram стиль с фиксированной навигацией */
+/* App.css - iOS Floating Navigation */
 
 /* === РЕСЕТ === */
 * {
@@ -12,7 +12,6 @@ html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  position: fixed;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,29 +59,66 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 70px; /* Место для навигации */
+  padding-bottom: 94px; /* Больше места для плавающей навигации */
 }
 
-/* === НАВИГАЦИЯ (Telegram стиль) === */
-.bottom-nav {
+/* === ПЛАВАЮЩАЯ iOS НАВИГАЦИЯ (Floating Tab Bar) === */
+.floating-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
   height: 70px;
-  background: var(--tg-theme-bg-color, #ffffff);
-  border-top: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 22px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  padding: 0 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.8);
+  border: 0.5px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
 }
 
-/* === КНОПКИ НАВИГАЦИИ === */
-.nav-item {
+/* Эффект градиентной границы */
+.floating-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  padding: 0.5px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Темная тема */
+[data-theme="dark"] .floating-nav {
+  background: rgba(28, 28, 30, 0.75);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .floating-nav::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+}
+
+/* === iOS КНОПКИ В ПЛАВАЮЩЕЙ НАВИГАЦИИ === */
+.nav-item-floating {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -94,133 +130,241 @@ html, body {
   cursor: pointer;
   color: var(--tg-theme-hint-color, #8e8e93);
   transition: all 0.2s ease;
-  padding: 10px 0;
+  padding: 12px 0 8px;
   position: relative;
   gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 12px;
+  margin: 0 2px;
 }
 
-.nav-item.active {
-  color: var(--tg-theme-button-color, #2a7df7);
+.nav-item-floating.active {
+  color: var(--tg-theme-button-color, #007AFF);
 }
 
-.nav-item:active {
-  opacity: 0.7;
+/* Активная подсветка фона */
+.nav-item-floating.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  background: var(--tg-theme-button-color, #007AFF);
+  border-radius: 12px;
+  opacity: 0.08;
+  z-index: -1;
+  transition: all 0.3s ease;
 }
 
-.nav-icon {
+[data-theme="dark"] .nav-item-floating.active::after {
+  background: #007AFF;
+  opacity: 0.15;
+}
+
+.nav-item-floating:active .nav-icon-floating {
+  transform: scale(0.9);
+}
+
+.nav-icon-floating {
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  transition: transform 0.2s ease;
+  z-index: 1;
 }
 
-.nav-icon svg {
+.nav-icon-floating svg {
   width: 100%;
   height: 100%;
   fill: currentColor;
 }
 
-.nav-label {
-  font-size: 11px;
-  font-weight: 500;
+.nav-label-floating {
+  font-size: 10px;
+  font-weight: 600;
   letter-spacing: -0.2px;
+  opacity: 0.9;
+  z-index: 1;
 }
 
-/* === ЦЕНТРАЛЬНАЯ КНОПКА === */
-.nav-center {
-  position: relative;
-  margin-top: -20px;
-}
-
-.nav-center-circle {
-  width: 56px;
-  height: 56px;
-  background: var(--tg-theme-button-color, #2a7df7);
+/* Активная точка сверху */
+.nav-item-floating.active::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
+  background: var(--tg-theme-button-color, #007AFF);
+  z-index: 2;
+}
+
+.nav-badge-floating {
+  position: absolute;
+  top: 10px;
+  right: calc(50% - 16px);
+  background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 9px;
+  min-width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(42, 125, 247, 0.3);
-  transition: all 0.2s ease;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(255, 59, 48, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 2;
 }
 
-.nav-center-circle:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(42, 125, 247, 0.3);
+/* === ПЛАВАЮЩАЯ ЦЕНТРАЛЬНАЯ КНОПКА === */
+.nav-center-floating {
+  position: relative;
+  margin: 0 -12px;
+  z-index: 3;
 }
 
-.nav-center-circle svg {
+.nav-center-circle-floating {
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 8px 20px rgba(0, 122, 255, 0.25),
+    0 2px 6px rgba(0, 122, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Эффект свечения */
+.nav-center-circle-floating::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15), rgba(88, 86, 214, 0.15));
+  border-radius: 22px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav-center-circle-floating:active {
+  transform: scale(0.92);
+  box-shadow: 
+    0 4px 12px rgba(0, 122, 255, 0.25),
+    0 1px 3px rgba(0, 122, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nav-center-circle-floating:active::after {
+  opacity: 1;
+}
+
+.nav-center-circle-floating svg {
   width: 24px;
   height: 24px;
   fill: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-.nav-center-label {
+.nav-center-label-floating {
   position: absolute;
-  bottom: -18px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--tg-theme-button-color, #2a7df7);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tg-theme-button-color, #007AFF);
   white-space: nowrap;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-/* === КОНТЕЙНЕРЫ СТРАНИЦ === */
-.page-container {
-  width: 100%;
-  min-height: 100%;
-  position: relative;
-  padding-bottom: 70px; /* Отступ для навигации */
+[data-theme="dark"] .nav-center-label-floating {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* === НАВИГАЦИЯ ДЛЯ КОНТЕНТА === */
-.content-nav {
+/* === iOS HEADER СТИЛЬ (тоже плавающий) === */
+.floating-header {
   position: sticky;
-  top: 0;
+  top: 20px;
   z-index: 100;
-  background: var(--tg-theme-bg-color, #ffffff);
-  border-bottom: 0.5px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 12px 16px;
+  width: calc(100% - 32px);
+  margin: 20px 16px 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 16px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
+  border: 0.5px solid rgba(255, 255, 255, 0.3);
 }
 
-.content-nav-title {
+[data-theme="dark"] .floating-header {
+  background: rgba(28, 28, 30, 0.8);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+}
+
+.floating-header-title {
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--tg-theme-text-color, #000000);
   letter-spacing: -0.3px;
+  margin: 0;
 }
 
-.content-nav-back {
-  width: 40px;
-  height: 40px;
+.floating-header-button {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(0, 122, 255, 0.1);
   border: none;
-  color: var(--tg-theme-text-color, #000000);
+  color: var(--tg-theme-button-color, #007AFF);
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
 }
 
-.content-nav-back:active {
-  background: var(--tg-theme-secondary-bg-color, rgba(0, 0, 0, 0.08));
+.floating-header-button:active {
+  transform: scale(0.95);
+  background: rgba(0, 122, 255, 0.15);
 }
 
-.content-nav-back svg {
-  width: 20px;
-  height: 20px;
+.floating-header-button svg {
+  width: 18px;
+  height: 18px;
 }
 
-/* === ЗАГРУЗКА === */
+/* === ЗАГРУЗКА С БЛЮРОМ === */
 .app-loading {
   position: fixed;
   top: 0;
@@ -233,13 +377,15 @@ html, body {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 3px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
-  border-top-color: var(--tg-theme-button-color, #2a7df7);
+  border: 2.5px solid rgba(0, 122, 255, 0.1);
+  border-top-color: var(--tg-theme-button-color, #007AFF);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -267,96 +413,91 @@ html, body {
   
   .app-content {
     height: 100%;
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
   }
   
-  .bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(70px + env(safe-area-inset-bottom));
+  .floating-nav {
+    bottom: calc(20px + env(safe-area-inset-bottom));
   }
   
-  .page-container {
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  .floating-header {
+    margin-top: calc(20px + env(safe-area-inset-top));
   }
 }
 
 /* === АДАПТИВНОСТЬ === */
+@media (max-width: 375px) {
+  .floating-nav {
+    width: 300px;
+    height: 66px;
+    border-radius: 20px;
+  }
+  
+  .nav-center-circle-floating {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+  }
+  
+  .nav-icon-floating {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .nav-label-floating {
+    font-size: 9px;
+  }
+  
+  .floating-header {
+    width: calc(100% - 24px);
+    margin: 16px 12px 0;
+    border-radius: 14px;
+    padding: 12px 16px;
+  }
+}
+
 @media (min-width: 768px) {
   .app {
     max-width: 430px;
     left: 50%;
     transform: translateX(-50%);
-    border-left: 1px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
-    border-right: 1px solid var(--tg-theme-secondary-bg-color, #e5e5ea);
-  }
-}
-
-@media (max-width: 375px) {
-  .bottom-nav {
-    height: 65px;
+    border-left: 0.5px solid rgba(0, 0, 0, 0.08);
+    border-right: 0.5px solid rgba(0, 0, 0, 0.08);
   }
   
-  .nav-center-circle {
-    width: 52px;
-    height: 52px;
+  [data-theme="dark"] .app {
+    border-left: 0.5px solid rgba(255, 255, 255, 0.08);
+    border-right: 0.5px solid rgba(255, 255, 255, 0.08);
   }
   
-  .nav-icon {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .nav-label {
-    font-size: 10px;
+  .floating-nav {
+    width: 360px;
   }
 }
 
-/* === ТЕМНАЯ ТЕМА === */
-[data-theme="dark"] .bottom-nav {
-  background: #1c1c1e;
-  border-top-color: #38383a;
-}
-
-[data-theme="dark"] .nav-item {
-  color: #8e8e93;
-}
-
-[data-theme="dark"] .nav-item.active {
-  color: #0a84ff;
-}
-
-[data-theme="dark"] .nav-center-circle {
-  background: #0a84ff;
-  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
-}
-
-[data-theme="dark"] .content-nav {
-  background: #1c1c1e;
-  border-bottom-color: #38383a;
-}
-
-[data-theme="dark"] .content-nav-title {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .content-nav-back {
-  color: #ffffff;
-}
-
-/* === SCROLLBAR (optional) === */
+/* === СКРОЛЛБАР === */
 .app-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.app-content::-webkit-scrollbar-track {
+  width: 0;
   background: transparent;
 }
 
-.app-content::-webkit-scrollbar-thumb {
-  background: var(--tg-theme-secondary-bg-color, #e5e5ea);
-  border-radius: 2px;
+.app-content {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.app-content::-webkit-scrollbar-thumb:hover {
-  background: var(--tg-theme-hint-color, #8e8e93);
+/* === АНИМАЦИЯ ПОЯВЛЕНИЯ === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.floating-nav {
+  animation: fadeInUp 0.4s ease-out;
 }

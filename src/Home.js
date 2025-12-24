@@ -908,511 +908,523 @@ function Home({ navigateTo, telegramUser, showToast }) {
             background: themeColors.bgColor,
             border: `0.5px solid ${themeColors.sectionBgColor}` 
           }}>
-            <div className="currency-cards-horizontal">
-              <div className="currency-card-side left-card" style={{ 
-                background: `${themeColors.buttonColor}15`,
-                border: `0.5px solid ${themeColors.sectionBgColor}` 
-              }}>
-                <div className="currency-content">
-                  <span className="currency-name" style={{ color: themeColors.textColor }}>
-                    {isBuyMode ? "RUB" : "USDT"}
-                  </span>
-                  {isBuyMode && (
-                    <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
-                      {currentRate.toFixed(2)} ₽
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <button
-                className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
-                onClick={handleSwap}
-                disabled={hasActiveOrder}
-                title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
-              >
-                <SwapIcon isSwapped={isSwapped} />
-              </button>
-
-              <div className="currency-card-side right-card" style={{ 
-                background: `${themeColors.buttonColor}15`,
-                border: `0.5px solid ${themeColors.sectionBgColor}` 
-              }}>
-                <div className="currency-content">
-                  <span className="currency-name" style={{ color: themeColors.textColor }}>
-                    {isBuyMode ? "USDT" : "RUB"}
-                  </span>
-                  {!isBuyMode && (
-                    <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
-                      {currentRate.toFixed(2)} ₽
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="amount-input-section">
-              <div className="amount-input-group">
-                <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы отдаете</label>
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    className="amount-input"
-                    disabled={isLoading}
-                    style={{ 
-                      background: themeColors.secondaryBgColor,
-                      border: `0.5px solid ${themeColors.sectionBgColor}`,
-                      color: themeColors.textColor 
-                    }}
-                  />
-                  <span className="amount-currency" style={{ color: themeColors.hintColor }}>
-                    {isBuyMode ? "RUB" : "USDT"}
-                  </span>
-                </div>
-                <div className="min-limit-hint" style={{ color: themeColors.hintColor }}>
-                  {isBuyMode
-                    ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} RUB`
-                    : `${limits.minSell} - ${limits.maxSell} USDT`
-                  }
-                </div>
-                {error && <div className="error-message" style={{ color: '#ff3b30' }}>{error}</div>}
-              </div>
-
-              <div className="amount-input-group">
-                <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы получаете</label>
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    placeholder="0"
-                    value={convertedAmount}
-                    readOnly
-                    className="amount-input"
-                    style={{ 
-                      background: themeColors.secondaryBgColor,
-                      border: `0.5px solid ${themeColors.sectionBgColor}`,
-                      color: themeColors.textColor 
-                    }}
-                  />
-                  <span className="amount-currency" style={{ color: themeColors.hintColor }}>
-                    {isBuyMode ? "USDT" : "RUB"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {isBuyMode && (
-            <div className="payment-section-new" style={{ 
-              background: themeColors.bgColor,
-              border: `0.5px solid ${themeColors.sectionBgColor}` 
-            }}>
-              <div className="payment-header-new" style={{ 
-                borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
-              }}>
-                <h3 className="section-title" style={{ color: themeColors.textColor }}>Адрес для получения USDT</h3>
-              </div>
-
-              <div className="crypto-type-switcher" style={{ 
-                background: themeColors.secondaryBgColor,
-                border: `0.5px solid ${themeColors.sectionBgColor}` 
-              }}>
-                <button 
-                  className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('address')}
-                  style={cryptoType === 'address' ? { 
-                    background: themeColors.buttonColor,
-                    color: themeColors.buttonTextColor 
-                  } : { 
-                    background: 'transparent', 
-                    color: themeColors.hintColor 
-                  }}
-                >
-                  <span className="crypto-type-icon">📫</span>
-                  <span className="crypto-type-text">Адрес кошелька</span>
-                </button>
-                <button 
-                  className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('uid')}
-                  style={cryptoType === 'uid' ? { 
-                    background: themeColors.buttonColor,
-                    color: themeColors.buttonTextColor 
-                  } : { 
-                    background: 'transparent', 
-                    color: themeColors.hintColor 
-                  }}
-                >
-                  <span className="crypto-type-icon">🆔</span>
-                  <span className="crypto-type-text">UID перевод</span>
-                </button>
-              </div>
-
-              <div className="add-form">
-                {cryptoType === 'address' ? (
-                  <>
-                    <div className="select-with-icon">
-                      <select
-                        value={cryptoNetwork}
-                        onChange={(e) => setCryptoNetwork(e.target.value)}
-                        className="network-select"
-                        style={{ 
-                          background: themeColors.secondaryBgColor,
-                          border: `0.5px solid ${themeColors.sectionBgColor}`,
-                          color: themeColors.textColor 
-                        }}
-                      >
-                        <option value="">Выберите сеть</option>
-                        {popularNetworks.map(network => (
-                          <option key={network.value} value={network.value}>
-                            {network.name}
-                          </option>
-                        ))}
-                      </select>
-                      {cryptoNetwork && selectedNetwork && (
-                        <div className="selected-network-icon">
-                          {selectedNetwork.icon}
-                        </div>
-                      )}
-                    </div>
-
-                    <input
-                      type="text"
-                      placeholder="Введите адрес кошелька"
-                      value={cryptoAddress}
-                      onChange={(e) => setCryptoAddress(e.target.value)}
-                      className="address-input"
-                      style={{ 
-                        background: themeColors.secondaryBgColor,
-                        border: `0.5px solid ${themeColors.sectionBgColor}`,
-                        color: themeColors.textColor 
-                      }}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div className="select-with-icon">
-                      <select
-                        value={selectedExchange}
-                        onChange={(e) => setSelectedExchange(e.target.value)}
-                        className="exchange-select"
-                        style={{ 
-                          background: themeColors.secondaryBgColor,
-                          border: `0.5px solid ${themeColors.sectionBgColor}`,
-                          color: themeColors.textColor 
-                        }}
-                      >
-                        <option value="">Выберите биржу</option>
-                        {availableExchanges.map(exchange => (
-                          <option key={exchange.value} value={exchange.value}>
-                            {exchange.name}
-                          </option>
-                        ))}
-                      </select>
-                      {selectedExchange && selectedExchangeData && (
-                        <div className="selected-exchange-icon">
-                          {selectedExchangeData.icon}
-                        </div>
-                      )}
-                    </div>
-
-                    <input
-                      type="text"
-                      placeholder="Введите UID биржи"
-                      value={cryptoUID}
-                      onChange={(e) => setCryptoUID(e.target.value)}
-                      className="uid-input"
-                      style={{ 
-                        background: themeColors.secondaryBgColor,
-                        border: `0.5px solid ${themeColors.sectionBgColor}`,
-                        color: themeColors.textColor 
-                      }}
-                    />
-                  </>
-                )}
-
-                <button
-                  onClick={handleAddCryptoAddress}
-                  className="add-button"
-                  style={{ 
-                    background: themeColors.buttonColor,
-                    color: themeColors.buttonTextColor,
-                    border: 'none'
-                  }}
-                >
-                  + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
-                </button>
-              </div>
-
-              {cryptoAddresses.length > 0 && (
-                <div className="crypto-list">
-                  <h4 style={{ color: themeColors.hintColor }}>Ваши адреса:</h4>
-                  {cryptoAddresses.map((crypto) => {
-                    const network = crypto.type === 'address' 
-                      ? availableNetworks.find(n => n.value === crypto.network)
-                      : null;
-                    const exchange = crypto.type === 'uid'
-                      ? availableExchanges.find(e => e.value === crypto.exchange)
-                      : null;
-                    
-                    return (
-                      <div
-                        key={crypto.id}
-                        className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedCrypto(crypto)}
-                        style={selectedCrypto?.id === crypto.id ? { 
-                          background: `${themeColors.buttonColor}15`, 
-                          border: `0.5px solid ${themeColors.buttonColor}` 
-                        } : { 
-                          background: themeColors.secondaryBgColor,
-                          border: `0.5px solid ${themeColors.sectionBgColor}` 
-                        }}
-                      >
-                        <div className="crypto-info">
-                          <div className="crypto-header">
-                            <span className="crypto-name" style={{ color: themeColors.textColor }}>
-                              {crypto.name}
-                            </span>
-                            <span className="crypto-network-badge" style={{ 
-                              background: `${themeColors.buttonColor}20`, 
-                              color: themeColors.buttonColor 
-                            }}>
-                              {crypto.type === 'address' 
-                                ? (network?.icon || crypto.network)
-                                : (exchange?.icon || crypto.exchange)
-                              }
-                              <span className="crypto-network-text">
-                                {crypto.type === 'address' ? crypto.network : crypto.exchange}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="crypto-address" style={{ color: themeColors.hintColor }}>
-                            {crypto.address.length > 20 
-                              ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
-                              : crypto.address
-                            }
-                            {crypto.type === 'uid' && <span className="uid-label" style={{ 
-                              background: `${themeColors.buttonColor}20`, 
-                              color: themeColors.buttonColor 
-                            }}> (UID)</span>}
-                          </div>
-                        </div>
-                        <div className="crypto-actions">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(crypto.address);
-                            }}
-                            className="action-btn copy-btn"
-                            title="Копировать"
-                            style={{ color: themeColors.buttonColor }}
-                          >
-                            📋
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCrypto(crypto.id);
-                            }}
-                            className="action-btn delete-btn"
-                            title="Удалить"
-                            style={{ color: '#ff3b30' }}
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {cryptoAddresses.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-icon" style={{ color: themeColors.hintColor }}>🏦</div>
-                  <p className="empty-text" style={{ color: themeColors.hintColor }}>
-                    {cryptoType === 'address' 
-                      ? 'Добавьте адрес для получения USDT'
-                      : 'Добавьте UID биржи для получения USDT'
-                    }
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!isBuyMode && (
-            <div className="payment-section-new" style={{ 
-              background: themeColors.bgColor,
-              border: `0.5px solid ${themeColors.sectionBgColor}` 
-            }}>
-              <div className="payment-header-new" style={{ 
-                borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
-              }}>
-                <h3 className="section-title" style={{ color: themeColors.textColor }}>Реквизиты для получения RUB</h3>
-              </div>
-
-              <div className="add-form">
-                <select
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  className="bank-select"
-                  style={{ 
-                    background: themeColors.secondaryBgColor,
-                    border: `0.5px solid ${themeColors.sectionBgColor}`,
-                    color: themeColors.textColor 
-                  }}
-                >
-                  {availableBanks.map(bank => (
-                    <option key={bank} value={bank}>
-                      {bank === 'СБП (Система быстрых платежей)' ? '📱 ' + bank : '💳 ' + bank}
-                    </option>
-                  ))}
-                </select>
-
-                {isSBPSelected ? (
-                  <input
-                    type="tel"
-                    placeholder="+7 (999) 123-45-67"
-                    value={phoneNumber}
-                    onChange={handlePhoneChange}
-                    className="phone-input"
-                    style={{ 
-                      background: themeColors.secondaryBgColor,
-                      border: `0.5px solid ${themeColors.sectionBgColor}`,
-                      color: themeColors.textColor 
-                    }}
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={handleCardChange}
-                    className="card-input"
-                    maxLength={19}
-                    style={{ 
-                      background: themeColors.secondaryBgColor,
-                      border: `0.5px solid ${themeColors.sectionBgColor}`,
-                      color: themeColors.textColor 
-                    }}
-                  />
-                )}
-
-                <button
-                  onClick={handleAddPayment}
-                  className="add-button"
-                  style={{ 
-                    background: themeColors.buttonColor,
-                    color: themeColors.buttonTextColor,
-                    border: 'none'
-                  }}
-                >
-                  + Добавить реквизиты
-                </button>
-              </div>
-
-              {paymentMethods.length > 0 && (
-                <div className="payments-list">
-                  <h4 style={{ color: themeColors.hintColor }}>Ваши реквизиты:</h4>
-                  {paymentMethods.map((payment) => (
-                    <div
-                      key={payment.id}
-                      className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedPayment(payment)}
-                      style={selectedPayment?.id === payment.id ? { 
-                        background: `${themeColors.buttonColor}15`, 
-                        border: `0.5px solid ${themeColors.buttonColor}` 
-                      } : { 
-                        background: themeColors.secondaryBgColor,
-                        border: `0.5px solid ${themeColors.sectionBgColor}` 
-                      }}
-                    >
-                      <div className="payment-info">
-                        <div className="payment-header">
-                          <span className="bank-name" style={{ color: themeColors.textColor }}>
-                            {payment.bankName}
-                          </span>
-                          {payment.type === 'sbp' && (
-                            <span className="sbp-badge" style={{ 
-                              background: '#34c759', 
-                              color: '#ffffff' 
-                            }}>СБП</span>
-                          )}
-                        </div>
-                        <div className="payment-number" style={{ color: themeColors.hintColor }}>
-                          {payment.formattedNumber}
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePayment(payment.id);
-                        }}
-                        className="action-btn delete-btn"
-                        title="Удалить"
-                        style={{ color: '#ff3b30' }}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {paymentMethods.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-icon" style={{ color: themeColors.hintColor }}>💳</div>
-                  <p className="empty-text" style={{ color: themeColors.hintColor }}>
-                    Добавьте реквизиты для получения RUB
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <button
-            className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
-            disabled={!isExchangeReady() || isLoading}
-            onClick={handleExchange}
-            style={!isExchangeReady() || isLoading ? { 
-              background: themeColors.hintColor,
-              color: themeColors.buttonTextColor,
-              border: 'none',
-              opacity: 0.5
-            } : isBuyMode ? { 
-              background: '#34c759',
-              color: '#ffffff',
-              border: 'none'
-            } : { 
-              background: themeColors.buttonColor,
-              color: themeColors.buttonTextColor,
-              border: 'none'
-            }}
-          >
-            <span className="exchange-icon">
-              {isBuyMode ? '🛒' : '💰'}
-            </span>
-            <span className="exchange-text">
-              {isLoading ? '🔄 Обработка...' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
-            </span>
-          </button>
-
-          <div className="security-info" style={{ 
-            background: themeColors.secondaryBgColor,
-            border: `0.5px solid ${themeColors.sectionBgColor}` 
-          }}>
-            <div className="security-icon" style={{ color: themeColors.buttonColor }}>🔒</div>
-            <div className="security-text" style={{ color: themeColors.hintColor }}>
-              <strong style={{ color: themeColors.textColor }}>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
-            </div>
-          </div>
-        </div>
+          <div className="currency-cards-horizontal">
+  <div className="currency-card-side left-card" style={{ 
+    background: `${themeColors.buttonColor}15`,
+    border: `0.5px solid ${themeColors.sectionBgColor}` 
+  }}>
+    <div className="currency-content">
+      <span className="currency-name" style={{ color: themeColors.textColor }}>
+        {isBuyMode ? "RUB" : "USDT"}
+      </span>
+      {isBuyMode && (
+        <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
+          {currentRate.toFixed(2)} ₽
+        </span>
       )}
     </div>
-  );
+  </div>
+
+  <button
+    className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
+    onClick={handleSwap}
+    disabled={hasActiveOrder}
+    title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
+  >
+    <SwapIcon isSwapped={isSwapped} />
+  </button>
+
+  <div className="currency-card-side right-card" style={{ 
+    background: `${themeColors.buttonColor}15`,
+    border: `0.5px solid ${themeColors.sectionBgColor}` 
+  }}>
+    <div className="currency-content">
+      <span className="currency-name" style={{ color: themeColors.textColor }}>
+        {isBuyMode ? "USDT" : "RUB"}
+      </span>
+      {!isBuyMode && (
+        <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
+          {currentRate.toFixed(2)} ₽
+        </span>
+      )}
+    </div>
+  </div>
+</div>
+
+<div className="amount-input-section">
+  <div className="amount-input-group">
+    <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы отдаете</label>
+    <div className="amount-input-wrapper">
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        value={amount}
+        onChange={handleAmountChange}
+        className="amount-input"
+        disabled={isLoading}
+        style={{ 
+          background: themeColors.secondaryBgColor,
+          border: `0.5px solid ${themeColors.sectionBgColor}`,
+          color: themeColors.textColor 
+        }}
+      />
+      <span className="amount-currency" style={{ color: themeColors.hintColor }}>
+        {isBuyMode ? "RUB" : "USDT"}
+      </span>
+    </div>
+    <div className="min-limit-hint" style={{ color: themeColors.hintColor }}>
+      {isBuyMode
+        ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} RUB`
+        : `${limits.minSell} - ${limits.maxSell} USDT`
+      }
+    </div>
+    {error && <div className="error-message" style={{ color: '#ff3b30' }}>{error}</div>}
+  </div>
+
+  <div className="amount-input-group">
+    <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы получаете</label>
+    <div className="amount-input-wrapper">
+      <input
+        type="text"
+        placeholder="0"
+        value={convertedAmount}
+        readOnly
+        className="amount-input"
+        style={{ 
+          background: themeColors.secondaryBgColor,
+          border: `0.5px solid ${themeColors.sectionBgColor}`,
+          color: themeColors.textColor 
+        }}
+      />
+      <span className="amount-currency" style={{ color: themeColors.hintColor }}>
+        {isBuyMode ? "USDT" : "RUB"}
+      </span>
+    </div>
+  </div>
+</div>
+</div>
+
+{isBuyMode && (
+  <div className="payment-section-new" style={{ 
+    background: themeColors.bgColor,
+    border: `0.5px solid ${themeColors.sectionBgColor}` 
+  }}>
+    <div className="payment-header-new" style={{ 
+      borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+    }}>
+      <h3 className="section-title" style={{ color: themeColors.textColor }}>Адрес для получения USDT</h3>
+    </div>
+
+    <div className="crypto-type-switcher" style={{ 
+      background: themeColors.secondaryBgColor,
+      border: `0.5px solid ${themeColors.sectionBgColor}` 
+    }}>
+      <button 
+        className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
+        onClick={() => setCryptoType('address')}
+        style={cryptoType === 'address' ? { 
+          background: themeColors.buttonColor,
+          color: themeColors.buttonTextColor 
+        } : { 
+          background: 'transparent', 
+          color: themeColors.hintColor 
+        }}
+      >
+        <span className="crypto-type-icon" style={cryptoType === 'address' ? { color: themeColors.buttonTextColor } : { color: themeColors.hintColor }}>📫</span>
+        <span className="crypto-type-text" style={cryptoType === 'address' ? { color: themeColors.buttonTextColor } : { color: themeColors.hintColor }}>Адрес кошелька</span>
+      </button>
+      <button 
+        className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
+        onClick={() => setCryptoType('uid')}
+        style={cryptoType === 'uid' ? { 
+          background: themeColors.buttonColor,
+          color: themeColors.buttonTextColor 
+        } : { 
+          background: 'transparent', 
+          color: themeColors.hintColor 
+        }}
+      >
+        <span className="crypto-type-icon" style={cryptoType === 'uid' ? { color: themeColors.buttonTextColor } : { color: themeColors.hintColor }}>🆔</span>
+        <span className="crypto-type-text" style={cryptoType === 'uid' ? { color: themeColors.buttonTextColor } : { color: themeColors.hintColor }}>UID перевод</span>
+      </button>
+    </div>
+
+    <div className="add-form">
+      {cryptoType === 'address' ? (
+        <>
+          <div className="select-with-icon">
+            <select
+              value={cryptoNetwork}
+              onChange={(e) => setCryptoNetwork(e.target.value)}
+              className="network-select"
+              style={{ 
+                background: themeColors.secondaryBgColor,
+                border: `0.5px solid ${themeColors.sectionBgColor}`,
+                color: themeColors.textColor 
+              }}
+            >
+              <option value="">Выберите сеть</option>
+              {popularNetworks.map(network => (
+                <option key={network.value} value={network.value}>
+                  {network.name}
+                </option>
+              ))}
+            </select>
+            {cryptoNetwork && selectedNetwork && (
+              <div className="selected-network-icon">
+                {selectedNetwork.icon}
+              </div>
+            )}
+          </div>
+
+          <input
+            type="text"
+            placeholder="Введите адрес кошелька"
+            value={cryptoAddress}
+            onChange={(e) => setCryptoAddress(e.target.value)}
+            className="address-input"
+            style={{ 
+              background: themeColors.secondaryBgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}`,
+              color: themeColors.textColor 
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <div className="select-with-icon">
+            <select
+              value={selectedExchange}
+              onChange={(e) => setSelectedExchange(e.target.value)}
+              className="exchange-select"
+              style={{ 
+                background: themeColors.secondaryBgColor,
+                border: `0.5px solid ${themeColors.sectionBgColor}`,
+                color: themeColors.textColor 
+              }}
+            >
+              <option value="">Выберите биржу</option>
+              {availableExchanges.map(exchange => (
+                <option key={exchange.value} value={exchange.value}>
+                  {exchange.name}
+                </option>
+              ))}
+            </select>
+            {selectedExchange && selectedExchangeData && (
+              <div className="selected-exchange-icon">
+                {selectedExchangeData.icon}
+              </div>
+            )}
+          </div>
+
+          <input
+            type="text"
+            placeholder="Введите UID биржи"
+            value={cryptoUID}
+            onChange={(e) => setCryptoUID(e.target.value)}
+            className="uid-input"
+            style={{ 
+              background: themeColors.secondaryBgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}`,
+              color: themeColors.textColor 
+            }}
+          />
+        </>
+      )}
+
+      <button
+        onClick={handleAddCryptoAddress}
+        className="add-button"
+        style={{ 
+          background: themeColors.buttonColor,
+          color: themeColors.buttonTextColor,
+          border: 'none'
+        }}
+      >
+        + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
+      </button>
+    </div>
+
+    {cryptoAddresses.length > 0 && (
+      <div className="crypto-list">
+        <h4 style={{ color: themeColors.hintColor }}>Ваши адреса:</h4>
+        {cryptoAddresses.map((crypto) => {
+          const network = crypto.type === 'address' 
+            ? availableNetworks.find(n => n.value === crypto.network)
+            : null;
+          const exchange = crypto.type === 'uid'
+            ? availableExchanges.find(e => e.value === crypto.exchange)
+            : null;
+          
+          return (
+            <div
+              key={crypto.id}
+              className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
+              onClick={() => setSelectedCrypto(crypto)}
+              style={selectedCrypto?.id === crypto.id ? { 
+                background: `${themeColors.buttonColor}15`, 
+                border: `0.5px solid ${themeColors.buttonColor}` 
+              } : { 
+                background: themeColors.secondaryBgColor,
+                border: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}
+            >
+              <div className="crypto-info">
+                <div className="crypto-header">
+                  <span className="crypto-name" style={{ color: themeColors.textColor }}>
+                    {crypto.name}
+                  </span>
+                  <span className="crypto-network-badge" style={{ 
+                    background: `${themeColors.buttonColor}20`, 
+                    color: themeColors.buttonColor 
+                  }}>
+                    {crypto.type === 'address' 
+                      ? (network?.icon || crypto.network)
+                      : (exchange?.icon || crypto.exchange)
+                    }
+                    <span className="crypto-network-text" style={{ color: themeColors.buttonColor }}>
+                      {crypto.type === 'address' ? crypto.network : crypto.exchange}
+                    </span>
+                  </span>
+                </div>
+                <div className="crypto-address" style={{ color: themeColors.hintColor }}>
+                  {crypto.address.length > 20 
+                    ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
+                    : crypto.address
+                  }
+                  {crypto.type === 'uid' && <span className="uid-label" style={{ 
+                    background: `${themeColors.buttonColor}20`, 
+                    color: themeColors.buttonColor 
+                  }}> (UID)</span>}
+                </div>
+              </div>
+              <div className="crypto-actions">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard(crypto.address);
+                  }}
+                  className="action-btn copy-btn"
+                  title="Копировать"
+                  style={{ 
+                    color: themeColors.buttonColor,
+                    background: 'transparent',
+                    border: 'none'
+                  }}
+                >
+                  📋
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCrypto(crypto.id);
+                  }}
+                  className="action-btn delete-btn"
+                  title="Удалить"
+                  style={{ 
+                    color: '#ff3b30',
+                    background: 'transparent',
+                    border: 'none'
+                  }}
+                >
+                  🗑️
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+
+    {cryptoAddresses.length === 0 && (
+      <div className="empty-state">
+        <div className="empty-icon" style={{ color: themeColors.hintColor }}>🏦</div>
+        <p className="empty-text" style={{ color: themeColors.hintColor }}>
+          {cryptoType === 'address' 
+            ? 'Добавьте адрес для получения USDT'
+            : 'Добавьте UID биржи для получения USDT'
+          }
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+{!isBuyMode && (
+  <div className="payment-section-new" style={{ 
+    background: themeColors.bgColor,
+    border: `0.5px solid ${themeColors.sectionBgColor}` 
+  }}>
+    <div className="payment-header-new" style={{ 
+      borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+    }}>
+      <h3 className="section-title" style={{ color: themeColors.textColor }}>Реквизиты для получения RUB</h3>
+    </div>
+
+    <div className="add-form">
+      <select
+        value={bankName}
+        onChange={(e) => setBankName(e.target.value)}
+        className="bank-select"
+        style={{ 
+          background: themeColors.secondaryBgColor,
+          border: `0.5px solid ${themeColors.sectionBgColor}`,
+          color: themeColors.textColor 
+        }}
+      >
+        {availableBanks.map(bank => (
+          <option key={bank} value={bank}>
+            {bank === 'СБП (Система быстрых платежей)' ? '📱 ' + bank : '💳 ' + bank}
+          </option>
+        ))}
+      </select>
+
+      {isSBPSelected ? (
+        <input
+          type="tel"
+          placeholder="+7 (999) 123-45-67"
+          value={phoneNumber}
+          onChange={handlePhoneChange}
+          className="phone-input"
+          style={{ 
+            background: themeColors.secondaryBgColor,
+            border: `0.5px solid ${themeColors.sectionBgColor}`,
+            color: themeColors.textColor 
+          }}
+        />
+      ) : (
+        <input
+          type="text"
+          placeholder="0000 0000 0000 0000"
+          value={cardNumber}
+          onChange={handleCardChange}
+          className="card-input"
+          maxLength={19}
+          style={{ 
+            background: themeColors.secondaryBgColor,
+            border: `0.5px solid ${themeColors.sectionBgColor}`,
+            color: themeColors.textColor 
+          }}
+        />
+      )}
+
+      <button
+        onClick={handleAddPayment}
+        className="add-button"
+        style={{ 
+          background: themeColors.buttonColor,
+          color: themeColors.buttonTextColor,
+          border: 'none'
+        }}
+      >
+        + Добавить реквизиты
+      </button>
+    </div>
+
+    {paymentMethods.length > 0 && (
+      <div className="payments-list">
+        <h4 style={{ color: themeColors.hintColor }}>Ваши реквизиты:</h4>
+        {paymentMethods.map((payment) => (
+          <div
+            key={payment.id}
+            className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
+            onClick={() => setSelectedPayment(payment)}
+            style={selectedPayment?.id === payment.id ? { 
+              background: `${themeColors.buttonColor}15`, 
+              border: `0.5px solid ${themeColors.buttonColor}` 
+            } : { 
+              background: themeColors.secondaryBgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}` 
+            }}
+          >
+            <div className="payment-info">
+              <div className="payment-header">
+                <span className="bank-name" style={{ color: themeColors.textColor }}>
+                  {payment.bankName}
+                </span>
+                {payment.type === 'sbp' && (
+                  <span className="sbp-badge" style={{ 
+                    background: '#34c759', 
+                    color: '#ffffff' 
+                  }}>СБП</span>
+                )}
+              </div>
+              <div className="payment-number" style={{ color: themeColors.hintColor }}>
+                {payment.formattedNumber}
+              </div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeletePayment(payment.id);
+              }}
+              className="action-btn delete-btn"
+              title="Удалить"
+              style={{ 
+                color: '#ff3b30',
+                background: 'transparent',
+                border: 'none'
+              }}
+            >
+              🗑️
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {paymentMethods.length === 0 && (
+      <div className="empty-state">
+        <div className="empty-icon" style={{ color: themeColors.hintColor }}>💳</div>
+        <p className="empty-text" style={{ color: themeColors.hintColor }}>
+          Добавьте реквизиты для получения RUB
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+<button
+  className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
+  disabled={!isExchangeReady() || isLoading}
+  onClick={handleExchange}
+  style={!isExchangeReady() || isLoading ? { 
+    background: themeColors.hintColor,
+    color: themeColors.buttonTextColor,
+    border: 'none',
+    opacity: 0.5
+  } : isBuyMode ? { 
+    background: '#34c759',
+    color: '#ffffff',
+    border: 'none'
+  } : { 
+    background: themeColors.buttonColor,
+    color: themeColors.buttonTextColor,
+    border: 'none'
+  }}
+>
+  <span className="exchange-icon">
+    {isBuyMode ? '🛒' : '💰'}
+  </span>
+  <span className="exchange-text">
+    {isLoading ? '🔄 Обработка...' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
+  </span>
+</button>
+
+<div className="security-info" style={{ 
+  background: themeColors.secondaryBgColor,
+  border: `0.5px solid ${themeColors.sectionBgColor}` 
+}}>
+  <div className="security-icon" style={{ color: themeColors.buttonColor }}>🔒</div>
+  <div className="security-text" style={{ color: themeColors.hintColor }}>
+    <strong style={{ color: themeColors.textColor }}>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
+  </div>
+</div>
+</div>
+)}
+</div>
+);
 }
 
 export default Home;

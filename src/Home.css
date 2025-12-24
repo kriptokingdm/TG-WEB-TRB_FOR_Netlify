@@ -1,4 +1,4 @@
-/* Home.css - Простой с inline стилями */
+/* Home.css - только базовые стили без цветов */
 
 .home-container {
   min-height: 100vh;
@@ -8,7 +8,6 @@
   position: relative;
 }
 
-/* Анимация появления */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

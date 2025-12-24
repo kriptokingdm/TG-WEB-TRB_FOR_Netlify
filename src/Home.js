@@ -43,7 +43,9 @@ const simpleFetch = async (endpoint, data = null) => {
 const SwapIcon = ({ isSwapped }) => {
   const buttonColor = getComputedStyle(document.documentElement).getPropertyValue('--tg-button-color').trim() || '#3390ec';
   const buttonTextColor = getComputedStyle(document.documentElement).getPropertyValue('--tg-button-text-color').trim() || '#ffffff';
-  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--tg-bg-color').trim() || '#ffffff';
+  
+  const strokeColor = document.documentElement.getAttribute('data-theme') === 'dark' ? '#2c2c2c' : '#EFEFF3';
   
   return (
     <svg 
@@ -57,7 +59,7 @@ const SwapIcon = ({ isSwapped }) => {
         transition: 'transform 0.3s ease'
       }}
     >
-      <circle cx="26" cy="26" r="24" fill={buttonColor} stroke={theme === 'dark' ? '#2c2c2c' : '#EFEFF3'} strokeWidth="3"/>
+      <circle cx="26" cy="26" r="24" fill={buttonColor} stroke={strokeColor} strokeWidth="3"/>
       <path d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
         stroke={buttonTextColor} 
         strokeWidth="2.5" 
@@ -75,7 +77,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   const [rates, setRates] = useState({ buy: 88.0, sell: 84.0 });
-  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
   const [activeOrderId, setActiveOrderId] = useState(null);
@@ -281,9 +282,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const showMessage = (type, text) => {
     if (showToast) {
       showToast(text, type);
-    } else {
-      setMessage(text);
-      setTimeout(() => setMessage(''), 3000);
     }
   };
 
@@ -752,62 +750,28 @@ function Home({ navigateTo, telegramUser, showToast }) {
   // Получаем цвета темы
   const themeColors = getThemeColors();
 
-  // Стили для элементов
-  const cardStyle = {
-    background: themeColors.bgColor,
-    borderColor: themeColors.sectionBgColor,
-    color: themeColors.textColor
-  };
-
-  const inputStyle = {
-    background: themeColors.secondaryBgColor,
-    borderColor: themeColors.sectionBgColor,
-    color: themeColors.textColor
-  };
-
-  const buttonStyle = {
-    background: themeColors.buttonColor,
-    color: themeColors.buttonTextColor
-  };
-
-  const accentButtonStyle = {
-    background: '#30d158',
-    color: themeColors.buttonTextColor
-  };
-
-  const warningButtonStyle = {
-    background: '#ff9500',
-    color: themeColors.buttonTextColor
-  };
-
-  const errorButtonStyle = {
-    background: '#ff3b30',
-    color: themeColors.buttonTextColor
-  };
-
-  const secondaryButtonStyle = {
-    background: themeColors.secondaryBgColor,
-    color: themeColors.textColor,
-    borderColor: themeColors.sectionBgColor
-  };
-
-  const hintStyle = {
-    color: themeColors.hintColor
-  };
-
   return (
-    <div className="home-container">
+    <div className="home-container" style={{ 
+      background: themeColors.bgColor, 
+      color: themeColors.textColor 
+    }}>
       {hasActiveOrder ? (
         // ТЕЛЕГРАМ СТИЛЬ ДЛЯ АКТИВНОГО ОРДЕРА
         <div className="tg-home-container">
           {/* Шапка в стиле Telegram */}
-          <div className="tg-header" style={cardStyle}>
+          <div className="tg-header" style={{ 
+            background: themeColors.bgColor,
+            borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+          }}>
             <div className="tg-header-content">
               <button 
                 className="tg-back-btn"
                 onClick={() => navigateTo('history')}
                 title="К истории операций"
-                style={{ color: themeColors.buttonColor }}
+                style={{ 
+                  background: 'transparent',
+                  color: themeColors.buttonColor 
+                }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -815,9 +779,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </button>
               <div className="tg-header-titles">
                 <h1 className="tg-header-title" style={{ color: themeColors.textColor }}>Активная заявка</h1>
-                <p className="tg-header-subtitle" style={hintStyle}>Ваш ордер в обработке</p>
+                <p className="tg-header-subtitle" style={{ color: themeColors.hintColor }}>Ваш ордер в обработке</p>
               </div>
-              <div className="tg-header-status" style={{ color: themeColors.buttonColor }}>
+              <div className="tg-header-status" style={{ 
+                color: themeColors.buttonColor,
+                background: themeColors.secondaryBgColor 
+              }}>
                 ⏳ Обрабатывается
               </div>
             </div>
@@ -826,16 +793,25 @@ function Home({ navigateTo, telegramUser, showToast }) {
           {/* Основной контент */}
           <div className="tg-main-content">
             {/* Карточка ордера */}
-            <div className="tg-order-card" style={cardStyle}>
-              <div className="tg-card-header">
-                <div className="tg-order-icon" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}>
+            <div className="tg-order-card" style={{ 
+              background: themeColors.bgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}`,
+              color: themeColors.textColor 
+            }}>
+              <div className="tg-card-header" style={{ 
+                borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
+                <div className="tg-order-icon" style={{ 
+                  background: `${themeColors.buttonColor}20`, 
+                  color: themeColors.buttonColor 
+                }}>
                   ⏳
                 </div>
                 <div className="tg-order-info">
                   <h2 className="tg-order-title" style={{ color: themeColors.textColor }}>
                     Заявка #{activeOrderId?.substring(0, 8)}
                   </h2>
-                  <p className="tg-order-subtitle" style={hintStyle}>
+                  <p className="tg-order-subtitle" style={{ color: themeColors.hintColor }}>
                     {activeOrderData?.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                   </p>
                 </div>
@@ -843,41 +819,47 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {/* Детали ордера */}
               <div className="tg-order-details">
-                <div className="tg-detail-row" style={secondaryButtonStyle}>
-                  <span className="tg-detail-label" style={hintStyle}>Сумма</span>
-                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
-                    <strong>{activeOrderData?.amount} {activeOrderData?.operation_type === 'buy' ? 'RUB' : 'USDT'}</strong>
-                  </span>
-                </div>
-                
-                <div className="tg-detail-row" style={secondaryButtonStyle}>
-                  <span className="tg-detail-label" style={hintStyle}>Курс</span>
-                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
-                    {activeOrderData?.rate} ₽/USDT
-                  </span>
-                </div>
-                
-                <div className="tg-detail-row" style={secondaryButtonStyle}>
-                  <span className="tg-detail-label" style={hintStyle}>К получению</span>
-                  <span className="tg-detail-value" style={{ color: themeColors.buttonColor }}>
-                    <strong>
-                      {activeOrderData?.operation_type === 'buy' 
-                        ? `${(activeOrderData?.amount / activeOrderData?.rate).toFixed(2)} USDT`
-                        : `${(activeOrderData?.amount * activeOrderData?.rate).toFixed(2)} ₽`}
-                    </strong>
-                  </span>
-                </div>
-                
-                <div className="tg-detail-row" style={secondaryButtonStyle}>
-                  <span className="tg-detail-label" style={hintStyle}>Создано</span>
-                  <span className="tg-detail-value" style={{ color: themeColors.textColor }}>
-                    {activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleString('ru-RU') : '-'}
-                  </span>
-                </div>
-                
+                {[
+                  { label: 'Сумма', value: `${activeOrderData?.amount} ${activeOrderData?.operation_type === 'buy' ? 'RUB' : 'USDT'}` },
+                  { label: 'Курс', value: `${activeOrderData?.rate} ₽/USDT` },
+                  { 
+                    label: 'К получению', 
+                    value: activeOrderData?.operation_type === 'buy' 
+                      ? `${(activeOrderData?.amount / activeOrderData?.rate).toFixed(2)} USDT`
+                      : `${(activeOrderData?.amount * activeOrderData?.rate).toFixed(2)} ₽`,
+                    highlight: true 
+                  },
+                  { label: 'Создано', value: activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleString('ru-RU') : '-' }
+                ].map((item, index) => (
+                  <div 
+                    key={index} 
+                    className="tg-detail-row" 
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}` 
+                    }}
+                  >
+                    <span className="tg-detail-label" style={{ color: themeColors.hintColor }}>
+                      {item.label}
+                    </span>
+                    <span className="tg-detail-value" style={{ 
+                      color: item.highlight ? themeColors.buttonColor : themeColors.textColor,
+                      fontWeight: item.highlight ? 700 : 600 
+                    }}>
+                      {item.highlight ? <strong>{item.value}</strong> : item.value}
+                    </span>
+                  </div>
+                ))}
+
                 {activeOrderData?.bank_details && (
-                  <div className="tg-detail-row" style={secondaryButtonStyle}>
-                    <span className="tg-detail-label" style={hintStyle}>Реквизиты</span>
+                  <div 
+                    className="tg-detail-row" 
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}` 
+                    }}
+                  >
+                    <span className="tg-detail-label" style={{ color: themeColors.hintColor }}>Реквизиты</span>
                     <span className="tg-detail-value tg-detail-mono" style={{ color: themeColors.textColor }}>
                       {activeOrderData.bank_details}
                     </span>
@@ -885,8 +867,14 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 )}
                 
                 {activeOrderData?.crypto_address && (
-                  <div className="tg-detail-row" style={secondaryButtonStyle}>
-                    <span className="tg-detail-label" style={hintStyle}>Адрес USDT</span>
+                  <div 
+                    className="tg-detail-row" 
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}` 
+                    }}
+                  >
+                    <span className="tg-detail-label" style={{ color: themeColors.hintColor }}>Адрес USDT</span>
                     <span className="tg-detail-value tg-detail-mono" style={{ color: themeColors.textColor }}>
                       {activeOrderData.crypto_address}
                     </span>
@@ -897,9 +885,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
               {/* Кнопки действий */}
               <div className="tg-actions">
                 <button 
-                  className="tg-action-btn primary"
+                  className="tg-action-btn"
                   onClick={() => navigateTo('history')}
-                  style={buttonStyle}
+                  style={{ 
+                    background: themeColors.buttonColor,
+                    color: themeColors.buttonTextColor,
+                    border: 'none'
+                  }}
                 >
                   <span className="tg-btn-icon">📋</span>
                   Детали заявки
@@ -912,15 +904,21 @@ function Home({ navigateTo, telegramUser, showToast }) {
         // ОБЫЧНЫЙ ИНТЕРФЕЙС ОБМЕНА
         <div className="home-content">
           {/* Карточки валют */}
-          <div className="currency-cards-section" style={cardStyle}>
+          <div className="currency-cards-section" style={{ 
+            background: themeColors.bgColor,
+            border: `0.5px solid ${themeColors.sectionBgColor}` 
+          }}>
             <div className="currency-cards-horizontal">
-              <div className="currency-card-side left-card" style={{ background: `${themeColors.buttonColor}15`, borderColor: themeColors.sectionBgColor }}>
+              <div className="currency-card-side left-card" style={{ 
+                background: `${themeColors.buttonColor}15`,
+                border: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
                 <div className="currency-content">
                   <span className="currency-name" style={{ color: themeColors.textColor }}>
                     {isBuyMode ? "RUB" : "USDT"}
                   </span>
                   {isBuyMode && (
-                    <span className="currency-rate light" style={hintStyle}>
+                    <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
                       {currentRate.toFixed(2)} ₽
                     </span>
                   )}
@@ -936,13 +934,16 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <SwapIcon isSwapped={isSwapped} />
               </button>
 
-              <div className="currency-card-side right-card" style={{ background: `${themeColors.buttonColor}15`, borderColor: themeColors.sectionBgColor }}>
+              <div className="currency-card-side right-card" style={{ 
+                background: `${themeColors.buttonColor}15`,
+                border: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
                 <div className="currency-content">
                   <span className="currency-name" style={{ color: themeColors.textColor }}>
                     {isBuyMode ? "USDT" : "RUB"}
                   </span>
                   {!isBuyMode && (
-                    <span className="currency-rate light" style={hintStyle}>
+                    <span className="currency-rate light" style={{ color: themeColors.hintColor }}>
                       {currentRate.toFixed(2)} ₽
                     </span>
                   )}
@@ -952,7 +953,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
             <div className="amount-input-section">
               <div className="amount-input-group">
-                <label className="amount-label" style={hintStyle}>Вы отдаете</label>
+                <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы отдаете</label>
                 <div className="amount-input-wrapper">
                   <input
                     type="text"
@@ -962,13 +963,17 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     onChange={handleAmountChange}
                     className="amount-input"
                     disabled={isLoading}
-                    style={inputStyle}
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}`,
+                      color: themeColors.textColor 
+                    }}
                   />
-                  <span className="amount-currency" style={hintStyle}>
+                  <span className="amount-currency" style={{ color: themeColors.hintColor }}>
                     {isBuyMode ? "RUB" : "USDT"}
                   </span>
                 </div>
-                <div className="min-limit-hint" style={hintStyle}>
+                <div className="min-limit-hint" style={{ color: themeColors.hintColor }}>
                   {isBuyMode
                     ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} RUB`
                     : `${limits.minSell} - ${limits.maxSell} USDT`
@@ -978,7 +983,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
 
               <div className="amount-input-group">
-                <label className="amount-label" style={hintStyle}>Вы получаете</label>
+                <label className="amount-label" style={{ color: themeColors.hintColor }}>Вы получаете</label>
                 <div className="amount-input-wrapper">
                   <input
                     type="text"
@@ -986,9 +991,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     value={convertedAmount}
                     readOnly
                     className="amount-input"
-                    style={inputStyle}
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}`,
+                      color: themeColors.textColor 
+                    }}
                   />
-                  <span className="amount-currency" style={hintStyle}>
+                  <span className="amount-currency" style={{ color: themeColors.hintColor }}>
                     {isBuyMode ? "USDT" : "RUB"}
                   </span>
                 </div>
@@ -997,16 +1006,30 @@ function Home({ navigateTo, telegramUser, showToast }) {
           </div>
 
           {isBuyMode && (
-            <div className="payment-section-new" style={cardStyle}>
-              <div className="payment-header-new">
+            <div className="payment-section-new" style={{ 
+              background: themeColors.bgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}` 
+            }}>
+              <div className="payment-header-new" style={{ 
+                borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
                 <h3 className="section-title" style={{ color: themeColors.textColor }}>Адрес для получения USDT</h3>
               </div>
 
-              <div className="crypto-type-switcher" style={secondaryButtonStyle}>
+              <div className="crypto-type-switcher" style={{ 
+                background: themeColors.secondaryBgColor,
+                border: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
                 <button 
                   className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
                   onClick={() => setCryptoType('address')}
-                  style={cryptoType === 'address' ? buttonStyle : { background: 'transparent', color: themeColors.hintColor }}
+                  style={cryptoType === 'address' ? { 
+                    background: themeColors.buttonColor,
+                    color: themeColors.buttonTextColor 
+                  } : { 
+                    background: 'transparent', 
+                    color: themeColors.hintColor 
+                  }}
                 >
                   <span className="crypto-type-icon">📫</span>
                   <span className="crypto-type-text">Адрес кошелька</span>
@@ -1014,7 +1037,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <button 
                   className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
                   onClick={() => setCryptoType('uid')}
-                  style={cryptoType === 'uid' ? buttonStyle : { background: 'transparent', color: themeColors.hintColor }}
+                  style={cryptoType === 'uid' ? { 
+                    background: themeColors.buttonColor,
+                    color: themeColors.buttonTextColor 
+                  } : { 
+                    background: 'transparent', 
+                    color: themeColors.hintColor 
+                  }}
                 >
                   <span className="crypto-type-icon">🆔</span>
                   <span className="crypto-type-text">UID перевод</span>
@@ -1029,7 +1058,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         value={cryptoNetwork}
                         onChange={(e) => setCryptoNetwork(e.target.value)}
                         className="network-select"
-                        style={inputStyle}
+                        style={{ 
+                          background: themeColors.secondaryBgColor,
+                          border: `0.5px solid ${themeColors.sectionBgColor}`,
+                          color: themeColors.textColor 
+                        }}
                       >
                         <option value="">Выберите сеть</option>
                         {popularNetworks.map(network => (
@@ -1051,7 +1084,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                       value={cryptoAddress}
                       onChange={(e) => setCryptoAddress(e.target.value)}
                       className="address-input"
-                      style={inputStyle}
+                      style={{ 
+                        background: themeColors.secondaryBgColor,
+                        border: `0.5px solid ${themeColors.sectionBgColor}`,
+                        color: themeColors.textColor 
+                      }}
                     />
                   </>
                 ) : (
@@ -1061,7 +1098,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         value={selectedExchange}
                         onChange={(e) => setSelectedExchange(e.target.value)}
                         className="exchange-select"
-                        style={inputStyle}
+                        style={{ 
+                          background: themeColors.secondaryBgColor,
+                          border: `0.5px solid ${themeColors.sectionBgColor}`,
+                          color: themeColors.textColor 
+                        }}
                       >
                         <option value="">Выберите биржу</option>
                         {availableExchanges.map(exchange => (
@@ -1083,7 +1124,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                       value={cryptoUID}
                       onChange={(e) => setCryptoUID(e.target.value)}
                       className="uid-input"
-                      style={inputStyle}
+                      style={{ 
+                        background: themeColors.secondaryBgColor,
+                        border: `0.5px solid ${themeColors.sectionBgColor}`,
+                        color: themeColors.textColor 
+                      }}
                     />
                   </>
                 )}
@@ -1091,7 +1136,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <button
                   onClick={handleAddCryptoAddress}
                   className="add-button"
-                  style={buttonStyle}
+                  style={{ 
+                    background: themeColors.buttonColor,
+                    color: themeColors.buttonTextColor,
+                    border: 'none'
+                  }}
                 >
                   + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
                 </button>
@@ -1099,7 +1148,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
-                  <h4 style={hintStyle}>Ваши адреса:</h4>
+                  <h4 style={{ color: themeColors.hintColor }}>Ваши адреса:</h4>
                   {cryptoAddresses.map((crypto) => {
                     const network = crypto.type === 'address' 
                       ? availableNetworks.find(n => n.value === crypto.network)
@@ -1113,17 +1162,23 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         key={crypto.id}
                         className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
                         onClick={() => setSelectedCrypto(crypto)}
-                        style={selectedCrypto?.id === crypto.id ? 
-                          { background: `${themeColors.buttonColor}15`, borderColor: themeColors.buttonColor } : 
-                          secondaryButtonStyle
-                        }
+                        style={selectedCrypto?.id === crypto.id ? { 
+                          background: `${themeColors.buttonColor}15`, 
+                          border: `0.5px solid ${themeColors.buttonColor}` 
+                        } : { 
+                          background: themeColors.secondaryBgColor,
+                          border: `0.5px solid ${themeColors.sectionBgColor}` 
+                        }}
                       >
                         <div className="crypto-info">
                           <div className="crypto-header">
                             <span className="crypto-name" style={{ color: themeColors.textColor }}>
                               {crypto.name}
                             </span>
-                            <span className="crypto-network-badge" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}>
+                            <span className="crypto-network-badge" style={{ 
+                              background: `${themeColors.buttonColor}20`, 
+                              color: themeColors.buttonColor 
+                            }}>
                               {crypto.type === 'address' 
                                 ? (network?.icon || crypto.network)
                                 : (exchange?.icon || crypto.exchange)
@@ -1133,12 +1188,15 @@ function Home({ navigateTo, telegramUser, showToast }) {
                               </span>
                             </span>
                           </div>
-                          <div className="crypto-address" style={hintStyle}>
+                          <div className="crypto-address" style={{ color: themeColors.hintColor }}>
                             {crypto.address.length > 20 
                               ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
                               : crypto.address
                             }
-                            {crypto.type === 'uid' && <span className="uid-label" style={{ background: `${themeColors.buttonColor}20`, color: themeColors.buttonColor }}> (UID)</span>}
+                            {crypto.type === 'uid' && <span className="uid-label" style={{ 
+                              background: `${themeColors.buttonColor}20`, 
+                              color: themeColors.buttonColor 
+                            }}> (UID)</span>}
                           </div>
                         </div>
                         <div className="crypto-actions">
@@ -1173,8 +1231,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {cryptoAddresses.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-icon" style={hintStyle}>🏦</div>
-                  <p className="empty-text" style={hintStyle}>
+                  <div className="empty-icon" style={{ color: themeColors.hintColor }}>🏦</div>
+                  <p className="empty-text" style={{ color: themeColors.hintColor }}>
                     {cryptoType === 'address' 
                       ? 'Добавьте адрес для получения USDT'
                       : 'Добавьте UID биржи для получения USDT'
@@ -1186,8 +1244,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
           )}
 
           {!isBuyMode && (
-            <div className="payment-section-new" style={cardStyle}>
-              <div className="payment-header-new">
+            <div className="payment-section-new" style={{ 
+              background: themeColors.bgColor,
+              border: `0.5px solid ${themeColors.sectionBgColor}` 
+            }}>
+              <div className="payment-header-new" style={{ 
+                borderBottom: `0.5px solid ${themeColors.sectionBgColor}` 
+              }}>
                 <h3 className="section-title" style={{ color: themeColors.textColor }}>Реквизиты для получения RUB</h3>
               </div>
 
@@ -1196,7 +1259,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   className="bank-select"
-                  style={inputStyle}
+                  style={{ 
+                    background: themeColors.secondaryBgColor,
+                    border: `0.5px solid ${themeColors.sectionBgColor}`,
+                    color: themeColors.textColor 
+                  }}
                 >
                   {availableBanks.map(bank => (
                     <option key={bank} value={bank}>
@@ -1212,7 +1279,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     value={phoneNumber}
                     onChange={handlePhoneChange}
                     className="phone-input"
-                    style={inputStyle}
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}`,
+                      color: themeColors.textColor 
+                    }}
                   />
                 ) : (
                   <input
@@ -1222,14 +1293,22 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     onChange={handleCardChange}
                     className="card-input"
                     maxLength={19}
-                    style={inputStyle}
+                    style={{ 
+                      background: themeColors.secondaryBgColor,
+                      border: `0.5px solid ${themeColors.sectionBgColor}`,
+                      color: themeColors.textColor 
+                    }}
                   />
                 )}
 
                 <button
                   onClick={handleAddPayment}
                   className="add-button"
-                  style={buttonStyle}
+                  style={{ 
+                    background: themeColors.buttonColor,
+                    color: themeColors.buttonTextColor,
+                    border: 'none'
+                  }}
                 >
                   + Добавить реквизиты
                 </button>
@@ -1237,16 +1316,19 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {paymentMethods.length > 0 && (
                 <div className="payments-list">
-                  <h4 style={hintStyle}>Ваши реквизиты:</h4>
+                  <h4 style={{ color: themeColors.hintColor }}>Ваши реквизиты:</h4>
                   {paymentMethods.map((payment) => (
                     <div
                       key={payment.id}
                       className={`payment-item ${selectedPayment?.id === payment.id ? 'selected' : ''}`}
                       onClick={() => setSelectedPayment(payment)}
-                      style={selectedPayment?.id === payment.id ? 
-                        { background: `${themeColors.buttonColor}15`, borderColor: themeColors.buttonColor } : 
-                        secondaryButtonStyle
-                      }
+                      style={selectedPayment?.id === payment.id ? { 
+                        background: `${themeColors.buttonColor}15`, 
+                        border: `0.5px solid ${themeColors.buttonColor}` 
+                      } : { 
+                        background: themeColors.secondaryBgColor,
+                        border: `0.5px solid ${themeColors.sectionBgColor}` 
+                      }}
                     >
                       <div className="payment-info">
                         <div className="payment-header">
@@ -1254,10 +1336,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
                             {payment.bankName}
                           </span>
                           {payment.type === 'sbp' && (
-                            <span className="sbp-badge" style={{ background: '#34c759', color: '#ffffff' }}>СБП</span>
+                            <span className="sbp-badge" style={{ 
+                              background: '#34c759', 
+                              color: '#ffffff' 
+                            }}>СБП</span>
                           )}
                         </div>
-                        <div className="payment-number" style={hintStyle}>
+                        <div className="payment-number" style={{ color: themeColors.hintColor }}>
                           {payment.formattedNumber}
                         </div>
                       </div>
@@ -1279,8 +1364,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {paymentMethods.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-icon" style={hintStyle}>💳</div>
-                  <p className="empty-text" style={hintStyle}>Добавьте реквизиты для получения RUB</p>
+                  <div className="empty-icon" style={{ color: themeColors.hintColor }}>💳</div>
+                  <p className="empty-text" style={{ color: themeColors.hintColor }}>
+                    Добавьте реквизиты для получения RUB
+                  </p>
                 </div>
               )}
             </div>
@@ -1290,10 +1377,20 @@ function Home({ navigateTo, telegramUser, showToast }) {
             className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
             disabled={!isExchangeReady() || isLoading}
             onClick={handleExchange}
-            style={!isExchangeReady() || isLoading ? 
-              { background: themeColors.hintColor, color: themeColors.buttonTextColor } : 
-              isBuyMode ? accentButtonStyle : buttonStyle
-            }
+            style={!isExchangeReady() || isLoading ? { 
+              background: themeColors.hintColor,
+              color: themeColors.buttonTextColor,
+              border: 'none',
+              opacity: 0.5
+            } : isBuyMode ? { 
+              background: '#34c759',
+              color: '#ffffff',
+              border: 'none'
+            } : { 
+              background: themeColors.buttonColor,
+              color: themeColors.buttonTextColor,
+              border: 'none'
+            }}
           >
             <span className="exchange-icon">
               {isBuyMode ? '🛒' : '💰'}
@@ -1303,18 +1400,15 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </span>
           </button>
 
-          <div className="security-info" style={secondaryButtonStyle}>
+          <div className="security-info" style={{ 
+            background: themeColors.secondaryBgColor,
+            border: `0.5px solid ${themeColors.sectionBgColor}` 
+          }}>
             <div className="security-icon" style={{ color: themeColors.buttonColor }}>🔒</div>
-            <div className="security-text" style={hintStyle}>
+            <div className="security-text" style={{ color: themeColors.hintColor }}>
               <strong style={{ color: themeColors.textColor }}>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
             </div>
           </div>
-        </div>
-      )}
-
-      {message && !showToast && (
-        <div className={`message-toast-new ${message.includes('✅') ? 'success' : message.includes('❌') ? 'error' : message.includes('⚠️') ? 'warning' : 'info'}`}>
-          <span className="toast-text">{message}</span>
         </div>
       )}
     </div>

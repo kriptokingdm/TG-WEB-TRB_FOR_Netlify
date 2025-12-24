@@ -1,26 +1,24 @@
-/* Home.css - Telegram стиль с переменными */
+/* Home.css - Простой с inline стилями */
 
-/* Используем CSS переменные, установленные в App.js */
 .home-container {
   min-height: 100vh;
-  background: var(--tg-bg-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
   position: relative;
-  color: var(--tg-text-color);
-  animation: fadeIn 0.3s ease;
 }
 
+/* Анимация появления */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* ==================== */
-/* ОБЩИЕ СТИЛИ */
-/* ==================== */
+.home-container {
+  animation: fadeIn 0.3s ease;
+}
 
+/* Общие стили */
 .home-content {
   padding: 16px;
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
@@ -29,11 +27,9 @@
 /* Карточки */
 .currency-cards-section,
 .payment-section-new {
-  background: var(--tg-bg-color);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
-  border: 0.5px solid var(--tg-secondary-bg-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -75,13 +71,11 @@
 .currency-name {
   font-size: 24px;
   font-weight: 700;
-  color: var(--tg-text-color);
 }
 
 .currency-rate.light {
   font-size: 15px;
   font-weight: 500;
-  color: var(--tg-hint-color);
 }
 
 /* Swap кнопка */
@@ -146,7 +140,6 @@
 
 .amount-label {
   font-size: 14px;
-  color: var(--tg-hint-color);
   font-weight: 500;
 }
 
@@ -160,7 +153,7 @@
 .amount-input {
   width: 100%;
   padding: 16px 52px 16px 16px;
-  border: 0.5px solid var(--tg-secondary-bg-color);
+  border: 0.5px solid transparent;
   border-radius: 12px;
   font-size: 18px;
   font-weight: 600;
@@ -169,18 +162,14 @@
   font-family: inherit;
   height: 100%;
   box-sizing: border-box;
-  background: var(--tg-secondary-bg-color);
-  color: var(--tg-text-color);
 }
 
 .amount-input::placeholder {
-  color: var(--tg-hint-color);
   opacity: 0.7;
 }
 
 .amount-input:focus {
-  border-color: var(--tg-button-color);
-  background: var(--tg-bg-color);
+  border-color: transparent;
 }
 
 .amount-input:disabled {
@@ -193,19 +182,16 @@
   right: 16px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--tg-hint-color);
   pointer-events: none;
 }
 
 .min-limit-hint {
   font-size: 12px;
-  color: var(--tg-hint-color);
   margin-top: 4px;
   opacity: 0.8;
 }
 
 .error-message {
-  color: #ff3b30;
   font-size: 13px;
   font-weight: 500;
   margin-top: 6px;
@@ -215,7 +201,6 @@
 .section-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--tg-text-color);
   margin: 0;
 }
 
@@ -225,7 +210,7 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
+  border-bottom: 0.5px solid transparent;
 }
 
 /* Switcher */
@@ -235,7 +220,7 @@
   margin-bottom: 16px;
   border-radius: 12px;
   padding: 4px;
-  border: 0.5px solid var(--tg-secondary-bg-color);
+  border: 0.5px solid transparent;
 }
 
 .crypto-type-btn {
@@ -278,25 +263,12 @@
 .uid-input {
   width: 100%;
   padding: 14px;
-  border: 0.5px solid var(--tg-secondary-bg-color);
+  border: 0.5px solid transparent;
   border-radius: 12px;
   font-size: 15px;
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
-  background: var(--tg-secondary-bg-color);
-  color: var(--tg-text-color);
-}
-
-.network-select:focus,
-.bank-select:focus,
-.address-input:focus,
-.card-input:focus,
-.phone-input:focus,
-.exchange-select:focus,
-.uid-input:focus {
-  border-color: var(--tg-button-color);
-  background: var(--tg-bg-color);
 }
 
 .select-with-icon {
@@ -347,7 +319,6 @@
 .payments-list h4 {
   font-size: 16px;
   font-weight: 600;
-  color: var(--tg-hint-color);
   margin-bottom: 12px;
 }
 
@@ -366,7 +337,7 @@
 
 .crypto-item:hover,
 .payment-item:hover {
-  border-color: var(--tg-button-color);
+  border-color: transparent;
 }
 
 .crypto-info,
@@ -434,12 +405,10 @@
 }
 
 .action-btn:hover {
-  background: var(--tg-secondary-bg-color);
+  opacity: 0.8;
 }
 
 .sbp-badge {
-  background: #34c759;
-  color: white;
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
@@ -529,77 +498,13 @@
   font-weight: 500;
 }
 
-/* Toast сообщения */
-.message-toast-new {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--tg-bg-color);
-  border-radius: 12px;
-  padding: 12px 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 0.5px solid var(--tg-secondary-bg-color);
-  max-width: 90%;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-@keyframes slideDownToast {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-.toast-text {
-  font-size: 15px;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.message-toast-new.success {
-  border-left: 4px solid #34c759;
-}
-
-.message-toast-new.error {
-  border-left: 4px solid #ff3b30;
-}
-
-.message-toast-new.warning {
-  border-left: 4px solid #ff9500;
-}
-
-.message-toast-new.info {
-  border-left: 4px solid var(--tg-button-color);
-}
-
 /* Telegram стиль для активного ордера */
 .tg-home-container {
   min-height: 100vh;
-  background: var(--tg-bg-color);
   font-family: inherit;
-  color: var(--tg-text-color);
 }
 
 .tg-header {
-  background: var(--tg-bg-color);
-  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -630,7 +535,7 @@
 }
 
 .tg-back-btn:hover {
-  background: var(--tg-secondary-bg-color);
+  opacity: 0.8;
 }
 
 .tg-back-btn svg {
@@ -646,14 +551,12 @@
 .tg-header-title {
   font-size: 20px;
   font-weight: 700;
-  color: var(--tg-text-color);
   margin: 0;
   line-height: 1.2;
 }
 
 .tg-header-subtitle {
   font-size: 13px;
-  color: var(--tg-hint-color);
   margin: 2px 0 0 0;
   font-weight: 400;
 }
@@ -663,7 +566,6 @@
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 20px;
-  background: var(--tg-secondary-bg-color);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -674,12 +576,10 @@
 }
 
 .tg-order-card {
-  background: var(--tg-bg-color);
   border-radius: 20px;
   padding: 20px;
-  border: 0.5px solid var(--tg-secondary-bg-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .tg-card-header {
@@ -688,7 +588,6 @@
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 0.5px solid var(--tg-secondary-bg-color);
 }
 
 .tg-order-icon {
@@ -711,13 +610,11 @@
 .tg-order-title {
   font-size: 22px;
   font-weight: 800;
-  color: var(--tg-text-color);
   margin: 0 0 4px 0;
 }
 
 .tg-order-subtitle {
   font-size: 15px;
-  color: var(--tg-hint-color);
   margin: 0;
   line-height: 1.4;
 }
@@ -734,27 +631,23 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: var(--tg-secondary-bg-color);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 .tg-detail-label {
   font-size: 15px;
-  color: var(--tg-hint-color);
   font-weight: 500;
 }
 
 .tg-detail-value {
   font-size: 17px;
   font-weight: 600;
-  color: var(--tg-text-color);
   text-align: right;
 }
 
 .tg-detail-value strong {
   font-weight: 700;
-  color: var(--tg-button-color);
 }
 
 .tg-detail-mono {
@@ -786,12 +679,7 @@
   font-family: inherit;
 }
 
-.tg-action-btn.primary {
-  background: var(--tg-button-color);
-  color: var(--tg-button-text-color);
-}
-
-.tg-action-btn.primary:hover {
+.tg-action-btn:hover {
   opacity: 0.9;
 }
 

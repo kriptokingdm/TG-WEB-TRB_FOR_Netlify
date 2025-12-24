@@ -1,13 +1,16 @@
-/* Home.css - только базовые стили без цветов */
+/* Home.css - с CSS переменными Telegram */
 
 .home-container {
   min-height: 100vh;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
   position: relative;
 }
 
+/* Анимация появления */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -26,6 +29,8 @@
 /* Карточки */
 .currency-cards-section,
 .payment-section-new {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
@@ -44,6 +49,8 @@
 
 .currency-card-side {
   flex: 1;
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, transparent);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   padding: 20px;
   min-height: 100px;
@@ -51,7 +58,6 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  border: 0.5px solid transparent;
 }
 
 .currency-card-side:hover {
@@ -70,11 +76,13 @@
 .currency-name {
   font-size: 24px;
   font-weight: 700;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .currency-rate.light {
   font-size: 15px;
   font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 /* Swap кнопка */
@@ -85,6 +93,7 @@
   transform: translate(-50%, -50%);
   width: 56px;
   height: 56px;
+  background: var(--tg-theme-button-color, #3390ec);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -140,6 +149,7 @@
 .amount-label {
   font-size: 14px;
   font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .amount-input-wrapper {
@@ -152,10 +162,12 @@
 .amount-input {
   width: 100%;
   padding: 16px 52px 16px 16px;
-  border: 0.5px solid transparent;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   font-size: 18px;
   font-weight: 600;
+  color: var(--tg-theme-text-color, #000000);
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
@@ -164,11 +176,12 @@
 }
 
 .amount-input::placeholder {
+  color: var(--tg-theme-hint-color, #8e8e93);
   opacity: 0.7;
 }
 
 .amount-input:focus {
-  border-color: transparent;
+  border-color: var(--tg-theme-button-color, #3390ec);
 }
 
 .amount-input:disabled {
@@ -181,12 +194,14 @@
   right: 16px;
   font-size: 16px;
   font-weight: 600;
+  color: var(--tg-theme-hint-color, #8e8e93);
   pointer-events: none;
 }
 
 .min-limit-hint {
   font-size: 12px;
   margin-top: 4px;
+  color: var(--tg-theme-hint-color, #8e8e93);
   opacity: 0.8;
 }
 
@@ -194,6 +209,7 @@
   font-size: 13px;
   font-weight: 500;
   margin-top: 6px;
+  color: #ff3b30;
 }
 
 /* Заголовки */
@@ -201,6 +217,7 @@
   font-size: 18px;
   font-weight: 700;
   margin: 0;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .payment-header-new {
@@ -209,7 +226,7 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 0.5px solid transparent;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
 /* Switcher */
@@ -217,9 +234,10 @@
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   padding: 4px;
-  border: 0.5px solid transparent;
 }
 
 .crypto-type-btn {
@@ -235,6 +253,13 @@
   justify-content: center;
   gap: 6px;
   transition: all 0.3s ease;
+  background: transparent;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.crypto-type-btn.active {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
 }
 
 .crypto-type-icon {
@@ -262,9 +287,11 @@
 .uid-input {
   width: 100%;
   padding: 14px;
-  border: 0.5px solid transparent;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   font-size: 15px;
+  color: var(--tg-theme-text-color, #000000);
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
@@ -293,6 +320,8 @@
 .add-button {
   width: 100%;
   padding: 14px;
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
   border: none;
   border-radius: 12px;
   font-size: 15px;
@@ -319,6 +348,7 @@
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 12px;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .crypto-item,
@@ -327,16 +357,23 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 0.5px solid transparent;
 }
 
 .crypto-item:hover,
 .payment-item:hover {
-  border-color: transparent;
+  border-color: var(--tg-theme-button-color, #3390ec);
+}
+
+.crypto-item.selected,
+.payment-item.selected {
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, transparent);
+  border: 0.5px solid var(--tg-theme-button-color, #3390ec);
 }
 
 .crypto-info,
@@ -357,6 +394,7 @@
 .bank-name {
   font-size: 15px;
   font-weight: 600;
+  color: var(--tg-theme-text-color, #000000);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -368,6 +406,8 @@
   gap: 6px;
   font-size: 12px;
   padding: 4px 8px;
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 15%, transparent);
+  color: var(--tg-theme-button-color, #3390ec);
   border-radius: 6px;
   font-weight: 600;
   flex-shrink: 0;
@@ -378,6 +418,7 @@
 .payment-number {
   font-size: 13px;
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  color: var(--tg-theme-hint-color, #8e8e93);
   word-break: break-all;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -403,6 +444,14 @@
   justify-content: center;
 }
 
+.action-btn.copy-btn {
+  color: var(--tg-theme-button-color, #3390ec);
+}
+
+.action-btn.delete-btn {
+  color: #ff3b30;
+}
+
 .action-btn:hover {
   opacity: 0.8;
 }
@@ -411,6 +460,8 @@
   font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
+  background: #34c759;
+  color: #ffffff;
   border-radius: 4px;
   flex-shrink: 0;
   margin-left: 8px;
@@ -440,8 +491,20 @@
 }
 
 .exchange-button-new.disabled {
+  background: var(--tg-theme-hint-color, #8e8e93);
+  color: var(--tg-theme-button-text-color, #ffffff);
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.exchange-button-new.buy {
+  background: #34c759;
+  color: #ffffff;
+}
+
+.exchange-button-new.sell {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
 }
 
 .exchange-icon {
@@ -459,6 +522,8 @@
   display: flex;
   gap: 12px;
   padding: 16px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   margin: 16px 0;
 }
@@ -467,15 +532,18 @@
   font-size: 20px;
   flex-shrink: 0;
   margin-top: 2px;
+  color: var(--tg-theme-button-color, #3390ec);
 }
 
 .security-text {
   font-size: 14px;
   line-height: 1.4;
   margin: 0;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .security-text strong {
+  color: var(--tg-theme-text-color, #000000);
   font-weight: 600;
 }
 
@@ -488,6 +556,7 @@
 .empty-icon {
   font-size: 48px;
   margin-bottom: 12px;
+  color: var(--tg-theme-hint-color, #8e8e93);
   opacity: 0.5;
 }
 
@@ -495,6 +564,7 @@
   font-size: 15px;
   margin: 0;
   font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 /* Telegram стиль для активного ордера */
@@ -509,6 +579,8 @@
   z-index: 100;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   padding-top: env(safe-area-inset-top);
 }
 
@@ -531,6 +603,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  color: var(--tg-theme-button-color, #3390ec);
 }
 
 .tg-back-btn:hover {
@@ -552,18 +625,22 @@
   font-weight: 700;
   margin: 0;
   line-height: 1.2;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .tg-header-subtitle {
   font-size: 13px;
   margin: 2px 0 0 0;
   font-weight: 400;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .tg-header-status {
   font-size: 13px;
   font-weight: 600;
   padding: 6px 12px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  color: var(--tg-theme-button-color, #3390ec);
   border-radius: 20px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -575,10 +652,13 @@
 }
 
 .tg-order-card {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 20px;
   padding: 20px;
   margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .tg-card-header {
@@ -587,12 +667,15 @@
   gap: 16px;
   margin-bottom: 24px;
   padding-bottom: 20px;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
 .tg-order-icon {
   width: 60px;
   height: 60px;
   border-radius: 50%;
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 15%, transparent);
+  color: var(--tg-theme-button-color, #3390ec);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -610,12 +693,14 @@
   font-size: 22px;
   font-weight: 800;
   margin: 0 0 4px 0;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .tg-order-subtitle {
   font-size: 15px;
   margin: 0;
   line-height: 1.4;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .tg-order-details {
@@ -630,6 +715,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
@@ -637,15 +724,18 @@
 .tg-detail-label {
   font-size: 15px;
   font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .tg-detail-value {
   font-size: 17px;
   font-weight: 600;
   text-align: right;
+  color: var(--tg-theme-text-color, #000000);
 }
 
-.tg-detail-value strong {
+.tg-detail-value.highlight {
+  color: var(--tg-theme-button-color, #3390ec);
   font-weight: 700;
 }
 
@@ -665,6 +755,8 @@
 
 .tg-action-btn {
   padding: 16px;
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
   border: none;
   border-radius: 12px;
   font-size: 16px;

@@ -16,6 +16,16 @@ function App() {
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
 
+  // Функция конвертации hex в RGB
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
+
   // Показ уведомлений
   const showToast = useCallback((message, type = 'info') => {
     setToast({ message, type });
@@ -64,92 +74,94 @@ function App() {
   const applyTelegramTheme = useCallback(() => {
     console.log('🎨 Применяем тему Telegram...');
     
+    const root = document.documentElement;
+    
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       const currentTheme = tg.colorScheme || 'light';
       
       // Устанавливаем тему
-      document.documentElement.setAttribute('data-theme', currentTheme);
+      root.setAttribute('data-theme', currentTheme);
       
       // Применяем все цвета Telegram
       if (tg.themeParams) {
-        const root = document.documentElement;
+        const params = tg.themeParams;
         
-        // Основные цвета
-        if (tg.themeParams.bg_color) {
-          root.style.setProperty('--tg-theme-bg-color', `#${tg.themeParams.bg_color}`);
-        }
-        if (tg.themeParams.text_color) {
-          root.style.setProperty('--tg-theme-text-color', `#${tg.themeParams.text_color}`);
-        }
-        if (tg.themeParams.hint_color) {
-          root.style.setProperty('--tg-theme-hint-color', `#${tg.themeParams.hint_color}`);
-        }
-        if (tg.themeParams.link_color) {
-          root.style.setProperty('--tg-theme-link-color', `#${tg.themeParams.link_color}`);
-        }
-        if (tg.themeParams.button_color) {
-          const buttonColor = `#${tg.themeParams.button_color}`;
-          root.style.setProperty('--tg-theme-button-color', buttonColor);
-          
-          // Конвертируем hex в RGB для rgba()
-          const rgb = hexToRgb(buttonColor);
-          if (rgb) {
-            root.style.setProperty('--tg-theme-button-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+        // Основные цвета с конвертацией в RGB
+        const applyColor = (param, cssVar) => {
+          if (params[param]) {
+            const color = `#${params[param]}`;
+            root.style.setProperty(`--${cssVar}`, color);
+            
+            // Конвертируем hex в RGB для backdrop-filter
+            const rgb = hexToRgb(color);
+            if (rgb) {
+              root.style.setProperty(`--${cssVar}-rgb`, `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+            }
           }
-        }
-        if (tg.themeParams.button_text_color) {
-          root.style.setProperty('--tg-theme-button-text-color', `#${tg.themeParams.button_text_color}`);
+        };
+        
+        // Применяем все цвета
+        applyColor('bg_color', 'tg-theme-bg-color');
+        applyColor('text_color', 'tg-theme-text-color');
+        applyColor('hint_color', 'tg-theme-hint-color');
+        applyColor('link_color', 'tg-theme-link-color');
+        applyColor('button_color', 'tg-theme-button-color');
+        
+        if (params.button_text_color) {
+          root.style.setProperty('--tg-theme-button-text-color', `#${params.button_text_color}`);
         }
         
-        // Дополнительные цвета (если есть)
-        if (tg.themeParams.secondary_bg_color) {
-          root.style.setProperty('--tg-theme-secondary-bg-color', `#${tg.themeParams.secondary_bg_color}`);
+        // Дополнительные цвета
+        if (params.secondary_bg_color) {
+          root.style.setProperty('--tg-theme-secondary-bg-color', `#${params.secondary_bg_color}`);
         }
-        if (tg.themeParams.header_bg_color) {
-          root.style.setProperty('--tg-theme-header-bg-color', `#${tg.themeParams.header_bg_color}`);
+        if (params.header_bg_color) {
+          root.style.setProperty('--tg-theme-header-bg-color', `#${params.header_bg_color}`);
         }
-        if (tg.themeParams.accent_text_color) {
-          root.style.setProperty('--tg-theme-accent-text-color', `#${tg.themeParams.accent_text_color}`);
+        if (params.accent_text_color) {
+          root.style.setProperty('--tg-theme-accent-text-color', `#${params.accent_text_color}`);
         }
-        if (tg.themeParams.section_bg_color) {
-          root.style.setProperty('--tg-theme-section-bg-color', `#${tg.themeParams.section_bg_color}`);
-        }
-        if (tg.themeParams.section_header_text_color) {
-          root.style.setProperty('--tg-theme-section-header-text-color', `#${tg.themeParams.section_header_text_color}`);
-        }
-        if (tg.themeParams.subtitle_text_color) {
-          root.style.setProperty('--tg-theme-subtitle-text-color', `#${tg.themeParams.subtitle_text_color}`);
-        }
-        if (tg.themeParams.destructive_text_color) {
-          root.style.setProperty('--tg-theme-destructive-text-color', `#${tg.themeParams.destructive_text_color}`);
+        if (params.section_bg_color) {
+          root.style.setProperty('--tg-theme-section-bg-color', `#${params.section_bg_color}`);
         }
       }
       
       // Устанавливаем стиль навигации
-      tg.setHeaderColor('secondary_bg_color');
-      tg.setBackgroundColor('secondary_bg_color');
+      try {
+        tg.setHeaderColor('secondary_bg_color');
+        tg.setBackgroundColor('secondary_bg_color');
+      } catch (e) {
+        console.log('WebApp API доступен частично');
+      }
       
     } else {
-      // Для разработки - симуляция Telegram WebApp
-      document.documentElement.style.setProperty('--tg-theme-button-color', '#3390ec');
-      document.documentElement.style.setProperty('--tg-theme-button-color-rgb', '51, 144, 236');
-      document.documentElement.style.setProperty('--tg-theme-bg-color', '#ffffff');
-      document.documentElement.style.setProperty('--tg-theme-text-color', '#000000');
-      document.documentElement.style.setProperty('--tg-theme-hint-color', '#8e8e93');
-      document.documentElement.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+      // Для разработки - стандартные цвета Telegram
+      console.log('⚡ Используем стандартную тему Telegram');
+      
+      root.setAttribute('data-theme', 'light');
+      
+      // Стандартные цвета Telegram
+      const defaultColors = {
+        '--tg-theme-bg-color': '#ffffff',
+        '--tg-theme-bg-color-rgb': '255, 255, 255',
+        '--tg-theme-text-color': '#000000',
+        '--tg-theme-hint-color': '#8e8e93',
+        '--tg-theme-link-color': '#3390ec',
+        '--tg-theme-button-color': '#3390ec',
+        '--tg-theme-button-color-rgb': '51, 144, 236',
+        '--tg-theme-button-text-color': '#ffffff',
+        '--tg-theme-secondary-bg-color': '#f1f1f1',
+        '--tg-theme-header-bg-color': '#ffffff',
+        '--tg-theme-section-bg-color': '#e7e8ec'
+      };
+      
+      // Применяем цвета
+      Object.entries(defaultColors).forEach(([key, value]) => {
+        root.style.setProperty(key, value);
+      });
     }
   }, []);
-
-  // Конвертер hex в RGB
-  const hexToRgb = (hex) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
-  };
 
   // Инициализация Telegram WebApp
   const initTelegramWebApp = useCallback(() => {
@@ -159,15 +171,6 @@ function App() {
       // Основные настройки
       tg.ready();
       tg.expand();
-      
-      // Устанавливаем стили
-      tg.setHeaderColor('secondary_bg_color');
-      tg.setBackgroundColor('secondary_bg_color');
-      
-      // Инициализируем Main Button если нужен
-      if (tg.MainButton) {
-        tg.MainButton.hide();
-      }
       
       // Инициализируем Back Button
       if (tg.BackButton) {
@@ -185,9 +188,6 @@ function App() {
       
       // Слушаем события
       tg.onEvent('themeChanged', applyTelegramTheme);
-      tg.onEvent('viewportChanged', () => {
-        tg.expand();
-      });
       
       // Инициализация пользователя
       if (tg.initDataUnsafe?.user) {
@@ -286,10 +286,13 @@ function App() {
     }
     
     // Плавная анимация перехода
-    document.querySelector('.app-content').style.opacity = '0.5';
-    setTimeout(() => {
-      document.querySelector('.app-content').style.opacity = '1';
-    }, 150);
+    const content = document.querySelector('.app-content');
+    if (content) {
+      content.style.opacity = '0.5';
+      setTimeout(() => {
+        content.style.opacity = '1';
+      }, 150);
+    }
     
     console.log(`➡️ Переход на страницу: ${page}`);
   }, [currentPage]);

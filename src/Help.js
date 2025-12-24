@@ -9,7 +9,6 @@ function Help({ navigateTo }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [filteredFaqItems, setFilteredFaqItems] = useState([]);
     const [expandedFaqs, setExpandedFaqs] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
 
     const toggleSection = (section) => {
         setActiveSection(activeSection === section ? null : section);
@@ -154,7 +153,6 @@ function Help({ navigateTo }) {
             title: "Ответственность",
             content: "1. Пользователь несет ответственность за правильность реквизитов\n2. Администрация не несет ответственность за потери из-за ошибок пользователя при вводе некорректных данных \n3. При технических сбоях операции восстанавливаются вручную\n4. Спорные ситуации решаются в течение 24 часов"
         },
-        
     ];
 
     const popularQuestions = [
@@ -288,7 +286,7 @@ function Help({ navigateTo }) {
             <div className="help-header-new">
                 <div className="header-content">
                     <div className="header-left">
-                        {/* <h1 className="header-title-new">Помощь</h1> */}
+                        <h1 className="header-title-new">Помощь</h1>
                         <p className="header-subtitle">Все ответы на ваши вопросы</p>
                     </div>
                     <button 

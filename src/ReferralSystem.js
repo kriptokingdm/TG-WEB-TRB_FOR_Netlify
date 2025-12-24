@@ -9,7 +9,7 @@ const ReferralSystem = ({ onClose, showMessage }) => {
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [withdrawing, setWithdrawing] = useState(false);
     const [copied, setCopied] = useState(false);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('referrals');
 
     // Получение ID пользователя
     const getUserId = () => {
@@ -54,13 +54,30 @@ const ReferralSystem = ({ onClose, showMessage }) => {
         }
     };
 
+    // Форматирование даты с временем
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '—';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return '—';
+        }
+    };
+
     // Загрузка реферальных данных
     const loadReferralData = async () => {
         setLoading(true);
         try {
             const userId = getUserId();
             const response = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
-            
+
             if (response.ok) {
                 const result = await response.json();
                 if (result.success) {
@@ -90,83 +107,75 @@ const ReferralSystem = ({ onClose, showMessage }) => {
     };
 
     // Запрос на вывод средств
-   // Запрос на вывод средств (исправленная версия)
-const handleWithdraw = async () => {
-    if (!withdrawAmount || parseFloat(withdrawAmount) < 10) {
-        showMessage('error', 'Минимальная сумма вывода: $10');
-        return;
-    }
-
-    if (parseFloat(withdrawAmount) > parseFloat(referralData?.stats.available_earnings || 0)) {
-        showMessage('error', 'Недостаточно средств для вывода');
-        return;
-    }
-
-    setWithdrawing(true);
-    try {
-        const userId = getUserId();
-        const response = await fetch(`${API_BASE_URL}/api/referrals/withdraw`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ 
-                userId: userId, 
-                amount: withdrawAmount 
-            })
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-            // Показываем детали успешного запроса
-            showMessage('success', 
-                `✅ ${result.message || 'Запрос на вывод создан'}\n\n` +
-                `💰 Сумма: $${parseFloat(withdrawAmount).toFixed(2)}\n` +
-                `📅 ID запроса: ${result.withdrawal?.id || 'не указан'}\n` +
-                `⏳ Ожидайте выплаты в течение 24 часов`
-            );
-            
-            setWithdrawAmount('');
-            
-            // Обновляем данные
-            setTimeout(() => {
-                loadReferralData();
-            }, 1500);
-            
-            // Показываем новый баланс если есть
-            if (result.balance) {
-                setTimeout(() => {
-                    showMessage('info', 
-                        `📊 Новый доступный баланс: $${result.balance.available.toFixed(2)}\n` +
-                        `💰 Всего заработано: $${result.balance.total_earnings.toFixed(2)}\n` +
-                        `💸 Уже выведено: $${result.balance.withdrawn.toFixed(2)}`
-                    );
-                }, 2000);
-            }
-        } else {
-            // Детализированная обработка ошибок
-            let errorMessage = result.error || 'Ошибка вывода';
-            
-            if (errorMessage.includes('Недостаточно средств')) {
-                errorMessage += `\nДоступно: $${referralData?.stats.available_earnings.toFixed(2)}`;
-            } else if (errorMessage.includes('активный запрос')) {
-                errorMessage += '\nДождитесь обработки текущего запроса';
-            }
-            
-            showMessage('error', errorMessage);
+    const handleWithdraw = async () => {
+        if (!withdrawAmount || parseFloat(withdrawAmount) < 10) {
+            showMessage('error', 'Минимальная сумма вывода: $10');
+            return;
         }
-    } catch (error) {
-        console.error('❌ Ошибка вывода:', error);
-        showMessage('error', 
-            `Ошибка соединения: ${error.message}\n\n` +
-            'Проверьте интернет-соединение и попробуйте снова.'
-        );
-    } finally {
-        setWithdrawing(false);
-    }
-};
+
+        if (parseFloat(withdrawAmount) > parseFloat(referralData?.stats.available_earnings || 0)) {
+            showMessage('error', 'Недостаточно средств для вывода');
+            return;
+        }
+
+        setWithdrawing(true);
+        try {
+            const userId = getUserId();
+            const response = await fetch(`${API_BASE_URL}/api/referrals/withdraw`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    amount: withdrawAmount
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showMessage('success',
+                    `✅ ${result.message || 'Запрос на вывод создан'}\n\n` +
+                    `💰 Сумма: $${parseFloat(withdrawAmount).toFixed(2)}\n` +
+                    `📅 ID запроса: ${result.withdrawal?.id || 'не указан'}\n` +
+                    `⏳ Ожидайте выплаты в течение 24 часов`
+                );
+
+                setWithdrawAmount('');
+                setTimeout(() => {
+                    loadReferralData();
+                }, 1500);
+
+                if (result.balance) {
+                    setTimeout(() => {
+                        showMessage('info',
+                            `📊 Новый доступный баланс: $${result.balance.available.toFixed(2)}\n` +
+                            `💰 Всего заработано: $${result.balance.total_earnings.toFixed(2)}\n` +
+                            `💸 Уже выведено: $${result.balance.withdrawn.toFixed(2)}`
+                        );
+                    }, 2000);
+                }
+            } else {
+                let errorMessage = result.error || 'Ошибка вывода';
+                if (errorMessage.includes('Недостаточно средств')) {
+                    errorMessage += `\nДоступно: $${referralData?.stats.available_earnings.toFixed(2)}`;
+                } else if (errorMessage.includes('активный запрос')) {
+                    errorMessage += '\nДождитесь обработки текущего запроса';
+                }
+                showMessage('error', errorMessage);
+            }
+        } catch (error) {
+            console.error('❌ Ошибка вывода:', error);
+            showMessage('error',
+                `Ошибка соединения: ${error.message}\n\n` +
+                'Проверьте интернет-соединение и попробуйте снова.'
+            );
+        } finally {
+            setWithdrawing(false);
+        }
+    };
 
     // Инициализация
     useEffect(() => {
@@ -178,7 +187,7 @@ const handleWithdraw = async () => {
             <div className="referral-container">
                 <div className="referral-loading">
                     <div className="loading-spinner"></div>
-                    <p>Загрузка данных...</p>
+                    <div className="loading-text">Загрузка данных...</div>
                 </div>
             </div>
         );
@@ -204,24 +213,19 @@ const handleWithdraw = async () => {
                 )}
             </div>
 
-            {/* Основная статистика */}
-            <div className="stats-grid">
-                <div className="stat-card">
-                    <div className="stat-content">
+            {/* Статистика */}
+            <div className="stats-section">
+                <div className="section-title">Ваша статистика</div>
+                <div className="stats-grid">
+                    <div className="stat-card">
                         <div className="stat-value">{stats.total_referrals || 0}</div>
                         <div className="stat-label">Всего рефералов</div>
                     </div>
-                </div>
-                
-                <div className="stat-card">
-                    <div className="stat-content">
+                    <div className="stat-card">
                         <div className="stat-value">{formatUSD(stats.total_earnings)}</div>
                         <div className="stat-label">Заработано</div>
                     </div>
-                </div>
-                
-                <div className="stat-card">
-                    <div className="stat-content">
+                    <div className="stat-card">
                         <div className="stat-value">{formatUSD(stats.available_earnings)}</div>
                         <div className="stat-label">Доступно</div>
                     </div>
@@ -229,22 +233,21 @@ const handleWithdraw = async () => {
             </div>
 
             {/* Реферальная ссылка */}
-            <div className="referral-link-card">
-                <div className="referral-link-header">
-                    <h3>Ваша реферальная ссылка</h3>
-                    <p>Поделитесь с друзьями и получайте 1% комиссии</p>
-                </div>
-                
-                <div className="referral-link-content">
-                    <div className="link-input-group">
-                        <input 
-                            type="text" 
+            <div className="referral-section">
+                <div className="section-card">
+                    <div className="card-header">
+                        <div className="card-title">Ваша реферальная ссылка</div>
+                        <div className="card-subtitle">Поделитесь с друзьями и получайте 1% комиссии</div>
+                    </div>
+                    <div className="link-container">
+                        <input
+                            type="text"
                             value={referralData?.referral_link || ''}
                             readOnly
                             className="link-input"
                             onClick={copyReferralLink}
                         />
-                        <button 
+                        <button
                             className={`copy-btn ${copied ? 'copied' : ''}`}
                             onClick={copyReferralLink}
                         >
@@ -255,96 +258,97 @@ const handleWithdraw = async () => {
             </div>
 
             {/* Вывод средств */}
-            <div className="withdraw-card">
-                <div className="withdraw-header">
-                    <h3>Вывод средств</h3>
-                    <p>Доступно: {formatUSD(stats.available_earnings)}</p>
-                </div>
-                
-                {canWithdraw ? (
-                    <div className="withdraw-form">
-                        <div className="input-group">
-                            <span className="input-prefix">$</span>
-                            <input
-                                type="number"
-                                value={withdrawAmount}
-                                onChange={(e) => setWithdrawAmount(e.target.value)}
-                                placeholder="10"
-                                min="10"
-                                max={stats.available_earnings}
-                                step="0.01"
-                                className="withdraw-input"
-                            />
+            <div className="referral-section">
+                <div className="section-card">
+                    <div className="card-header">
+                        <div className="card-title">Вывод средств</div>
+                    </div>
+                    
+                    <div className="balance-info">
+                        <div className="balance-label">Доступно для вывода</div>
+                        <div className="balance-value">{formatUSD(stats.available_earnings)}</div>
+                    </div>
+
+                    {canWithdraw ? (
+                        <div className="withdraw-form">
+                            <div className="input-group">
+                                <span className="currency-symbol">$</span>
+                                <input
+                                    type="number"
+                                    value={withdrawAmount}
+                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                    placeholder="10"
+                                    min="10"
+                                    max={stats.available_earnings}
+                                    step="0.01"
+                                    className="withdraw-input"
+                                />
+                            </div>
+                            <button
+                                onClick={handleWithdraw}
+                                disabled={withdrawing || !withdrawAmount || parseFloat(withdrawAmount) < 10}
+                                className="withdraw-btn"
+                            >
+                                {withdrawing ? (
+                                    <>
+                                        <span className="spinner-small"></span>
+                                        <span>Обработка...</span>
+                                    </>
+                                ) : 'Запросить вывод'}
+                            </button>
                         </div>
-                        <button
-                            onClick={handleWithdraw}
-                            disabled={withdrawing || !withdrawAmount || parseFloat(withdrawAmount) < 10}
-                            className="withdraw-btn"
-                        >
-                            {withdrawing ? (
-                                <>
-                                    <span className="spinner-small"></span>
-                                    <span>Обработка...</span>
-                                </>
-                            ) : 'Запросить вывод'}
-                        </button>
-                    </div>
-                ) : stats.available_earnings > 0 ? (
-                    <div className="withdraw-notice">
-                        Необходимо накопить минимум $10 для вывода
-                    </div>
-                ) : null}
-                
-                <div className="withdraw-info">
-                    <div className="info-item">
-                        <span className="info-label">Минимальный вывод:</span>
-                        <span className="info-value">$10</span>
-                    </div>
-                    <div className="info-item">
-                        <span className="info-label">Когда можно выводить:</span>
-                        <span className="info-value highlight">Доступно в любое время</span>
+                    ) : stats.available_earnings > 0 ? (
+                        <div className="withdraw-notice">
+                            Необходимо накопить минимум $10 для вывода
+                        </div>
+                    ) : null}
+
+                    <div className="withdraw-info">
+                        <div className="info-row">
+                            <div className="info-label">Минимальный вывод:</div>
+                            <div className="info-value">$10</div>
+                        </div>
+                        <div className="info-row">
+                            <div className="info-label">Когда можно выводить:</div>
+                            <div className="info-value highlight">Доступно в любое время</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Вкладки */}
-            <div className="tabs-container">
-                <div className="tabs-header">
-                    <button 
-                        className={`tab-btn ${activeTab === 'referrals' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('referrals')}
-                    >
-                        Рефералы
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'earnings' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('earnings')}
-                    >
-                        Начисления
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'withdrawals' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('withdrawals')}
-                    >
-                        Выводы
-                    </button>
-                </div>
-                
-                <div className="tab-content">
-                    {activeTab === 'referrals' && (
-                        <div className="tab-pane">
-                            <h4>Ваши рефералы</h4>
-                            {referralData?.referrals?.length > 0 ? (
-                                <div className="data-table">
-                                    <div className="table-header">
-                                        <div className="table-col">Пользователь</div>
-                                        <div className="table-col">Дата</div>
-                                        <div className="table-col">Статус</div>
-                                    </div>
-                                    {referralData.referrals.map((ref, index) => (
-                                        <div className="table-row" key={index}>
-                                            <div className="table-col">
-                                                <div className="user-cell">
+            {/* Табы */}
+            <div className="tabs-section">
+                <div className="tabs-container">
+                    <div className="tabs-header">
+                        <button
+                            className={`tab-btn ${activeTab === 'referrals' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('referrals')}
+                        >
+                            Рефералы
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'earnings' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('earnings')}
+                        >
+                            Начисления
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'withdrawals' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('withdrawals')}
+                        >
+                            Выводы
+                        </button>
+                    </div>
+
+                    <div className="tab-content">
+                        {activeTab === 'referrals' && (
+                            <div className="tab-pane fade-in">
+                                <div className="tab-title">Ваши рефералы</div>
+                                {referralData?.referrals?.length > 0 ? (
+                                    <div className="data-list">
+                                        {referralData.referrals.map((ref, index) => (
+                                            <div className="list-item" key={index}>
+                                                <div className="user-row">
                                                     <div className="user-avatar">
                                                         {ref.first_name?.[0]?.toUpperCase() || 'U'}
                                                     </div>
@@ -357,149 +361,181 @@ const handleWithdraw = async () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="table-col">
-                                                <div className="date-cell">
-                                                    {formatDate(ref.referral_date)}
+                                                <div className="list-row">
+                                                    <div className="list-label">Дата регистрации</div>
+                                                    <div className="date-value">
+                                                        {formatDate(ref.referral_date)}
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Статус</div>
+                                                    <span className={`status-badge ${ref.status === 'active' ? 'active' : 'inactive'}`}>
+                                                        {ref.status === 'active' ? 'Активен' : 'Неактивен'}
+                                                    </span>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Заработано</div>
+                                                    <div className="amount-value">
+                                                        ${(ref.bonus_earned || 0).toFixed(2)}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="table-col">
-                                                <span className={`status-badge ${ref.status === 'active' ? 'active' : 'inactive'}`}>
-                                                    {ref.status === 'active' ? 'Активен' : 'Неактивен'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="empty-state">
-                                    <p>У вас еще нет рефералов</p>
-                                    <small>Поделитесь своей реферальной ссылкой с друзьями</small>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'earnings' && (
-                        <div className="tab-pane">
-                            <h4>История начислений</h4>
-                            {referralData?.earnings?.length > 0 ? (
-                                <div className="data-table">
-                                    <div className="table-header">
-                                        <div className="table-col">Дата</div>
-                                        <div className="table-col">Комиссия</div>
-                                        <div className="table-col">Статус</div>
+                                        ))}
                                     </div>
-                                    {referralData.earnings.map((earning, index) => (
-                                        <div className="table-row" key={index}>
-                                            <div className="table-col">
-                                                <div className="date-cell">
-                                                    {formatDate(earning.created_at)}
+                                ) : (
+                                    <div className="empty-state">
+                                        <div className="empty-icon">👥</div>
+                                        <div className="empty-title">У вас еще нет рефералов</div>
+                                        <div className="empty-subtitle">Поделитесь своей реферальной ссылкой с друзьями</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'earnings' && (
+                            <div className="tab-pane fade-in">
+                                <div className="tab-title">История начислений</div>
+                                {referralData?.earnings?.length > 0 ? (
+                                    <div className="data-list">
+                                        {referralData.earnings.map((earning, index) => (
+                                            <div className="list-item" key={index}>
+                                                <div className="user-row">
+                                                    <div className="user-avatar">
+                                                        💰
+                                                    </div>
+                                                    <div className="user-info">
+                                                        <div className="user-name">Начисление комиссии</div>
+                                                        <div className="user-username">Ордер #{earning.order_id?.substring(0, 8) || 'N/A'}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Дата начисления</div>
+                                                    <div className="date-value">
+                                                        {formatDate(earning.created_at)}
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Сумма</div>
+                                                    <div className="amount-value">
+                                                        ${(earning.commission || 0).toFixed(2)}
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Статус</div>
+                                                    <span className={`status-badge ${earning.status}`}>
+                                                        {earning.status === 'available' ? 'Доступно' :
+                                                         earning.status === 'paid' ? 'Выплачено' : 
+                                                         earning.status === 'pending' ? 'Ожидание' : earning.status}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="table-col">
-                                                <div className="amount-cell">
-                                                    <strong>${parseFloat(earning.commission || 0).toFixed(2)}</strong>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-state">
+                                        <div className="empty-icon">💰</div>
+                                        <div className="empty-title">Начислений пока нет</div>
+                                        <div className="empty-subtitle">Приглашайте друзей для получения комиссии</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'withdrawals' && (
+                            <div className="tab-pane fade-in">
+                                <div className="tab-title">История выводов</div>
+                                {referralData?.withdrawals?.length > 0 ? (
+                                    <div className="data-list">
+                                        {referralData.withdrawals.map((withdrawal, index) => (
+                                            <div className="list-item" key={index}>
+                                                <div className="user-row">
+                                                    <div className="user-avatar">
+                                                        💸
+                                                    </div>
+                                                    <div className="user-info">
+                                                        <div className="user-name">Запрос на вывод</div>
+                                                        <div className="user-username">ID: {withdrawal.id}</div>
+                                                    </div>
                                                 </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Дата запроса</div>
+                                                    <div className="date-value">
+                                                        {formatDateTime(withdrawal.created_at)}
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Сумма</div>
+                                                    <div className="amount-value">
+                                                        ${(withdrawal.amount || 0).toFixed(2)}
+                                                    </div>
+                                                </div>
+                                                <div className="list-row">
+                                                    <div className="list-label">Статус</div>
+                                                    <span className={`status-badge ${withdrawal.status}`}>
+                                                        {withdrawal.status === 'pending' ? 'Ожидание' :
+                                                         withdrawal.status === 'completed' ? 'Выплачено' :
+                                                         withdrawal.status === 'rejected' ? 'Отклонено' :
+                                                         withdrawal.status === 'processing' ? 'В обработке' : withdrawal.status}
+                                                    </span>
+                                                </div>
+                                                {withdrawal.processed_at && (
+                                                    <div className="list-row">
+                                                        <div className="list-label">Дата обработки</div>
+                                                        <div className="date-value">
+                                                            {formatDateTime(withdrawal.processed_at)}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="table-col">
-                                                <span className={`status-badge ${earning.status}`}>
-                                                    {earning.status === 'available' ? '✅ Доступно' : 
-                                                     earning.status === 'paid' ? '🏦 Выплачено' : '⏳ Ожидание'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="empty-state">
-                                    <p>Начислений пока нет</p>
-                                    <small>Приглашайте друзей для получения комиссии</small>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-{activeTab === 'withdrawals' && (
-    <div className="tab-pane">
-        <h4>История выводов</h4>
-        {referralData?.withdrawals?.length > 0 ? (
-            <div className="data-table">
-                <div className="table-header">
-                    <div className="table-col">Дата</div>
-                    <div className="table-col">Сумма</div>
-                    <div className="table-col">Статус</div>
-                </div>
-                {referralData.withdrawals.map((withdrawal, index) => (
-                    <div className="table-row" key={index}>
-                        <div className="table-col">
-                            <div className="date-cell">
-                                {formatDate(withdrawal.created_at)}
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-state">
+                                        <div className="empty-icon">💸</div>
+                                        <div className="empty-title">Выводов еще не было</div>
+                                        <div className="empty-subtitle">Запросите вывод средств, когда накопите $10</div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                        <div className="table-col">
-                            <div className="amount-cell">
-                                <strong>${parseFloat(withdrawal.amount || 0).toFixed(2)}</strong>
-                            </div>
-                        </div>
-                        <div className="table-col">
-                            <span className={`status-badge ${withdrawal.status}`}>
-                                {withdrawal.status === 'pending' ? '⏳ Ожидание' :
-                                 withdrawal.status === 'completed' ? '✅ Выплачено' :
-                                 withdrawal.status === 'rejected' ? '❌ Отклонено' :
-                                 withdrawal.status}
-                            </span>
-                        </div>
+                        )}
                     </div>
-                ))}
-            </div>
-        ) : (
-            <div className="empty-state">
-                <p>Выводов еще не было</p>
-                <small>Запросите вывод средств, когда накопите $10</small>
-            </div>
-        )}
-    </div>
-)}
                 </div>
             </div>
 
-            {/* Информация о системе */}
-            <div className="info-card">
-                <div className="info-header">
-                    <h3>Как это работает</h3>
-                </div>
-                
-                <div className="steps-list">
-                    <div className="step-item">
-                        <div className="step-number">1</div>
-                        <div className="step-content">
-                            <strong>Поделитесь ссылкой</strong>
-                            <p>Отправьте друзьям вашу реферальную ссылку</p>
-                        </div>
+            {/* Информационный блок */}
+            <div className="info-section">
+                <div className="section-card">
+                    <div className="card-header">
+                        <div className="card-title">Как это работает</div>
                     </div>
-                    
-                    <div className="step-item">
-                        <div className="step-number">2</div>
-                        <div className="step-content">
-                            <strong>Друг совершает сделку</strong>
-                            <p>Реферал покупает или продает USDT</p>
+                    <div className="steps-list">
+                        <div className="step-item">
+                            <div className="step-number">1</div>
+                            <div className="step-content">
+                                <div className="step-title">Поделитесь ссылкой</div>
+                                <div className="step-description">Отправьте друзьям вашу реферальную ссылку</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div className="step-item">
-                        <div className="step-number">3</div>
-                        <div className="step-content">
-                            <strong>Получаете комиссию</strong>
-                            <p>Автоматическое начисление 1% от суммы сделки</p>
+                        <div className="step-item">
+                            <div className="step-number">2</div>
+                            <div className="step-content">
+                                <div className="step-title">Друг совершает сделку</div>
+                                <div className="step-description">Реферал покупает или продает USDT</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div className="step-item">
-                        <div className="step-number">4</div>
-                        <div className="step-content">
-                            <strong>Выводите заработанное</strong>
-                            <p>Выводите средства от $10 в любое время</p>
+                        <div className="step-item">
+                            <div className="step-number">3</div>
+                            <div className="step-content">
+                                <div className="step-title">Получаете комиссию</div>
+                                <div className="step-description">Автоматическое начисление 1% от суммы сделки</div>
+                            </div>
+                        </div>
+                        <div className="step-item">
+                            <div className="step-number">4</div>
+                            <div className="step-content">
+                                <div className="step-title">Выводите заработанное</div>
+                                <div className="step-description">Выводите средства от $10 в любое время</div>
+                            </div>
                         </div>
                     </div>
                 </div>

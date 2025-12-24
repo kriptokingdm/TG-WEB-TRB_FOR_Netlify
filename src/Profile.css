@@ -645,3 +645,32 @@
         padding: 14px;
     }
 }
+
+/* ==================== */
+/* ФИКС ДЛЯ НАВИГАЦИИ В PROFILE */
+/* ==================== */
+
+.profile-container {
+    min-height: calc(100vh - 70px);
+    position: relative;
+  }
+  
+  /* Убираем padding-bottom из Profile.css если он есть */
+  .profile-container,
+  .profile-content,
+  .referral-system-container {
+    padding-bottom: 0 !important;
+  }
+  
+  /* Гарантируем, что нижний nav всегда поверх всего */
+  .bottom-nav {
+    z-index: 10000 !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Фикс для прокрутки внутри профиля */
+  .profile-content {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }

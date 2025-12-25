@@ -330,52 +330,53 @@ function App() {
   };
 
   // Плавающая навигация
-  const Navigation = () => {
-    const availableEarnings = referralData?.stats?.available_earnings || 0;
-    const showBadge = availableEarnings >= 10;
-    
-    return (
-      <div className="floating-nav">
-        <button 
-          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
-          onClick={() => navigateTo('profile')}
-          aria-label="Профиль"
-        >
-          <div className="nav-icon-floating">
-            <ProfileIcon active={currentPage === 'profile'} />
-          </div>
-          <span className="nav-label-floating">Профиль</span>
-          {showBadge && (
-            <span className="nav-badge-floating">
-              ${availableEarnings.toFixed(0)}
-            </span>
-          )}
-        </button>
-        
-        <div className="nav-center-floating">
-          <button 
-            className="nav-center-circle-floating" 
-            onClick={() => navigateTo('home')}
-            aria-label="Обмен"
-          >
-            <ExchangeIcon active={true} />
-          </button>
-          <span className="nav-center-label-floating">Обмен</span>
+  // Плавающая навигация
+const Navigation = () => {
+  const availableEarnings = referralData?.stats?.available_earnings || 0;
+  const showBadge = availableEarnings >= 10;
+  
+  return (
+    <div className="floating-nav">
+      <button 
+        className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
+        onClick={() => navigateTo('profile')}
+        aria-label="Профиль"
+      >
+        <div className="nav-icon-floating">
+          <ProfileIcon active={currentPage === 'profile'} />
         </div>
-        
+        <span className="nav-label-floating">Профиль</span>
+        {showBadge && (
+          <span className="nav-badge-floating">
+            ${availableEarnings.toFixed(0)}
+          </span>
+        )}
+      </button>
+      
+      <div className="nav-center-floating">
         <button 
-          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
-          onClick={() => navigateTo('history')}
-          aria-label="История"
+          className="nav-center-circle-floating" 
+          onClick={() => navigateTo('home')}
+          aria-label="Обмен"
         >
-          <div className="nav-icon-floating">
-            <HistoryIcon active={currentPage === 'history'} />
-          </div>
-          <span className="nav-label-floating">История</span>
+          <ExchangeIcon active={true} />
         </button>
+        <span className="nav-center-label-floating">Обмен</span>
       </div>
-    );
-  };
+      
+      <button 
+        className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
+        onClick={() => navigateTo('history')}
+        aria-label="История"
+      >
+        <div className="nav-icon-floating">
+          <HistoryIcon active={currentPage === 'history'} />
+        </div>
+        <span className="nav-label-floating">История</span>
+      </button>
+    </div>
+  );
+};
 
   // Лоадер
   if (isLoading) {

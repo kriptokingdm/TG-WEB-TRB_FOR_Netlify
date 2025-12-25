@@ -100,6 +100,7 @@ html, body, #root {
 }
 
 /* НАВИГАЦИЯ */
+/* НАВИГАЦИЯ - Чистый матовый стекло эффект */
 .floating-nav {
   position: fixed;
   bottom: 20px;
@@ -109,53 +110,29 @@ html, body, #root {
   min-width: 280px;
   max-width: 360px;
   height: 70px;
-  border-radius: 22px;
+  border-radius: 20px; /* Немного меньше радиус для телефонов */
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
-  padding: 0 16px;
+  padding: 0 12px;
   
-  /* Эффект матового стекла */
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  background: linear-gradient(
-    135deg,
-    rgba(var(--nav-bg-rgb), 0.8) 0%,
-    rgba(var(--nav-bg-rgb), 0.9) 50%,
-    rgba(var(--nav-bg-rgb), 0.8) 100%
-  );
+  /* Чистый эффект матового стекла */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   
-  /* Тени и границы */
-  box-shadow: 
-    0 15px 50px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(var(--border-rgb), 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  
-  border: 0.5px solid rgba(var(--border-rgb), 0.2);
-  
-  animation: navSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Легкая тень только для глубины */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="dark"] .floating-nav {
-  --nav-bg-rgb: 33, 36, 40;
-  --border-rgb: 255, 255, 255;
-}
-
+/* Для светлой темы - другой оттенок стекла */
 :root:not([data-theme]) .floating-nav {
-  --nav-bg-rgb: 248, 249, 250;
-  --border-rgb: 0, 0, 0;
-}
-
-@keyframes navSlideUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 }
 
 .nav-item-floating {
@@ -171,55 +148,40 @@ html, body, #root {
   padding: 12px 0 8px;
   position: relative;
   gap: 4px;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 14px;
+  transition: all 0.2s ease;
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Активное состояние */
+/* Активное состояние - только подчеркивание */
 .nav-item-floating.active {
   color: var(--tg-theme-button-color) !important;
-  background: linear-gradient(
-    135deg,
-    rgba(var(--button-rgb), 0.15) 0%,
-    rgba(var(--button-rgb), 0.25) 50%,
-    rgba(var(--button-rgb), 0.15) 100%
-  );
-  box-shadow: 
-    0 0 20px rgba(var(--button-rgb), 0.2),
-    inset 0 0 0 1px rgba(var(--button-rgb), 0.2);
-  transform: scale(1.05);
 }
 
-[data-theme="dark"] .nav-item-floating.active {
-  --button-rgb: 51, 144, 236;
-}
-
-:root:not([data-theme]) .nav-item-floating.active {
-  --button-rgb: 51, 144, 236;
-}
-
-/* Индикатор активности */
-.nav-item-floating.active::before {
+/* Индикатор активной вкладки - линия снизу */
+.nav-item-floating.active::after {
   content: '';
   position: absolute;
-  top: 8px;
+  bottom: 6px;
   width: 24px;
   height: 3px;
   background: var(--tg-theme-button-color);
-  border-radius: 1.5px;
-  animation: pulseGlow 2s infinite;
+  border-radius: 2px;
 }
 
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+/* Для светлой темы - темная линия */
+:root:not([data-theme]) .nav-item-floating.active::after {
+  background: var(--tg-theme-button-color);
 }
 
-/* Hover */
+/* Hover эффект - легкое затемнение */
 .nav-item-floating:not(.active):hover {
-  background: var(--tg-hover-color);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:root:not([data-theme]) .nav-item-floating:not(.active):hover {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* Неактивное состояние */
@@ -234,23 +196,21 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   margin-bottom: 6px;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .nav-item-floating.active .nav-icon-floating {
-  transform: scale(1.1);
+  transform: translateY(-2px);
 }
 
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  transition: all 0.3s ease;
 }
 
 .nav-item-floating.active .nav-label-floating {
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(var(--button-rgb), 0.3);
 }
 
 /* Бейдж */
@@ -258,53 +218,44 @@ html, body, #root {
   position: absolute;
   top: 10px;
   right: calc(50% - 16px);
-  background: linear-gradient(135deg, var(--tg-error-color) 0%, #ff453a 100%);
+  background: var(--tg-error-color);
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 18px;
-  height: 18px;
+  padding: 2px 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+  border: 1.5px solid var(--tg-theme-bg-color);
   z-index: 2;
 }
 
 /* Центральная кнопка */
 .nav-center-floating {
   position: relative;
-  margin: 0 -8px;
+  margin: 0 -6px;
   z-index: 1;
 }
 
 .nav-center-circle-floating {
-  width: 58px;
-  height: 58px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, #3a9aff 100%);
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--tg-theme-button-color);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 
-    0 10px 30px rgba(51, 144, 236, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: centerGlow 3s infinite;
-}
-
-@keyframes centerGlow {
-  0%, 100% { box-shadow: 0 10px 30px rgba(51, 144, 236, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1); }
-  50% { box-shadow: 0 15px 40px rgba(51, 144, 236, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2); }
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.3);
 }
 
 .nav-center-circle-floating:hover {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.05);
 }
 
 .nav-center-circle-floating:active {
@@ -320,16 +271,120 @@ html, body, #root {
   font-weight: 700;
   color: var(--tg-theme-button-color);
   white-space: nowrap;
-  background: var(--tg-nav-bg);
-  padding: 2px 8px;
-  border-radius: 10px;
-  border: 0.5px solid rgba(var(--border-rgb), 0.1);
-  backdrop-filter: blur(10px);
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-/* Эффект клика */
+/* Для светлой темы */
+:root:not([data-theme]) .nav-center-label-floating {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Эффект нажатия */
 .nav-item-floating:active {
   transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Адаптивность для телефонов */
+@media (max-width: 768px) {
+  .floating-nav {
+    width: 92%;
+    height: 64px;
+    border-radius: 18px;
+    bottom: 16px;
+    padding: 0 10px;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+  }
+  
+  .nav-center-floating {
+    margin: 0 -4px;
+  }
+  
+  .nav-center-circle-floating {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+  
+  .nav-item-floating {
+    padding: 10px 0 6px;
+    border-radius: 12px;
+  }
+  
+  .nav-icon-floating {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+  }
+  
+  .nav-label-floating {
+    font-size: 9px;
+  }
+  
+  .nav-badge-floating {
+    top: 8px;
+    font-size: 8px;
+    min-width: 14px;
+    height: 14px;
+    right: calc(50% - 14px);
+  }
+  
+  .nav-item-floating.active::after {
+    bottom: 4px;
+    width: 20px;
+    height: 2px;
+  }
+  
+  .app-content {
+    padding-bottom: calc(64px + 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-nav {
+    width: 94%;
+    height: 60px;
+    border-radius: 16px;
+  }
+  
+  .nav-center-circle-floating {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+  
+  .nav-icon-floating {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .nav-label-floating {
+    font-size: 8px;
+  }
+}
+
+/* iOS safe area */
+@supports (padding: max(0px)) {
+  .app-content {
+    padding-bottom: max(94px, env(safe-area-inset-bottom) + 94px);
+  }
+  
+  .floating-nav {
+    bottom: max(16px, env(safe-area-inset-bottom) + 16px);
+  }
+}
+
+/* Исправление для Safari */
+@supports (-webkit-touch-callout: none) {
+  .floating-nav {
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+  }
 }
 
 /* Лоадер */

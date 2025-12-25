@@ -1,4 +1,4 @@
-/* Profile.css - Обновленный стиль */
+/* Profile.css - Исправленные цвета для Telegram WebApp */
 
 :root {
     /* Telegram theme colors - будут установлены через JS */
@@ -44,18 +44,17 @@
     padding-bottom: 80px;
 }
 
-/* Хедер - цвет кнопки Telegram */
+/* Хедер - фон как у Telegram WebApp */
 .profile-header {
-    background: var(--tg-theme-button-color);
+    background: var(--tg-theme-bg-color);
     padding: 60px 16px 20px;
-    border-bottom: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
 .profile-header-title {
     font-size: 22px;
     font-weight: 700;
-    color: var(--tg-theme-button-text-color);
+    color: var(--tg-theme-text-color);
     margin: 0;
     letter-spacing: -0.4px;
 }
@@ -72,7 +71,7 @@
 
 /* Кнопка помощи */
 .help-button {
-    background: rgba(255, 255, 255, 0.2);
+    background: transparent;
     border: none;
     width: 40px;
     height: 40px;
@@ -80,13 +79,13 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--tg-theme-button-text-color);
+    color: var(--tg-theme-button-color);
     border-radius: 50%;
     transition: all 0.2s ease;
 }
 
 .help-button:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(var(--tg-theme-button-color-rgb, 51, 144, 236), 0.1);
 }
 
 .help-button:active {
@@ -636,10 +635,14 @@
     }
 }
 
-/* Для темной темы - специальные стили для header */
+/* Для темной темы - специальные стили */
 [data-theme="dark"] .profile-header {
-    background: var(--tg-theme-button-color);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+/* Для темной темы - специальные стили */
+[data-theme="dark"] .profile-header {
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
 [data-theme="dark"] .referral-quick,
@@ -648,11 +651,11 @@
 }
 
 [data-theme="dark"] .help-button {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .help-button:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 [data-theme="dark"] .message-toast {
@@ -664,5 +667,156 @@
 @supports (padding: max(0px)) {
     .profile-header {
         padding-top: max(60px, env(safe-area-inset-top) + 60px);
+    }
+    
+    .profile-container {
+        padding-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
+    }
+}
+
+/* Загрузка фотографии */
+.avatar-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--tg-theme-button-color);
+    transition: transform 0.2s ease;
+}
+
+.avatar-image:hover {
+    transform: scale(1.05);
+}
+
+.avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, #3a9aff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--tg-theme-button-text-color);
+    border: 3px solid var(--tg-theme-button-color);
+    transition: transform 0.2s ease;
+}
+
+.avatar-placeholder:hover {
+    transform: scale(1.05);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-card,
+.profile-tabs,
+.profile-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Hover эффекты для кнопок */
+.id-button:hover,
+.settings-item:hover,
+.profile-tab:hover:not(.active) {
+    background: var(--tg-theme-secondary-bg-color);
+}
+
+/* Активные состояния */
+.id-button:active,
+.settings-item:active,
+.profile-tab:active {
+    transform: scale(0.98);
+}
+
+/* Плавные переходы */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Стили для скроллбара */
+.profile-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.profile-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profile-content::-webkit-scrollbar-thumb {
+    background: var(--tg-theme-hint-color);
+    border-radius: 2px;
+}
+
+.profile-content::-webkit-scrollbar-thumb:hover {
+    background: var(--tg-theme-button-color);
+}
+
+/* Улучшения для мобильных устройств */
+@media (hover: none) {
+    .id-button:hover,
+    .settings-item:hover,
+    .profile-tab:hover:not(.active) {
+        background: inherit;
+    }
+    
+    .avatar-image:hover,
+    .avatar-placeholder:hover {
+        transform: none;
+    }
+}
+
+/* Поддержка Safari */
+@supports (-webkit-touch-callout: none) {
+    .profile-header {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    
+    .message-toast {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+/* Исправление для старых браузеров */
+.profile-header {
+    background: var(--tg-theme-bg-color);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --tg-theme-bg-color: #0f0f0f;
+        --tg-theme-text-color: #ffffff;
+        --tg-theme-hint-color: #8e8e93;
+        --tg-theme-button-color: #3390ec;
+        --tg-theme-button-text-color: #ffffff;
+        --tg-theme-secondary-bg-color: #1c1c1e;
+        --tg-theme-section-bg-color: #2c2c2e;
+        
+        --tg-card-bg: #1c1c1e;
+        --tg-input-bg: #2c2c2e;
+        --tg-border-color: #3c3c3e;
+    }
+}
+
+/* Фолбэк если CSS переменные не работают */
+@supports not (--custom: property) {
+    .profile-header {
+        background: #ffffff;
+    }
+    
+    [data-theme="dark"] .profile-header {
+        background: #0f0f0f;
     }
 }

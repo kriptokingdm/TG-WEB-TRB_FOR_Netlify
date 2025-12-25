@@ -195,11 +195,11 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
     return (
         <div className="profile-container">
-            {/* Хедер с цветом кнопки Telegram */}
-            <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-button-color, #3390ec)' }}>
+            {/* Хедер - цвет фона Telegram WebApp */}
+            <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-bg-color, #ffffff)' }}>
                 <div className="header-content">
                     <div className="header-left">
-                        <h1 className="profile-header-title" style={{ color: 'var(--tg-theme-button-text-color, #ffffff)' }}>
+                        <h1 className="profile-header-title" style={{ color: 'var(--tg-theme-text-color, #000000)' }}>
                             Профиль
                         </h1>
                     </div>
@@ -208,7 +208,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         onClick={() => navigateTo('help')}
                         title="Помощь"
                         aria-label="Помощь"
-                        style={{ color: 'var(--tg-theme-button-text-color, #ffffff)' }}
+                        style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
                     >
                         <HelpSVG />
                     </button>
@@ -314,7 +314,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         )}
 
                         {/* Настройки */}
-                        {/* <div className="settings-card">
+                        <div className="settings-card">
                             <div className="settings-header">
                                 <SettingsSVG />
                                 <h3>Настройки</h3>
@@ -342,7 +342,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                                     </div>
                                 </button>
                             </div>
-                        </div> */}
+                        </div>
                     </>
                 ) : (
                     /* Полная реферальная система */
@@ -368,4 +368,4 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     );
 }
 
-export default Profile; 
+export default Profile;

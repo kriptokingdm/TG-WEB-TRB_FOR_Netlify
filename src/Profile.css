@@ -1,26 +1,27 @@
-/* Profile.css - Telegram WebApp стиль с правильными переменными */
+/* Profile.css - Обновленный стиль */
 
-/* ==================== */
-/* TELEGRAM WEBAPP VARIABLES */
-/* ==================== */
 :root {
-    /* Основные цвета Telegram WebApp (fallback) */
+    /* Telegram theme colors - будут установлены через JS */
     --tg-theme-bg-color: #ffffff;
     --tg-theme-text-color: #000000;
     --tg-theme-hint-color: #8e8e93;
-    --tg-theme-link-color: #3390ec;
     --tg-theme-button-color: #3390ec;
     --tg-theme-button-text-color: #ffffff;
     --tg-theme-secondary-bg-color: #f1f1f1;
-    --tg-theme-header-bg-color: #ffffff;
-    --tg-theme-accent-text-color: #3390ec;
-    --tg-theme-section-bg-color: #ffffff;
-    --tg-theme-section-header-text-color: #6d6d71;
-    --tg-theme-subtitle-text-color: #6d6d71;
-    --tg-theme-destructive-text-color: #ff3b30;
-  }
-  
-  [data-theme="dark"] {
+    --tg-theme-section-bg-color: #e7e8ec;
+    
+    /* Дополнительные переменные */
+    --tg-success-color: #34c759;
+    --tg-error-color: #ff3b30;
+    --tg-warning-color: #ff9500;
+    --tg-info-color: #5856d6;
+    --tg-card-bg: #ffffff;
+    --tg-input-bg: #f2f2f7;
+    --tg-border-color: #e5e5ea;
+}
+
+/* Темная тема */
+[data-theme="dark"] {
     --tg-theme-bg-color: #0f0f0f;
     --tg-theme-text-color: #ffffff;
     --tg-theme-hint-color: #8e8e93;
@@ -28,54 +29,50 @@
     --tg-theme-button-text-color: #ffffff;
     --tg-theme-secondary-bg-color: #1c1c1e;
     --tg-theme-section-bg-color: #2c2c2e;
-  }
-  
-  /* ==================== */
-  /* ОСНОВНЫЕ СТИЛИ */
-  /* ==================== */
-  
-  .profile-container {
+    
+    --tg-card-bg: #1c1c1e;
+    --tg-input-bg: #2c2c2e;
+    --tg-border-color: #3c3c3e;
+}
+
+/* Основные стили */
+.profile-container {
     min-height: 100vh;
     background: var(--tg-theme-bg-color);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  
-  /* ==================== */
-  /* ХЕДЕР */
-  /* ==================== */
-  
-  .profile-header {
-    background: var(--tg-theme-header-bg-color);
+    color: var(--tg-theme-text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    padding-bottom: 80px;
+}
+
+/* Хедер - цвет кнопки Telegram */
+.profile-header {
+    background: var(--tg-theme-button-color);
     padding: 60px 16px 20px;
-    border-bottom: 0.5px solid var(--tg-theme-section-bg-color);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-  }
-  
-  .header-content {
+    border-bottom: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--tg-theme-button-text-color);
+    margin: 0;
+    letter-spacing: -0.4px;
+}
+
+.header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-  
-  .header-left {
+}
+
+.header-left {
     flex: 1;
-  }
-  
-  .profile-header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--tg-theme-text-color);
-    margin: 0;
-    letter-spacing: -0.4px;
-  }
-  
-  /* Кнопки в хедере */
-  .help-button {
-    background: transparent;
+}
+
+/* Кнопка помощи */
+.help-button {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     width: 40px;
     height: 40px;
@@ -83,42 +80,50 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--tg-theme-button-color);
-    border-radius: 8px;
+    color: var(--tg-theme-button-text-color);
+    border-radius: 50%;
     transition: all 0.2s ease;
-  }
-  
-  .help-button:active {
-    background: var(--tg-theme-secondary-bg-color);
-  }
-  
-  .help-button svg {
+}
+
+.help-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.help-button:active {
+    transform: scale(0.95);
+}
+
+.help-button svg {
     width: 20px;
     height: 20px;
-    opacity: 0.9;
-  }
-  
-  /* ==================== */
-  /* КАРТОЧКА ПРОФИЛЯ */
-  /* ==================== */
-  
-  .profile-card {
+}
+
+/* Карточка профиля */
+.profile-card {
     background: var(--tg-theme-bg-color);
     padding: 20px 16px;
-    border-bottom: 0.5px solid var(--tg-theme-section-bg-color);
-  }
-  
-  .profile-avatar {
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.profile-avatar {
     display: flex;
     justify-content: center;
     margin-bottom: 16px;
-  }
-  
-  .avatar-placeholder {
+}
+
+.avatar-image {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, var(--tg-theme-link-color) 100%);
+    object-fit: cover;
+    border: 3px solid var(--tg-theme-button-color);
+}
+
+.avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, #3a9aff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -126,35 +131,35 @@
     font-weight: 700;
     color: var(--tg-theme-button-text-color);
     border: 3px solid var(--tg-theme-button-color);
-  }
-  
-  .profile-info {
+}
+
+.profile-info {
     text-align: center;
-  }
-  
-  .profile-name {
+}
+
+.profile-name {
     font-size: 20px;
     font-weight: 700;
     color: var(--tg-theme-text-color);
     margin: 0 0 4px 0;
-  }
-  
-  .profile-username {
+}
+
+.profile-username {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     margin: 0 0 16px 0;
     font-weight: 400;
-  }
-  
-  /* ID пользователя */
-  .profile-id {
+}
+
+/* ID пользователя */
+.profile-id {
     display: flex;
     justify-content: center;
-  }
-  
-  .id-button {
+}
+
+.id-button {
     background: var(--tg-theme-secondary-bg-color);
-    border: none;
+    border: 1px solid var(--tg-border-color);
     border-radius: 8px;
     padding: 10px 16px;
     font-size: 14px;
@@ -162,24 +167,24 @@
     color: var(--tg-theme-text-color);
     cursor: pointer;
     transition: all 0.2s ease;
-  }
-  
-  .id-button:active {
-    background: var(--tg-theme-section-bg-color);
-  }
-  
-  /* ==================== */
-  /* ВКЛАДКИ ПРОФИЛЯ */
-  /* ==================== */
-  
-  .profile-tabs {
+}
+
+.id-button:hover {
+    background: var(--tg-input-bg);
+}
+
+.id-button:active {
+    transform: scale(0.98);
+}
+
+/* Вкладки */
+.profile-tabs {
     display: flex;
     background: var(--tg-theme-bg-color);
-    border-bottom: 0.5px solid var(--tg-theme-section-bg-color);
-    padding: 0;
-  }
-  
-  .profile-tab {
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.profile-tab {
     flex: 1;
     background: none;
     border: none;
@@ -192,13 +197,14 @@
     color: var(--tg-theme-hint-color);
     position: relative;
     gap: 6px;
-  }
-  
-  .profile-tab.active {
+    transition: color 0.2s ease;
+}
+
+.profile-tab.active {
     color: var(--tg-theme-button-color);
-  }
-  
-  .profile-tab.active::after {
+}
+
+.profile-tab.active::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -206,24 +212,24 @@
     right: 0;
     height: 3px;
     background: var(--tg-theme-button-color);
-  }
-  
-  .profile-tab-icon {
+}
+
+.profile-tab-icon {
     font-size: 20px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .profile-tab-text {
+}
+
+.profile-tab-text {
     font-size: 13px;
     font-weight: 500;
     line-height: 1.2;
     color: currentColor;
-  }
-  
-  .profile-tab-badge {
+}
+
+.profile-tab-badge {
     position: absolute;
     top: 8px;
     right: calc(50% - 40px);
@@ -237,91 +243,92 @@
     text-align: center;
     box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
     border: 0.5px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  /* ==================== */
-  /* КОНТЕНТ ВКЛАДОК */
-  /* ==================== */
-  
-  .profile-content {
+}
+
+/* Контент вкладок */
+.profile-content {
     padding: 16px;
     background: var(--tg-theme-bg-color);
-  }
-  
-  /* ==================== */
-  /* КРАТКАЯ РЕФЕРАЛЬНАЯ ИНФОРМАЦИЯ */
-  /* ==================== */
-  
-  .referral-quick {
-    background: var(--tg-theme-bg-color);
+}
+
+/* Краткая реферальная информация */
+.referral-quick {
+    background: var(--tg-card-bg);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 16px;
-    border: 0.5px solid var(--tg-theme-section-bg-color);
-  }
-  
-  .referral-quick-header {
+    border: 1px solid var(--tg-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.referral-quick-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
-  }
-  
-  .referral-quick-icon {
+}
+
+.referral-quick-icon {
     width: 40px;
     height: 40px;
-    background: rgba(var(--tg-theme-button-color-rgb, 51, 144, 236), 0.1);
+    background: rgba(51, 144, 236, 0.1);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
     color: var(--tg-theme-button-color);
-  }
-  
-  .referral-quick-info h3 {
+}
+
+.referral-quick-info h3 {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-theme-text-color);
     margin: 0 0 4px 0;
-  }
-  
-  .referral-quick-info p {
+}
+
+.referral-quick-info p {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     margin: 0;
-  }
-  
-  .referral-quick-stats {
+}
+
+.referral-quick-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 20px;
-  }
-  
-  .referral-quick-stat {
+}
+
+.referral-quick-stat {
     text-align: center;
     padding: 12px;
     background: var(--tg-theme-secondary-bg-color);
     border-radius: 12px;
-    border: 0.5px solid var(--tg-theme-section-bg-color);
-  }
-  
-  .stat-value {
+    border: 1px solid var(--tg-border-color);
+    transition: transform 0.2s ease;
+}
+
+.referral-quick-stat:hover {
+    transform: translateY(-2px);
+}
+
+.stat-value {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-theme-button-color);
     margin-bottom: 4px;
-  }
-  
-  .stat-label {
+}
+
+.stat-label {
     font-size: 12px;
     color: var(--tg-theme-hint-color);
     font-weight: 500;
-  }
-  
-  /* Кнопка перехода к рефералам */
-  .show-referrals-button {
+    text-transform: uppercase;
+}
+
+/* Кнопка перехода к рефералам */
+.show-referrals-button {
     width: 100%;
     padding: 16px;
     background: var(--tg-theme-button-color);
@@ -332,126 +339,131 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-  }
-  
-  .show-referrals-button:active {
-    opacity: 0.8;
+}
+
+.show-referrals-button:hover {
+    opacity: 0.9;
+}
+
+.show-referrals-button:active {
     transform: scale(0.98);
-  }
-  
-  /* ==================== */
-  /* НАСТРОЙКИ */
-  /* ==================== */
-  
-  .settings-card {
-    background: var(--tg-theme-bg-color);
+}
+
+/* Настройки */
+.settings-card {
+    background: var(--tg-card-bg);
     border-radius: 16px;
     padding: 20px;
-    border: 0.5px solid var(--tg-theme-section-bg-color);
-  }
-  
-  .settings-header {
+    border: 1px solid var(--tg-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.settings-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 0.5px solid var(--tg-theme-section-bg-color);
-  }
-  
-  .settings-header svg {
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.settings-header svg {
     width: 20px;
     height: 20px;
     color: var(--tg-theme-button-color);
-  }
-  
-  .settings-header h3 {
+}
+
+.settings-header h3 {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-theme-text-color);
     margin: 0;
-  }
-  
-  .settings-list {
+}
+
+.settings-list {
     background: var(--tg-theme-secondary-bg-color);
     border-radius: 12px;
     overflow: hidden;
-  }
-  
-  .settings-item {
+}
+
+.settings-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 16px;
     background: var(--tg-theme-bg-color);
     border: none;
-    border-bottom: 0.5px solid var(--tg-theme-section-bg-color);
+    border-bottom: 1px solid var(--tg-border-color);
     cursor: pointer;
     width: 100%;
     text-align: left;
     transition: all 0.2s ease;
-  }
-  
-  .settings-item:last-child {
+}
+
+.settings-item:last-child {
     border-bottom: none;
-  }
-  
-  .settings-item:active {
+}
+
+.settings-item:hover {
     background: var(--tg-theme-secondary-bg-color);
-  }
-  
-  .settings-icon {
+}
+
+.settings-item:active {
+    transform: scale(0.99);
+}
+
+.settings-icon {
     width: 36px;
     height: 36px;
-    background: rgba(var(--tg-theme-button-color-rgb, 51, 144, 236), 0.1);
+    background: rgba(51, 144, 236, 0.1);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--tg-theme-button-color);
-  }
-  
-  .settings-icon svg {
+}
+
+.settings-icon svg {
     width: 20px;
     height: 20px;
     color: currentColor;
-  }
-  
-  .settings-content {
+}
+
+.settings-content {
     flex: 1;
-  }
-  
-  .settings-title {
+}
+
+.settings-title {
     font-size: 16px;
     font-weight: 500;
     color: var(--tg-theme-text-color);
     margin-bottom: 2px;
-  }
-  
-  .settings-description {
+}
+
+.settings-description {
     font-size: 13px;
     color: var(--tg-theme-hint-color);
-  }
-  
-  .settings-action {
+}
+
+.settings-action {
     margin-left: 8px;
-  }
-  
-  /* Переключатель темы */
-  .toggle-switch {
+}
+
+/* Переключатель темы */
+.toggle-switch {
     width: 44px;
     height: 24px;
-    background: var(--tg-theme-section-bg-color);
+    background: var(--tg-border-color);
     border-radius: 12px;
     position: relative;
     transition: all 0.3s ease;
-  }
-  
-  .toggle-switch.active {
+}
+
+.toggle-switch.active {
     background: var(--tg-theme-button-color);
-  }
-  
-  .toggle-slider {
+}
+
+.toggle-slider {
     position: absolute;
     top: 2px;
     left: 2px;
@@ -461,17 +473,14 @@
     border-radius: 50%;
     transition: transform 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .toggle-switch.active .toggle-slider {
+}
+
+.toggle-switch.active .toggle-slider {
     transform: translateX(20px);
-  }
-  
-  /* ==================== */
-  /* ЗАГРУЗКА */
-  /* ==================== */
-  
-  .profile-loading {
+}
+
+/* Загрузка */
+.profile-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -479,245 +488,181 @@
     height: 100vh;
     padding: 0 20px;
     background: var(--tg-theme-bg-color);
-  }
-  
-  .loading-spinner {
+}
+
+.loading-spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--tg-theme-section-bg-color);
+    border: 3px solid var(--tg-border-color);
     border-top-color: var(--tg-theme-button-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 16px;
-  }
-  
-  @keyframes spin {
+}
+
+@keyframes spin {
     to { transform: rotate(360deg); }
-  }
-  
-  .profile-loading p {
+}
+
+.profile-loading p {
     font-size: 15px;
     color: var(--tg-theme-hint-color);
     font-weight: 500;
-  }
-  
-  /* ==================== */
-  /* TOAST СООБЩЕНИЯ */
-  /* ==================== */
-  
-  .message-toast {
+}
+
+/* Toast сообщения */
+.message-toast {
     position: fixed;
     top: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--tg-theme-bg-color);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    background: var(--tg-card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: 14px;
     padding: 14px 20px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    border: 0.5px solid var(--tg-theme-section-bg-color);
+    border: 1px solid var(--tg-border-color);
     max-width: 90%;
-  }
-  
-  @keyframes slideDownToast {
+}
+
+@keyframes slideDownToast {
     from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
     }
     to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
-  }
-  
-  @keyframes fadeOut {
+}
+
+@keyframes fadeOut {
     to {
-      opacity: 0;
-      visibility: hidden;
+        opacity: 0;
+        visibility: hidden;
     }
-  }
-  
-  .toast-icon {
+}
+
+.toast-icon {
     font-size: 18px;
     flex-shrink: 0;
-  }
-  
-  .toast-text {
+}
+
+.toast-text {
     font-size: 15px;
     font-weight: 500;
     color: var(--tg-theme-text-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  
-  .message-toast.message-success {
-    border-left: 4px solid #34c759;
-  }
-  
-  .message-toast.message-error {
-    border-left: 4px solid #ff3b30;
-  }
-  
-  /* ==================== */
-  /* FROSTED GLASS ЭФФЕКТЫ */
-  /* ==================== */
-  
-  .floating-nav {
-    background: rgba(var(--tg-theme-bg-color-rgb, 255, 255, 255), 0.85);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-  }
-  
-  [data-theme="dark"] .floating-nav {
-    background: rgba(var(--tg-theme-bg-color-rgb, 28, 28, 30), 0.85);
-  }
-  
-  .telegram-toast {
-    background: rgba(var(--tg-theme-bg-color-rgb, 255, 255, 255), 0.9);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-  }
-  
-  [data-theme="dark"] .telegram-toast {
-    background: rgba(var(--tg-theme-bg-color-rgb, 28, 28, 30), 0.9);
-  }
-  
-  /* ==================== */
-  /* ФИКСЫ ДЛЯ НАВИГАЦИИ */
-  /* ==================== */
-  
-  .profile-container {
-    min-height: calc(100vh - 70px);
-    position: relative;
-    padding-bottom: 0 !important;
-  }
-  
-  .profile-content {
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0 !important;
-  }
-  
-  /* ==================== */
-  /* АДАПТИВНОСТЬ */
-  /* ==================== */
-  
-  @media (max-width: 768px) {
+}
+
+.message-toast.message-success {
+    border-left: 4px solid var(--tg-success-color);
+}
+
+.message-toast.message-error {
+    border-left: 4px solid var(--tg-error-color);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
     .profile-header {
-      padding-top: 50px;
+        padding-top: 50px;
     }
     
-    .profile-header h1 {
-      font-size: 20px;
+    .profile-header-title {
+        font-size: 20px;
     }
     
+    .avatar-image,
     .avatar-placeholder {
-      width: 70px;
-      height: 70px;
+        width: 70px;
+        height: 70px;
     }
     
     .profile-name {
-      font-size: 18px;
+        font-size: 18px;
     }
     
     .referral-quick-stats {
-      grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
     
     .stat-value {
-      font-size: 16px;
+        font-size: 16px;
     }
     
     .show-referrals-button {
-      padding: 14px;
-      font-size: 15px;
+        padding: 14px;
+        font-size: 15px;
     }
-  }
-  
-  @media (max-width: 480px) {
+}
+
+@media (max-width: 480px) {
     .profile-header {
-      padding: 45px 12px 16px;
+        padding: 45px 12px 16px;
     }
     
     .profile-content {
-      padding: 12px;
+        padding: 12px;
     }
     
     .referral-quick {
-      padding: 16px;
+        padding: 16px;
     }
     
     .referral-quick-stats {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
     
     .referral-quick-stat {
-      padding: 10px;
+        padding: 10px;
     }
     
     .settings-card {
-      padding: 16px;
+        padding: 16px;
     }
     
     .settings-item {
-      padding: 14px;
+        padding: 14px;
     }
-  }
-
-  /* Принудительный красивый фон для всех компонентов */
-.home-container,
-.profile-container,
-.history-container,
-.help-container-new,
-.support-chat-new {
-  background: var(--tg-theme-bg-color) !important;
 }
 
-/* Для карточек */
-.card, .section, .panel,
-.currency-cards-section, .payment-section-new, .security-info,
-.profile-card, .referral-card, .order-card-new,
-.help-section-new, .search-results-new,
-.chat-header-new, .message-content-new {
-  background: var(--tg-card-bg) !important;
-  border: 1px solid var(--tg-border-color) !important;
+/* Для темной темы - специальные стили для header */
+[data-theme="dark"] .profile-header {
+    background: var(--tg-theme-button-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Для инпутов */
-input, textarea, select,
-.amount-input, .network-select, .exchange-select,
-.bank-select, .address-input, .uid-input,
-.phone-input, .card-input,
-.chat-input-new, .search-input-new {
-  background: var(--tg-input-bg) !important;
-  color: var(--tg-theme-text-color) !important;
-  border: 1px solid var(--tg-border-color) !important;
+[data-theme="dark"] .referral-quick,
+[data-theme="dark"] .settings-card {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Для хедеров */
-.header, .chat-header-new, .help-header-new {
-  background: var(--tg-theme-button-color) !important;
+[data-theme="dark"] .help-button {
+    background: rgba(255, 255, 255, 0.15);
 }
 
-/* Убедитесь, что все тексты видны */
-* {
-  color: var(--tg-theme-text-color) !important;
+[data-theme="dark"] .help-button:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
-/* Переопределяем inline стили */
-[style*="background"]:not([style*="var("]) {
-  background: var(--tg-card-bg) !important;
+[data-theme="dark"] .message-toast {
+    background: var(--tg-card-bg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-[style*="color"]:not([style*="var("]) {
-  color: var(--tg-theme-text-color) !important;
+/* Safe area для iOS */
+@supports (padding: max(0px)) {
+    .profile-header {
+        padding-top: max(60px, env(safe-area-inset-top) + 60px);
+    }
 }

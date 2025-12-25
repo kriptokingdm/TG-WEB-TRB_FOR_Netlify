@@ -102,7 +102,6 @@ function History({ navigateTo, showToast }) {
     const [viewMode, setViewMode] = useState('active');
     const [message, setMessage] = useState({ type: '', text: '' });
     const [refreshing, setRefreshing] = useState(false);
-    const [expandedOrderId, setExpandedOrderId] = useState(null);
 
     const isInitialMount = useRef(true);
     const refreshIntervalRef = useRef(null);
@@ -323,11 +322,6 @@ function History({ navigateTo, showToast }) {
         showMessage('success', 'ID скопирован');
     };
 
-    // Переключение раскрытия ордера
-    const toggleOrderExpand = (orderId) => {
-        setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
-    };
-
     // Статистика
     const getOrdersStats = () => {
         const activeOrders = orders.filter(order => {
@@ -374,14 +368,6 @@ function History({ navigateTo, showToast }) {
                             <p className="header-subtitle">Все ваши транзакции</p>
                         </div>
                     </div>
-
-                    {/* <button
-                        className={`test-connection-btn ${refreshing ? 'refreshing' : ''}`}
-                        onClick={handleRefresh}
-                        title="Обновить историю"
-                    >
-                        🔄
-                    </button> */}
                 </div>
 
                 {/* Статистика */}
@@ -478,8 +464,6 @@ function History({ navigateTo, showToast }) {
                             const status = order.admin_status || order.status || 'pending';
                             const statusText = getStatusText(status);
                             const statusClass = getStatusClass(status);
-                            const statusIcon = getStatusIcon(status);
-                            const isExpanded = expandedOrderId === order.id;
                             const canChat = ['pending', 'processing', 'accepted'].includes(status?.toLowerCase());
 
                             return (
@@ -488,14 +472,15 @@ function History({ navigateTo, showToast }) {
                                     className="order-card-new"
                                     style={{ '--order-index': index }}
                                 >
-                                    <div className="order-card-header">
+                                    {/* Верхняя строка */}
+                                    <div className="order-top-row">
                                         <div className="order-header-left">
-                                            <div className="order-type-badge-new">
+                                            <div className={`order-type-badge-new ${isBuy ? 'buy' : 'sell'}`}>
                                                 <span className="type-icon-new">
                                                     {isBuy ? '🛒' : '💰'}
                                                 </span>
                                                 <span className="type-text-new">
-                                                    {isBuy ? 'Покупка USDT' : 'Продажа USDT'}
+                                                    {isBuy ? 'Покупка' : 'Продажа'}
                                                 </span>
                                             </div>
                                             <button
@@ -503,121 +488,66 @@ function History({ navigateTo, showToast }) {
                                                 onClick={() => copyOrderId(order.id)}
                                                 title="Копировать ID"
                                             >
-                                                #{order.id ? order.id.substring(0, 10) + '...' : 'N/A'}
+                                                #{order.id ? order.id.substring(0, 8) : 'N/A'}
                                             </button>
                                         </div>
-                                        <div className={`order-status ${statusClass}`}>
-                                            <span className="status-icon">{statusIcon}</span>
-                                            <span className="status-text">{statusText}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="order-details-grid">
-                                        <div className="order-detail">
-                                            <span className="detail-label">Сумма</span>
-                                            <span className="detail-value">
-                                                {order.amount} {isBuy ? 'RUB' : 'USDT'}
-                                            </span>
-                                        </div>
-                                        <div className="order-detail">
-                                            <span className="detail-label">Курс</span>
-                                            <span className="detail-value highlight">
-                                                {order.rate} ₽
-                                            </span>
-                                        </div>
-                                        <div className="order-detail">
-                                            <span className="detail-label">Итого</span>
-                                            <span className="detail-value total">
-                                                {calculateTotal(order)}
-                                            </span>
-                                        </div>
-                                        <div className="order-detail">
-                                            <span className="detail-label">Время</span>
-                                            <span className="detail-value date">
+                                        <div className="order-time-top">
+                                            <span className="time-label">Время</span>
+                                            <span className="time-value">
                                                 {formatTime(order.created_at || order.createdAt)}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <button
-                                        className="expand-btn"
-                                        onClick={() => toggleOrderExpand(order.id)}
-                                    >
-                                        <span className="expand-text">
-                                            {isExpanded ? 'Скрыть детали' : 'Показать детали'}
-                                        </span>
-                                        <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>
-                                            ▼
-                                        </span>
-                                    </button>
+                                    {/* Основная информация */}
+                                    <div className="order-main-row">
+                                        <div className="amount-info">
+                                            <span className="amount-label">Сумма</span>
+                                            <span className="amount-value">
+                                                {order.amount} {isBuy ? 'RUB' : 'USDT'}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="rate-info">
+                                            <span className="rate-label">Курс</span>
+                                            <span className="rate-value">
+                                                {order.rate} ₽
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="total-info-right">
+                                            <span className="total-label">Итого</span>
+                                            <span className="total-value">
+                                                {calculateTotal(order)}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                    {isExpanded && (
-                                        <div className="order-details-expanded">
-                                            <div className="detail-row">
-                                                <span className="detail-label">ID ордера:</span>
-                                                <span className="detail-value code">{order.id}</span>
-                                            </div>
-                                            <div className="detail-row">
-                                                <span className="detail-label">Дата создания:</span>
-                                                <span className="detail-value">{formatDate(order.created_at || order.createdAt)}</span>
-                                            </div>
-                                            {order.user_id && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">User ID:</span>
-                                                    <span className="detail-value code">{order.user_id}</span>
-                                                </div>
-                                            )}
-                                            {order.telegram_id && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Telegram ID:</span>
-                                                    <span className="detail-value code">{order.telegram_id}</span>
-                                                </div>
-                                            )}
-                                            {order.username && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Имя пользователя:</span>
-                                                    <span className="detail-value">@{order.username}</span>
-                                                </div>
-                                            )}
-                                            {order.first_name && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Имя:</span>
-                                                    <span className="detail-value">{order.first_name}</span>
-                                                </div>
-                                            )}
-                                            {order.admin_comment && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Комментарий оператора:</span>
-                                                    <span className="detail-value comment">{order.admin_comment}</span>
-                                                </div>
-                                            )}
-                                            {order.admin_action_at && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Время действия:</span>
-                                                    <span className="detail-value">{formatDate(order.admin_action_at)}</span>
-                                                </div>
+                                    {/* Нижняя строка: статус + кнопки */}
+                                    <div className="order-bottom-row">
+                                        <div className={`order-status ${statusClass}`}>
+                                            <span className="status-text">{statusText}</span>
+                                        </div>
+                                        
+                                        <div className="order-actions">
+                                            <button
+                                                className="copy-btn-new"
+                                                onClick={() => copyOrderId(order.id)}
+                                            >
+                                                <span className="copy-icon-new">📋</span>
+                                                <span>Копировать ID</span>
+                                            </button>
+
+                                            {canChat && (
+                                                <button
+                                                    className="chat-btn-new"
+                                                    onClick={() => setActiveChat({ orderId: order.id })}
+                                                >
+                                                    <span className="chat-icon-new">💬</span>
+                                                    <span>Чат</span>
+                                                </button>
                                             )}
                                         </div>
-                                    )}
-
-                                    <div className="order-actions">
-                                        <button
-                                            className="copy-btn-new"
-                                            onClick={() => copyOrderId(order.id)}
-                                        >
-                                            <span className="copy-icon-new">📋</span>
-                                            <span>Копировать ID</span>
-                                        </button>
-
-                                        {canChat && (
-                                            <button
-                                                className="chat-btn-new"
-                                                onClick={() => setActiveChat({ orderId: order.id })}
-                                            >
-                                                <span className="chat-icon-new">💬</span>
-                                                <span>Чат с оператором</span>
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             );

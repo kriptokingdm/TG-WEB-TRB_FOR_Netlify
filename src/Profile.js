@@ -85,12 +85,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         
-        // Показываем сообщение
-        if (showToast) {
-            showToast(`Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`, 'success');
-        } else {
-            showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
-        }
+        showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
     };
 
     // Загрузка данных пользователя
@@ -98,13 +93,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         try {
             const userId = getUserId();
             
-            // Загружаем данные пользователя
-            const userResponse = await fetch(`${API_BASE_URL}/api/user?userId=${userId}`);
-            if (userResponse.ok) {
-                const userResult = await userResponse.json();
-                if (userResult.success) {
-                    setUserData(userResult.user);
-                }
+            // Используем telegramUser если есть, иначе загружаем
+            if (telegramUser && !userData) {
+                setUserData({
+                    id: telegramUser.id,
+                    username: telegramUser.username || `user_${telegramUser.id}`,
+                    firstName: telegramUser.firstName || 'Пользователь',
+                    photoUrl: telegramUser.photoUrl
+                });
             }
 
             // Загружаем реферальные данные
@@ -128,11 +124,18 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         } catch (error) {
             console.error('❌ Общая ошибка загрузки:', error);
             const userId = getUserId();
-            setUserData({
-                id: userId,
-                username: `user_${userId}`,
-                firstName: 'Пользователь'
-            });
+            
+            // Используем данные из Telegram или localStorage
+            if (!userData) {
+                const savedUser = JSON.parse(localStorage.getItem('telegramUser') || localStorage.getItem('currentUser') || '{}');
+                setUserData({
+                    id: savedUser.id || userId,
+                    username: savedUser.username || `user_${userId}`,
+                    firstName: savedUser.firstName || 'Пользователь',
+                    photoUrl: savedUser.photoUrl
+                });
+            }
+            
             setReferralData(getDefaultReferralData(userId));
         }
     };
@@ -192,17 +195,20 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
     return (
         <div className="profile-container">
-            {/* Хедер */}
-            <div className="profile-header">
+            {/* Хедер с цветом кнопки Telegram */}
+            <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-button-color, #3390ec)' }}>
                 <div className="header-content">
                     <div className="header-left">
-                        <h1 className="telegram-header-title">Профиль</h1>
+                        <h1 className="profile-header-title" style={{ color: 'var(--tg-theme-button-text-color, #ffffff)' }}>
+                            Профиль
+                        </h1>
                     </div>
                     <button
-                        className="telegram-header-button"
+                        className="help-button"
                         onClick={() => navigateTo('help')}
                         title="Помощь"
                         aria-label="Помощь"
+                        style={{ color: 'var(--tg-theme-button-text-color, #ffffff)' }}
                     >
                         <HelpSVG />
                     </button>
@@ -210,20 +216,28 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* Информация профиля */}
-            <div className="profile-card telegram-card">
+            <div className="profile-card">
                 <div className="profile-avatar">
-                    <div className="avatar-placeholder telegram-gradient">
-                        {userData?.firstName?.[0]?.toUpperCase() || 'U'}
-                    </div>
+                    {userData?.photoUrl ? (
+                        <img 
+                            src={userData.photoUrl} 
+                            alt={userData.firstName}
+                            className="avatar-image"
+                        />
+                    ) : (
+                        <div className="avatar-placeholder">
+                            {userData?.firstName?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    )}
                 </div>
 
                 <div className="profile-info">
-                    <h2 className="profile-name telegram-text">{userData?.firstName || 'Пользователь'}</h2>
-                    <p className="profile-username telegram-hint">@{userData?.username || 'user'}</p>
+                    <h2 className="profile-name">{userData?.firstName || 'Пользователь'}</h2>
+                    <p className="profile-username">@{userData?.username || 'user'}</p>
                     
                     <div className="profile-id">
                         <button 
-                            className="id-button telegram-button-secondary"
+                            className="id-button"
                             onClick={() => copyToClipboard(userData?.id, 'ID')}
                             aria-label="Копировать ID"
                         >
@@ -234,25 +248,25 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* Вкладки */}
-            <div className="profile-tabs telegram-tabs">
+            <div className="profile-tabs">
                 <button 
-                    className={`profile-tab telegram-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
                     onClick={() => setActiveTab('profile')}
                     aria-label="Профиль"
                 >
-                    <span className="profile-tab-icon telegram-tab-icon">👤</span>
-                    <span className="profile-tab-text telegram-tab-text">Профиль</span>
+                    <span className="profile-tab-icon">👤</span>
+                    <span className="profile-tab-text">Профиль</span>
                 </button>
                 
                 <button 
-                    className={`profile-tab telegram-tab ${activeTab === 'referrals' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'referrals' ? 'active' : ''}`}
                     onClick={() => setActiveTab('referrals')}
                     aria-label="Рефералы"
                 >
-                    <span className="profile-tab-icon telegram-tab-icon">💰</span>
-                    <span className="profile-tab-text telegram-tab-text">Рефералы</span>
-                    {referralData?.stats.total_earnings > 0 && (
-                        <span className="profile-tab-badge telegram-badge">
+                    <span className="profile-tab-icon">💰</span>
+                    <span className="profile-tab-text">Рефералы</span>
+                    {referralData?.stats.available_earnings > 0 && (
+                        <span className="profile-tab-badge">
                             {formatUSD(referralData.stats.available_earnings)}
                         </span>
                     )}
@@ -260,37 +274,37 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* Контент вкладок */}
-            <div className="profile-content telegram-content">
+            <div className="profile-content">
                 {activeTab === 'profile' ? (
                     <>
                         {/* Краткая реферальная информация */}
                         {referralData && (
-                            <div className="referral-quick telegram-card">
+                            <div className="referral-quick">
                                 <div className="referral-quick-header">
-                                    <div className="referral-quick-icon telegram-gradient-icon">💰</div>
+                                    <div className="referral-quick-icon">💰</div>
                                     <div className="referral-quick-info">
-                                        <h3 className="telegram-text">Реферальная система</h3>
-                                        <p className="telegram-hint">1% комиссия с каждой сделки реферала</p>
+                                        <h3>Реферальная система</h3>
+                                        <p>1% комиссия с каждой сделки реферала</p>
                                     </div>
                                 </div>
                                 
-                                <div className="referral-quick-stats telegram-stats">
-                                    <div className="referral-quick-stat telegram-stat">
-                                        <div className="stat-value telegram-accent">{referralData.stats.total_referrals}</div>
-                                        <div className="stat-label telegram-hint">Рефералов</div>
+                                <div className="referral-quick-stats">
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{referralData.stats.total_referrals}</div>
+                                        <div className="stat-label">Рефералов</div>
                                     </div>
-                                    <div className="referral-quick-stat telegram-stat">
-                                        <div className="stat-value telegram-accent">{formatUSD(referralData.stats.total_earnings)}</div>
-                                        <div className="stat-label telegram-hint">Заработано</div>
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{formatUSD(referralData.stats.total_earnings)}</div>
+                                        <div className="stat-label">Заработано</div>
                                     </div>
-                                    <div className="referral-quick-stat telegram-stat">
-                                        <div className="stat-value telegram-accent">{formatUSD(referralData.stats.available_earnings)}</div>
-                                        <div className="stat-label telegram-hint">Доступно</div>
+                                    <div className="referral-quick-stat">
+                                        <div className="stat-value">{formatUSD(referralData.stats.available_earnings)}</div>
+                                        <div className="stat-label">Доступно</div>
                                     </div>
                                 </div>
                                 
                                 <button
-                                    className="show-referrals-button telegram-button"
+                                    className="show-referrals-button"
                                     onClick={() => setActiveTab('referrals')}
                                     aria-label="Перейти к рефералам"
                                 >
@@ -300,11 +314,40 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         )}
 
                         {/* Настройки */}
-                        
+                        {/* <div className="settings-card">
+                            <div className="settings-header">
+                                <SettingsSVG />
+                                <h3>Настройки</h3>
+                            </div>
+                            
+                            <div className="settings-list">
+                                <button 
+                                    className="settings-item"
+                                    onClick={toggleTheme}
+                                    aria-label="Переключить тему"
+                                >
+                                    <div className="settings-icon">
+                                        <MoonSVG />
+                                    </div>
+                                    <div className="settings-content">
+                                        <div className="settings-title">Тема приложения</div>
+                                        <div className="settings-description">
+                                            {document.documentElement.getAttribute('data-theme') === 'dark' ? 'Тёмная' : 'Светлая'}
+                                        </div>
+                                    </div>
+                                    <div className="settings-action">
+                                        <div className={`toggle-switch ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'active' : ''}`}>
+                                            <div className="toggle-slider"></div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div> */}
                     </>
                 ) : (
                     /* Полная реферальная система */
                     <ReferralSystem 
+                        referralData={referralData}
                         onClose={() => setActiveTab('profile')}
                         showMessage={showMessage}
                     />
@@ -313,16 +356,16 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
             {/* Toast сообщения */}
             {(!showToast && message.text) && (
-                <div className={`telegram-toast message-${message.type}`}>
-                    <span className="telegram-toast-icon">
+                <div className={`message-toast message-${message.type}`}>
+                    <span className="toast-icon">
                         {message.type === 'success' ? '✅' :
                          message.type === 'error' ? '❌' : 'ℹ️'}
                     </span>
-                    <span className="telegram-toast-text">{message.text}</span>
+                    <span className="toast-text">{message.text}</span>
                 </div>
             )}
         </div>
     );
 }
 
-export default Profile;
+export default Profile; 

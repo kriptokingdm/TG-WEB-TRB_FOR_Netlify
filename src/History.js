@@ -375,13 +375,13 @@ function History({ navigateTo, showToast }) {
                         </div>
                     </div>
 
-                    <button
+                    {/* <button
                         className={`test-connection-btn ${refreshing ? 'refreshing' : ''}`}
                         onClick={handleRefresh}
                         title="Обновить историю"
                     >
                         🔄
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Статистика */}

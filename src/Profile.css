@@ -673,31 +673,51 @@
     }
   }
 
-  /* Фикс для слишком темных Telegram цветов на мобильных */
-@media (max-width: 768px) {
-    /* Для всех карточек и секций */
-    .card, .section, .panel, 
-    .currency-cards-section, .payment-section-new, .security-info,
-    .profile-card, .referral-card, .order-card-new,
-    .help-section-new, .search-results-new,
-    .support-chat-new, .message-content-new {
-      background: var(--tg-card-bg) !important;
-    }
-    
-    /* Для инпутов */
-    input, textarea, select,
-    .amount-input, .chat-input-new, .search-input-new {
-      background: var(--tg-input-bg) !important;
-    }
-    
-    /* Делаем границы более заметными */
-    .currency-cards-section,
-    .payment-section-new,
-    .security-info,
-    .profile-card,
-    .referral-card,
-    .order-card-new,
-    .help-section-new {
-      border: 1px solid var(--tg-border-color) !important;
-    }
-  }
+  /* Принудительный красивый фон для всех компонентов */
+.home-container,
+.profile-container,
+.history-container,
+.help-container-new,
+.support-chat-new {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+/* Для карточек */
+.card, .section, .panel,
+.currency-cards-section, .payment-section-new, .security-info,
+.profile-card, .referral-card, .order-card-new,
+.help-section-new, .search-results-new,
+.chat-header-new, .message-content-new {
+  background: var(--tg-card-bg) !important;
+  border: 1px solid var(--tg-border-color) !important;
+}
+
+/* Для инпутов */
+input, textarea, select,
+.amount-input, .network-select, .exchange-select,
+.bank-select, .address-input, .uid-input,
+.phone-input, .card-input,
+.chat-input-new, .search-input-new {
+  background: var(--tg-input-bg) !important;
+  color: var(--tg-theme-text-color) !important;
+  border: 1px solid var(--tg-border-color) !important;
+}
+
+/* Для хедеров */
+.header, .chat-header-new, .help-header-new {
+  background: var(--tg-theme-button-color) !important;
+}
+
+/* Убедитесь, что все тексты видны */
+* {
+  color: var(--tg-theme-text-color) !important;
+}
+
+/* Переопределяем inline стили */
+[style*="background"]:not([style*="var("]) {
+  background: var(--tg-card-bg) !important;
+}
+
+[style*="color"]:not([style*="var("]) {
+  color: var(--tg-theme-text-color) !important;
+}

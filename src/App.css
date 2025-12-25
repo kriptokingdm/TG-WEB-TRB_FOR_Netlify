@@ -1,26 +1,24 @@
-/* App.css - Поддержка Telegram цветов с улучшениями */
+/* App.css - Красивая тема как в Telegram Desktop */
 
 :root {
-  /* Telegram theme colors - будут установлены через JS */
-  --tg-theme-bg-color: #0f0f0f;
+  /* Наша красивая темная тема */
+  --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
   --tg-theme-button-color: #3390ec;
   --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #1c1c1e;
-  --tg-theme-section-bg-color: #2c2c2e;
+  --tg-theme-secondary-bg-color: #212428;
+  --tg-theme-section-bg-color: #3a3d42;
   
-  /* Дополнительные переменные */
+  /* Дополнительные цвета */
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
   --tg-info-color: #5856d6;
-  
-  /* Производные цвета для лучшей читаемости на мобильных */
-  --tg-card-bg: color-mix(in srgb, var(--tg-theme-bg-color) 95%, var(--tg-theme-secondary-bg-color) 5%);
-  --tg-input-bg: color-mix(in srgb, var(--tg-theme-bg-color) 90%, var(--tg-theme-secondary-bg-color) 10%);
-  --tg-border-color: var(--tg-theme-section-bg-color);
-  --tg-hover-color: color-mix(in srgb, var(--tg-theme-bg-color) 85%, var(--tg-theme-secondary-bg-color) 15%);
+  --tg-card-bg: #212428;
+  --tg-input-bg: #2a2d32;
+  --tg-border-color: #3a3d42;
+  --tg-hover-color: #2c2f34;
 }
 
 /* Сброс и базовые стили */
@@ -94,7 +92,7 @@ html, body, #root {
   align-items: center;
   z-index: 1000;
   padding: 0 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   border: 0.5px solid var(--tg-border-color);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -176,13 +174,13 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(51, 144, 236, 0.35);
+  box-shadow: 0 8px 24px rgba(51, 144, 236, 0.4);
   transition: all 0.2s ease;
 }
 
 .nav-center-circle-floating:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(51, 144, 236, 0.45);
+  box-shadow: 0 8px 30px rgba(51, 144, 236, 0.5);
 }
 
 .nav-center-circle-floating:active {
@@ -246,7 +244,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 0.5px solid var(--tg-border-color);
@@ -364,17 +362,10 @@ html, body, #root {
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
 }
 
-/* Фикс для слишком темных Telegram цветов на мобильных */
-@media (max-width: 768px) {
-  :root {
-    --tg-card-bg: color-mix(in srgb, var(--tg-theme-bg-color) 92%, var(--tg-theme-secondary-bg-color) 8%);
-    --tg-input-bg: color-mix(in srgb, var(--tg-theme-bg-color) 88%, var(--tg-theme-secondary-bg-color) 12%);
-  }
-  
-  /* Если Telegram дал черный фон, делаем его чуть светлее для мобильных */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --tg-theme-bg-color: color-mix(in srgb, var(--tg-theme-bg-color) 90%, #1a1a1a 10%);
-    }
-  }
+/* Плавные переходы */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
 }

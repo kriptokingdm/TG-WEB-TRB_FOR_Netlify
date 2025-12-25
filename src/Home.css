@@ -1100,3 +1100,60 @@
 .tg-btn-icon {
   font-size: 20px;
 }
+
+/* Улучшения для темной темы в Home.css */
+
+[data-theme="dark"] .currency-cards-section {
+  background: var(--tg-theme-bg-color);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .currency-card-side {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 15%, transparent);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .swap-center-button {
+  background: var(--tg-theme-button-color);
+  box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3);
+}
+
+[data-theme="dark"] .amount-input {
+  background: var(--tg-theme-secondary-bg-color);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+  color: var(--tg-theme-text-color);
+}
+
+[data-theme="dark"] .payment-section-new {
+  background: var(--tg-theme-bg-color);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .crypto-item,
+[data-theme="dark"] .payment-item {
+  background: var(--tg-theme-secondary-bg-color);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+}
+
+[data-theme="dark"] .crypto-item.selected,
+[data-theme="dark"] .payment-item.selected {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 15%, transparent);
+  border: 0.5px solid var(--tg-theme-button-color);
+}
+
+[data-theme="dark"] .security-info {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 10%, transparent);
+  border: 0.5px solid var(--tg-theme-section-bg-color);
+}
+
+[data-theme="dark"] .exchange-button-new {
+  box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3);
+}
+
+[data-theme="dark"] .exchange-button-new:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(58, 154, 255, 0.4);
+}

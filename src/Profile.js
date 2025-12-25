@@ -314,7 +314,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         )}
 
                         {/* Настройки */}
-                        <div className="settings-card">
+                        {/* <div className="settings-card">
                             <div className="settings-header">
                                 <SettingsSVG />
                                 <h3>Настройки</h3>
@@ -342,7 +342,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                                     </div>
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
                     </>
                 ) : (
                     /* Полная реферальная система */

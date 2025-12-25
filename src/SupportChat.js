@@ -9,11 +9,14 @@ function SupportChat({ orderId, onClose }) {
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState('');
     const [userId, setUserId] = useState(null);
+    const [attachments, setAttachments] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
     
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const chatContainerRef = useRef(null);
     const updateIntervalRef = useRef(null);
+    const fileInputRef = useRef(null);
     
     // Получаем ID пользователя
     useEffect(() => {
@@ -141,9 +144,97 @@ function SupportChat({ orderId, onClose }) {
         }
     }, [messages, isLoading]);
 
-    // Отправка сообщения
+    // Обработка выбора файлов
+    const handleFileSelect = (event) => {
+        const files = Array.from(event.target.files);
+        
+        // Проверяем размер файлов (максимум 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const validFiles = files.filter(file => file.size <= maxSize);
+        
+        if (validFiles.length !== files.length) {
+            setError('Некоторые файлы превышают максимальный размер 10MB');
+        }
+        
+        // Проверяем тип файлов (только изображения)
+        const imageFiles = validFiles.filter(file => 
+            file.type.startsWith('image/')
+        );
+        
+        if (imageFiles.length !== validFiles.length) {
+            setError('Можно загружать только изображения (JPG, PNG, GIF)');
+        }
+        
+        // Добавляем превью для изображений
+        const newAttachments = imageFiles.map(file => ({
+            file,
+            preview: URL.createObjectURL(file),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadProgress: 0
+        }));
+        
+        setAttachments(prev => [...prev, ...newAttachments]);
+        
+        // Очищаем input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    // Удаление вложения
+    const removeAttachment = (index) => {
+        setAttachments(prev => {
+            const newAttachments = [...prev];
+            // Освобождаем URL объекта
+            if (newAttachments[index]?.preview) {
+                URL.revokeObjectURL(newAttachments[index].preview);
+            }
+            newAttachments.splice(index, 1);
+            return newAttachments;
+        });
+    };
+
+    // Загрузка файла на сервер
+    const uploadFile = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('orderId', orderId);
+        formData.append('userId', userId);
+        
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://tethrab.shop'}/api/chat/upload`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    // Заголовки не нужны для FormData
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                return result.fileUrl;
+            } else {
+                throw new Error(result.error || 'Ошибка загрузки файла');
+            }
+        } catch (error) {
+            console.error('❌ Ошибка загрузки файла:', error);
+            throw error;
+        }
+    };
+
+    // Отправка сообщения с вложениями
     const handleSendMessage = async () => {
-        if (!newMessage.trim()) {
+        const hasText = newMessage.trim().length > 0;
+        const hasAttachments = attachments.length > 0;
+        
+        if (!hasText && !hasAttachments) {
             return;
         }
         
@@ -152,27 +243,64 @@ function SupportChat({ orderId, onClose }) {
             return;
         }
         
-        if (isSending) {
+        if (isSending || isUploading) {
             return;
         }
         
-        const messageText = newMessage.trim();
-        
         try {
             setIsSending(true);
+            setIsUploading(true);
             setError('');
+            
+            let uploadedFiles = [];
+            
+            // Загружаем файлы если есть
+            if (hasAttachments) {
+                for (let i = 0; i < attachments.length; i++) {
+                    try {
+                        const fileUrl = await uploadFile(attachments[i].file);
+                        uploadedFiles.push({
+                            url: fileUrl,
+                            name: attachments[i].name,
+                            type: attachments[i].type,
+                            size: attachments[i].size
+                        });
+                        
+                        // Обновляем прогресс
+                        setAttachments(prev => {
+                            const newAttachments = [...prev];
+                            newAttachments[i] = {
+                                ...newAttachments[i],
+                                uploadProgress: 100,
+                                uploaded: true
+                            };
+                            return newAttachments;
+                        });
+                    } catch (uploadError) {
+                        console.error(`❌ Ошибка загрузки файла ${attachments[i].name}:`, uploadError);
+                        throw new Error(`Не удалось загрузить файл: ${attachments[i].name}`);
+                    }
+                }
+            }
+            
+            // Отправляем сообщение
+            const messageData = {
+                text: newMessage.trim(),
+                attachments: uploadedFiles
+            };
             
             const result = await ChatApi.sendMessage(
                 orderId,
                 userId,
                 'user',
-                messageText
+                JSON.stringify(messageData)
             );
             
             if (result.success && result.message) {
                 // Добавляем новое сообщение в список локально
                 setMessages(prev => [...prev, result.message]);
                 setNewMessage('');
+                setAttachments([]);
                 
                 // Фокус на поле ввода
                 setTimeout(() => {
@@ -191,9 +319,10 @@ function SupportChat({ orderId, onClose }) {
             }
         } catch (error) {
             console.error('❌ Error sending message:', error);
-            setError('Ошибка отправки сообщения');
+            setError(error.message || 'Ошибка отправки сообщения');
         } finally {
             setIsSending(false);
+            setIsUploading(false);
         }
     };
 
@@ -253,28 +382,16 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
-    // ВАЖНО: Правильная логика определения типа сообщения
+    // Получение типа сообщения
     const getMessageType = (msg) => {
         if (!msg) return 'admin';
-        
-        // Используем как sender_type, так и senderType для совместимости
         const senderType = msg.sender_type || msg.senderType;
-        
-        console.log('🔍 Определение типа сообщения:', {
-            id: msg.id,
-            sender_type: senderType,
-            sender_id: msg.sender_id || msg.senderId,
-            userId: userId
-        });
-        
-        // Простая логика:
         return senderType === 'user' ? 'user' : 'admin';
     };
 
-    // ВАЖНО: Правильное определение имени отправителя
+    // Получение имени отправителя
     const getSenderDisplayName = (msg) => {
         if (!msg) return 'Неизвестно';
-        
         const senderType = msg.sender_type || msg.senderType;
         
         if (senderType === 'user') {
@@ -288,6 +405,43 @@ function SupportChat({ orderId, onClose }) {
         }
     };
 
+    // Обработка сообщений с вложениями
+    const parseMessageContent = (msg) => {
+        try {
+            const content = msg.message || '';
+            
+            // Проверяем, является ли сообщение JSON с вложениями
+            try {
+                const parsed = JSON.parse(content);
+                if (parsed.text || parsed.attachments) {
+                    return parsed;
+                }
+            } catch (e) {
+                // Не JSON, возвращаем как обычный текст
+            }
+            
+            return {
+                text: content,
+                attachments: []
+            };
+        } catch (error) {
+            console.error('❌ Error parsing message:', error);
+            return {
+                text: msg.message || '',
+                attachments: []
+            };
+        }
+    };
+
+    // Форматирование размера файла
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
     // Группировка сообщений по датам
     const groupMessagesByDate = () => {
         const groups = {};
@@ -297,7 +451,6 @@ function SupportChat({ orderId, onClose }) {
                 groups[date] = [];
             }
             
-            // Добавляем время между сообщениями для определения отступа
             const prevMsg = messages[index - 1];
             let marginTop = 'normal';
             
@@ -337,6 +490,17 @@ function SupportChat({ orderId, onClose }) {
     const handleManualRefresh = () => {
         loadMessages();
     };
+
+    // Очистка URL объектов при размонтировании
+    useEffect(() => {
+        return () => {
+            attachments.forEach(attachment => {
+                if (attachment.preview) {
+                    URL.revokeObjectURL(attachment.preview);
+                }
+            });
+        };
+    }, [attachments]);
 
     return (
         <div className="support-chat-new">
@@ -426,15 +590,7 @@ function SupportChat({ orderId, onClose }) {
                                 {dateMessages.map((msg, msgIndex) => {
                                     const messageType = getMessageType(msg);
                                     const senderName = getSenderDisplayName(msg);
-                                    
-                                    console.log('💬 Отображение сообщения:', {
-                                        id: msg.id,
-                                        sender_type: msg.sender_type,
-                                        sender_id: msg.sender_id,
-                                        messageType: messageType,
-                                        senderName: senderName,
-                                        message: msg.message?.substring(0, 20)
-                                    });
+                                    const content = parseMessageContent(msg);
                                     
                                     return (
                                         <div 
@@ -443,7 +599,49 @@ function SupportChat({ orderId, onClose }) {
                                         >
                                             <div className="message-bubble">
                                                 <div className="message-content-new">
-                                                    <p className="message-text">{msg.message}</p>
+                                                    {content.text && (
+                                                        <p className="message-text">{content.text}</p>
+                                                    )}
+                                                    
+                                                    {content.attachments && content.attachments.length > 0 && (
+                                                        <div className="message-attachments">
+                                                            {content.attachments.map((attachment, index) => (
+                                                                <div key={index} className="attachment-item">
+                                                                    {attachment.type.startsWith('image/') ? (
+                                                                        <div className="attachment-image">
+                                                                            <img 
+                                                                                src={attachment.url} 
+                                                                                alt={`Вложение ${index + 1}`}
+                                                                                className="attachment-preview"
+                                                                                onClick={() => window.open(attachment.url, '_blank')}
+                                                                            />
+                                                                            <div className="attachment-info">
+                                                                                <span className="attachment-name">{attachment.name}</span>
+                                                                                <span className="attachment-size">{formatFileSize(attachment.size)}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="attachment-file">
+                                                                            <div className="file-icon">📎</div>
+                                                                            <div className="file-info">
+                                                                                <span className="file-name">{attachment.name}</span>
+                                                                                <span className="file-size">{formatFileSize(attachment.size)}</span>
+                                                                            </div>
+                                                                            <a 
+                                                                                href={attachment.url} 
+                                                                                target="_blank" 
+                                                                                rel="noopener noreferrer"
+                                                                                className="download-btn"
+                                                                            >
+                                                                                Скачать
+                                                                            </a>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    
                                                     <div className="message-meta">
                                                         <span className="message-time-new">
                                                             {formatTime(msg.created_at)}
@@ -469,9 +667,102 @@ function SupportChat({ orderId, onClose }) {
                 )}
             </div>
 
+            {/* Предпросмотр вложений */}
+            {attachments.length > 0 && (
+                <div className="attachments-preview">
+                    <div className="attachments-header">
+                        <span className="attachments-title">Вложения ({attachments.length})</span>
+                        <button 
+                            className="clear-attachments-btn"
+                            onClick={() => setAttachments([])}
+                            title="Удалить все вложения"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div className="attachments-list">
+                        {attachments.map((attachment, index) => (
+                            <div key={index} className="attachment-preview-item">
+                                {attachment.type.startsWith('image/') ? (
+                                    <div className="preview-image-container">
+                                        <img 
+                                            src={attachment.preview} 
+                                            alt={attachment.name}
+                                            className="preview-image"
+                                        />
+                                        {attachment.uploadProgress < 100 && (
+                                            <div className="upload-progress">
+                                                <div 
+                                                    className="progress-bar" 
+                                                    style={{ width: `${attachment.uploadProgress}%` }}
+                                                />
+                                                <span className="progress-text">
+                                                    {attachment.uploadProgress}%
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="preview-file">
+                                        <div className="file-icon">📎</div>
+                                        <div className="file-details">
+                                            <span className="file-name">{attachment.name}</span>
+                                            <span className="file-size">{formatFileSize(attachment.size)}</span>
+                                        </div>
+                                        {attachment.uploadProgress < 100 && (
+                                            <div className="upload-progress">
+                                                <div 
+                                                    className="progress-bar" 
+                                                    style={{ width: `${attachment.uploadProgress}%` }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <button
+                                    className="remove-attachment-btn"
+                                    onClick={() => removeAttachment(index)}
+                                    title="Удалить"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Поле ввода */}
             <div className="chat-input-section-new">
                 <div className="input-wrapper-new">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        accept="image/*"
+                        multiple
+                        style={{ display: 'none' }}
+                        id="file-input"
+                    />
+                    <button
+                        className="attach-file-btn"
+                        onClick={() => fileInputRef.current.click()}
+                        title="Прикрепить файл"
+                        disabled={isUploading}
+                        type="button"
+                    >
+                        {isUploading ? (
+                            <div className="upload-spinner"></div>
+                        ) : (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M14 2V8H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M12 18V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M9 15H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        )}
+                    </button>
+                    
                     <div className="input-container">
                         <textarea
                             ref={inputRef}
@@ -479,7 +770,7 @@ function SupportChat({ orderId, onClose }) {
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyDown={handleKeyPress}
                             placeholder="Введите сообщение..."
-                            disabled={isSending}
+                            disabled={isSending || isUploading}
                             rows={1}
                             className="chat-input-new"
                         />
@@ -489,19 +780,21 @@ function SupportChat({ orderId, onClose }) {
                                 onClick={() => setNewMessage('')}
                                 title="Очистить"
                                 type="button"
+                                disabled={isSending || isUploading}
                             >
                                 ✕
                             </button>
                         )}
                     </div>
+                    
                     <button
                         onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isSending}
+                        disabled={(!newMessage.trim() && attachments.length === 0) || isSending || isUploading}
                         className="chat-send-btn-new"
                         title="Отправить сообщение"
                         type="button"
                     >
-                        {isSending ? (
+                        {isSending || isUploading ? (
                             <div className="send-spinner"></div>
                         ) : (
                             <svg className="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -521,7 +814,9 @@ function SupportChat({ orderId, onClose }) {
                 <div className="chat-hint-new">
                     <span className="hint-icon">💡</span>
                     <span className="hint-text">
-                        Нажмите Enter для отправки
+                        {attachments.length > 0 
+                            ? `Прикреплено ${attachments.length} файл(ов). Нажмите Enter для отправки` 
+                            : 'Нажмите Enter для отправки. Можно прикрепить изображения'}
                     </span>
                 </div>
             </div>

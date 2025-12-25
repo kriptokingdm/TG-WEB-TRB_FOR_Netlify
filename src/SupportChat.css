@@ -974,3 +974,312 @@ input, textarea, select,
 [style*="color"]:not([style*="var("]) {
   color: var(--tg-theme-text-color) !important;
 }
+
+/* Стили для вложений */
+.attachments-preview {
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border-top: 1px solid var(--tg-border-color, #e5e5ea);
+    padding: 12px 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.attachments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.attachments-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.clear-attachments-btn {
+    background: none;
+    border: none;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.clear-attachments-btn:hover {
+    background: color-mix(in srgb, var(--tg-theme-text-color, #000000) 10%, transparent);
+    color: #ff3b30;
+}
+
+.attachments-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.attachment-preview-item {
+    position: relative;
+    border: 1px solid var(--tg-border-color, #e5e5ea);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--tg-theme-bg-color, #ffffff);
+    transition: all 0.2s ease;
+}
+
+.attachment-preview-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image-container {
+    width: 100px;
+    height: 100px;
+    position: relative;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.preview-file {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 200px;
+}
+
+.file-icon {
+    font-size: 24px;
+    color: var(--tg-theme-button-color, #3390ec);
+}
+
+.file-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000000);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.file-size {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.remove-attachment-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.remove-attachment-btn:hover {
+    background: #ff3b30;
+    transform: scale(1.1);
+}
+
+.upload-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--tg-theme-button-color, #3390ec);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: -20px;
+    right: 4px;
+    font-size: 10px;
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Стили для вложений в сообщениях */
+.message-attachments {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.attachment-item {
+    border: 1px solid var(--tg-border-color, #e5e5ea);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+}
+
+.user-message-new .attachment-item {
+    background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, transparent);
+    border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 30%, transparent);
+}
+
+.attachment-image {
+    position: relative;
+    cursor: pointer;
+}
+
+.attachment-preview {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+}
+
+.attachment-info {
+    padding: 8px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-top: 1px solid var(--tg-border-color, #e5e5ea);
+}
+
+.attachment-name {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-size {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.attachment-file {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.download-btn {
+    background: var(--tg-theme-button-color, #3390ec);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.download-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Кнопка прикрепления файла */
+.attach-file-btn {
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    border: 1px solid var(--tg-border-color, #e5e5ea);
+    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--tg-theme-button-color, #3390ec);
+    flex-shrink: 0;
+}
+
+.attach-file-btn:hover:not(:disabled) {
+    background: var(--tg-theme-button-color, #3390ec);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    transform: translateY(-2px);
+}
+
+.attach-file-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(51, 144, 236, 0.3);
+    border-top-color: var(--tg-theme-button-color, #3390ec);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.input-wrapper-new {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: flex-end;
+}
+
+/* Адаптивность для вложений */
+@media (max-width: 768px) {
+    .attachments-preview {
+        padding: 8px 12px;
+    }
+    
+    .preview-image-container {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .preview-file {
+        min-width: 160px;
+        padding: 8px;
+    }
+    
+    .attachment-preview {
+        max-height: 200px;
+    }
+}
+
+/* Загрузка файлов */
+@keyframes pulseUpload {
+    0% { transform: scale(0.95); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(0.95); }
+}
+
+.is-uploading .attachment-preview-item {
+    animation: pulseUpload 2s infinite;
+}

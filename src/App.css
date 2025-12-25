@@ -1,7 +1,7 @@
-/* App.css - Красивая тема как в Telegram Desktop */
+/* App.css - Полная поддержка тем */
 
 :root {
-  /* Наша красивая темная тема */
+  /* Дефолтные значения (темная тема) */
   --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
@@ -10,15 +10,36 @@
   --tg-theme-secondary-bg-color: #212428;
   --tg-theme-section-bg-color: #3a3d42;
   
-  /* Дополнительные цвета */
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
-  --tg-info-color: #5856d6;
+  --tg-info-color: #5e5ce6;
   --tg-card-bg: #212428;
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
+  --tg-nav-bg: rgba(33, 36, 40, 0.85);
+}
+
+/* Светлая тема */
+:root:not([data-theme]) {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #8e8e93;
+  --tg-theme-button-color: #3390ec;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f8f9fa;
+  --tg-theme-section-bg-color: #e0e0e0;
+  
+  --tg-success-color: #28a745;
+  --tg-error-color: #dc3545;
+  --tg-warning-color: #ffc107;
+  --tg-info-color: #17a2b8;
+  --tg-card-bg: #f8f9fa;
+  --tg-input-bg: #ffffff;
+  --tg-border-color: #e0e0e0;
+  --tg-hover-color: #e9ecef;
+  --tg-nav-bg: rgba(248, 249, 250, 0.9);
 }
 
 /* Сброс и базовые стили */
@@ -37,9 +58,10 @@ html, body, #root {
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Основной контейнер приложения */
+/* Основной контейнер */
 .app {
   position: fixed;
   top: 0;
@@ -77,25 +99,63 @@ html, body, #root {
   background: var(--tg-theme-bg-color);
 }
 
-/* Навигация */
+/* НАВИГАЦИЯ */
 .floating-nav {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 320px;
+  width: 70%;
+  min-width: 280px;
+  max-width: 360px;
   height: 70px;
-  background: var(--tg-card-bg);
   border-radius: 22px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
   padding: 0 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  border: 0.5px solid var(--tg-border-color);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  
+  /* Эффект матового стекла */
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--nav-bg-rgb), 0.8) 0%,
+    rgba(var(--nav-bg-rgb), 0.9) 50%,
+    rgba(var(--nav-bg-rgb), 0.8) 100%
+  );
+  
+  /* Тени и границы */
+  box-shadow: 
+    0 15px 50px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(var(--border-rgb), 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  
+  border: 0.5px solid rgba(var(--border-rgb), 0.2);
+  
+  animation: navSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-theme="dark"] .floating-nav {
+  --nav-bg-rgb: 33, 36, 40;
+  --border-rgb: 255, 255, 255;
+}
+
+:root:not([data-theme]) .floating-nav {
+  --nav-bg-rgb: 248, 249, 250;
+  --border-rgb: 0, 0, 0;
+}
+
+@keyframes navSlideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .nav-item-floating {
@@ -105,26 +165,66 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
   padding: 12px 0 8px;
   position: relative;
   gap: 4px;
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: inherit;
 }
 
+/* Активное состояние */
 .nav-item-floating.active {
-  color: var(--tg-theme-button-color);
+  color: var(--tg-theme-button-color) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--button-rgb), 0.15) 0%,
+    rgba(var(--button-rgb), 0.25) 50%,
+    rgba(var(--button-rgb), 0.15) 100%
+  );
+  box-shadow: 
+    0 0 20px rgba(var(--button-rgb), 0.2),
+    inset 0 0 0 1px rgba(var(--button-rgb), 0.2);
+  transform: scale(1.05);
 }
 
-.nav-item-floating:not(.active) {
-  color: var(--tg-theme-hint-color);
+[data-theme="dark"] .nav-item-floating.active {
+  --button-rgb: 51, 144, 236;
 }
 
-.nav-item-floating:hover {
+:root:not([data-theme]) .nav-item-floating.active {
+  --button-rgb: 51, 144, 236;
+}
+
+/* Индикатор активности */
+.nav-item-floating.active::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  width: 24px;
+  height: 3px;
+  background: var(--tg-theme-button-color);
+  border-radius: 1.5px;
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Hover */
+.nav-item-floating:not(.active):hover {
   background: var(--tg-hover-color);
+  transform: translateY(-2px);
+}
+
+/* Неактивное состояние */
+.nav-item-floating:not(.active) {
+  color: var(--tg-theme-hint-color) !important;
 }
 
 .nav-icon-floating {
@@ -134,18 +234,31 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   margin-bottom: 6px;
+  transition: all 0.3s ease;
+}
+
+.nav-item-floating.active .nav-icon-floating {
+  transform: scale(1.1);
 }
 
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
 }
 
+.nav-item-floating.active .nav-label-floating {
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(var(--button-rgb), 0.3);
+}
+
+/* Бейдж */
 .nav-badge-floating {
   position: absolute;
   top: 10px;
   right: calc(50% - 16px);
-  background: var(--tg-error-color);
+  background: linear-gradient(135deg, var(--tg-error-color) 0%, #ff453a 100%);
   color: white;
   font-size: 10px;
   font-weight: 700;
@@ -157,30 +270,41 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+  z-index: 2;
 }
 
+/* Центральная кнопка */
 .nav-center-floating {
   position: relative;
-  margin: 0 -12px;
+  margin: 0 -8px;
+  z-index: 1;
 }
 
 .nav-center-circle-floating {
   width: 58px;
   height: 58px;
   border-radius: 18px;
-  background: var(--tg-theme-button-color);
+  background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, #3a9aff 100%);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(51, 144, 236, 0.4);
-  transition: all 0.2s ease;
+  box-shadow: 
+    0 10px 30px rgba(51, 144, 236, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: centerGlow 3s infinite;
+}
+
+@keyframes centerGlow {
+  0%, 100% { box-shadow: 0 10px 30px rgba(51, 144, 236, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1); }
+  50% { box-shadow: 0 15px 40px rgba(51, 144, 236, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2); }
 }
 
 .nav-center-circle-floating:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 30px rgba(51, 144, 236, 0.5);
+  transform: scale(1.1) rotate(5deg);
 }
 
 .nav-center-circle-floating:active {
@@ -189,13 +313,23 @@ html, body, #root {
 
 .nav-center-label-floating {
   position: absolute;
-  bottom: -20px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--tg-theme-button-color);
   white-space: nowrap;
+  background: var(--tg-nav-bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 0.5px solid rgba(var(--border-rgb), 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* Эффект клика */
+.nav-item-floating:active {
+  transform: scale(0.95);
 }
 
 /* Лоадер */
@@ -232,7 +366,7 @@ html, body, #root {
   color: var(--tg-theme-hint-color);
 }
 
-/* Toast уведомления */
+/* Toast */
 .telegram-toast {
   position: fixed;
   top: 90px;
@@ -244,10 +378,10 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 0.5px solid var(--tg-border-color);
+  border: 1px solid var(--tg-border-color);
   max-width: 90%;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -281,7 +415,6 @@ html, body, #root {
   }
 }
 
-/* Цвета для разных типов уведомлений */
 .telegram-toast.success {
   border-left: 4px solid var(--tg-success-color);
 }
@@ -297,9 +430,17 @@ html, body, #root {
 /* Адаптивность */
 @media (max-width: 768px) {
   .floating-nav {
-    width: calc(100vw - 32px);
-    max-width: 320px;
+    width: 90%;
+    max-width: none;
     height: 66px;
+    bottom: 16px;
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+  }
+  
+  .nav-center-circle-floating {
+    width: 54px;
+    height: 54px;
   }
   
   .app-content {
@@ -307,14 +448,26 @@ html, body, #root {
   }
 }
 
-@media (max-width: 375px) {
+@media (max-width: 480px) {
   .floating-nav {
-    width: calc(100vw - 24px);
+    width: 94%;
+    height: 62px;
+    border-radius: 20px;
   }
   
   .nav-center-circle-floating {
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+  }
+  
+  .nav-icon-floating {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .nav-label-floating {
+    font-size: 9px;
   }
 }
 
@@ -329,14 +482,7 @@ html, body, #root {
   }
 }
 
-/* Исправление для Safari */
-@supports (-webkit-touch-callout: none) {
-  .app {
-    height: -webkit-fill-available;
-  }
-}
-
-/* Улучшенные скроллбары */
+/* Скроллбары */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -356,7 +502,6 @@ html, body, #root {
   background: var(--tg-theme-button-color);
 }
 
-/* Для Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
@@ -368,4 +513,13 @@ html, body, #root {
               color 0.3s ease, 
               border-color 0.3s ease,
               box-shadow 0.3s ease;
+}
+
+/* Улучшенный фон для светлой темы */
+:root:not([data-theme]) .floating-nav {
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
 }

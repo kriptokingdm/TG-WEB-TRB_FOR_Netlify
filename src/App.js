@@ -15,16 +15,15 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
     
     if (typeof color === 'string') {
-      // Уже hex строка
       return color.startsWith('#') ? color : `#${color}`;
     } else if (typeof color === 'number') {
-      // Число Telegram
       const hex = color.toString(16).padStart(6, '0');
       return `#${hex}`;
     }
@@ -32,76 +31,129 @@ function App() {
     return null;
   }, []);
 
-  // Применяем нашу улучшенную тему с красивым фоном
-  const applyBeautifulTheme = useCallback(() => {
-    console.log('🎨 Применяем красивую тему...');
+  // Определяем темную тему
+  const detectDarkMode = useCallback(() => {
+    if (window.Telegram?.WebApp?.themeParams) {
+      const params = window.Telegram.WebApp.themeParams;
+      
+      if (params?.bg_color) {
+        try {
+          let bgColor;
+          if (typeof params.bg_color === 'string') {
+            bgColor = parseInt(params.bg_color.replace('#', ''), 16);
+          } else {
+            bgColor = params.bg_color;
+          }
+          
+          // Рассчитываем яркость
+          const r = (bgColor >> 16) & 0xff;
+          const g = (bgColor >> 8) & 0xff;
+          const b = bgColor & 0xff;
+          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+          
+          console.log('📱 Яркость фона Telegram:', brightness);
+          
+          // Если фон темный - темная тема
+          return brightness < 180; // Более гибкий порог
+        } catch (error) {
+          console.error('Ошибка определения цвета Telegram:', error);
+        }
+      }
+    }
+    
+    // Проверяем системную тему
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return true;
+    }
+    
+    // По умолчанию - темная тема
+    return true;
+  }, []);
+
+  // Применяем правильную тему
+  const applyTheme = useCallback(() => {
+    console.log('🎨 Применяем тему...');
     
     const root = document.documentElement;
+    const darkMode = detectDarkMode();
+    setIsDarkMode(darkMode);
     
-    // Определяем устройство
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    console.log('📱 Устройство:', isMobile ? 'Мобильное' : 'ПК');
-    
-    // Получаем Telegram цвета если есть
+    // Получаем цвета Telegram если есть
     let tgButtonColor = '#3390ec';
-    let tgTextColor = '#ffffff';
+    let tgTextColor = '#000000';
     let tgHintColor = '#8e8e93';
     
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       
-      // Берем цвет кнопки из Telegram
       const buttonColor = telegramColorToHex(params.button_color);
       if (buttonColor) tgButtonColor = buttonColor;
       
-      // Берем цвет текста из Telegram
       const textColor = telegramColorToHex(params.text_color);
       if (textColor) tgTextColor = textColor;
       
-      // Берем цвет подсказок из Telegram
       const hintColor = telegramColorToHex(params.hint_color);
       if (hintColor) tgHintColor = hintColor;
     }
     
-    // НАШ КРАСИВЫЙ ФОН ДЛЯ ВСЕХ УСТРОЙСТВ
-    const beautifulBgColor = '#1a1d21'; // Красивый темно-серый как в Telegram Desktop
+    if (darkMode) {
+      // ТЕМНАЯ ТЕМА
+      const darkBgColor = '#1a1d21'; // Красивый серый фон
+      const darkCardBg = '#212428';
+      const darkInputBg = '#2a2d32';
+      const darkBorderColor = '#3a3d42';
+      
+      root.style.setProperty('--tg-theme-bg-color', darkBgColor);
+      root.style.setProperty('--tg-theme-text-color', '#ffffff');
+      root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
+      root.style.setProperty('--tg-theme-button-color', tgButtonColor);
+      root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+      root.style.setProperty('--tg-theme-secondary-bg-color', darkCardBg);
+      root.style.setProperty('--tg-theme-section-bg-color', darkBorderColor);
+      
+      // Дополнительные цвета для темной темы
+      root.style.setProperty('--tg-success-color', '#34c759');
+      root.style.setProperty('--tg-error-color', '#ff3b30');
+      root.style.setProperty('--tg-warning-color', '#ff9500');
+      root.style.setProperty('--tg-info-color', '#5e5ce6');
+      root.style.setProperty('--tg-card-bg', darkCardBg);
+      root.style.setProperty('--tg-input-bg', darkInputBg);
+      root.style.setProperty('--tg-border-color', darkBorderColor);
+      root.style.setProperty('--tg-hover-color', '#2c2f34');
+      
+      root.setAttribute('data-theme', 'dark');
+      console.log('🌙 Применена темная тема');
+    } else {
+      // СВЕТЛАЯ ТЕМА
+      const lightBgColor = '#ffffff';
+      const lightCardBg = '#f8f9fa';
+      const lightInputBg = '#ffffff';
+      const lightBorderColor = '#e0e0e0';
+      
+      root.style.setProperty('--tg-theme-bg-color', lightBgColor);
+      root.style.setProperty('--tg-theme-text-color', '#000000');
+      root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
+      root.style.setProperty('--tg-theme-button-color', tgButtonColor);
+      root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+      root.style.setProperty('--tg-theme-secondary-bg-color', lightCardBg);
+      root.style.setProperty('--tg-theme-section-bg-color', lightBorderColor);
+      
+      // Дополнительные цвета для светлой темы
+      root.style.setProperty('--tg-success-color', '#28a745');
+      root.style.setProperty('--tg-error-color', '#dc3545');
+      root.style.setProperty('--tg-warning-color', '#ffc107');
+      root.style.setProperty('--tg-info-color', '#17a2b8');
+      root.style.setProperty('--tg-card-bg', lightCardBg);
+      root.style.setProperty('--tg-input-bg', lightInputBg);
+      root.style.setProperty('--tg-border-color', lightBorderColor);
+      root.style.setProperty('--tg-hover-color', '#e9ecef');
+      
+      root.removeAttribute('data-theme');
+      console.log('☀️ Применена светлая тема');
+    }
     
-    // Цвет карточек - чуть светлее фона
-    const cardBgColor = '#212428'; // Чуть светлее фона
-    const inputBgColor = '#2a2d32'; // Еще светлее для инпутов
-    const borderColor = '#3a3d42'; // Границы
-    
-    // Применяем нашу тему
-    root.style.setProperty('--tg-theme-bg-color', beautifulBgColor);
-    root.style.setProperty('--tg-theme-text-color', tgTextColor);
-    root.style.setProperty('--tg-theme-hint-color', tgHintColor);
-    root.style.setProperty('--tg-theme-button-color', tgButtonColor);
-    root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
-    root.style.setProperty('--tg-theme-secondary-bg-color', cardBgColor);
-    root.style.setProperty('--tg-theme-section-bg-color', borderColor);
-    
-    // Дополнительные цвета
-    root.style.setProperty('--tg-success-color', '#34c759');
-    root.style.setProperty('--tg-error-color', '#ff3b30');
-    root.style.setProperty('--tg-warning-color', '#ff9500');
-    root.style.setProperty('--tg-info-color', '#5856d6');
-    root.style.setProperty('--tg-card-bg', cardBgColor);
-    root.style.setProperty('--tg-input-bg', inputBgColor);
-    root.style.setProperty('--tg-border-color', borderColor);
-    root.style.setProperty('--tg-hover-color', '#2c2f34');
-    
-    // Устанавливаем data атрибут для темной темы
-    root.setAttribute('data-theme', 'dark');
-    
-    console.log('✅ Красивая тема применена:', {
-      bg: beautifulBgColor,
-      card: cardBgColor,
-      button: tgButtonColor
-    });
-    
-    // Сохраняем в localStorage
-    localStorage.setItem('beautifulThemeApplied', 'true');
-  }, [telegramColorToHex]);
+    localStorage.setItem('themeApplied', 'true');
+  }, [detectDarkMode, telegramColorToHex]);
 
   // Показ уведомлений
   const showToast = useCallback((message, type = 'info') => {
@@ -109,7 +161,7 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Загрузка реферальных данных для бейджа
+  // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -154,18 +206,17 @@ function App() {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       
-      // Основные настройки
       tg.ready();
       tg.expand();
       
-      // Применяем нашу красивую тему
-      applyBeautifulTheme();
+      // Применяем тему
+      applyTheme();
       
-      // Слушаем события изменения темы (но все равно применяем нашу)
+      // Слушаем события изменения темы
       tg.onEvent('themeChanged', () => {
-        console.log('🔄 Telegram изменил тему, но мы применяем нашу');
+        console.log('🔄 Telegram изменил тему');
         setTimeout(() => {
-          applyBeautifulTheme();
+          applyTheme();
         }, 100);
       });
       
@@ -186,16 +237,15 @@ function App() {
         localStorage.setItem('telegramUser', JSON.stringify(userData));
         localStorage.setItem('currentUser', JSON.stringify(userData));
         
-        // Показываем приветствие
         setTimeout(() => {
           showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success');
         }, 1000);
       }
       
-      console.log('✅ Telegram WebApp инициализирован с красивой темой');
+      console.log('✅ Telegram WebApp инициализирован');
     } else {
-      // Для разработки
-      console.log('💻 Режим разработки (без Telegram WebApp)');
+      // Режим разработки
+      console.log('💻 Режим разработки');
       
       setTelegramUser({
         id: '7879866656',
@@ -205,22 +255,14 @@ function App() {
         photoUrl: null
       });
       
-      // Для разработки применяем красивую тему
-      applyBeautifulTheme();
+      applyTheme();
     }
-  }, [applyBeautifulTheme, showToast]);
+  }, [applyTheme, showToast]);
 
   // Инициализация приложения
   useEffect(() => {
     console.log('🚀 Инициализация TetherRabbit...');
-    console.log('🌍 Окружение:', {
-      hasTelegram: !!window.Telegram,
-      hasWebApp: !!window.Telegram?.WebApp,
-      userAgent: navigator.userAgent,
-      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    });
     
-    // Устанавливаем debug пользователя
     const debugUser = {
       id: '7879866656',
       telegramId: '7879866656',
@@ -229,16 +271,13 @@ function App() {
     };
     localStorage.setItem('currentUser', JSON.stringify(debugUser));
     
-    // Инициализируем Telegram WebApp
     initTelegramWebApp();
     
-    // Hash навигация
     const hash = window.location.hash.replace('#', '');
     if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
       setCurrentPage(hash);
     }
     
-    // Загружаем реферальные данные для бейджа
     loadReferralData();
     
     setTimeout(() => {
@@ -265,7 +304,6 @@ function App() {
     if (page === currentPage) return;
     
     console.log(`➡️ Переход на страницу: ${page}`);
-    
     window.location.hash = page;
     setCurrentPage(page);
   }, [currentPage]);
@@ -293,7 +331,6 @@ function App() {
 
   // Плавающая навигация
   const Navigation = () => {
-    // Доступная сумма для бейджа
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
     
@@ -357,7 +394,6 @@ function App() {
           {renderPage()}
           {currentPage !== 'help' && <Navigation />}
           
-          {/* Уведомления */}
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
               <span className="telegram-toast-icon">

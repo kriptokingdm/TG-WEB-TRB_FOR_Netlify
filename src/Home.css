@@ -1157,3 +1157,115 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 25px rgba(58, 154, 255, 0.4);
 }
+
+/* Единые стили для всех устройств в Home.css */
+
+.home-container {
+  background: var(--tg-theme-bg-color) !important;
+  color: var(--tg-theme-text-color) !important;
+}
+
+.currency-cards-section,
+.payment-section-new,
+.security-info {
+  background: var(--tg-card-bg) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.currency-card-side {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 15%, transparent) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.swap-center-button {
+  background: var(--tg-theme-button-color) !important;
+  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important;
+}
+
+.amount-input,
+.network-select,
+.exchange-select,
+.bank-select,
+.address-input,
+.uid-input,
+.phone-input,
+.card-input {
+  background: var(--tg-input-bg) !important;
+  color: var(--tg-theme-text-color) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.crypto-item,
+.payment-item {
+  background: var(--tg-input-bg) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.crypto-item.selected,
+.payment-item.selected {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 20%, transparent) !important;
+  border: 0.5px solid var(--tg-theme-button-color) !important;
+}
+
+.exchange-button-new {
+  background: var(--tg-theme-button-color) !important;
+  color: var(--tg-theme-button-text-color) !important;
+  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important;
+}
+
+.exchange-button-new:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(51, 144, 236, 0.45) !important;
+}
+
+/* Стили для History */
+.history-container {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.history-header-new,
+.order-card-new,
+.stat-card-new {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Стили для Help */
+.help-container-new {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.help-header-new {
+  background: var(--tg-theme-button-color) !important;
+}
+
+.help-section-new,
+.search-results-new {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Стили для Profile */
+.profile-container {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.profile-card,
+.referral-card {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Убедитесь, что все тексты читаемы */
+* {
+  color: var(--tg-theme-text-color) !important;
+}
+
+/* Переопределение для мест, где используются inline цвета */
+[style*="color:"] {
+  color: var(--tg-theme-text-color) !important;
+}
+
+[style*="background:"]:not([style*="var("]) {
+  background: var(--tg-card-bg) !important;
+}

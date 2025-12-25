@@ -193,5 +193,75 @@
             }
         }, 1000);
     </script>
+
+
+
+
+<script>
+    // Принудительно применяем тему при загрузке
+    (function() {
+      // Ждем загрузки DOM
+      document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, есть ли сохраненная тема
+        const savedTheme = localStorage.getItem('forceTheme');
+        const themeApplied = localStorage.getItem('themeApplied');
+        
+        if (!themeApplied) {
+          // Если тема еще не применялась, устанавливаем темную тему
+          const root = document.documentElement;
+          
+          // Цвета темной темы (единые для всех)
+          root.style.setProperty('--tg-theme-bg-color', '#0f0f0f');
+          root.style.setProperty('--tg-theme-text-color', '#ffffff');
+          root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
+          root.style.setProperty('--tg-theme-button-color', '#3390ec');
+          root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+          root.style.setProperty('--tg-theme-secondary-bg-color', '#1c1c1e');
+          root.style.setProperty('--tg-theme-section-bg-color', '#2c2c2e');
+          
+          // Дополнительные цвета
+          root.style.setProperty('--tg-success-color', '#34c759');
+          root.style.setProperty('--tg-error-color', '#ff3b30');
+          root.style.setProperty('--tg-warning-color', '#ff9500');
+          root.style.setProperty('--tg-info-color', '#5856d6');
+          root.style.setProperty('--tg-card-bg', '#1c1c1e');
+          root.style.setProperty('--tg-input-bg', '#2c2c2e');
+          root.style.setProperty('--tg-border-color', '#3c3c3e');
+          root.style.setProperty('--tg-hover-color', '#3c3c3e');
+          
+          root.setAttribute('data-theme', 'dark');
+          
+          console.log('🎨 Применена единая темная тема при загрузке');
+          localStorage.setItem('themeApplied', 'true');
+        }
+      });
+      
+      // Также применяем сразу на случай быстрой загрузки
+      setTimeout(function() {
+        if (!localStorage.getItem('themeApplied')) {
+          const root = document.documentElement;
+          root.style.cssText = `
+            --tg-theme-bg-color: #0f0f0f;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #8e8e93;
+            --tg-theme-button-color: #3390ec;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #1c1c1e;
+            --tg-theme-section-bg-color: #2c2c2e;
+            --tg-success-color: #34c759;
+            --tg-error-color: #ff3b30;
+            --tg-warning-color: #ff9500;
+            --tg-info-color: #5856d6;
+            --tg-card-bg: #1c1c1e;
+            --tg-input-bg: #2c2c2e;
+            --tg-border-color: #3c3c3e;
+            --tg-hover-color: #3c3c3e;
+          `;
+          root.setAttribute('data-theme', 'dark');
+          localStorage.setItem('themeApplied', 'true');
+        }
+      }, 100);
+    })();
+  </script>
 </body>
 </html>

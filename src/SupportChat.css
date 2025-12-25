@@ -925,3 +925,32 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Фикс для слишком темных Telegram цветов на мобильных */
+@media (max-width: 768px) {
+    /* Для всех карточек и секций */
+    .card, .section, .panel, 
+    .currency-cards-section, .payment-section-new, .security-info,
+    .profile-card, .referral-card, .order-card-new,
+    .help-section-new, .search-results-new,
+    .support-chat-new, .message-content-new {
+      background: var(--tg-card-bg) !important;
+    }
+    
+    /* Для инпутов */
+    input, textarea, select,
+    .amount-input, .chat-input-new, .search-input-new {
+      background: var(--tg-input-bg) !important;
+    }
+    
+    /* Делаем границы более заметными */
+    .currency-cards-section,
+    .payment-section-new,
+    .security-info,
+    .profile-card,
+    .referral-card,
+    .order-card-new,
+    .help-section-new {
+      border: 1px solid var(--tg-border-color) !important;
+    }
+  }

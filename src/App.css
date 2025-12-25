@@ -1,7 +1,7 @@
-/* App.css - Единая тема для всех устройств */
+/* App.css - Поддержка Telegram цветов с улучшениями */
 
 :root {
-  /* Наша единая темная тема для всех устройств */
+  /* Telegram theme colors - будут установлены через JS */
   --tg-theme-bg-color: #0f0f0f;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
@@ -10,15 +10,17 @@
   --tg-theme-secondary-bg-color: #1c1c1e;
   --tg-theme-section-bg-color: #2c2c2e;
   
-  /* Дополнительные цвета */
+  /* Дополнительные переменные */
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
   --tg-info-color: #5856d6;
-  --tg-card-bg: #1c1c1e;
-  --tg-input-bg: #2c2c2e;
-  --tg-border-color: #3c3c3e;
-  --tg-hover-color: #3c3c3e;
+  
+  /* Производные цвета для лучшей читаемости на мобильных */
+  --tg-card-bg: color-mix(in srgb, var(--tg-theme-bg-color) 95%, var(--tg-theme-secondary-bg-color) 5%);
+  --tg-input-bg: color-mix(in srgb, var(--tg-theme-bg-color) 90%, var(--tg-theme-secondary-bg-color) 10%);
+  --tg-border-color: var(--tg-theme-section-bg-color);
+  --tg-hover-color: color-mix(in srgb, var(--tg-theme-bg-color) 85%, var(--tg-theme-secondary-bg-color) 15%);
 }
 
 /* Сброс и базовые стили */
@@ -362,26 +364,17 @@ html, body, #root {
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
 }
 
-/* Глобальные стили для всех элементов */
-button {
-  font-family: inherit;
-  color: inherit;
-}
-
-/* Улучшенные стили для инпутов и селектов во всех компонентах */
-input, textarea, select {
-  background: var(--tg-input-bg) !important;
-  color: var(--tg-theme-text-color) !important;
-  border-color: var(--tg-border-color) !important;
-}
-
-/* Стили для карточек во всех компонентах */
-.card, .section, .panel {
-  background: var(--tg-card-bg) !important;
-  border-color: var(--tg-border-color) !important;
-}
-
-/* Стили для таблиц и списков */
-table, tr, td, li {
-  border-color: var(--tg-border-color) !important;
+/* Фикс для слишком темных Telegram цветов на мобильных */
+@media (max-width: 768px) {
+  :root {
+    --tg-card-bg: color-mix(in srgb, var(--tg-theme-bg-color) 92%, var(--tg-theme-secondary-bg-color) 8%);
+    --tg-input-bg: color-mix(in srgb, var(--tg-theme-bg-color) 88%, var(--tg-theme-secondary-bg-color) 12%);
+  }
+  
+  /* Если Telegram дал черный фон, делаем его чуть светлее для мобильных */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --tg-theme-bg-color: color-mix(in srgb, var(--tg-theme-bg-color) 90%, #1a1a1a 10%);
+    }
+  }
 }

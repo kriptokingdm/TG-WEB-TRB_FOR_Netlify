@@ -110,7 +110,7 @@ html, body, #root {
   min-width: 280px;
   max-width: 360px;
   height: 70px;
-  border-radius: 100px; /* Немного меньше радиус для телефонов */
+  border-radius: 65px; /* Немного меньше радиус для телефонов */
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -345,11 +345,11 @@ html, body, #root {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1500px) {
   .floating-nav {
     width: 94%;
     height: 60px;
-    border-radius: 16px;
+    border-radius: 50px;
   }
   
   .nav-center-circle-floating {

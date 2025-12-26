@@ -102,7 +102,7 @@ function SupportChat({ orderId, onClose }) {
         } catch (error) {
             console.error('❌ Error loading messages:', error);
             if (!silent) {
-                setError('Не удалось загрузить сообщения');
+                setError('Не удалось загрузить сообщений');
             }
         } finally {
             if (!silent) {
@@ -204,18 +204,29 @@ function SupportChat({ orderId, onClose }) {
         formData.append('userId', userId);
         
         try {
-            // Используем правильный URL в зависимости от окружения
-            const isProduction = process.env.NODE_ENV === 'production';
-            const baseUrl = isProduction 
-                ? 'http://87.242.106.114:3002'  // Ваш IP сервера
-                : 'http://localhost:3002';
+            // Используем HTTPS для продакшена, HTTP только для localhost
+            const isLocalhost = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1';
             
-            console.log('📤 Загрузка файла на:', baseUrl);
+            let baseUrl;
+            
+            if (isLocalhost) {
+                // Для локальной разработки
+                baseUrl = 'http://localhost:3002';
+            } else {
+                // Для продакшена используем тот же домен, что и фронтенд
+                // или прокси через относительный путь
+                baseUrl = window.location.origin.includes('tethrab.shop') 
+                    ? 'https://tethrab.shop'
+                    : window.location.origin;
+            }
+            
+            console.log('📤 Загрузка файла на:', `${baseUrl}/api/chat/upload`);
             
             const response = await fetch(`${baseUrl}/api/chat/upload`, {
                 method: 'POST',
                 body: formData,
-                // Заголовки не нужны для FormData - браузер сам установит
+                // Не устанавливаем Content-Type для FormData
             });
             
             if (!response.ok) {
@@ -225,11 +236,26 @@ function SupportChat({ orderId, onClose }) {
             const result = await response.json();
             
             if (result.success) {
-                // Возвращаем первый файл из массива или объект fileUrl
-                const fileUrl = result.files && result.files[0] 
-                    ? `${baseUrl}${result.files[0].url}`
-                    : `${baseUrl}${result.fileUrl}`;
-                return fileUrl;
+                // Формируем полный URL
+                let fileUrl;
+                if (result.files && result.files[0]) {
+                    fileUrl = result.files[0].url.startsWith('http') 
+                        ? result.files[0].url 
+                        : `${baseUrl}${result.files[0].url}`;
+                } else if (result.fileUrl) {
+                    fileUrl = result.fileUrl.startsWith('http')
+                        ? result.fileUrl
+                        : `${baseUrl}${result.fileUrl}`;
+                } else {
+                    throw new Error('Не получен URL файла от сервера');
+                }
+                
+                return {
+                    url: fileUrl,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                };
             } else {
                 throw new Error(result.error || 'Ошибка загрузки файла');
             }
@@ -268,13 +294,8 @@ function SupportChat({ orderId, onClose }) {
             if (hasAttachments) {
                 for (let i = 0; i < attachments.length; i++) {
                     try {
-                        const fileUrl = await uploadFile(attachments[i].file);
-                        uploadedFiles.push({
-                            url: fileUrl,
-                            name: attachments[i].name,
-                            type: attachments[i].type,
-                            size: attachments[i].size
-                        });
+                        const fileData = await uploadFile(attachments[i].file);
+                        uploadedFiles.push(fileData);
                         
                         // Обновляем прогресс
                         setAttachments(prev => {

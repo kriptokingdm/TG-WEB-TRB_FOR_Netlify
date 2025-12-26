@@ -204,22 +204,32 @@ function SupportChat({ orderId, onClose }) {
         formData.append('userId', userId);
         
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://tethrab.shop'}/api/chat/upload`, {
+            // Используем правильный URL в зависимости от окружения
+            const isProduction = process.env.NODE_ENV === 'production';
+            const baseUrl = isProduction 
+                ? 'http://87.242.106.114:3002'  // Ваш IP сервера
+                : 'http://localhost:3002';
+            
+            console.log('📤 Загрузка файла на:', baseUrl);
+            
+            const response = await fetch(`${baseUrl}/api/chat/upload`, {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    // Заголовки не нужны для FormData
-                }
+                // Заголовки не нужны для FormData - браузер сам установит
             });
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
             const result = await response.json();
             
             if (result.success) {
-                return result.fileUrl;
+                // Возвращаем первый файл из массива или объект fileUrl
+                const fileUrl = result.files && result.files[0] 
+                    ? `${baseUrl}${result.files[0].url}`
+                    : `${baseUrl}${result.fileUrl}`;
+                return fileUrl;
             } else {
                 throw new Error(result.error || 'Ошибка загрузки файла');
             }

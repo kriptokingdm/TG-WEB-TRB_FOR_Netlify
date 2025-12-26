@@ -102,7 +102,7 @@ function SupportChat({ orderId, onClose }) {
         } catch (error) {
             console.error('❌ Error loading messages:', error);
             if (!silent) {
-                setError('Не удалось загрузить сообщений');
+                setError('Не удалось загрузить сообщения');
             }
         } finally {
             if (!silent) {
@@ -204,32 +204,29 @@ function SupportChat({ orderId, onClose }) {
         formData.append('userId', userId);
         
         try {
-            // Используем HTTPS для продакшена, HTTP только для localhost
-            const isLocalhost = window.location.hostname === 'localhost' || 
-                              window.location.hostname === '127.0.0.1';
+            // Определяем URL в зависимости от окружения
+            let apiUrl;
             
-            let baseUrl;
-            
-            if (isLocalhost) {
-                // Для локальной разработки
-                baseUrl = 'http://localhost:3002';
+            // Для разработки - localhost, для продакшена - ваш домен
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                apiUrl = 'http://localhost:3002';
             } else {
-                // Для продакшена используем тот же домен, что и фронтенд
-                // или прокси через относительный путь
-                baseUrl = window.location.origin.includes('tethrab.shop') 
-                    ? 'https://tethrab.shop'
-                    : window.location.origin;
+                // Используем абсолютный URL к вашему API серверу
+                apiUrl = 'https://tethrab.shop:3002'; // ИЛИ 'http://87.242.106.114:3002'
             }
             
-            console.log('📤 Загрузка файла на:', `${baseUrl}/api/chat/upload`);
+            console.log('📤 Загрузка файла на:', `${apiUrl}/api/chat/upload`);
             
-            const response = await fetch(`${baseUrl}/api/chat/upload`, {
+            const response = await fetch(`${apiUrl}/api/chat/upload`, {
                 method: 'POST',
                 body: formData,
                 // Не устанавливаем Content-Type для FormData
+                mode: 'cors', // Явно указываем CORS
             });
             
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Ошибка сервера:', response.status, errorText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
@@ -241,11 +238,11 @@ function SupportChat({ orderId, onClose }) {
                 if (result.files && result.files[0]) {
                     fileUrl = result.files[0].url.startsWith('http') 
                         ? result.files[0].url 
-                        : `${baseUrl}${result.files[0].url}`;
+                        : `${apiUrl}${result.files[0].url}`;
                 } else if (result.fileUrl) {
                     fileUrl = result.fileUrl.startsWith('http')
                         ? result.fileUrl
-                        : `${baseUrl}${result.fileUrl}`;
+                        : `${apiUrl}${result.fileUrl}`;
                 } else {
                     throw new Error('Не получен URL файла от сервера');
                 }

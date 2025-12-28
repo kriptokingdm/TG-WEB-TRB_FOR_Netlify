@@ -286,7 +286,7 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                         </div>
                         <div className="info-row">
                             <div className="info-label">Когда можно выводить:</div>
-                            <div className="info-value highlight">Доступно в любое время</div>
+                            {/* <div className="info-value highlight">Доступно в любое время</div> */}
                         </div>
                     </div>
                 </div>

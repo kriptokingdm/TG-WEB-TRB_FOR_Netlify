@@ -284,10 +284,7 @@ const ReferralSystem = ({ onClose, showMessage }) => {
                             <div className="info-label">Минимальный вывод:</div>
                             <div className="info-value">$10</div>
                         </div>
-                        <div className="info-row">
-                            <div className="info-label">Когда можно выводить:</div>
-                            {/* <div className="info-value highlight">Доступно в любое время</div> */}
-                        </div>
+                        
                     </div>
                 </div>
             </div>

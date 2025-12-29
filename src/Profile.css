@@ -1029,3 +1029,166 @@
         margin: 10px;
     }
 }
+
+/* Стили для модального окна настроек */
+.settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.settings-modal {
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.settings-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
+}
+
+.settings-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
+    margin: 0;
+}
+
+.settings-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--tg-theme-text-color, #000000);
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.settings-modal-content {
+    padding: 0;
+}
+
+.settings-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tg-theme-hint-color, #999999);
+    margin: 0 0 15px 0;
+}
+
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.settings-item:hover {
+    background-color: var(--tg-theme-secondary-bg-color, #f2f2f7);
+}
+
+.settings-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-content {
+    flex: 1;
+}
+
+.settings-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 2px;
+}
+
+.settings-description {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #999999);
+}
+
+.settings-action {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.toggle-switch {
+    width: 50px;
+    height: 28px;
+    background: var(--tg-theme-secondary-bg-color, #e5e5e7);
+    border-radius: 14px;
+    position: relative;
+}
+
+.toggle-switch.active {
+    background: var(--tg-theme-button-color, #3390ec);
+}
+
+.toggle-slider {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggle-switch.active .toggle-slider {
+    transform: translateX(22px);
+}
+
+.settings-app-version {
+    text-align: center;
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #999999);
+    padding: 15px 20px;
+    margin: 0;
+}

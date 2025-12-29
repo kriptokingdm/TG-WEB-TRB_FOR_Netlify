@@ -4,6 +4,7 @@ import Home from './Home';
 import History from './History';
 import Profile from './Profile';
 import Help from './Help';
+import SettingsApp from './SettingsApp'; // Новый импорт
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // URL API
@@ -161,6 +162,22 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
+  // Переключение темы
+  const toggleTheme = useCallback(() => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    // Сохраняем тему
+    localStorage.setItem('theme', newTheme);
+    
+    // Применяем тему
+    const darkMode = newTheme === 'dark';
+    setIsDarkMode(darkMode);
+    applyTheme();
+    
+    showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
+  }, [applyTheme, showToast]);
+
   // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
     try {
@@ -263,42 +280,42 @@ function App() {
         console.log('⚠️ BackButton не поддерживается в этой версии Telegram');
       }
       
-      // ВАЖНО: Добавляем встроенную кнопку настроек в меню Telegram
+      // ВАЖНО: Настраиваем встроенную кнопку настроек через SettingsButton API
       try {
-        console.log('🔄 Настройка встроенного меню Telegram...');
+        console.log('⚙️ Настройка встроенной кнопки настроек...');
         
-        // Проверяем доступность API для встроенной кнопки настроек
+        // Метод setupSettingsButton - официальный API для добавления кнопки в меню Telegram
         if (tg.setupSettingsButton && typeof tg.setupSettingsButton === 'function') {
-          // ВОТ ГЛАВНЫЙ МОМЕНТ: добавляем кнопку в меню Telegram
+          // Добавляем кнопку настроек в меню Telegram
           tg.setupSettingsButton({
             is_visible: true,
             on_click: () => {
               console.log('⚙️ Нажата встроенная кнопка настроек в меню Telegram');
-              // Открываем страницу профиля при нажатии
-              navigateTo('profile');
+              // Открываем страницу настроек при нажатии
+              navigateTo('settings');
             }
           });
           console.log('✅ Встроенная кнопка настроек добавлена в меню Telegram');
         } 
-        // Проверяем старый API MenuButton (может работать в некоторых версиях)
+        // Альтернатива через MenuButton (старый API)
         else if (tg.MenuButton && typeof tg.MenuButton.setText === 'function') {
           tg.MenuButton.setText('Настройки');
           tg.MenuButton.show();
           tg.MenuButton.onClick(() => {
             console.log('⚙️ Нажата кнопка MenuButton');
-            navigateTo('profile');
+            navigateTo('settings');
           });
           console.log('✅ Кнопка настроек добавлена через MenuButton');
         }
         else {
-          console.log('⚠️ API для встроенной кнопки недоступен, используем альтернативу');
-          // Если API недоступен, показываем уведомление
+          console.log('⚠️ API для встроенной кнопки недоступен');
+          // Показываем уведомление, что настройки в профиле
           setTimeout(() => {
             showToast('Настройки доступны в профиле 👤', 'info');
           }, 2000);
         }
       } catch (error) {
-        console.error('❌ Ошибка настройки встроенного меню:', error);
+        console.error('❌ Ошибка настройки кнопки настроек:', error);
       }
       
       // Применяем тему
@@ -366,7 +383,7 @@ function App() {
     initTelegramWebApp();
     
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
       setCurrentPage(hash);
     }
     
@@ -379,7 +396,7 @@ function App() {
     
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help'].includes(hash)) {
+      if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
         setCurrentPage(hash);
       }
     };
@@ -398,8 +415,8 @@ function App() {
       navigateTo: navigateTo,
       API_BASE_URL: API_BASE_URL,
       showToast: showToast,
-      isDarkMode: isDarkMode,
-      applyTheme: applyTheme
+      toggleTheme: toggleTheme,
+      isDarkMode: isDarkMode
     };
     
     switch(currentPage) {
@@ -409,6 +426,8 @@ function App() {
         return <Profile key="profile" {...commonProps} />;
       case 'help': 
         return <Help key="help" {...commonProps} />;
+      case 'settings':
+        return <SettingsApp key="settings" {...commonProps} />;
       default: 
         return <Home key="home" {...commonProps} />;
     }
@@ -477,7 +496,7 @@ function App() {
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {currentPage !== 'help' && <Navigation />}
+          {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
           
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>

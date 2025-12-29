@@ -95,31 +95,42 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
     };
 
-    // Добавление кнопки "Настройки" в меню Telegram WebApp
+    // Добавление кнопки настроек в Telegram WebApp
     useEffect(() => {
         const setupTelegramMenu = () => {
             if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                
-                // Создаем меню
-                tg.MainButton.hide();
-                
-                // Добавляем кнопку "Настройки" в меню
-                tg.MenuButton.show();
-                tg.MenuButton.setText('Настройки');
-                
-                // Обработчик нажатия на меню
-                const handleMenuButtonClick = () => {
-                    setShowSettingsModal(true);
-                };
-                
-                // Подписываемся на событие клика по меню
-                tg.MenuButton.onClick(handleMenuButtonClick);
-                
-                // Возвращаем функцию очистки
-                return () => {
-                    tg.MenuButton.offClick(handleMenuButtonClick);
-                };
+                try {
+                    const tg = window.Telegram.WebApp;
+                    
+                    // Сначала скрываем MainButton если он есть
+                    if (tg.MainButton && typeof tg.MainButton.hide === 'function') {
+                        tg.MainButton.hide();
+                    }
+                    
+                    // Проверяем наличие MenuButton API
+                    if (tg.MenuButton && typeof tg.MenuButton.show === 'function') {
+                        // Устанавливаем текст для кнопки меню
+                        tg.MenuButton.setText('Настройки');
+                        tg.MenuButton.show();
+                        
+                        // Обработчик нажатия на меню
+                        const handleMenuButtonClick = () => {
+                            setShowSettingsModal(true);
+                        };
+                        
+                        // Подписываемся на событие клика по меню
+                        tg.MenuButton.onClick(handleMenuButtonClick);
+                        
+                        // Возвращаем функцию очистки
+                        return () => {
+                            tg.MenuButton.offClick(handleMenuButtonClick);
+                        };
+                    } else {
+                        console.log('⚠️ MenuButton API недоступен в этой версии Telegram WebApp');
+                    }
+                } catch (error) {
+                    console.error('❌ Ошибка при настройке Telegram меню:', error);
+                }
             }
         };
         
@@ -242,15 +253,26 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             Профиль
                         </h1>
                     </div>
-                    <button
-                        className="help-button"
-                        onClick={() => navigateTo('help')}
-                        title="Помощь"
-                        aria-label="Помощь"
-                        style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
-                    >
-                        <HelpSVG />
-                    </button>
+                    <div className="header-actions">
+                        <button
+                            className="settings-button"
+                            onClick={() => setShowSettingsModal(true)}
+                            title="Настройки"
+                            aria-label="Настройки"
+                            style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
+                        >
+                            <SettingsSVG />
+                        </button>
+                        <button
+                            className="help-button"
+                            onClick={() => navigateTo('help')}
+                            title="Помощь"
+                            aria-label="Помощь"
+                            style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
+                        >
+                            <HelpSVG />
+                        </button>
+                    </div>
                 </div>
             </div>
 

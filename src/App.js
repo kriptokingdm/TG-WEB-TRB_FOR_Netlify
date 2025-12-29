@@ -54,7 +54,7 @@ function App() {
           console.log('📱 Яркость фона Telegram:', brightness);
           
           // Если фон темный - темная тема
-          return brightness < 180; // Более гибкий порог
+          return brightness < 180;
         } catch (error) {
           console.error('Ошибка определения цвета Telegram:', error);
         }
@@ -98,7 +98,7 @@ function App() {
     
     if (darkMode) {
       // ТЕМНАЯ ТЕМА
-      const darkBgColor = '#1a1d21'; // Красивый серый фон
+      const darkBgColor = '#1a1d21';
       const darkCardBg = '#212428';
       const darkInputBg = '#2a2d32';
       const darkBorderColor = '#3a3d42';
@@ -199,7 +199,7 @@ function App() {
     }
   };
 
-  // Инициализация Telegram WebApp
+  // Инициализация Telegram WebApp с встроенной кнопкой настроек
   const initTelegramWebApp = useCallback(() => {
     console.log('🤖 Инициализация Telegram WebApp...');
     
@@ -208,6 +208,47 @@ function App() {
       
       tg.ready();
       tg.expand();
+      
+      // ВАЖНО: Добавляем встроенную кнопку настроек в меню Telegram
+      // Используем метод setupSettingsButton - это официальный API для добавления кнопки в меню
+      try {
+        console.log('🔄 Настройка встроенного меню Telegram...');
+        
+        // Проверяем доступность API для встроенной кнопки настроек
+        if (tg.setupSettingsButton && typeof tg.setupSettingsButton === 'function') {
+          // ВОТ ГЛАВНЫЙ МОМЕНТ: добавляем кнопку в меню Telegram
+          tg.setupSettingsButton({
+            is_visible: true,
+            on_click: () => {
+              console.log('⚙️ Нажата встроенная кнопка настроек в меню Telegram');
+              // Открываем страницу профиля при нажатии
+              setCurrentPage('profile');
+              window.location.hash = 'profile';
+            }
+          });
+          console.log('✅ Встроенная кнопка настроек добавлена в меню Telegram');
+        } 
+        // Проверяем старый API MenuButton (может работать в некоторых версиях)
+        else if (tg.MenuButton && typeof tg.MenuButton.setText === 'function') {
+          tg.MenuButton.setText('Настройки');
+          tg.MenuButton.show();
+          tg.MenuButton.onClick(() => {
+            console.log('⚙️ Нажата кнопка MenuButton');
+            setCurrentPage('profile');
+            window.location.hash = 'profile';
+          });
+          console.log('✅ Кнопка настроек добавлена через MenuButton');
+        }
+        else {
+          console.log('⚠️ API для встроенной кнопки недоступен, используем альтернативу');
+          // Если API недоступен, показываем уведомление
+          setTimeout(() => {
+            showToast('Настройки доступны в профиле 👤', 'info');
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка настройки встроенного меню:', error);
+      }
       
       // Применяем тему
       applyTheme();
@@ -314,7 +355,9 @@ function App() {
       telegramUser: telegramUser,
       navigateTo: navigateTo,
       API_BASE_URL: API_BASE_URL,
-      showToast: showToast
+      showToast: showToast,
+      isDarkMode: isDarkMode,
+      applyTheme: applyTheme
     };
     
     switch(currentPage) {
@@ -330,53 +373,52 @@ function App() {
   };
 
   // Плавающая навигация
-  // Плавающая навигация
-const Navigation = () => {
-  const availableEarnings = referralData?.stats?.available_earnings || 0;
-  const showBadge = availableEarnings >= 10;
-  
-  return (
-    <div className="floating-nav">
-      <button 
-        className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
-        onClick={() => navigateTo('profile')}
-        aria-label="Профиль"
-      >
-        <div className="nav-icon-floating">
-          <ProfileIcon active={currentPage === 'profile'} />
-        </div>
-        <span className="nav-label-floating">Профиль</span>
-        {showBadge && (
-          <span className="nav-badge-floating">
-            ${availableEarnings.toFixed(0)}
-          </span>
-        )}
-      </button>
-      
-      <div className="nav-center-floating">
+  const Navigation = () => {
+    const availableEarnings = referralData?.stats?.available_earnings || 0;
+    const showBadge = availableEarnings >= 10;
+    
+    return (
+      <div className="floating-nav">
         <button 
-          className="nav-center-circle-floating" 
-          onClick={() => navigateTo('home')}
-          aria-label="Обмен"
+          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} 
+          onClick={() => navigateTo('profile')}
+          aria-label="Профиль"
         >
-          <ExchangeIcon active={true} />
+          <div className="nav-icon-floating">
+            <ProfileIcon active={currentPage === 'profile'} />
+          </div>
+          <span className="nav-label-floating">Профиль</span>
+          {showBadge && (
+            <span className="nav-badge-floating">
+              ${availableEarnings.toFixed(0)}
+            </span>
+          )}
         </button>
-        <span className="nav-center-label-floating">Обмен</span>
-      </div>
-      
-      <button 
-        className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
-        onClick={() => navigateTo('history')}
-        aria-label="История"
-      >
-        <div className="nav-icon-floating">
-          <HistoryIcon active={currentPage === 'history'} />
+        
+        <div className="nav-center-floating">
+          <button 
+            className="nav-center-circle-floating" 
+            onClick={() => navigateTo('home')}
+            aria-label="Обмен"
+          >
+            <ExchangeIcon active={true} />
+          </button>
+          <span className="nav-center-label-floating">Обмен</span>
         </div>
-        <span className="nav-label-floating">История</span>
-      </button>
-    </div>
-  );
-};
+        
+        <button 
+          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} 
+          onClick={() => navigateTo('history')}
+          aria-label="История"
+        >
+          <div className="nav-icon-floating">
+            <HistoryIcon active={currentPage === 'history'} />
+          </div>
+          <span className="nav-label-floating">История</span>
+        </button>
+      </div>
+    );
+  };
 
   // Лоадер
   if (isLoading) {

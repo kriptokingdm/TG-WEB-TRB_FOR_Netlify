@@ -16,7 +16,6 @@ function App() {
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
@@ -34,6 +33,12 @@ function App() {
 
   // Определяем темную тему
   const detectDarkMode = useCallback(() => {
+    // Сначала проверяем localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return savedTheme === 'dark';
+    }
+    
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       
@@ -52,10 +57,7 @@ function App() {
           const b = bgColor & 0xff;
           const brightness = (r * 299 + g * 587 + b * 114) / 1000;
           
-          console.log('📱 Яркость фона Telegram:', brightness);
-          
-          // Если фон темный - темная тема
-          return brightness < 180; // Более гибкий порог
+          return brightness < 180;
         } catch (error) {
           console.error('Ошибка определения цвета Telegram:', error);
         }
@@ -99,7 +101,7 @@ function App() {
     
     if (darkMode) {
       // ТЕМНАЯ ТЕМА
-      const darkBgColor = '#1a1d21'; // Красивый серый фон
+      const darkBgColor = '#1a1d21';
       const darkCardBg = '#212428';
       const darkInputBg = '#2a2d32';
       const darkBorderColor = '#3a3d42';
@@ -152,8 +154,6 @@ function App() {
       root.removeAttribute('data-theme');
       console.log('☀️ Применена светлая тема');
     }
-    
-    localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
   // Переключение темы
@@ -161,11 +161,8 @@ function App() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    // Обновляем тему в Telegram WebApp
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.setHeaderColor(newTheme === 'dark' ? '#1c1c1c' : '#ffffff');
-      window.Telegram.WebApp.setBackgroundColor(newTheme === 'dark' ? '#1c1c1c' : '#ffffff');
-    }
+    // Сохраняем тему в localStorage
+    localStorage.setItem('theme', newTheme);
     
     // Применяем тему в приложении
     setIsDarkMode(newTheme === 'dark');
@@ -176,54 +173,44 @@ function App() {
 
   // Настройка Telegram WebApp Menu
   const setupTelegramMenu = useCallback(() => {
+    console.log('⚙️ Настройка Telegram меню...');
+    
     if (window.Telegram?.WebApp) {
       try {
         const tg = window.Telegram.WebApp;
-        console.log('⚙️ Настройка Telegram меню...');
         
-        // Вариант 1: Используем кастомные события через postEvent
-        // Это добавляет обработчик для меню Telegram
-        tg.MainButton.hide();
-        
-        // Проверяем доступность MenuButton API
+        // ВНИМАНИЕ: MenuButton API МОЖЕТ БЫТЬ НЕДОСТУПЕН!
+        // Сначала проверяем доступность
         if (tg.MenuButton && typeof tg.MenuButton.setText === 'function') {
-          // Устанавливаем текст для кнопки меню
+          console.log('✅ MenuButton API доступен');
+          
           tg.MenuButton.setText('Настройки');
           tg.MenuButton.show();
           
-          // Обработчик нажатия на меню
           const handleMenuButtonClick = () => {
             console.log('🔄 Нажатие на меню Telegram');
-            setShowSettingsModal(true);
+            // Открываем модальное окно настроек
+            setCurrentPage('settings');
           };
           
-          // Подписываемся на событие клика по меню
           tg.MenuButton.onClick(handleMenuButtonClick);
           
-          console.log('✅ Telegram MenuButton настроен');
-          
-          // Возвращаем функцию очистки
           return () => {
-            tg.MenuButton.offClick(handleMenuButtonClick);
+            if (tg.MenuButton && typeof tg.MenuButton.offClick === 'function') {
+              tg.MenuButton.offClick(handleMenuButtonClick);
+            }
           };
         } else {
-          // Вариант 2: Используем MainButton как альтернативу
-          console.log('⚠️ MenuButton API недоступен, используем MainButton');
-          
-          tg.MainButton.setText('Настройки');
-          tg.MainButton.show();
-          tg.MainButton.onClick(() => {
-            setShowSettingsModal(true);
-          });
-          
-          return () => {
-            tg.MainButton.offClick();
-          };
+          console.log('⚠️ MenuButton API недоступен');
+          // Если MenuButton недоступен, ничего не делаем
+          return () => {};
         }
       } catch (error) {
         console.error('❌ Ошибка при настройке Telegram меню:', error);
+        return () => {};
       }
     }
+    
     return () => {};
   }, []);
 
@@ -284,14 +271,6 @@ function App() {
       // Применяем тему
       applyTheme();
       
-      // Слушаем события изменения темы
-      tg.onEvent('themeChanged', () => {
-        console.log('🔄 Telegram изменил тему');
-        setTimeout(() => {
-          applyTheme();
-        }, 100);
-      });
-      
       // Настройка меню Telegram
       const cleanupMenu = setupTelegramMenu();
       
@@ -325,13 +304,17 @@ function App() {
       // Режим разработки
       console.log('💻 Режим разработки');
       
-      setTelegramUser({
+      const devUser = {
         id: '7879866656',
         telegramId: '7879866656',
         username: 'test_user',
         firstName: 'Тестовый',
         photoUrl: null
-      });
+      };
+      
+      setTelegramUser(devUser);
+      localStorage.setItem('telegramUser', JSON.stringify(devUser));
+      localStorage.setItem('currentUser', JSON.stringify(devUser));
       
       applyTheme();
     }
@@ -343,41 +326,46 @@ function App() {
   useEffect(() => {
     console.log('🚀 Инициализация TetherRabbit...');
     
-    const debugUser = {
-      id: '7879866656',
-      telegramId: '7879866656',
-      username: 'TERBCEO',
-      firstName: 'G'
-    };
-    localStorage.setItem('currentUser', JSON.stringify(debugUser));
-    
-    const cleanup = initTelegramWebApp();
-    
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
-      setCurrentPage(hash);
-    }
-    
-    loadReferralData();
-    
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log('✅ Инициализация завершена');
-    }, 1000);
-    
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
-      if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help'].includes(hash)) {
-        setCurrentPage(hash);
+    const initApp = async () => {
+      try {
+        // Очищаем предыдущие ошибки
+        localStorage.removeItem('telegramUser');
+        localStorage.removeItem('currentUser');
+        
+        const cleanup = initTelegramWebApp();
+        
+        const hash = window.location.hash.replace('#', '');
+        if (hash && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
+          setCurrentPage(hash);
+        }
+        
+        await loadReferralData();
+        
+        setTimeout(() => {
+          setIsLoading(false);
+          console.log('✅ Инициализация завершена');
+        }, 500);
+        
+        const handleHashChange = () => {
+          const hash = window.location.hash.replace('#', '');
+          if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
+            setCurrentPage(hash);
+          }
+        };
+        
+        window.addEventListener('hashchange', handleHashChange);
+        
+        return () => {
+          window.removeEventListener('hashchange', handleHashChange);
+          if (cleanup) cleanup();
+        };
+      } catch (error) {
+        console.error('❌ Критическая ошибка инициализации:', error);
+        setIsLoading(false);
       }
     };
     
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-      if (cleanup) cleanup();
-    };
+    initApp();
   }, [initTelegramWebApp, loadReferralData]);
 
   // Навигация
@@ -405,6 +393,8 @@ function App() {
         return <Profile key="profile" {...commonProps} />;
       case 'help': 
         return <Help key="help" {...commonProps} />;
+      case 'settings':
+        return renderSettingsModal();
       default: 
         return <Home key="home" {...commonProps} />;
     }
@@ -412,10 +402,8 @@ function App() {
 
   // Модальное окно настроек
   const renderSettingsModal = () => {
-    if (!showSettingsModal) return null;
-    
     return (
-      <div className="settings-modal-overlay" onClick={() => setShowSettingsModal(false)}>
+      <div className="settings-modal-overlay" onClick={() => navigateTo('home')}>
         <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
           <div className="settings-modal-header">
             <h3 className="settings-modal-title">
@@ -427,7 +415,7 @@ function App() {
             </h3>
             <button 
               className="settings-modal-close"
-              onClick={() => setShowSettingsModal(false)}
+              onClick={() => navigateTo('home')}
               aria-label="Закрыть"
             >
               ×
@@ -469,7 +457,6 @@ function App() {
                 <button 
                   className="settings-item"
                   onClick={() => {
-                    setShowSettingsModal(false);
                     navigator.clipboard.writeText(telegramUser?.id || '');
                     showToast('✅ ID пользователя скопирован', 'success');
                   }}
@@ -498,7 +485,6 @@ function App() {
                 <button 
                   className="settings-item"
                   onClick={() => {
-                    setShowSettingsModal(false);
                     if (confirm('Вы уверены, что хотите выйти?')) {
                       localStorage.clear();
                       window.location.reload();
@@ -598,7 +584,7 @@ function App() {
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {currentPage !== 'help' && <Navigation />}
+          {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
           
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
@@ -609,8 +595,6 @@ function App() {
               <span className="telegram-toast-text">{toast.message}</span>
             </div>
           )}
-          
-          {renderSettingsModal()}
         </div>
       </div>
     </div>

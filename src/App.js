@@ -199,7 +199,37 @@ function App() {
     }
   };
 
-  // Инициализация Telegram WebApp с встроенной кнопкой настроек
+  // Навигация с управлением кнопкой "Назад"
+  const navigateTo = useCallback((page) => {
+    if (page === currentPage) return;
+    
+    console.log(`➡️ Переход на страницу: ${page}`);
+    window.location.hash = page;
+    setCurrentPage(page);
+    
+    // Управляем встроенной кнопкой "Назад" Telegram
+    if (window.Telegram?.WebApp?.BackButton) {
+      const tg = window.Telegram.WebApp;
+      
+      if (page === 'home') {
+        // На главной странице скрываем кнопку "Назад"
+        try {
+          tg.BackButton.hide();
+        } catch (e) {
+          console.log('BackButton.hide не поддерживается в этой версии');
+        }
+      } else {
+        // На других страницах показываем кнопку "Назад"
+        try {
+          tg.BackButton.show();
+        } catch (e) {
+          console.log('BackButton.show не поддерживается в этой версии');
+        }
+      }
+    }
+  }, [currentPage]);
+
+  // Инициализация Telegram WebApp
   const initTelegramWebApp = useCallback(() => {
     console.log('🤖 Инициализация Telegram WebApp...');
     
@@ -209,8 +239,31 @@ function App() {
       tg.ready();
       tg.expand();
       
+      // Проверяем и настраиваем встроенную кнопку "Назад"
+      try {
+        if (tg.BackButton) {
+          console.log('🔙 Telegram BackButton доступен');
+          
+          // Настраиваем обработчик нажатия кнопки "Назад"
+          tg.BackButton.onClick(() => {
+            console.log('⬅️ Нажата встроенная кнопка "Назад"');
+            navigateTo('home');
+          });
+          
+          // Изначально скрываем кнопку (мы на главной)
+          if (currentPage === 'home') {
+            try {
+              tg.BackButton.hide();
+            } catch (e) {
+              // Игнорируем ошибку если метод не поддерживается
+            }
+          }
+        }
+      } catch (error) {
+        console.log('⚠️ BackButton не поддерживается в этой версии Telegram');
+      }
+      
       // ВАЖНО: Добавляем встроенную кнопку настроек в меню Telegram
-      // Используем метод setupSettingsButton - это официальный API для добавления кнопки в меню
       try {
         console.log('🔄 Настройка встроенного меню Telegram...');
         
@@ -222,8 +275,7 @@ function App() {
             on_click: () => {
               console.log('⚙️ Нажата встроенная кнопка настроек в меню Telegram');
               // Открываем страницу профиля при нажатии
-              setCurrentPage('profile');
-              window.location.hash = 'profile';
+              navigateTo('profile');
             }
           });
           console.log('✅ Встроенная кнопка настроек добавлена в меню Telegram');
@@ -234,8 +286,7 @@ function App() {
           tg.MenuButton.show();
           tg.MenuButton.onClick(() => {
             console.log('⚙️ Нажата кнопка MenuButton');
-            setCurrentPage('profile');
-            window.location.hash = 'profile';
+            navigateTo('profile');
           });
           console.log('✅ Кнопка настроек добавлена через MenuButton');
         }
@@ -298,7 +349,7 @@ function App() {
       
       applyTheme();
     }
-  }, [applyTheme, showToast]);
+  }, [applyTheme, showToast, navigateTo, currentPage]);
 
   // Инициализация приложения
   useEffect(() => {
@@ -339,15 +390,6 @@ function App() {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [initTelegramWebApp, loadReferralData]);
-
-  // Навигация
-  const navigateTo = useCallback((page) => {
-    if (page === currentPage) return;
-    
-    console.log(`➡️ Переход на страницу: ${page}`);
-    window.location.hash = page;
-    setCurrentPage(page);
-  }, [currentPage]);
 
   // Рендер страниц
   const renderPage = () => {

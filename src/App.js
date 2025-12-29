@@ -16,6 +16,7 @@ function App() {
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [pageHistory, setPageHistory] = useState(['home']); // История навигации
 
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
@@ -199,7 +200,65 @@ function App() {
     }
   };
 
-  // Инициализация Telegram WebApp с встроенной кнопкой настроек
+  // Навигация с историей
+  const navigateTo = useCallback((page) => {
+    if (page === currentPage) return;
+    
+    console.log(`➡️ Переход на страницу: ${page}`);
+    window.location.hash = page;
+    setCurrentPage(page);
+    
+    // Обновляем историю навигации
+    setPageHistory(prev => {
+      const newHistory = [...prev];
+      // Убираем текущую страницу если она уже в истории
+      const existingIndex = newHistory.indexOf(page);
+      if (existingIndex !== -1) {
+        newHistory.splice(existingIndex + 1);
+      } else {
+        newHistory.push(page);
+      }
+      return newHistory;
+    });
+    
+    // Управляем встроенной кнопкой "Назад" Telegram
+    if (window.Telegram?.WebApp?.BackButton) {
+      const tg = window.Telegram.WebApp;
+      
+      if (page === 'home') {
+        // На главной странице скрываем кнопку "Назад"
+        tg.BackButton.hide();
+      } else {
+        // На других страницах показываем кнопку "Назад"
+        tg.BackButton.show();
+      }
+    }
+  }, [currentPage]);
+
+  // Функция возврата назад
+  const goBack = useCallback(() => {
+    if (pageHistory.length > 1) {
+      const previousPage = pageHistory[pageHistory.length - 2];
+      console.log(`⬅️ Возврат на страницу: ${previousPage}`);
+      
+      setPageHistory(prev => prev.slice(0, -1));
+      setCurrentPage(previousPage);
+      window.location.hash = previousPage;
+      
+      // Обновляем кнопку "Назад" после возврата
+      if (window.Telegram?.WebApp?.BackButton) {
+        const tg = window.Telegram.WebApp;
+        
+        if (previousPage === 'home') {
+          tg.BackButton.hide();
+        } else {
+          tg.BackButton.show();
+        }
+      }
+    }
+  }, [pageHistory]);
+
+  // Инициализация Telegram WebApp с кнопкой "Назад"
   const initTelegramWebApp = useCallback(() => {
     console.log('🤖 Инициализация Telegram WebApp...');
     
@@ -209,45 +268,26 @@ function App() {
       tg.ready();
       tg.expand();
       
-      // ВАЖНО: Добавляем встроенную кнопку настроек в меню Telegram
-      // Используем метод setupSettingsButton - это официальный API для добавления кнопки в меню
+      // НАСТРОЙКА ВСТРОЕННОЙ КНОПКИ "НАЗАД" TELEGRAM
       try {
-        console.log('🔄 Настройка встроенного меню Telegram...');
-        
-        // Проверяем доступность API для встроенной кнопки настроек
-        if (tg.setupSettingsButton && typeof tg.setupSettingsButton === 'function') {
-          // ВОТ ГЛАВНЫЙ МОМЕНТ: добавляем кнопку в меню Telegram
-          tg.setupSettingsButton({
-            is_visible: true,
-            on_click: () => {
-              console.log('⚙️ Нажата встроенная кнопка настроек в меню Telegram');
-              // Открываем страницу профиля при нажатии
-              setCurrentPage('profile');
-              window.location.hash = 'profile';
-            }
+        if (tg.BackButton && typeof tg.BackButton.show === 'function') {
+          console.log('🔙 Настройка встроенной кнопки "Назад"...');
+          
+          // Сначала скрываем кнопку (по умолчанию на главной)
+          tg.BackButton.hide();
+          
+          // Обработчик нажатия на кнопку "Назад"
+          tg.BackButton.onClick(() => {
+            console.log('⬅️ Нажата встроенная кнопка "Назад" Telegram');
+            goBack();
           });
-          console.log('✅ Встроенная кнопка настроек добавлена в меню Telegram');
-        } 
-        // Проверяем старый API MenuButton (может работать в некоторых версиях)
-        else if (tg.MenuButton && typeof tg.MenuButton.setText === 'function') {
-          tg.MenuButton.setText('Настройки');
-          tg.MenuButton.show();
-          tg.MenuButton.onClick(() => {
-            console.log('⚙️ Нажата кнопка MenuButton');
-            setCurrentPage('profile');
-            window.location.hash = 'profile';
-          });
-          console.log('✅ Кнопка настроек добавлена через MenuButton');
+          
+          console.log('✅ Встроенная кнопка "Назад" настроена');
+        } else {
+          console.log('⚠️ BackButton API недоступен');
         }
-        else {
-          console.log('⚠️ API для встроенной кнопки недоступен, используем альтернативу');
-          // Если API недоступен, показываем уведомление
-          setTimeout(() => {
-            showToast('Настройки доступны в профиле 👤', 'info');
-          }, 2000);
-        }
-      } catch (error) {
-        console.error('❌ Ошибка настройки встроенного меню:', error);
+      } catch (backButtonError) {
+        console.error('❌ Ошибка настройки кнопки "Назад":', backButtonError);
       }
       
       // Применяем тему
@@ -298,7 +338,7 @@ function App() {
       
       applyTheme();
     }
-  }, [applyTheme, showToast]);
+  }, [applyTheme, showToast, goBack]);
 
   // Инициализация приложения
   useEffect(() => {
@@ -314,9 +354,11 @@ function App() {
     
     initTelegramWebApp();
     
+    // Проверяем hash URL при загрузке
     const hash = window.location.hash.replace('#', '');
     if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
       setCurrentPage(hash);
+      setPageHistory(['home', hash]);
     }
     
     loadReferralData();
@@ -324,12 +366,13 @@ function App() {
     setTimeout(() => {
       setIsLoading(false);
       console.log('✅ Инициализация завершена');
-    }, 1000);
+    }, 500);
     
+    // Обработчик изменения hash
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help'].includes(hash)) {
-        setCurrentPage(hash);
+        navigateTo(hash);
       }
     };
     
@@ -340,15 +383,6 @@ function App() {
     };
   }, [initTelegramWebApp, loadReferralData]);
 
-  // Навигация
-  const navigateTo = useCallback((page) => {
-    if (page === currentPage) return;
-    
-    console.log(`➡️ Переход на страницу: ${page}`);
-    window.location.hash = page;
-    setCurrentPage(page);
-  }, [currentPage]);
-
   // Рендер страниц
   const renderPage = () => {
     const commonProps = {
@@ -356,8 +390,8 @@ function App() {
       navigateTo: navigateTo,
       API_BASE_URL: API_BASE_URL,
       showToast: showToast,
-      isDarkMode: isDarkMode,
-      applyTheme: applyTheme
+      goBack: goBack,
+      isDarkMode: isDarkMode
     };
     
     switch(currentPage) {

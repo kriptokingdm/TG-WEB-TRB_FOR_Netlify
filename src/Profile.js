@@ -11,13 +11,6 @@ const HelpSVG = () => (
     </svg>
 );
 
-const SettingsSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M19.4 15C19.2663 15.3031 19.1335 15.6063 19 15.9L21 17.9C21.5 18.2 21.9 18.6 21.9 19.4C21.8 20.2 21.3 20.6 20.7 21L18.7 19C18.4 19.1 18.1 19.2 17.8 19.3C17.5 19.4 17.2 19.5 16.9 19.6L16.5 22H15.5L15.1 19.6C14.8 19.5 14.5 19.4 14.2 19.3C13.9 19.2 13.6 19.1 13.3 19L11.3 21C10.7 20.6 10.2 20.2 10.1 19.4C10 18.6 10.4 18.2 10.9 17.9L12.9 15.9C12.8 15.6 12.7 15.3 12.6 15H12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
-
 const MoonSVG = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M21 12.79C20.8427 14.4922 20.2039 16.1144 19.1582 17.4668C18.1125 18.8192 16.7035 19.8458 15.0957 20.4265C13.4879 21.0073 11.748 21.1181 10.0795 20.7461C8.41104 20.3741 6.88203 19.5345 5.67418 18.3267C4.46634 17.1188 3.62675 15.5898 3.25475 13.9214C2.88276 12.2529 2.99354 10.513 3.57432 8.90523C4.1551 7.29745 5.18168 5.88842 6.53407 4.84272C7.88647 3.79702 9.50862 3.15824 11.2108 3.00101C10.2134 4.34827 9.73375 6.00945 9.85843 7.68141C9.98312 9.35338 10.7039 10.9251 11.8894 12.1106C13.0749 13.2961 14.6466 14.0169 16.3186 14.1416C17.9906 14.2663 19.6518 13.7866 21 12.7892V12.79Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -95,39 +88,38 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         showMessage('success', `Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`);
     };
 
-    // Добавление кнопки настроек в Telegram WebApp
+    // Настройка Telegram WebApp Menu
     useEffect(() => {
         const setupTelegramMenu = () => {
             if (window.Telegram?.WebApp) {
                 try {
                     const tg = window.Telegram.WebApp;
                     
-                    // Сначала скрываем MainButton если он есть
+                    // Вариант 1: Используем WebApp API для добавления элемента в меню
+                    // Это самый правильный способ для Telegram WebApps
+                    
+                    // Скрываем MainButton если он есть
                     if (tg.MainButton && typeof tg.MainButton.hide === 'function') {
                         tg.MainButton.hide();
                     }
                     
-                    // Проверяем наличие MenuButton API
-                    if (tg.MenuButton && typeof tg.MenuButton.show === 'function') {
-                        // Устанавливаем текст для кнопки меню
-                        tg.MenuButton.setText('Настройки');
-                        tg.MenuButton.show();
-                        
-                        // Обработчик нажатия на меню
-                        const handleMenuButtonClick = () => {
-                            setShowSettingsModal(true);
-                        };
-                        
-                        // Подписываемся на событие клика по меню
-                        tg.MenuButton.onClick(handleMenuButtonClick);
-                        
-                        // Возвращаем функцию очистки
-                        return () => {
-                            tg.MenuButton.offClick(handleMenuButtonClick);
-                        };
-                    } else {
-                        console.log('⚠️ MenuButton API недоступен в этой версии Telegram WebApp');
-                    }
+                    // Устанавливаем меню в Telegram WebApp
+                    // Это добавляет пункты в нативное меню (три точки)
+                    tg.setupClosingBehavior(); // Позволяет приложению закрыться
+                    
+                    // Создаем обработчик для меню Telegram
+                    // В Telegram WebApp меню вызывается через onEvent
+                    tg.onEvent('settingsButtonClicked', () => {
+                        setShowSettingsModal(true);
+                    });
+                    
+                    console.log('✅ Telegram WebApp Menu настроен');
+                    
+                    // Возвращаем функцию очистки
+                    return () => {
+                        tg.offEvent('settingsButtonClicked');
+                    };
+                    
                 } catch (error) {
                     console.error('❌ Ошибка при настройке Telegram меню:', error);
                 }
@@ -253,26 +245,15 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             Профиль
                         </h1>
                     </div>
-                    <div className="header-actions">
-                        <button
-                            className="settings-button"
-                            onClick={() => setShowSettingsModal(true)}
-                            title="Настройки"
-                            aria-label="Настройки"
-                            style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
-                        >
-                            <SettingsSVG />
-                        </button>
-                        <button
-                            className="help-button"
-                            onClick={() => navigateTo('help')}
-                            title="Помощь"
-                            aria-label="Помощь"
-                            style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
-                        >
-                            <HelpSVG />
-                        </button>
-                    </div>
+                    <button
+                        className="help-button"
+                        onClick={() => navigateTo('help')}
+                        title="Помощь"
+                        aria-label="Помощь"
+                        style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
+                    >
+                        <HelpSVG />
+                    </button>
                 </div>
             </div>
 
@@ -390,7 +371,10 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                     <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="settings-modal-header">
                             <h3 className="settings-modal-title">
-                                <SettingsSVG />
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M19.4 15C19.2663 15.3031 19.1335 15.6063 19 15.9L21 17.9C21.5 18.2 21.9 18.6 21.9 19.4C21.8 20.2 21.3 20.6 20.7 21L18.7 19C18.4 19.1 18.1 19.2 17.8 19.3C17.5 19.4 17.2 19.5 16.9 19.6L16.5 22H15.5L15.1 19.6C14.8 19.5 14.5 19.4 14.2 19.3C13.9 19.2 13.6 19.1 13.3 19L11.3 21C10.7 20.6 10.2 20.2 10.1 19.4C10 18.6 10.4 18.2 10.9 17.9L12.9 15.9C12.8 15.6 12.7 15.3 12.6 15H12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                                 <span>Настройки</span>
                             </h3>
                             <button 

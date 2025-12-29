@@ -4,7 +4,6 @@ import Home from './Home';
 import History from './History';
 import Profile from './Profile';
 import Help from './Help';
-import SettingsApp from './SettingsApp'; // Новый импорт
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // URL API
@@ -17,6 +16,8 @@ function App() {
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [hasTelegram, setHasTelegram] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
@@ -34,6 +35,11 @@ function App() {
 
   // Определяем темную тему
   const detectDarkMode = useCallback(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return savedTheme === 'dark';
+    }
+    
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       
@@ -52,9 +58,6 @@ function App() {
           const b = bgColor & 0xff;
           const brightness = (r * 299 + g * 587 + b * 114) / 1000;
           
-          console.log('📱 Яркость фона Telegram:', brightness);
-          
-          // Если фон темный - темная тема
           return brightness < 180;
         } catch (error) {
           console.error('Ошибка определения цвета Telegram:', error);
@@ -62,47 +65,27 @@ function App() {
       }
     }
     
-    // Проверяем системную тему
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
-    
-    // По умолчанию - темная тема
     return true;
   }, []);
 
   // Применяем правильную тему
   const applyTheme = useCallback(() => {
-    console.log('🎨 Применяем тему...');
-    
     const root = document.documentElement;
     const darkMode = detectDarkMode();
     setIsDarkMode(darkMode);
     
-    // Получаем цвета Telegram если есть
     let tgButtonColor = '#3390ec';
-    let tgTextColor = '#000000';
-    let tgHintColor = '#8e8e93';
     
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
-      
       const buttonColor = telegramColorToHex(params.button_color);
       if (buttonColor) tgButtonColor = buttonColor;
-      
-      const textColor = telegramColorToHex(params.text_color);
-      if (textColor) tgTextColor = textColor;
-      
-      const hintColor = telegramColorToHex(params.hint_color);
-      if (hintColor) tgHintColor = hintColor;
     }
     
     if (darkMode) {
       // ТЕМНАЯ ТЕМА
       const darkBgColor = '#1a1d21';
       const darkCardBg = '#212428';
-      const darkInputBg = '#2a2d32';
-      const darkBorderColor = '#3a3d42';
       
       root.style.setProperty('--tg-theme-bg-color', darkBgColor);
       root.style.setProperty('--tg-theme-text-color', '#ffffff');
@@ -110,26 +93,12 @@ function App() {
       root.style.setProperty('--tg-theme-button-color', tgButtonColor);
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', darkCardBg);
-      root.style.setProperty('--tg-theme-section-bg-color', darkBorderColor);
-      
-      // Дополнительные цвета для темной темы
-      root.style.setProperty('--tg-success-color', '#34c759');
-      root.style.setProperty('--tg-error-color', '#ff3b30');
-      root.style.setProperty('--tg-warning-color', '#ff9500');
-      root.style.setProperty('--tg-info-color', '#5e5ce6');
-      root.style.setProperty('--tg-card-bg', darkCardBg);
-      root.style.setProperty('--tg-input-bg', darkInputBg);
-      root.style.setProperty('--tg-border-color', darkBorderColor);
-      root.style.setProperty('--tg-hover-color', '#2c2f34');
       
       root.setAttribute('data-theme', 'dark');
-      console.log('🌙 Применена темная тема');
     } else {
       // СВЕТЛАЯ ТЕМА
       const lightBgColor = '#ffffff';
       const lightCardBg = '#f8f9fa';
-      const lightInputBg = '#ffffff';
-      const lightBorderColor = '#e0e0e0';
       
       root.style.setProperty('--tg-theme-bg-color', lightBgColor);
       root.style.setProperty('--tg-theme-text-color', '#000000');
@@ -137,46 +106,30 @@ function App() {
       root.style.setProperty('--tg-theme-button-color', tgButtonColor);
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', lightCardBg);
-      root.style.setProperty('--tg-theme-section-bg-color', lightBorderColor);
-      
-      // Дополнительные цвета для светлой темы
-      root.style.setProperty('--tg-success-color', '#28a745');
-      root.style.setProperty('--tg-error-color', '#dc3545');
-      root.style.setProperty('--tg-warning-color', '#ffc107');
-      root.style.setProperty('--tg-info-color', '#17a2b8');
-      root.style.setProperty('--tg-card-bg', lightCardBg);
-      root.style.setProperty('--tg-input-bg', lightInputBg);
-      root.style.setProperty('--tg-border-color', lightBorderColor);
-      root.style.setProperty('--tg-hover-color', '#e9ecef');
       
       root.removeAttribute('data-theme');
-      console.log('☀️ Применена светлая тема');
     }
-    
-    localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
-
-  // Показ уведомлений
-  const showToast = useCallback((message, type = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
 
   // Переключение темы
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    // Сохраняем тему
     localStorage.setItem('theme', newTheme);
     
-    // Применяем тему
     const darkMode = newTheme === 'dark';
     setIsDarkMode(darkMode);
     applyTheme();
     
     showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
+
+  // Показ уведомлений
+  const showToast = useCallback((message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
@@ -216,118 +169,39 @@ function App() {
     }
   };
 
-  // Навигация с управлением кнопкой "Назад"
+  // Навигация
   const navigateTo = useCallback((page) => {
     if (page === currentPage) return;
     
     console.log(`➡️ Переход на страницу: ${page}`);
     window.location.hash = page;
     setCurrentPage(page);
-    
-    // Управляем встроенной кнопкой "Назад" Telegram
-    if (window.Telegram?.WebApp?.BackButton) {
-      const tg = window.Telegram.WebApp;
-      
-      if (page === 'home') {
-        // На главной странице скрываем кнопку "Назад"
-        try {
-          tg.BackButton.hide();
-        } catch (e) {
-          console.log('BackButton.hide не поддерживается в этой версии');
-        }
-      } else {
-        // На других страницах показываем кнопку "Назад"
-        try {
-          tg.BackButton.show();
-        } catch (e) {
-          console.log('BackButton.show не поддерживается в этой версии');
-        }
-      }
-    }
   }, [currentPage]);
 
-  // Инициализация Telegram WebApp
+  // Инициализация Telegram WebApp (упрощенная)
   const initTelegramWebApp = useCallback(() => {
     console.log('🤖 Инициализация Telegram WebApp...');
     
-    if (window.Telegram?.WebApp) {
+    if (window.Telegram?.WebApp && !initialized) {
       const tg = window.Telegram.WebApp;
+      setHasTelegram(true);
       
-      tg.ready();
-      tg.expand();
-      
-      // Проверяем и настраиваем встроенную кнопку "Назад"
       try {
-        if (tg.BackButton) {
-          console.log('🔙 Telegram BackButton доступен');
-          
-          // Настраиваем обработчик нажатия кнопки "Назад"
-          tg.BackButton.onClick(() => {
-            console.log('⬅️ Нажата встроенная кнопка "Назад"');
-            navigateTo('home');
-          });
-          
-          // Изначально скрываем кнопку (мы на главной)
-          if (currentPage === 'home') {
-            try {
-              tg.BackButton.hide();
-            } catch (e) {
-              // Игнорируем ошибку если метод не поддерживается
-            }
-          }
-        }
-      } catch (error) {
-        console.log('⚠️ BackButton не поддерживается в этой версии Telegram');
-      }
-      
-      // ВАЖНО: Настраиваем встроенную кнопку настроек через SettingsButton API
-      try {
-        console.log('⚙️ Настройка встроенной кнопки настроек...');
+        tg.ready();
+        tg.expand();
         
-        // Метод setupSettingsButton - официальный API для добавления кнопки в меню Telegram
-        if (tg.setupSettingsButton && typeof tg.setupSettingsButton === 'function') {
-          // Добавляем кнопку настроек в меню Telegram
-          tg.setupSettingsButton({
-            is_visible: true,
-            on_click: () => {
-              console.log('⚙️ Нажата встроенная кнопка настроек в меню Telegram');
-              // Открываем страницу настроек при нажатии
-              navigateTo('settings');
-            }
-          });
-          console.log('✅ Встроенная кнопка настроек добавлена в меню Telegram');
-        } 
-        // Альтернатива через MenuButton (старый API)
-        else if (tg.MenuButton && typeof tg.MenuButton.setText === 'function') {
-          tg.MenuButton.setText('Настройки');
-          tg.MenuButton.show();
-          tg.MenuButton.onClick(() => {
-            console.log('⚙️ Нажата кнопка MenuButton');
-            navigateTo('settings');
-          });
-          console.log('✅ Кнопка настроек добавлена через MenuButton');
+        console.log('📱 Версия Telegram WebApp:', tg.version);
+        
+        // ВАЖНО: В версии 6.0 BackButton не поддерживается
+        // Поэтому просто игнорируем его настройку
+        if (parseFloat(tg.version) > 6.0 && tg.BackButton) {
+          console.log('🔙 BackButton доступен');
+          // Можно добавить логику для версий > 6.0 если нужно
         }
-        else {
-          console.log('⚠️ API для встроенной кнопки недоступен');
-          // Показываем уведомление, что настройки в профиле
-          setTimeout(() => {
-            showToast('Настройки доступны в профиле 👤', 'info');
-          }, 2000);
-        }
+        
       } catch (error) {
-        console.error('❌ Ошибка настройки кнопки настроек:', error);
+        console.error('❌ Ошибка инициализации Telegram:', error);
       }
-      
-      // Применяем тему
-      applyTheme();
-      
-      // Слушаем события изменения темы
-      tg.onEvent('themeChanged', () => {
-        console.log('🔄 Telegram изменил тему');
-        setTimeout(() => {
-          applyTheme();
-        }, 100);
-      });
       
       // Инициализация пользователя
       if (tg.initDataUnsafe?.user) {
@@ -353,60 +227,65 @@ function App() {
       
       console.log('✅ Telegram WebApp инициализирован');
     } else {
-      // Режим разработки
-      console.log('💻 Режим разработки');
-      
-      setTelegramUser({
-        id: '7879866656',
-        telegramId: '7879866656',
-        username: 'test_user',
-        firstName: 'Тестовый',
-        photoUrl: null
-      });
-      
-      applyTheme();
+      if (!initialized) {
+        console.log('💻 Режим разработки');
+        
+        const devUser = {
+          id: '7879866656',
+          telegramId: '7879866656',
+          username: 'test_user',
+          firstName: 'Тестовый',
+          photoUrl: null
+        };
+        
+        setTelegramUser(devUser);
+        localStorage.setItem('currentUser', JSON.stringify(devUser));
+      }
     }
-  }, [applyTheme, showToast, navigateTo, currentPage]);
+    
+    applyTheme();
+    setInitialized(true);
+  }, [applyTheme, showToast, initialized]);
 
   // Инициализация приложения
   useEffect(() => {
+    if (initialized) return;
+    
     console.log('🚀 Инициализация TetherRabbit...');
     
-    const debugUser = {
-      id: '7879866656',
-      telegramId: '7879866656',
-      username: 'TERBCEO',
-      firstName: 'G'
-    };
-    localStorage.setItem('currentUser', JSON.stringify(debugUser));
-    
-    initTelegramWebApp();
-    
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
-      setCurrentPage(hash);
-    }
-    
-    loadReferralData();
-    
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log('✅ Инициализация завершена');
-    }, 1000);
-    
-    const handleHashChange = () => {
+    try {
+      if (!localStorage.getItem('currentUser')) {
+        const debugUser = {
+          id: '7879866656',
+          telegramId: '7879866656',
+          username: 'TERBCEO',
+          firstName: 'G'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(debugUser));
+      }
+      
       const hash = window.location.hash.replace('#', '');
-      if (hash && hash !== currentPage && ['home', 'profile', 'history', 'help', 'settings'].includes(hash)) {
+      if (hash && ['home', 'profile', 'history', 'help'].includes(hash)) {
         setCurrentPage(hash);
       }
-    };
-    
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [initTelegramWebApp, loadReferralData]);
+      
+      initTelegramWebApp();
+      
+      setTimeout(() => {
+        loadReferralData();
+      }, 500);
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        console.log('✅ Инициализация завершена');
+      }, 1000);
+      
+    } catch (error) {
+      console.error('❌ Ошибка инициализации:', error);
+      setIsLoading(false);
+      setInitialized(true);
+    }
+  }, [initTelegramWebApp, loadReferralData, initialized]);
 
   // Рендер страниц
   const renderPage = () => {
@@ -416,7 +295,8 @@ function App() {
       API_BASE_URL: API_BASE_URL,
       showToast: showToast,
       toggleTheme: toggleTheme,
-      isDarkMode: isDarkMode
+      isDarkMode: isDarkMode,
+      hasTelegram: hasTelegram
     };
     
     switch(currentPage) {
@@ -426,8 +306,6 @@ function App() {
         return <Profile key="profile" {...commonProps} />;
       case 'help': 
         return <Help key="help" {...commonProps} />;
-      case 'settings':
-        return <SettingsApp key="settings" {...commonProps} />;
       default: 
         return <Home key="home" {...commonProps} />;
     }
@@ -481,6 +359,38 @@ function App() {
     );
   };
 
+  // Кастомная кнопка "Назад" если Telegram не поддерживает
+  const CustomBackButton = () => {
+    if (currentPage === 'home' || !hasTelegram) return null;
+    
+    return (
+      <button 
+        className="custom-back-button"
+        onClick={() => navigateTo('home')}
+        style={{
+          position: 'fixed',
+          top: '16px',
+          left: '16px',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          background: 'var(--tg-theme-button-color, #3390ec)',
+          color: 'white',
+          border: 'none',
+          fontSize: '20px',
+          cursor: 'pointer',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+        }}
+      >
+        ←
+      </button>
+    );
+  };
+
   // Лоадер
   if (isLoading) {
     return (
@@ -493,10 +403,11 @@ function App() {
 
   return (
     <div className="app">
+      <CustomBackButton />
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
+          {currentPage !== 'help' && <Navigation />}
           
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>

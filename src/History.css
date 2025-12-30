@@ -1,949 +1,134 @@
-/* History.css - Компактный дизайн с нормальным масштабом */
-
-.history-container {
+.tg-help {
+  padding: 16px;
+  background: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
   min-height: 100vh;
-  background: var(--tg-theme-bg-color, #0f0f0f);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
-  color: var(--tg-theme-text-color, #ffffff);
 }
 
-/* Хедер */
-.history-header-new {
-  background: var(--tg-theme-bg-color, #0f0f0f);
-  padding: 44px 16px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.header-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.header-title-new {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
+/* HEADER */
+.tg-help-header h1 {
   margin: 0;
-  line-height: 1.2;
+  font-size: 22px;
+  font-weight: 700;
 }
-
-.header-subtitle {
+.tg-help-header p {
+  margin: 4px 0 16px;
   font-size: 14px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  margin: 0;
-  font-weight: 400;
+  color: var(--tg-theme-hint-color);
 }
 
-/* Статистика */
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.stat-card-new {
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+/* SEARCH */
+.tg-search {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
   border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
+  background: var(--tg-theme-secondary-bg-color);
+  margin-bottom: 12px;
 }
-
-.stat-icon-container {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: rgba(51, 144, 236, 0.1);
-}
-
-.stat-icon {
-  font-size: 20px;
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.stat-value-new {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
-  line-height: 1;
-}
-
-.stat-label-new {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  margin-top: 4px;
-  text-transform: uppercase;
-}
-
-/* Табы */
-.view-tabs {
-  display: flex;
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-}
-
-.view-tab-new {
-  flex: 1;
-  padding: 8px 12px;
+.tg-search input {
   border: none;
   background: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.view-tab-new.active {
-  background: var(--tg-theme-button-color, #3390ec);
-  color: var(--tg-theme-button-text-color, #ffffff);
-}
-
-.tab-icon {
-  font-size: 16px;
-}
-
-.tab-text {
-  font-size: 14px;
-}
-
-.tab-badge {
-  background: #ff3b30;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 8px;
-  min-width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-}
-
-/* Основной контент */
-.orders-container-new {
-  padding: 16px;
-}
-
-/* Загрузка */
-.loading-container-new {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-}
-
-.loading-spinner-svg {
-  animation: rotate 1.5s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-/* Пустое состояние */
-.empty-state-new {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 80px 20px;
-}
-
-.empty-icon-container {
-  width: 60px;
-  height: 60px;
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.empty-title-new {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
-  margin: 0 0 8px 0;
-}
-
-.empty-subtitle-new {
-  font-size: 14px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  margin: 0 0 24px 0;
-  max-width: 280px;
-  line-height: 1.4;
-}
-
-.exchange-btn-new {
-  background: var(--tg-theme-button-color, #3390ec);
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  color: var(--tg-theme-button-text-color, #ffffff);
+  color: inherit;
+  width: 100%;
   font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
+  outline: none;
 }
 
-.exchange-btn-new:hover {
-  opacity: 0.9;
-}
-
-/* Ошибка сети */
-.connection-error-info {
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+/* SEARCH RESULTS */
+.tg-search-results {
+  background: var(--tg-theme-secondary-bg-color);
   border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.tg-search-item {
   padding: 12px;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  margin-top: 12px;
-  margin-bottom: 20px;
+  border-bottom: 1px solid var(--tg-theme-section-bg-color);
 }
+.tg-search-item:last-child { border-bottom: none; }
 
-.error-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #ff3b30;
-  margin: 0 0 6px 0;
-}
-
-.error-message {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  margin: 0;
-}
-
-/* КАРТОЧКИ ОРДЕРОВ - ЛОГИЧЕСКОЕ РАСПОЛОЖЕНИЕ */
-.orders-list-new {
-  display: flex;
-  flex-direction: column;
+/* CATEGORIES */
+.tg-categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  margin-bottom: 16px;
 }
-
-.order-card-new {
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+.tg-categories button {
+  background: var(--tg-theme-secondary-bg-color);
   border-radius: 12px;
-  padding: 12px;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  transition: all 0.2s ease;
+  border: none;
+  padding: 10px;
+  color: inherit;
+}
+.tg-categories button.active {
+  background: var(--tg-theme-button-color);
+  color: var(--tg-theme-button-text-color);
 }
 
-.order-card-new:hover {
-  background: var(--tg-theme-section-bg-color, #2c2c2e);
+/* SECTIONS */
+.tg-section {
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 14px;
+  margin-bottom: 12px;
 }
-
-/* ОСНОВНОЙ КОНТЕЙНЕР - 2 КОЛОНКИ: ЛЕВАЯ И ПРАВАЯ */
-.order-content-wrapper {
+.tg-section-header {
+  padding: 14px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  cursor: pointer;
+}
+.tg-section-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+.tg-section-body.open {
+  max-height: 3000px;
+  opacity: 1;
 }
 
-/* ЛЕВАЯ КОЛОНКА: основная информация */
-.order-left-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* FAQ */
+.tg-faq {
+  border-top: 1px solid var(--tg-theme-section-bg-color);
 }
-
-/* Тип и ID ордера */
-.order-type-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.order-type-badge-new {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.order-type-badge-new.buy {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
-}
-
-.order-type-badge-new.sell {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.2);
-}
-
-.order-id-new {
+.tg-faq-q {
+  width: 100%;
+  padding: 14px;
   background: none;
   border: none;
-  font-size: 12px;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.order-id-new:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Сумма ордера */
-.order-amount-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.amount-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.amount-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
-}
-
-/* ПРАВАЯ КОЛОНКА: курс, итого, время, статус */
-.order-right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-  min-width: 140px;
-}
-
-/* Курс */
-.order-rate-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-}
-
-.rate-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.rate-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--tg-theme-button-color, #3390ec);
-}
-
-/* Итого */
-.order-total-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-}
-
-.total-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.total-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #34c759;
-}
-
-/* Время */
-.order-time-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-}
-
-.time-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.time-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-/* Статус (в правой колонке) */
-.order-status {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.status-pending {
-  background: rgba(255, 149, 0, 0.1);
-  color: #ff9500;
-  border: 1px solid rgba(255, 149, 0, 0.2);
-}
-
-.status-processing {
-  background: rgba(51, 144, 236, 0.1);
-  color: #3390ec;
-  border: 1px solid rgba(51, 144, 236, 0.2);
-}
-
-.status-accepted {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
-}
-
-.status-rejected {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.2);
-}
-
-.status-completed {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
-}
-
-.status-cancelled {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.2);
-}
-
-/* Кнопки действий внизу карточки */
-.order-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-}
-
-.copy-btn-new {
-  flex: 1;
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: var(--tg-theme-text-color, #ffffff);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.copy-btn-new:hover {
-  background: var(--tg-theme-section-bg-color, #2c2c2e);
-}
-
-.chat-btn-new {
-  flex: 2;
-  background: var(--tg-theme-button-color, #3390ec);
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: var(--tg-theme-button-text-color, #ffffff);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.chat-btn-new:hover {
-  opacity: 0.9;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-  .order-content-wrapper {
-      flex-direction: column;
-      gap: 12px;
-  }
-  
-  .order-right-column {
-      align-items: flex-start;
-      width: 100%;
-  }
-  
-  .order-rate-info,
-  .order-total-info,
-  .order-time-info {
-      align-items: flex-start;
-  }
-  
-  .order-actions {
-      flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .order-card-new {
-      padding: 10px;
-  }
-}
-
-.amount-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.amount-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.amount-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
-}
-
-.rate-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: center;
-}
-
-.rate-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.rate-value {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--tg-theme-button-color, #3390ec);
-}
-
-/* Итого в правой части */
-.total-info-right {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-  flex-shrink: 0;
-}
-
-.total-info-right .total-label {
-  font-size: 11px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.total-info-right .total-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #34c759;
-}
-
-/* Кнопки действий */
-.order-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-}
-.status-pending {
-  background: rgba(255, 149, 0, 0.1);
-  color: #ff9500;
-  border: 1px solid rgba(255, 149, 0, 0.2);
-}
-
-.status-processing {
-  background: rgba(51, 144, 236, 0.1);
-  color: #3390ec;
-  border: 1px solid rgba(51, 144, 236, 0.2);
-}
-
-.status-accepted {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
-}
-
-.status-rejected {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.2);
-}
-
-.status-completed {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-  border: 1px solid rgba(52, 199, 89, 0.2);
-}
-
-.status-cancelled {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.2);
-}
-
-/* ОСНОВНАЯ ИНФОРМАЦИЯ - ВСЕ В ОДНОЙ СТРОКЕ */
-.order-main-info {
+  color: inherit;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-  gap: 8px;
+  font-size: 15px;
 }
-
-.amount-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.tg-faq-q span {
+  transition: transform 0.25s ease;
 }
-
-.amount-label {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
+.tg-faq-q span.rot {
+  transform: rotate(180deg);
 }
-
-.amount-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--tg-theme-text-color, #ffffff);
-}
-
-.rate-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: center;
-}
-
-.rate-label {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-}
-
-.rate-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--tg-theme-button-color, #3390ec);
-}
-
-.total-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-}
-
-.total-label {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-}
-
-.total-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #34c759;
-}
-
-.time-section {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-end;
-}
-
-.time-label {
-  font-size: 12px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-weight: 500;
-}
-
-.time-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-/* Кнопки действий */
-.order-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  border-top: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  padding-top: 12px;
-}
-
-.copy-btn-new {
-  flex: 1;
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: var(--tg-theme-text-color, #ffffff);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.copy-btn-new:hover {
-  background: var(--tg-theme-section-bg-color, #2c2c2e);
-}
-
-.chat-btn-new {
-  flex: 2;
-  background: var(--tg-theme-button-color, #3390ec);
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: var(--tg-theme-button-text-color, #ffffff);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.chat-btn-new:hover {
-  opacity: 0.9;
-}
-
-/* Toast уведомления */
-.message-toast-new {
-  position: fixed;
-  top: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
-  max-width: 90%;
-}
-
-.toast-icon {
-  font-size: 16px;
-}
-
-.toast-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color, #ffffff);
-}
-
-.message-success {
-  border-left: 4px solid #34c759;
-}
-
-.message-error {
-  border-left: 4px solid #ff3b30;
-}
-
-.message-warning {
-  border-left: 4px solid var(--tg-theme-button-color, #3390ec);
-}
-
-/* Модалка чата */
-.chat-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 16px;
-  animation: fadeIn 0.2s ease;
-}
-
-.chat-modal {
-  background: var(--tg-theme-bg-color, #0f0f0f);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 80vh;
+.tg-faq-a {
+  max-height: 0;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  animation: scaleIn 0.2s ease;
-  border: 1px solid var(--tg-theme-section-bg-color, #2c2c2e);
+  padding: 0 14px;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.tg-faq-a.open {
+  max-height: 800px;
+  opacity: 1;
+  padding-bottom: 14px;
+  color: var(--tg-theme-hint-color);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .history-header-new {
-      padding-top: calc(44px + env(safe-area-inset-top));
-  }
-  
-  .order-main-info {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-  }
-  
-  .rate-section, .total-section, .time-section {
-      align-items: flex-start;
-  }
-  
-  .order-actions {
-      flex-direction: column;
-  }
+/* RULES */
+.tg-rule {
+  padding: 14px;
+  border-top: 1px solid var(--tg-theme-section-bg-color);
 }
-
-@media (max-width: 480px) {
-  .orders-container-new {
-      padding: 12px;
-  }
-  
-  .view-tab-new {
-      padding: 6px 8px;
-      font-size: 13px;
-  }
-}
-
-/* Анимации */
-@keyframes slideDownToast {
-  from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(-10px);
-  }
-  to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-/* Safe area для iOS */
-@supports (padding: max(0px)) {
-  .history-container {
-      padding-top: max(0px, env(safe-area-inset-top));
-      padding-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
-  }
+.tg-rule h4 {
+  margin: 0 0 6px;
 }

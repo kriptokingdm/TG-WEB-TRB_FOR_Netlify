@@ -99,7 +99,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
 
         {/* Инфо */}
         <div className="settings-footer">
-          <div>TetherRabbit v1.0.0</div>
+          <div>TetherRabbit</div>
           <div>© 2024 TetherRabbit</div>
         </div>
 

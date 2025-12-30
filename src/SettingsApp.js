@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './SettingsApp.css';
 
-function SettingsApp({ navigateTo, telegramUser, showToast }) {
-  const [hideHints, setHideHints] = useState(false);
+function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHideHints }) {
+  const [localHideHints, setLocalHideHints] = useState(hideHints);
 
+  // Синхронизируем с App.js
   useEffect(() => {
-    const saved = localStorage.getItem('hideHints');
-    if (saved === 'true') setHideHints(true);
-  }, []);
+    setLocalHideHints(hideHints);
+  }, [hideHints]);
 
   const toggleHints = () => {
-    const next = !hideHints;
-    setHideHints(next);
-    localStorage.setItem('hideHints', next.toString());
-    showToast(next ? 'Подсказки скрыты' : 'Подсказки включены', 'success');
+    const nextValue = !localHideHints;
+    setLocalHideHints(nextValue);
+    // Вызываем функцию из App.js для обновления глобального состояния
+    if (updateHideHints) {
+      updateHideHints(nextValue);
+    } else {
+      // Фолбэк если функция не передана
+      localStorage.setItem('hideHints', nextValue.toString());
+    }
+    showToast(nextValue ? 'Подсказки скрыты' : 'Подсказки включены', 'success');
   };
 
   const copyToClipboard = (text, label) => {
@@ -41,7 +47,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast }) {
                 <div className="title">Скрывать подсказки</div>
                 <div className="desc">Не показывать обучающие сообщения</div>
               </div>
-              <div className={`switch ${hideHints ? 'on' : ''}`}>
+              <div className={`switch ${localHideHints ? 'on' : ''}`}>
                 <span />
               </div>
             </button>

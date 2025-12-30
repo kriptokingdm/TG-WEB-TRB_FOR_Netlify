@@ -4,7 +4,7 @@ import Home from './Home';
 import History from './History';
 import Profile from './Profile';
 import Help from './Help';
-import SettingsApp from './SettingsApp'; // Добавляем импорт
+import SettingsApp from './SettingsApp';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 
 // URL API
@@ -17,6 +17,13 @@ function App() {
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [hideHints, setHideHints] = useState(false); // Добавляем состояние
+
+  // Загружаем настройки при инициализации
+  useEffect(() => {
+    const saved = localStorage.getItem('hideHints');
+    if (saved === 'true') setHideHints(true);
+  }, []);
 
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
@@ -156,10 +163,22 @@ function App() {
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
-  // Показ уведомлений
+  // Показ уведомлений С УЧЕТОМ НАСТРОЕК
   const showToast = useCallback((message, type = 'info') => {
+    // Если скрыты подсказки и это тип 'info' - не показываем
+    if (hideHints && type === 'info') {
+      console.log('Подсказка скрыта:', message);
+      return;
+    }
+    
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
+  }, [hideHints]); // Добавляем hideHints в зависимости
+
+  // Функция для обновления настроек из SettingsApp
+  const updateHideHints = useCallback((value) => {
+    setHideHints(value);
+    localStorage.setItem('hideHints', value.toString());
   }, []);
 
   // Переключение темы
@@ -297,9 +316,12 @@ function App() {
           });
         } else {
           console.log('⚠️ SettingsButton недоступна в этой версии Telegram');
-          setTimeout(() => {
-            showToast('Настройки доступны в профиле 👤', 'info');
-          }, 2000);
+          // Показываем только если подсказки не скрыты
+          if (!hideHints) {
+            setTimeout(() => {
+              showToast('Настройки доступны в профиле 👤', 'info');
+            }, 2000);
+          }
         }
       } catch (error) {
         console.error('❌ Ошибка настройки SettingsButton:', error);
@@ -333,9 +355,12 @@ function App() {
         localStorage.setItem('telegramUser', JSON.stringify(userData));
         localStorage.setItem('currentUser', JSON.stringify(userData));
 
-        setTimeout(() => {
-          showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success');
-        }, 1000);
+        // Показываем приветствие только если подсказки не скрыты
+        if (!hideHints) {
+          setTimeout(() => {
+            showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success');
+          }, 1000);
+        }
       }
 
       console.log('✅ Telegram WebApp инициализирован');
@@ -353,7 +378,7 @@ function App() {
 
       applyTheme();
     }
-  }, [applyTheme, showToast, navigateTo, currentPage]);
+  }, [applyTheme, showToast, navigateTo, currentPage, hideHints]);
 
   // Инициализация приложения
   useEffect(() => {
@@ -403,7 +428,9 @@ function App() {
       API_BASE_URL: API_BASE_URL,
       showToast: showToast,
       toggleTheme: toggleTheme,
-      isDarkMode: isDarkMode
+      isDarkMode: isDarkMode,
+      hideHints: hideHints,
+      updateHideHints: updateHideHints // Передаем функцию обновления
     };
 
     switch (currentPage) {

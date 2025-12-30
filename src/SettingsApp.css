@@ -1,208 +1,99 @@
-/* SettingsApp.css */
 .settings-container {
-    min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
+  min-height: 100vh;
+  background: var(--tg-theme-bg-color, #f4f4f5);
+  color: var(--tg-theme-text-color, #000);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Хедер */
+/* Header */
 .settings-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  background: var(--tg-theme-bg-color, #fff);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
-.settings-header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.settings-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.settings-back-button {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--tg-theme-text-color, #000000);
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s;
-}
-
-.settings-back-button:hover {
-    background-color: var(--tg-theme-secondary-bg-color, #f2f2f2);
-}
-
-.settings-header-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.settings-header-title svg {
-    width: 24px;
-    height: 24px;
-    color: var(--tg-theme-button-color, #3390ec);
-}
-
-/* Контент */
+/* Content */
 .settings-content {
-    padding: 20px 16px;
+  padding: 12px;
 }
 
+/* Section */
 .settings-section {
-    margin-bottom: 32px;
+  background: var(--tg-theme-bg-color, #fff);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
 }
 
-.settings-section-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin: 0 0 12px 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.settings-list {
-    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border-radius: 16px;
-    overflow: hidden;
-}
-
+/* List item */
 .settings-item {
-    display: flex;
-    align-items: center;
-    padding: 16px;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
-    transition: background-color 0.2s;
+  width: 100%;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  text-align: left;
+  cursor: pointer;
 }
 
 .settings-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
-.settings-item:hover {
-    background-color: var(--tg-hover-color, rgba(0,0,0,0.05));
+.settings-item-text .title {
+  font-size: 15px;
+  font-weight: 500;
 }
 
-.settings-icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--tg-theme-button-color, #3390ec);
+.settings-item-text .desc {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-top: 2px;
 }
 
-.settings-item-content {
-    flex: 1;
+/* Switch */
+.switch {
+  width: 42px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
 }
 
-.settings-item-title {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 2px;
+.switch span {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
 }
 
-.settings-item-description {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+.switch.on {
+  background: var(--tg-theme-button-color, #3390ec);
 }
 
-.settings-item-action {
-    display: flex;
-    align-items: center;
-    margin-left: 12px;
+.switch.on span {
+  transform: translateX(18px);
 }
 
-/* Toggle Switch */
-.toggle-switch {
-    width: 50px;
-    height: 28px;
-    background: var(--tg-theme-secondary-bg-color, #e5e5e7);
-    border-radius: 14px;
-    position: relative;
-    transition: background-color 0.3s;
+/* Danger */
+.settings-item.danger .title {
+  color: #ff3b30;
 }
 
-.toggle-switch.active {
-    background: var(--tg-theme-button-color, #3390ec);
-}
-
-.toggle-slider {
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.toggle-switch.active .toggle-slider {
-    transform: translateX(22px);
-}
-
-/* Информация о приложении */
-.settings-app-info {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-}
-
-.app-version {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin: 0 0 8px 0;
-}
-
-.app-copyright {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin: 0;
-}
-
-/* Лоадер */
-.settings-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 50vh;
-}
-
-.settings-loading .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
-    border-top: 3px solid var(--tg-theme-button-color, #3390ec);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Footer */
+.settings-footer {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.5;
+  margin-top: 24px;
 }

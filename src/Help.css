@@ -341,3 +341,9 @@ html, body {
         background: transparent;
     }
 }
+
+/* 🔥 FIX BLACK SCREEN TELEGRAM */
+html, body, #root {
+    background: var(--tg-theme-bg-color) !important;
+    min-height: 100%;
+}

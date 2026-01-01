@@ -1,17 +1,19 @@
 /* ===============================
-   TELEGRAM BASE
+   TELEGRAM THEME VARIABLES
 ================================ */
 :root {
     --bg: var(--tg-theme-bg-color, #ffffff);
+    --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
     --text: var(--tg-theme-text-color, #000000);
     --hint: var(--tg-theme-hint-color, #8e8e93);
-    --link: var(--tg-theme-link-color, #2481cc);
     --button: var(--tg-theme-button-color, #2481cc);
     --button-text: var(--tg-theme-button-text-color, #ffffff);
-    --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
     --divider: rgba(0, 0, 0, 0.08);
 }
 
+/* ===============================
+   GLOBAL
+================================ */
 html,
 body,
 #root {
@@ -19,15 +21,14 @@ body,
     padding: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
         Roboto, Helvetica, Arial, sans-serif;
-    min-height: 100%;
 }
 
 /* ===============================
-   ROOT
+   ROOT CONTAINER
 ================================ */
-.tg-help {
+.help-container-new {
     padding: 16px;
     box-sizing: border-box;
 }
@@ -35,18 +36,18 @@ body,
 /* ===============================
    HEADER
 ================================ */
-.tg-help-header {
+.help-header-new {
     margin-bottom: 16px;
 }
 
-.tg-help-header h1 {
+.header-title-new {
     margin: 0;
     font-size: 22px;
     font-weight: 700;
 }
 
-.tg-help-header p {
-    margin: 4px 0 0;
+.header-subtitle {
+    margin: 4px 0 12px;
     font-size: 14px;
     color: var(--hint);
 }
@@ -54,89 +55,93 @@ body,
 /* ===============================
    SEARCH
 ================================ */
-.tg-search {
+.search-container-new {
     display: flex;
     align-items: center;
     gap: 8px;
     background: var(--secondary-bg);
-    border-radius: 12px;
     padding: 10px 12px;
+    border-radius: 12px;
     margin-bottom: 12px;
 }
 
-.tg-search span {
+.search-icon-new {
     font-size: 16px;
     opacity: 0.6;
 }
 
-.tg-search input {
-    flex: 1;
+.search-input-new {
     border: none;
     outline: none;
     background: transparent;
-    color: var(--text);
+    width: 100%;
     font-size: 15px;
+    color: var(--text);
 }
 
-.tg-search input::placeholder {
+.search-input-new::placeholder {
     color: var(--hint);
 }
 
 /* ===============================
    SEARCH RESULTS
 ================================ */
-.tg-search-results {
+.search-results-new {
     background: var(--secondary-bg);
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
-.tg-search-item {
+.search-result-item-new {
     padding: 12px;
     border-bottom: 1px solid var(--divider);
     cursor: pointer;
 }
 
-.tg-search-item:last-child {
+.search-result-item-new:last-child {
     border-bottom: none;
 }
 
-.tg-search-item:hover {
+.search-result-item-new:hover {
     background: rgba(0, 0, 0, 0.04);
 }
 
-.tg-search-item .title {
+.result-title-new {
     font-size: 15px;
+}
+
+.result-type-new {
+    font-size: 12px;
+    color: var(--hint);
 }
 
 /* ===============================
    CATEGORIES
 ================================ */
-.tg-categories {
+.categories-grid-new {
     display: flex;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 6px;
-    margin-bottom: 16px;
 }
 
-.tg-categories::-webkit-scrollbar {
+.categories-grid-new::-webkit-scrollbar {
     display: none;
 }
 
-.tg-categories button {
+.category-card-new {
     border: none;
-    padding: 8px 14px;
-    border-radius: 999px;
     background: var(--secondary-bg);
     color: var(--text);
+    padding: 8px 14px;
+    border-radius: 999px;
     font-size: 14px;
-    white-space: nowrap;
     cursor: pointer;
+    white-space: nowrap;
 }
 
-.tg-categories button.active {
+.category-card-new.active {
     background: var(--button);
     color: var(--button-text);
 }
@@ -144,107 +149,92 @@ body,
 /* ===============================
    SECTIONS
 ================================ */
-.tg-section {
+.help-section-new {
     background: var(--secondary-bg);
     border-radius: 14px;
     margin-bottom: 14px;
     overflow: hidden;
 }
 
-.tg-section-header {
+.section-header-new {
+    padding: 14px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
     cursor: pointer;
 }
 
-.tg-section-header h3 {
+.section-header-new h3 {
     margin: 0;
     font-size: 17px;
     font-weight: 600;
 }
 
-.tg-section-header span {
+.section-header-new span {
     font-size: 20px;
     opacity: 0.6;
 }
 
-.tg-section-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.25s ease;
-}
-
-.tg-section-body.open {
-    max-height: 2000px;
+.section-content-new {
+    padding-bottom: 6px;
 }
 
 /* ===============================
    FAQ
 ================================ */
-.tg-faq {
+.faq-item-new {
     border-top: 1px solid var(--divider);
 }
 
-.tg-faq-q {
+.faq-question-new {
     width: 100%;
     background: none;
     border: none;
-    text-align: left;
     padding: 14px 16px;
     font-size: 15px;
-    font-weight: 500;
     color: var(--text);
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    text-align: left;
 }
 
-.tg-faq-q span {
+.faq-question-new span {
     font-size: 12px;
     transition: transform 0.25s ease;
 }
 
-.tg-faq-q span.rot {
+.faq-question-new span.rot {
     transform: rotate(180deg);
 }
 
-.tg-faq-a {
-    max-height: 0;
-    overflow: hidden;
-    padding: 0 16px;
+.faq-answer-new {
+    padding: 0 16px 14px;
     font-size: 14px;
     color: var(--hint);
     line-height: 1.45;
-    transition: max-height 0.25s ease, padding 0.25s ease;
 }
 
-.tg-faq-a.open {
-    max-height: 500px;
-    padding: 0 16px 14px;
-}
-
-.tg-faq-a div {
+.faq-answer-new div {
     margin-bottom: 6px;
 }
 
 /* ===============================
    RULES
 ================================ */
-.tg-rule {
-    padding: 14px 16px;
+.rule-item-new {
     border-top: 1px solid var(--divider);
+    padding: 14px 16px;
 }
 
-.tg-rule h4 {
+.rule-item-new h4 {
     margin: 0 0 6px;
     font-size: 15px;
     font-weight: 600;
 }
 
-.tg-rule div {
+.rule-item-new div {
     font-size: 14px;
     color: var(--hint);
     line-height: 1.45;
@@ -252,9 +242,36 @@ body,
 }
 
 /* ===============================
-   TOUCH OPTIMIZATION
+   SUPPORT
 ================================ */
-button,
-.tg-faq-q {
+.support-section-new {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.support-btn-new {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.support-btn-new.primary {
+    background: var(--button);
+    color: var(--button-text);
+}
+
+.support-btn-new.secondary {
+    background: var(--secondary-bg);
+    color: var(--text);
+}
+
+/* ===============================
+   TOUCH FIX
+================================ */
+button {
     -webkit-tap-highlight-color: transparent;
 }

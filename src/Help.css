@@ -1,157 +1,236 @@
-/* Help.css - ОСНОВНОЙ ФАЙЛ СТИЛЕЙ */
+/* ===============================
+   TELEGRAM THEME VARIABLES
+=============================== */
+:root {
+    --tg-bg: var(--tg-theme-bg-color, #ffffff);
+    --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
+    --tg-text: var(--tg-theme-text-color, #000000);
+    --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+    --tg-link: var(--tg-theme-link-color, #007aff);
+    --tg-button: var(--tg-theme-button-color, #007aff);
+    --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+    --tg-border: rgba(0, 0, 0, 0.08);
+}
 
 /* ===============================
-   БАЗОВЫЕ СТИЛИ ДЛЯ ВСЕЙ СТРАНИЦЫ
-================================ */
-html,
-body,
-#root {
+   BASE
+=============================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
     margin: 0;
     padding: 0;
-    min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    width: 100%;
+    height: 100%;
+    background: var(--tg-bg);
+    color: var(--tg-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
 }
 
 /* ===============================
-   КОНТЕЙНЕР ПОМОЩИ
-================================ */
+   CONTAINER
+=============================== */
 .help-container-new {
-    padding: 16px;
-    box-sizing: border-box;
+    width: 100%;
     min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
+    background: var(--tg-bg);
+    padding-bottom: 24px;
 }
 
 /* ===============================
-   ШАПКА
-================================ */
+   HEADER
+=============================== */
 .help-header-new {
-    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--tg-bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .header-title-new {
-    margin: 0 0 4px 0;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    color: var(--tg-theme-text-color, #000000);
+    margin: 0 0 4px 0;
+    color: var(--tg-text);
 }
 
 .header-subtitle {
-    margin: 0 0 16px 0;
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
+    margin: 0 0 16px 0;
 }
 
 /* ===============================
-   ПОИСК
-================================ */
+   SEARCH
+=============================== */
 .search-container-new {
+    background: var(--tg-secondary-bg);
+    border-radius: 14px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .search-icon-new {
-    font-size: 18px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 16px;
+    color: var(--tg-hint);
+    opacity: 0.7;
 }
 
 .search-input-new {
+    flex: 1;
     border: none;
-    outline: none;
     background: transparent;
-    width: 100%;
-    font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
+    font-size: 15px;
+    color: var(--tg-text);
+    outline: none;
+    font-family: inherit;
 }
 
 .search-input-new::placeholder {
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
+    opacity: 0.7;
 }
 
 /* ===============================
-   РЕЗУЛЬТАТЫ ПОИСКА
-================================ */
+   SEARCH RESULTS
+=============================== */
 .search-results-new {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 12px;
+    background: var(--tg-secondary-bg);
+    border-radius: 14px;
     overflow: hidden;
     margin-bottom: 16px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .search-result-item-new {
     padding: 14px 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--tg-border);
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-result-item-new:hover {
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
 .search-result-item-new:last-child {
     border-bottom: none;
 }
 
-.search-result-item-new:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
 .result-title-new {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--tg-text);
     margin-bottom: 4px;
 }
 
 .result-type-new {
     font-size: 12px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
 }
 
 /* ===============================
-   КАТЕГОРИИ
-================================ */
+   CATEGORIES
+=============================== */
 .categories-grid-new {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-}
-
-.categories-grid-new::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .category-card-new {
+    background: var(--tg-secondary-bg);
+    border-radius: 14px;
+    padding: 16px 8px;
     border: none;
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    color: var(--tg-theme-text-color, #000000);
-    padding: 10px 16px;
-    border-radius: 999px;
-    font-size: 14px;
+    text-align: center;
     cursor: pointer;
-    white-space: nowrap;
+    transition: all 0.2s;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+}
+
+.category-card-new:hover {
+    transform: translateY(-2px);
 }
 
 .category-card-new.active {
-    background: var(--tg-theme-button-color, #2481cc);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background: var(--tg-button);
+    color: var(--tg-button-text);
+}
+
+.category-icon-new {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.category-name-new {
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* ===============================
-   СЕКЦИИ
-================================ */
+   POPULAR QUESTIONS
+=============================== */
+.popular-section-new {
+    margin-bottom: 24px;
+}
+
+.popular-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: var(--tg-text);
+}
+
+.questions-grid-new {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.question-chip-new {
+    background: var(--tg-secondary-bg);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    color: var(--tg-text);
+    transition: background-color 0.2s;
+}
+
+.question-chip-new:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ===============================
+   CONTENT
+=============================== */
+.help-content-new {
+    padding: 0 16px;
+}
+
+/* ===============================
+   SECTION
+=============================== */
 .help-section-new {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 14px;
     margin-bottom: 16px;
+    background: var(--tg-secondary-bg);
+    border-radius: 16px;
     overflow: hidden;
 }
 
@@ -161,167 +240,254 @@ body,
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    border-bottom: 1px solid transparent;
+    transition: background-color 0.2s;
+}
+
+.section-header-new:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.section-title-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-icon-new {
+    font-size: 20px;
 }
 
 .section-header-new h3 {
-    margin: 0;
     font-size: 17px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    margin: 0;
+    color: var(--tg-text);
 }
 
 .section-header-new span {
-    font-size: 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    font-size: 18px;
+    color: var(--tg-hint);
     font-weight: 300;
 }
 
 .section-content-new {
-    padding: 0;
+    padding: 0 16px;
 }
 
 /* ===============================
-   FAQ (ВОПРОСЫ-ОТВЕТЫ)
-================================ */
+   FAQ
+=============================== */
 .faq-item-new {
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-top: 1px solid var(--tg-border);
+}
+
+.faq-item-new:first-child {
+    border-top: none;
 }
 
 .faq-question-new {
     width: 100%;
     background: none;
     border: none;
-    padding: 16px;
-    font-size: 15px;
-    color: var(--tg-theme-text-color, #000000);
+    padding: 16px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
     text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.question-text-new {
+    font-size: 15px;
     font-weight: 500;
+    color: var(--tg-text);
+    flex: 1;
+    margin-right: 12px;
 }
 
-.faq-question-new span {
+.faq-question-new span:last-child {
     font-size: 12px;
-    transition: transform 0.25s ease;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
+    transition: transform 0.3s;
 }
 
-.faq-question-new span.rot {
-    transform: rotate(180deg);
+.faq-question-new:hover span:last-child {
+    color: var(--tg-text);
 }
 
 .faq-answer-new {
-    padding: 0 16px 16px;
+    padding: 0 0 16px 0;
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
     line-height: 1.5;
 }
 
-.faq-answer-new div {
+.answer-line {
     margin-bottom: 8px;
 }
 
-.faq-answer-new div:last-child {
+.answer-line:last-child {
     margin-bottom: 0;
 }
 
 /* ===============================
-   ПРАВИЛА
-================================ */
+   RULES
+=============================== */
 .rule-item-new {
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 16px;
+    padding: 16px 0;
+    border-top: 1px solid var(--tg-border);
 }
 
-.rule-item-new h4 {
-    margin: 0 0 8px 0;
+.rule-item-new:first-child {
+    border-top: none;
+}
+
+.rule-title-new {
     font-size: 15px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    color: var(--tg-text);
+    margin: 0 0 8px 0;
 }
 
-.rule-item-new div {
+.rule-content-new {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    color: var(--tg-hint);
     line-height: 1.5;
+}
+
+.rule-line {
     margin-bottom: 6px;
 }
 
+.rule-line:last-child {
+    margin-bottom: 0;
+}
+
 /* ===============================
-   ПОДДЕРЖКА
-================================ */
+   SUPPORT
+=============================== */
 .support-section-new {
     margin-top: 24px;
+}
+
+.support-card-new {
+    background: var(--tg-secondary-bg);
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.support-header-new {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.support-icon-new {
+    font-size: 28px;
+}
+
+.support-header-new h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--tg-text);
+}
+
+.support-header-new p {
+    font-size: 14px;
+    color: var(--tg-hint);
+    margin: 0;
+}
+
+.support-contacts-new {
     display: flex;
     gap: 12px;
 }
 
 .support-btn-new {
     flex: 1;
+    border-radius: 14px;
     padding: 14px;
-    border-radius: 12px;
-    border: none;
     font-size: 15px;
-    font-weight: 500;
+    border: none;
     cursor: pointer;
-    text-align: center;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: inherit;
 }
 
 .support-btn-new.primary {
-    background: var(--tg-theme-button-color, #2481cc);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background: var(--tg-button);
+    color: var(--tg-button-text);
+}
+
+.support-btn-new.primary:hover {
+    opacity: 0.9;
 }
 
 .support-btn-new.secondary {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    color: var(--tg-theme-text-color, #000000);
+    background: transparent;
+    color: var(--tg-link);
+    border: 1px solid var(--tg-border);
+}
+
+.support-btn-new.secondary:hover {
+    background: rgba(0, 122, 255, 0.05);
 }
 
 /* ===============================
-   ДЛЯ ТЕМНОЙ ТЕМЫ
-================================ */
-[data-theme="dark"] .search-container-new,
-[data-theme="dark"] .search-results-new,
-[data-theme="dark"] .category-card-new,
-[data-theme="dark"] .help-section-new,
+   DARK THEME ADJUSTMENTS
+=============================== */
+[data-theme="dark"] {
+    --tg-border: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .search-result-item-new:hover,
+[data-theme="dark"] .section-header-new:hover,
+[data-theme="dark"] .question-chip-new:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 [data-theme="dark"] .support-btn-new.secondary {
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-}
-
-[data-theme="dark"] .search-result-item-new,
-[data-theme="dark"] .faq-item-new,
-[data-theme="dark"] .rule-item-new {
-    border-top-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .search-result-item-new:hover {
-    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* ===============================
-   ОБЩИЕ СТИЛИ
-================================ */
-button {
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    outline: none;
+   ANIMATIONS
+=============================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-* {
-    box-sizing: border-box;
+.help-container-new {
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* ===============================
-   ПРОСТОЙ ЛОАДЕР (если нужен)
-================================ */
-.help-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+   SCROLLBAR STYLING
+=============================== */
+.search-results-new::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results-new::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.search-results-new::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+[data-theme="dark"] .search-results-new::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
 }

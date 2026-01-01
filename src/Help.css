@@ -1,349 +1,260 @@
 /* ===============================
-   TELEGRAM THEME VARIABLES
-=============================== */
+   TELEGRAM BASE
+================================ */
 :root {
-    --tg-bg: var(--tg-theme-bg-color, #ffffff);
-    --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
-    --tg-text: var(--tg-theme-text-color, #000000);
-    --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-    --tg-link: var(--tg-theme-link-color, #007aff);
-    --tg-button: var(--tg-theme-button-color, #007aff);
-    --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-    --tg-border: rgba(0, 0, 0, 0.08);
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #000000);
+    --hint: var(--tg-theme-hint-color, #8e8e93);
+    --link: var(--tg-theme-link-color, #2481cc);
+    --button: var(--tg-theme-button-color, #2481cc);
+    --button-text: var(--tg-theme-button-text-color, #ffffff);
+    --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    --divider: rgba(0, 0, 0, 0.08);
 }
 
-/* ===============================
-   BASE
-=============================== */
-* {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
+html,
+body,
+#root {
     margin: 0;
     padding: 0;
-    background: var(--tg-bg);
-    color: var(--tg-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                 Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100%;
 }
 
 /* ===============================
-   CONTAINER
-=============================== */
-.help-container-new {
-    width: 100%;
-    min-height: 100vh;
-    background: var(--tg-bg);
-    padding-bottom: 24px;
+   ROOT
+================================ */
+.tg-help {
+    padding: 16px;
+    box-sizing: border-box;
 }
 
 /* ===============================
    HEADER
-=============================== */
-.help-header-new {
-    padding: 16px;
-    border-bottom: 1px solid var(--tg-border);
+================================ */
+.tg-help-header {
+    margin-bottom: 16px;
 }
 
-.header-title-new {
+.tg-help-header h1 {
+    margin: 0;
     font-size: 22px;
     font-weight: 700;
-    margin: 0;
 }
 
-.header-subtitle {
+.tg-help-header p {
+    margin: 4px 0 0;
     font-size: 14px;
-    color: var(--tg-hint);
-    margin-top: 4px;
+    color: var(--hint);
 }
 
 /* ===============================
    SEARCH
-=============================== */
-.search-container-new {
-    margin-top: 16px;
-    background: var(--tg-secondary-bg);
-    border-radius: 14px;
-    padding: 10px 14px;
+================================ */
+.tg-search {
     display: flex;
     align-items: center;
     gap: 8px;
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
 }
 
-.search-icon-new {
+.tg-search span {
     font-size: 16px;
-    color: var(--tg-hint);
+    opacity: 0.6;
 }
 
-.search-input-new {
+.tg-search input {
     flex: 1;
     border: none;
-    background: transparent;
-    font-size: 15px;
-    color: var(--tg-text);
     outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 15px;
 }
 
-.clear-search-new {
-    border: none;
-    background: none;
-    font-size: 16px;
-    color: var(--tg-hint);
-    cursor: pointer;
+.tg-search input::placeholder {
+    color: var(--hint);
 }
 
 /* ===============================
    SEARCH RESULTS
-=============================== */
-.search-results-new {
-    margin-top: 12px;
-    background: var(--tg-secondary-bg);
-    border-radius: 14px;
+================================ */
+.tg-search-results {
+    background: var(--secondary-bg);
+    border-radius: 12px;
     overflow: hidden;
+    margin-bottom: 12px;
 }
 
-.search-result-item-new {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--tg-border);
+.tg-search-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--divider);
     cursor: pointer;
 }
 
-.search-result-item-new:last-child {
+.tg-search-item:last-child {
     border-bottom: none;
 }
 
-.result-title-new {
-    font-size: 15px;
-    font-weight: 600;
+.tg-search-item:hover {
+    background: rgba(0, 0, 0, 0.04);
 }
 
-.result-preview-new {
-    font-size: 13px;
-    color: var(--tg-hint);
-    margin-top: 4px;
+.tg-search-item .title {
+    font-size: 15px;
 }
 
 /* ===============================
    CATEGORIES
-=============================== */
-.categories-grid-new {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.category-card-new {
-    background: var(--tg-secondary-bg);
-    border-radius: 14px;
-    padding: 12px 8px;
-    border: none;
-    text-align: center;
-    cursor: pointer;
-}
-
-.category-card-new.active {
-    outline: 2px solid var(--tg-button);
-}
-
-.category-icon-new {
-    font-size: 20px;
-}
-
-.category-name-new {
-    font-size: 13px;
-    margin-top: 6px;
-}
-
-/* ===============================
-   POPULAR QUESTIONS
-=============================== */
-.popular-section-new {
-    margin-top: 20px;
-}
-
-.popular-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.questions-grid-new {
+================================ */
+.tg-categories {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
 }
 
-.question-chip-new {
-    background: var(--tg-secondary-bg);
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 13px;
+.tg-categories::-webkit-scrollbar {
+    display: none;
+}
+
+.tg-categories button {
     border: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--secondary-bg);
+    color: var(--text);
+    font-size: 14px;
+    white-space: nowrap;
     cursor: pointer;
 }
 
-/* ===============================
-   CONTENT
-=============================== */
-.help-content-new {
-    padding: 16px;
+.tg-categories button.active {
+    background: var(--button);
+    color: var(--button-text);
 }
 
 /* ===============================
-   SECTION
-=============================== */
-.help-section-new {
-    margin-bottom: 16px;
-    background: var(--tg-secondary-bg);
-    border-radius: 16px;
+   SECTIONS
+================================ */
+.tg-section {
+    background: var(--secondary-bg);
+    border-radius: 14px;
+    margin-bottom: 14px;
     overflow: hidden;
 }
 
-.section-header-new {
-    padding: 14px 16px;
+.tg-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 14px 16px;
     cursor: pointer;
 }
 
-.section-title-new {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.tg-section-header h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
 }
 
-.section-icon-new {
-    font-size: 18px;
+.tg-section-header span {
+    font-size: 20px;
+    opacity: 0.6;
 }
 
-.section-content-new {
-    padding: 0 16px 12px;
+.tg-section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+
+.tg-section-body.open {
+    max-height: 2000px;
 }
 
 /* ===============================
    FAQ
-=============================== */
-.faq-item-new {
-    border-top: 1px solid var(--tg-border);
+================================ */
+.tg-faq {
+    border-top: 1px solid var(--divider);
 }
 
-.faq-question-new {
+.tg-faq-q {
     width: 100%;
     background: none;
     border: none;
-    padding: 14px 0;
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    text-align: left;
     cursor: pointer;
 }
 
-.question-text-new {
-    font-size: 15px;
-    font-weight: 500;
+.tg-faq-q span {
+    font-size: 12px;
+    transition: transform 0.25s ease;
 }
 
-.faq-answer-new {
-    padding-bottom: 14px;
+.tg-faq-q span.rot {
+    transform: rotate(180deg);
+}
+
+.tg-faq-a {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 16px;
     font-size: 14px;
-    color: var(--tg-hint);
+    color: var(--hint);
+    line-height: 1.45;
+    transition: max-height 0.25s ease, padding 0.25s ease;
 }
 
-.answer-line {
-    margin-top: 4px;
+.tg-faq-a.open {
+    max-height: 500px;
+    padding: 0 16px 14px;
+}
+
+.tg-faq-a div {
+    margin-bottom: 6px;
 }
 
 /* ===============================
    RULES
-=============================== */
-.rule-item-new {
-    padding: 14px 0;
-    border-top: 1px solid var(--tg-border);
+================================ */
+.tg-rule {
+    padding: 14px 16px;
+    border-top: 1px solid var(--divider);
 }
 
-.rule-title-new {
+.tg-rule h4 {
+    margin: 0 0 6px;
     font-size: 15px;
     font-weight: 600;
 }
 
-.rule-content-new {
+.tg-rule div {
     font-size: 14px;
-    color: var(--tg-hint);
-    margin-top: 6px;
+    color: var(--hint);
+    line-height: 1.45;
+    margin-bottom: 4px;
 }
 
 /* ===============================
-   SUPPORT
-=============================== */
-.support-section-new {
-    margin-top: 24px;
-}
-
-.support-card-new {
-    background: var(--tg-secondary-bg);
-    border-radius: 18px;
-    padding: 16px;
-}
-
-.support-header-new {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.support-icon-new {
-    font-size: 26px;
-}
-
-.support-contacts-new {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.support-btn-new {
-    flex: 1;
-    border-radius: 14px;
-    padding: 12px;
-    font-size: 15px;
-    border: none;
-    cursor: pointer;
-}
-
-.support-btn-new.primary {
-    background: var(--tg-button);
-    color: var(--tg-button-text);
-}
-
-.support-btn-new.secondary {
-    background: transparent;
-    color: var(--tg-link);
-    border: 1px solid var(--tg-border);
-}
-
-/* ===============================
-   HIGHLIGHT SEARCH RESULT
-=============================== */
-.highlight-result {
-    animation: highlightFade 2s ease;
-}
-
-@keyframes highlightFade {
-    from {
-        background: rgba(0, 122, 255, 0.15);
-    }
-    to {
-        background: transparent;
-    }
-}
-
-/* 🔥 FIX BLACK SCREEN TELEGRAM */
-html, body, #root {
-    background: var(--tg-theme-bg-color) !important;
-    min-height: 100%;
+   TOUCH OPTIMIZATION
+================================ */
+button,
+.tg-faq-q {
+    -webkit-tap-highlight-color: transparent;
 }

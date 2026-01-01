@@ -31,6 +31,8 @@ body,
 .help-container-new {
     padding: 16px;
     box-sizing: border-box;
+    min-height: 100vh;
+    background: var(--bg);
 }
 
 /* ===============================
@@ -139,6 +141,9 @@ body,
     font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .category-card-new.active {
@@ -274,4 +279,5 @@ body,
 ================================ */
 button {
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }

@@ -177,14 +177,14 @@ function Help({ navigateTo }) {
     return (
         <div className="telegram-help">
             {/* Telegram Header */}
-            <div className="tg-header">
+            {/* <div className="tg-header">
                 <button className="tg-back-btn" onClick={() => navigateTo('home')}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M15.5 19L8.5 12L15.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                 </button>
                 <h1 className="tg-header-title">Помощь</h1>
-            </div>
+            </div> */}
 
             {/* Search Bar - Telegram Style */}
             <div className="tg-search-container">

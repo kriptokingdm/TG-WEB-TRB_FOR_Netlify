@@ -1,75 +1,65 @@
-/* ===============================
-   TELEGRAM THEME VARIABLES
-================================ */
-:root {
-    --bg: var(--tg-theme-bg-color, #ffffff);
-    --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    --text: var(--tg-theme-text-color, #000000);
-    --hint: var(--tg-theme-hint-color, #8e8e93);
-    --button: var(--tg-theme-button-color, #2481cc);
-    --button-text: var(--tg-theme-button-text-color, #ffffff);
-    --divider: rgba(0, 0, 0, 0.08);
-}
+/* Help.css - ОСНОВНОЙ ФАЙЛ СТИЛЕЙ */
 
 /* ===============================
-   GLOBAL
+   БАЗОВЫЕ СТИЛИ ДЛЯ ВСЕЙ СТРАНИЦЫ
 ================================ */
 html,
 body,
 #root {
     margin: 0;
     padding: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    background: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* ===============================
-   ROOT CONTAINER
+   КОНТЕЙНЕР ПОМОЩИ
 ================================ */
 .help-container-new {
     padding: 16px;
     box-sizing: border-box;
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--tg-theme-bg-color, #ffffff);
 }
 
 /* ===============================
-   HEADER
+   ШАПКА
 ================================ */
 .help-header-new {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .header-title-new {
-    margin: 0;
-    font-size: 22px;
+    margin: 0 0 4px 0;
+    font-size: 24px;
     font-weight: 700;
+    color: var(--tg-theme-text-color, #000000);
 }
 
 .header-subtitle {
-    margin: 4px 0 12px;
+    margin: 0 0 16px 0;
     font-size: 14px;
-    color: var(--hint);
+    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 /* ===============================
-   SEARCH
+   ПОИСК
 ================================ */
 .search-container-new {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: var(--secondary-bg);
-    padding: 10px 12px;
+    gap: 10px;
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    padding: 12px 16px;
     border-radius: 12px;
     margin-bottom: 12px;
 }
 
 .search-icon-new {
-    font-size: 16px;
-    opacity: 0.6;
+    font-size: 18px;
+    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .search-input-new {
@@ -77,27 +67,27 @@ body,
     outline: none;
     background: transparent;
     width: 100%;
-    font-size: 15px;
-    color: var(--text);
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000000);
 }
 
 .search-input-new::placeholder {
-    color: var(--hint);
+    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 /* ===============================
-   SEARCH RESULTS
+   РЕЗУЛЬТАТЫ ПОИСКА
 ================================ */
 .search-results-new {
-    background: var(--secondary-bg);
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 16px;
 }
 
 .search-result-item-new {
-    padding: 12px;
-    border-bottom: 1px solid var(--divider);
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     cursor: pointer;
 }
 
@@ -110,22 +100,26 @@ body,
 }
 
 .result-title-new {
-    font-size: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000000);
+    margin-bottom: 4px;
 }
 
 .result-type-new {
     font-size: 12px;
-    color: var(--hint);
+    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 /* ===============================
-   CATEGORIES
+   КАТЕГОРИИ
 ================================ */
 .categories-grid-new {
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding-bottom: 6px;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
 }
 
 .categories-grid-new::-webkit-scrollbar {
@@ -134,80 +128,85 @@ body,
 
 .category-card-new {
     border: none;
-    background: var(--secondary-bg);
-    color: var(--text);
-    padding: 8px 14px;
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    color: var(--tg-theme-text-color, #000000);
+    padding: 10px 16px;
     border-radius: 999px;
     font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .category-card-new.active {
-    background: var(--button);
-    color: var(--button-text);
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #ffffff);
 }
 
 /* ===============================
-   SECTIONS
+   СЕКЦИИ
 ================================ */
 .help-section-new {
-    background: var(--secondary-bg);
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
     border-radius: 14px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     overflow: hidden;
 }
 
 .section-header-new {
-    padding: 14px 16px;
+    padding: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    border-bottom: 1px solid transparent;
 }
 
 .section-header-new h3 {
     margin: 0;
     font-size: 17px;
     font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
 }
 
 .section-header-new span {
     font-size: 20px;
-    opacity: 0.6;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    font-weight: 300;
 }
 
 .section-content-new {
-    padding-bottom: 6px;
+    padding: 0;
 }
 
 /* ===============================
-   FAQ
+   FAQ (ВОПРОСЫ-ОТВЕТЫ)
 ================================ */
 .faq-item-new {
-    border-top: 1px solid var(--divider);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .faq-question-new {
     width: 100%;
     background: none;
     border: none;
-    padding: 14px 16px;
+    padding: 16px;
     font-size: 15px;
-    color: var(--text);
+    color: var(--tg-theme-text-color, #000000);
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     text-align: left;
+    font-weight: 500;
 }
 
 .faq-question-new span {
     font-size: 12px;
     transition: transform 0.25s ease;
+    color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .faq-question-new span.rot {
@@ -215,69 +214,114 @@ body,
 }
 
 .faq-answer-new {
-    padding: 0 16px 14px;
+    padding: 0 16px 16px;
     font-size: 14px;
-    color: var(--hint);
-    line-height: 1.45;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    line-height: 1.5;
 }
 
 .faq-answer-new div {
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.faq-answer-new div:last-child {
+    margin-bottom: 0;
 }
 
 /* ===============================
-   RULES
+   ПРАВИЛА
 ================================ */
 .rule-item-new {
-    border-top: 1px solid var(--divider);
-    padding: 14px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 16px;
 }
 
 .rule-item-new h4 {
-    margin: 0 0 6px;
+    margin: 0 0 8px 0;
     font-size: 15px;
     font-weight: 600;
+    color: var(--tg-theme-text-color, #000000);
 }
 
 .rule-item-new div {
     font-size: 14px;
-    color: var(--hint);
-    line-height: 1.45;
-    margin-bottom: 4px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    line-height: 1.5;
+    margin-bottom: 6px;
 }
 
 /* ===============================
-   SUPPORT
+   ПОДДЕРЖКА
 ================================ */
 .support-section-new {
-    margin-top: 20px;
+    margin-top: 24px;
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .support-btn-new {
     flex: 1;
-    padding: 12px;
+    padding: 14px;
     border-radius: 12px;
     border: none;
     font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
+    text-align: center;
 }
 
 .support-btn-new.primary {
-    background: var(--button);
-    color: var(--button-text);
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #ffffff);
 }
 
 .support-btn-new.secondary {
-    background: var(--secondary-bg);
-    color: var(--text);
+    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    color: var(--tg-theme-text-color, #000000);
 }
 
 /* ===============================
-   TOUCH FIX
+   ДЛЯ ТЕМНОЙ ТЕМЫ
+================================ */
+[data-theme="dark"] .search-container-new,
+[data-theme="dark"] .search-results-new,
+[data-theme="dark"] .category-card-new,
+[data-theme="dark"] .help-section-new,
+[data-theme="dark"] .support-btn-new.secondary {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+}
+
+[data-theme="dark"] .search-result-item-new,
+[data-theme="dark"] .faq-item-new,
+[data-theme="dark"] .rule-item-new {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .search-result-item-new:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ===============================
+   ОБЩИЕ СТИЛИ
 ================================ */
 button {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    outline: none;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* ===============================
+   ПРОСТОЙ ЛОАДЕР (если нужен)
+================================ */
+.help-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--tg-theme-hint-color, #8e8e93);
 }

@@ -1,116 +1,83 @@
-.tg-help-page {
+/* ⚠️ БЕЗ 100vh */
+.tg-help {
   padding: 16px;
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
-  min-height: 100vh;
-  box-sizing: border-box;
 }
 
 /* HEADER */
 .tg-help-header h1 {
   margin: 0;
   font-size: 22px;
-  font-weight: 600;
 }
-
 .tg-help-header p {
-  margin: 4px 0 16px;
-  font-size: 14px;
   color: var(--tg-theme-hint-color);
+  margin-bottom: 12px;
 }
 
 /* SEARCH */
-.tg-search-box {
+.tg-search {
   display: flex;
-  align-items: center;
   gap: 8px;
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 12px;
   padding: 10px 12px;
-  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--tg-theme-secondary-bg-color);
 }
-
-.tg-search-box input {
+.tg-search input {
   border: none;
-  outline: none;
   background: transparent;
-  color: var(--tg-theme-text-color);
+  color: inherit;
   width: 100%;
-  font-size: 15px;
 }
 
-.tg-search-icon {
-  opacity: 0.6;
+/* RESULTS */
+.tg-search-results {
+  margin-top: 8px;
+  border-radius: 12px;
+  background: var(--tg-theme-secondary-bg-color);
 }
 
-/* TABS */
-.tg-section-tabs {
-  display: flex;
+/* CATEGORIES */
+.tg-categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-bottom: 16px;
+  margin: 14px 0;
 }
-
-.tg-section-tabs button {
-  flex: 1;
+.tg-categories button {
   padding: 10px;
   border-radius: 12px;
   border: none;
   background: var(--tg-theme-secondary-bg-color);
-  color: var(--tg-theme-text-color);
-  font-weight: 500;
 }
-
-.tg-section-tabs button.active {
+.tg-categories button.active {
   background: var(--tg-theme-button-color);
   color: var(--tg-theme-button-text-color);
 }
 
-/* CONTENT */
-.tg-help-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 /* FAQ */
-.tg-faq-item {
+.tg-section {
   background: var(--tg-theme-secondary-bg-color);
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 14px;
+  margin-bottom: 12px;
 }
-
-.tg-faq-question {
+.tg-section-header {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+}
+.tg-faq {
+  border-top: 1px solid var(--tg-theme-section-bg-color);
+}
+.tg-faq-q {
   width: 100%;
   padding: 14px;
   background: none;
   border: none;
-  color: var(--tg-theme-text-color);
   display: flex;
   justify-content: space-between;
-  font-size: 15px;
-  font-weight: 500;
 }
-
-.tg-faq-answer {
+.tg-faq-a {
   padding: 0 14px 14px;
-  font-size: 14px;
-  color: var(--tg-theme-hint-color);
-}
-
-/* RULES */
-.tg-rule-item {
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 12px;
-  padding: 14px;
-}
-
-.tg-rule-item h3 {
-  margin: 0 0 6px;
-  font-size: 15px;
-}
-
-.tg-rule-item p {
-  margin: 0;
-  font-size: 14px;
   color: var(--tg-theme-hint-color);
 }

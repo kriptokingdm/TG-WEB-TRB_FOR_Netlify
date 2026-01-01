@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Profile.css';
-import ReferralSystem from './ReferralSystem';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
@@ -13,10 +12,9 @@ const HelpSVG = () => (
 
 function Profile({ navigateTo, telegramUser, showToast }) {
     const [userData, setUserData] = useState(null);
+    const [usdtBalance, setUsdtBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [referralData, setReferralData] = useState(null);
-    const [activeTab, setActiveTab] = useState('profile');
 
     // Получаем ID пользователя
     const getUserId = () => {
@@ -65,11 +63,33 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         showMessage('success', `✅ ${label} скопирован`);
     };
 
+    // Загрузка баланса USDT
+    const loadUsdtBalance = async (userId) => {
+        try {
+            // Пока используем мок данные, пока не добавишь API
+            // TODO: Заменить на реальный API запрос
+            const mockBalance = Math.random() * 1000; // Временные данные
+            
+            // Пример реального запроса (когда добавишь API):
+            // const response = await fetch(`${API_BASE_URL}/api/user/${userId}/balance`);
+            // const data = await response.json();
+            // setUsdtBalance(data.usdt_balance || 0);
+            
+            setUsdtBalance(mockBalance.toFixed(2));
+        } catch (error) {
+            console.error('❌ Ошибка загрузки баланса USDT:', error);
+            setUsdtBalance(0);
+        }
+    };
+
     // Загрузка данных пользователя
     const loadUserData = async () => {
         try {
             const userId = getUserId();
             
+            // Загружаем USDT баланс
+            await loadUsdtBalance(userId);
+
             // Используем telegramUser если есть, иначе загружаем
             if (telegramUser && !userData) {
                 setUserData({
@@ -78,24 +98,27 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                     firstName: telegramUser.firstName || 'Пользователь',
                     photoUrl: telegramUser.photoUrl
                 });
-            }
-
-            // Загружаем реферальные данные
-            try {
-                const referralResponse = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
-                if (referralResponse.ok) {
-                    const referralResult = await referralResponse.json();
-                    if (referralResult.success) {
-                        setReferralData(referralResult.data);
-                    } else {
-                        setReferralData(getDefaultReferralData(userId));
+            } else if (!userData) {
+                // Загружаем данные пользователя из API (если есть)
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/user?userId=${userId}`);
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            setUserData(result.user);
+                        }
                     }
-                } else {
-                    setReferralData(getDefaultReferralData(userId));
+                } catch (apiError) {
+                    console.error('Ошибка API:', apiError);
+                    // Используем данные из localStorage
+                    const savedUser = JSON.parse(localStorage.getItem('telegramUser') || localStorage.getItem('currentUser') || '{}');
+                    setUserData({
+                        id: savedUser.id || userId,
+                        username: savedUser.username || `user_${userId}`,
+                        firstName: savedUser.firstName || 'Пользователь',
+                        photoUrl: savedUser.photoUrl
+                    });
                 }
-            } catch (referralError) {
-                console.error('Ошибка загрузки реферальных данных:', referralError);
-                setReferralData(getDefaultReferralData(userId));
             }
 
         } catch (error) {
@@ -113,29 +136,8 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 });
             }
             
-            setReferralData(getDefaultReferralData(userId));
+            setUsdtBalance(0);
         }
-    };
-
-    // Данные по умолчанию для рефералов
-    const getDefaultReferralData = (userId) => {
-        return {
-            referral_link: `https://t.me/TetherRabbitBot?start=ref_${userId}`,
-            stats: {
-                total_referrals: 0,
-                active_referrals: 0,
-                total_earnings: 0,
-                available_earnings: 0,
-                withdrawn_earnings: 0,
-                commission_rate: 1
-            },
-            referrals: [],
-            earnings: [],
-            withdrawals: null,
-            can_withdraw: false,
-            min_withdrawal: 10,
-            next_withdrawal: 'Доступно в любое время'
-        };
     };
 
     // Эффект загрузки данных
@@ -148,15 +150,19 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
         loadData();
         
-        // Обновляем каждые 30 секунд
-        const interval = setInterval(loadUserData, 30000);
+        // Обновляем баланс каждые 30 секунд
+        const interval = setInterval(() => {
+            const userId = getUserId();
+            loadUsdtBalance(userId);
+        }, 30000);
+        
         return () => clearInterval(interval);
     }, []);
 
-    // Форматирование USD
-    const formatUSD = (num) => {
+    // Форматирование USDT
+    const formatUSDT = (num) => {
         const value = parseFloat(num || 0);
-        return `$${value.toFixed(2)}`;
+        return `${value.toFixed(2)} USDT`;
     };
 
     if (isLoading) {
@@ -172,7 +178,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
     return (
         <div className="profile-container">
-            {/* Хедер - цвет фона Telegram WebApp */}
+            {/* Хедер */}
             <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-bg-color, #ffffff)' }}>
                 <div className="header-content">
                     <div className="header-left">
@@ -224,80 +230,111 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Вкладки */}
-            <div className="profile-tabs">
-                <button 
-                    className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('profile')}
-                    aria-label="Профиль"
-                >
-                    <span className="profile-tab-icon">👤</span>
-                    <span className="profile-tab-text">Профиль</span>
-                </button>
+            {/* Баланс USDT */}
+            <div className="balance-card">
+                <div className="balance-header">
+                    <div className="balance-icon">💰</div>
+                    <div className="balance-info">
+                        <h3>Баланс USDT</h3>
+                        <p>Текущий баланс в USDT (TRC20)</p>
+                    </div>
+                </div>
                 
-                <button 
-                    className={`profile-tab ${activeTab === 'referrals' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('referrals')}
-                    aria-label="Рефералы"
-                >
-                    <span className="profile-tab-icon">💰</span>
-                    <span className="profile-tab-text">Рефералы</span>
-                    {referralData?.stats.available_earnings > 0 && (
-                        <span className="profile-tab-badge">
-                            {formatUSD(referralData.stats.available_earnings)}
-                        </span>
-                    )}
-                </button>
+                <div className="balance-amount">
+                    <div className="balance-value">{formatUSDT(usdtBalance)}</div>
+                    <div className="balance-equivalent">
+                        ≈ {(usdtBalance * 87).toFixed(2)} RUB {/* Примерный курс */}
+                    </div>
+                </div>
+                
+                <div className="balance-actions">
+                    <button
+                        className="balance-action-btn"
+                        onClick={() => navigateTo('buy')}
+                        aria-label="Пополнить баланс"
+                    >
+                        <span className="action-icon">⬆️</span>
+                        <span className="action-text">Пополнить</span>
+                    </button>
+                    
+                    <button
+                        className="balance-action-btn"
+                        onClick={() => navigateTo('sell')}
+                        aria-label="Вывести USDT"
+                    >
+                        <span className="action-icon">⬇️</span>
+                        <span className="action-text">Вывести</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Контент вкладок */}
-            <div className="profile-content">
-                {activeTab === 'profile' ? (
-                    <>
-                        {/* Краткая реферальная информация */}
-                        {referralData && (
-                            <div className="referral-quick">
-                                <div className="referral-quick-header">
-                                    <div className="referral-quick-icon">💰</div>
-                                    <div className="referral-quick-info">
-                                        <h3>Реферальная система</h3>
-                                        <p>1% комиссия с каждой сделки реферала</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="referral-quick-stats">
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{referralData.stats.total_referrals}</div>
-                                        <div className="stat-label">Рефералов</div>
-                                    </div>
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{formatUSD(referralData.stats.total_earnings)}</div>
-                                        <div className="stat-label">Заработано</div>
-                                    </div>
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{formatUSD(referralData.stats.available_earnings)}</div>
-                                        <div className="stat-label">Доступно</div>
-                                    </div>
-                                </div>
-                                
-                                <button
-                                    className="show-referrals-button"
-                                    onClick={() => setActiveTab('referrals')}
-                                    aria-label="Перейти к рефералам"
-                                >
-                                    Перейти к рефералам
-                                </button>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    /* Полная реферальная система */
-                    <ReferralSystem 
-                        referralData={referralData}
-                        onClose={() => setActiveTab('profile')}
-                        showMessage={showMessage}
-                    />
-                )}
+            {/* История транзакций */}
+            <div className="transactions-card">
+                <div className="transactions-header">
+                    <h3>История операций</h3>
+                    <button 
+                        className="transactions-refresh"
+                        onClick={loadUserData}
+                        aria-label="Обновить"
+                    >
+                        🔄
+                    </button>
+                </div>
+                
+                <div className="transactions-list">
+                    {/* Здесь будет список транзакций */}
+                    <div className="transaction-item">
+                        <div className="transaction-type">Покупка USDT</div>
+                        <div className="transaction-amount">+100.00 USDT</div>
+                        <div className="transaction-date">12 дек 14:30</div>
+                        <div className="transaction-status completed">Завершено</div>
+                    </div>
+                    
+                    <div className="transaction-item">
+                        <div className="transaction-type">Продажа USDT</div>
+                        <div className="transaction-amount">-50.00 USDT</div>
+                        <div className="transaction-date">11 дек 10:15</div>
+                        <div className="transaction-status completed">Завершено</div>
+                    </div>
+                    
+                    <button
+                        className="view-all-transactions"
+                        onClick={() => navigateTo('history')}
+                        aria-label="Вся история"
+                    >
+                        Вся история операций →
+                    </button>
+                </div>
+            </div>
+
+            {/* Быстрые действия */}
+            <div className="quick-actions">
+                <button
+                    className="quick-action"
+                    onClick={() => navigateTo('buy')}
+                    aria-label="Купить USDT"
+                >
+                    <span className="quick-action-icon">🛒</span>
+                    <span className="quick-action-text">Купить USDT</span>
+                </button>
+                
+                <button
+                    className="quick-action"
+                    onClick={() => navigateTo('sell')}
+                    aria-label="Продать USDT"
+                >
+                    <span className="quick-action-icon">💵</span>
+                    <span className="quick-action-text">Продать USDT</span>
+                </button>
+                
+                <button
+                    className="quick-action"
+                    onClick={() => navigateTo('support')}
+                    aria-label="Поддержка"
+                >
+                    <span className="quick-action-icon">💬</span>
+                    <span className="quick-action-text">Поддержка</span>
+                </button>
             </div>
 
             {/* Toast сообщения */}

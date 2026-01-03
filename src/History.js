@@ -467,7 +467,7 @@ function History({ navigateTo, showToast }) {
                             className="exchange-btn-new"
                             onClick={() => navigateTo('home')}
                         >
-                            <span className="exchange-icon">🔄</span>
+                            
                             <span>Начать обмен</span>
                         </button>
                     </div>

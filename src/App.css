@@ -1,4 +1,4 @@
-/* App.css - Полная поддержка тем */
+/* App.css - Исправленная версия */
 
 :root {
   /* Дефолтные значения (темная тема) */
@@ -76,6 +76,7 @@ html, body, #root {
   flex-direction: column;
   max-width: 100vw;
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .app-wrapper {
@@ -95,46 +96,51 @@ html, body, #root {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 94px;
+  scroll-behavior: smooth;
+  padding-bottom: calc(94px + env(safe-area-inset-bottom, 0px));
   background: var(--tg-theme-bg-color);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* НАВИГАЦИЯ */
-/* НАВИГАЦИЯ - Чистый матовый стекло эффект */
+/* НАВИГАЦИЯ - ФИКСИРОВАННАЯ БЕЗ ПРЫЖКОВ */
 .floating-nav {
   position: fixed;
-  bottom: 20px;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
   left: 50%;
   transform: translateX(-50%);
-  width: 70%;
+  width: 92%;
   min-width: 280px;
   max-width: 360px;
-  height: 70px;
-  border-radius: 65px; /* Немного меньше радиус для телефонов */
+  height: 64px;
+  border-radius: 18px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000; /* Высокий z-index чтобы всегда сверху */
   padding: 0 12px;
   
-  /* Чистый эффект матового стекла */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Эффект стекла */
   background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
   
-  /* Легкая тень только для глубины */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* Фиксированное поведение при клавиатуре */
+  transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
+  will-change: transform, opacity, bottom;
 }
 
-/* Для светлой темы - другой оттенок стекла */
+/* Для светлой темы */
 :root:not([data-theme]) .floating-nav {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
+/* Кнопки навигации */
 .nav-item-floating {
   flex: 1;
   display: flex;
@@ -145,43 +151,41 @@ html, body, #root {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 12px 0 8px;
+  padding: 8px 0 6px;
   position: relative;
   gap: 4px;
-  border-radius: 14px;
+  border-radius: 12px;
   transition: all 0.2s ease;
   color: inherit;
   -webkit-tap-highlight-color: transparent;
+  outline: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
-/* Активное состояние - только подчеркивание */
+.nav-item-floating:focus {
+  outline: none;
+}
+
+/* Активное состояние */
 .nav-item-floating.active {
   color: var(--tg-theme-button-color) !important;
 }
 
-/* Индикатор активной вкладки - линия снизу */
 .nav-item-floating.active::after {
   content: '';
   position: absolute;
-  bottom: 6px;
-  width: 24px;
-  height: 3px;
+  bottom: 4px;
+  width: 20px;
+  height: 2px;
   background: var(--tg-theme-button-color);
   border-radius: 2px;
 }
 
-/* Для светлой темы - темная линия */
-:root:not([data-theme]) .nav-item-floating.active::after {
-  background: var(--tg-theme-button-color);
-}
-
-/* Hover эффект - легкое затемнение */
-.nav-item-floating:not(.active):hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-:root:not([data-theme]) .nav-item-floating:not(.active):hover {
-  background: rgba(0, 0, 0, 0.05);
+/* Активация при касании */
+.nav-item-floating:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 /* Неактивное состояние */
@@ -189,43 +193,41 @@ html, body, #root {
   color: var(--tg-theme-hint-color) !important;
 }
 
+/* Иконки */
 .nav-icon-floating {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 6px;
-  transition: transform 0.2s ease;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
 }
 
 .nav-item-floating.active .nav-icon-floating {
   transform: translateY(-2px);
 }
 
+/* Текст */
 .nav-label-floating {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.nav-item-floating.active .nav-label-floating {
-  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 /* Бейдж */
 .nav-badge-floating {
   position: absolute;
-  top: 10px;
-  right: calc(50% - 16px);
+  top: 6px;
+  right: calc(50% - 12px);
   background: var(--tg-error-color);
   color: white;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 8px;
-  min-width: 16px;
-  height: 16px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  min-width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,26 +238,23 @@ html, body, #root {
 /* Центральная кнопка */
 .nav-center-floating {
   position: relative;
-  margin: 0 -6px;
+  margin: 0 -4px;
   z-index: 1;
 }
 
 .nav-center-circle-floating {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   background: var(--tg-theme-button-color);
+  background: linear-gradient(135deg, var(--tg-theme-button-color), #5e5ce6);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.3);
-}
-
-.nav-center-circle-floating:hover {
-  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
 }
 
 .nav-center-circle-floating:active {
@@ -264,92 +263,50 @@ html, body, #root {
 
 .nav-center-label-floating {
   position: absolute;
-  bottom: -18px;
+  bottom: -16px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--tg-theme-button-color);
   white-space: nowrap;
-  padding: 2px 6px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
 }
 
-/* Для светлой темы */
-:root:not([data-theme]) .nav-center-label-floating {
-  background: rgba(0, 0, 0, 0.05);
+/* ==================== */
+/* ФИКС ДЛЯ КЛАВИАТУРЫ */
+/* ==================== */
+
+/* Когда клавиатура открыта - плавно скрываем навигацию */
+.floating-nav.keyboard-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(20px) !important;
 }
 
-/* Эффект нажатия */
-.nav-item-floating:active {
-  transform: scale(0.95);
-  transition: transform 0.1s ease;
+/* Когда клавиатура закрыта - плавно показываем */
+.floating-nav.keyboard-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateX(-50%) translateY(0) !important;
 }
 
-/* Адаптивность для телефонов */
-@media (max-width: 768px) {
+/* Медиа-запрос для очень маленьких высот (клавиатура открыта) */
+@media (max-height: 500px) {
   .floating-nav {
-    width: 92%;
-    height: 64px;
-    border-radius: 18px;
-    bottom: 16px;
-    padding: 0 10px;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-  }
-  
-  .nav-center-floating {
-    margin: 0 -4px;
-  }
-  
-  .nav-center-circle-floating {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-  }
-  
-  .nav-item-floating {
-    padding: 10px 0 6px;
-    border-radius: 12px;
-  }
-  
-  .nav-icon-floating {
-    width: 22px;
-    height: 22px;
-    margin-bottom: 4px;
-  }
-  
-  .nav-label-floating {
-    font-size: 9px;
-  }
-  
-  .nav-badge-floating {
-    top: 8px;
-    font-size: 8px;
-    min-width: 14px;
-    height: 14px;
-    right: calc(50% - 14px);
-  }
-  
-  .nav-item-floating.active::after {
-    bottom: 4px;
-    width: 20px;
-    height: 2px;
+    display: none !important;
   }
   
   .app-content {
-    padding-bottom: calc(64px + 20px);
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
 }
 
-@media (max-width: 1500px) {
+/* Адаптивность */
+@media (max-width: 375px) {
   .floating-nav {
     width: 94%;
     height: 60px;
-    border-radius: 50px;
+    border-radius: 16px;
   }
   
   .nav-center-circle-floating {
@@ -368,22 +325,66 @@ html, body, #root {
   }
 }
 
-/* iOS safe area */
-@supports (padding: max(0px)) {
-  .app-content {
-    padding-bottom: max(94px, env(safe-area-inset-bottom) + 94px);
+@media (min-width: 769px) and (max-width: 1024px) {
+  .floating-nav {
+    width: 80%;
+    max-width: 420px;
+    height: 68px;
+    border-radius: 20px;
   }
   
-  .floating-nav {
-    bottom: max(16px, env(safe-area-inset-bottom) + 16px);
+  .nav-center-circle-floating {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
   }
 }
 
-/* Исправление для Safari */
+/* Десктоп */
+@media (min-width: 1025px) {
+  .app {
+    max-width: 420px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+    height: 90vh;
+    top: 5vh;
+  }
+  
+  .floating-nav {
+    max-width: 380px;
+  }
+}
+
+/* iOS безопасная область */
+@supports (padding: max(0px)) {
+  .app-content {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px));
+  }
+  
+  .floating-nav {
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  }
+}
+
+/* Android Chrome */
+@supports (padding: constant(safe-area-inset-bottom)) {
+  .app-content {
+    padding-bottom: calc(64px + constant(safe-area-inset-bottom));
+  }
+  
+  .floating-nav {
+    bottom: max(16px, constant(safe-area-inset-bottom));
+  }
+}
+
+/* Исправление для iOS Safari */
 @supports (-webkit-touch-callout: none) {
   .floating-nav {
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
   }
 }
 
@@ -424,7 +425,7 @@ html, body, #root {
 /* Toast */
 .telegram-toast {
   position: fixed;
-  top: 90px;
+  top: calc(env(safe-area-inset-top, 0px) + 20px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--tg-card-bg);
@@ -434,7 +435,7 @@ html, body, #root {
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 10001; /* Выше навигации */
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
   max-width: 90%;
@@ -482,61 +483,6 @@ html, body, #root {
   border-left: 4px solid var(--tg-info-color);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .floating-nav {
-    width: 90%;
-    max-width: none;
-    height: 66px;
-    bottom: 16px;
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-  }
-  
-  .nav-center-circle-floating {
-    width: 54px;
-    height: 54px;
-  }
-  
-  .app-content {
-    padding-bottom: calc(66px + 20px);
-  }
-}
-
-@media (max-width: 480px) {
-  .floating-nav {
-    width: 94%;
-    height: 62px;
-    border-radius: 20px;
-  }
-  
-  .nav-center-circle-floating {
-    width: 50px;
-    height: 50px;
-    border-radius: 16px;
-  }
-  
-  .nav-icon-floating {
-    width: 22px;
-    height: 22px;
-  }
-  
-  .nav-label-floating {
-    font-size: 9px;
-  }
-}
-
-/* iOS safe area */
-@supports (padding: max(0px)) {
-  .app-content {
-    padding-bottom: max(94px, env(safe-area-inset-bottom) + 94px);
-  }
-  
-  .floating-nav {
-    bottom: max(20px, env(safe-area-inset-bottom) + 20px);
-  }
-}
-
 /* Скроллбары */
 ::-webkit-scrollbar {
   width: 6px;
@@ -570,23 +516,13 @@ html, body, #root {
               box-shadow 0.3s ease;
 }
 
-/* Улучшенный фон для светлой темы */
-:root:not([data-theme]) .floating-nav {
-  box-shadow: 
-    0 15px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
-}
-
-/* SettingsApp.css */
+/* SettingsApp.css (добавь в конце) */
 .settings-container {
     min-height: 100vh;
     background: var(--tg-theme-bg-color, #ffffff);
     color: var(--tg-theme-text-color, #000000);
 }
 
-/* Хедер */
 .settings-header {
     padding: 12px 16px;
     border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
@@ -600,12 +536,10 @@ html, body, #root {
     color: var(--tg-theme-text-color, #000000);
 }
 
-/* Контент */
 .settings-content {
     padding: 20px 16px;
 }
 
-/* Секции */
 .settings-section {
     margin-bottom: 24px;
 }
@@ -616,7 +550,6 @@ html, body, #root {
     overflow: hidden;
 }
 
-/* Элементы настроек */
 .settings-item {
     display: flex;
     align-items: center;
@@ -644,11 +577,6 @@ html, body, #root {
     color: #ff3b30;
 }
 
-.settings-item.danger .settings-item-text .title {
-    color: #ff3b30;
-}
-
-/* Текст */
 .settings-item-text {
     flex: 1;
 }
@@ -664,7 +592,6 @@ html, body, #root {
     color: var(--tg-theme-hint-color, #8e8e93);
 }
 
-/* Переключатель */
 .switch {
     width: 50px;
     height: 28px;
@@ -695,7 +622,6 @@ html, body, #root {
     transform: translateX(22px);
 }
 
-/* Футер */
 .settings-footer {
     margin-top: 40px;
     text-align: center;

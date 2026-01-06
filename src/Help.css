@@ -1,101 +1,120 @@
-.telegram-help {
+.tg-root {
     min-height: 100vh;
-    background: var(--tg-theme-bg-color, #fff);
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
     font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 }
 
-/* SEARCH */
-.tg-search-container {
-    padding: 12px 16px;
-}
-
-.tg-search-input {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 12px;
-    padding: 10px 14px;
-}
-
-.tg-search {
-    border: none;
-    background: transparent;
-    width: 100%;
-    font-size: 15px;
-    outline: none;
-}
-
-/* CATEGORIES */
-.tg-categories {
+/* TABS */
+.tg-tabs {
     display: flex;
-    gap: 8px;
-    padding: 0 16px 12px;
-    overflow-x: auto;
+    justify-content: space-around;
+    padding: 8px;
+    background: var(--tg-theme-secondary-bg-color);
 }
 
-.tg-chip {
-    padding: 8px 14px;
-    border-radius: 18px;
-    background: #f2f2f7;
+.tg-tabs button {
+    background: none;
     border: none;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+    font-size: 18px;
+    opacity: 0.6;
 }
 
-.tg-chip.active {
-    background: #3390ec;
-    color: #fff;
-    transform: scale(1.05);
+.tg-tabs button.active {
+    opacity: 1;
 }
 
 /* SECTION */
 .tg-section {
-    margin: 0 16px;
-    background: #f2f2f7;
-    border-radius: 14px;
-    overflow: hidden;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    margin: 12px;
+    border-radius: 12px;
 }
 
-.tg-section-header {
-    padding: 14px 16px;
-    font-weight: 500;
+.tg-section.text {
+    line-height: 1.5;
+}
+
+/* SEARCH */
+.tg-search {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 15px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tg-theme-hint-color);
+    color: var(--tg-theme-text-color);
+    outline: none;
 }
 
 /* FAQ */
 .tg-faq {
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-top: 1px solid var(--tg-theme-hint-color);
 }
 
 .tg-faq-header {
-    padding: 14px 16px;
+    padding: 12px 0;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
-.tg-faq-header:active {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-.tg-faq .arrow {
-    transition: transform 0.3s ease;
-}
-
-.tg-faq.open .arrow {
-    transform: rotate(180deg);
-}
-
-/* ANIMATED BODY */
 .tg-faq-body {
     max-height: 0;
-    opacity: 0;
     overflow: hidden;
-    padding: 0 16px;
-    transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
+    opacity: 0;
+    transition: all 0.3s ease;
 }
 
 .tg-faq.open .tg-faq-body {
-    max-height: 500px;
+    max-height: 200px;
     opacity: 1;
-    padding: 0 16px 14px;
+    padding-bottom: 12px;
+}
+
+/* GAME */
+.tg-game {
+    position: relative;
+    height: 300px;
+    background: var(--tg-theme-secondary-bg-color);
+    margin: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.tg-player {
+    position: absolute;
+    bottom: 20px;
+    width: 20px;
+    height: 20px;
+    background: var(--tg-theme-button-color);
+    border-radius: 50%;
+}
+
+.tg-wall {
+    position: absolute;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--tg-theme-hint-color);
+}
+
+.tg-wall.left { left: 0; }
+.tg-wall.right { right: 0; }
+
+.tg-score {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 14px;
+}
+
+.tg-game-hint {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    opacity: 0.6;
 }

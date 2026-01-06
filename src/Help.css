@@ -1,402 +1,101 @@
-/* ===============================
-   TELEGRAM HELP - EXACT UI
-=============================== */
-
 .telegram-help {
     min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--tg-theme-bg-color, #fff);
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
 }
 
-/* ===============================
-   TELEGRAM HEADER
-=============================== */
-.tg-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    height: 56px;
-    padding: 0 16px;
-    background: var(--tg-theme-bg-color, #ffffff);
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f7);
-}
-
-.tg-back-btn {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    color: var(--tg-theme-button-color, #3390ec);
-    cursor: pointer;
-    padding: 0;
-    margin-right: 8px;
-}
-
-.tg-header-title {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-    margin: 0;
-    flex: 1;
-}
-
-/* ===============================
-   TELEGRAM SEARCH
-=============================== */
+/* SEARCH */
 .tg-search-container {
     padding: 12px 16px;
-    background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .tg-search-input {
-    display: flex;
-    align-items: center;
     background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 10px;
-    padding: 8px 12px;
-    gap: 8px;
+    border-radius: 12px;
+    padding: 10px 14px;
 }
 
 .tg-search {
-    flex: 1;
     border: none;
     background: transparent;
+    width: 100%;
     font-size: 15px;
-    color: var(--tg-theme-text-color, #000000);
     outline: none;
-    font-family: inherit;
 }
 
-.tg-search::placeholder {
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-/* ===============================
-   TELEGRAM CHIPS
-=============================== */
+/* CATEGORIES */
 .tg-categories {
     display: flex;
     gap: 8px;
-    padding: 0 16px 16px;
+    padding: 0 16px 12px;
     overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.tg-categories::-webkit-scrollbar {
-    display: none;
 }
 
 .tg-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 16px;
+    padding: 8px 14px;
+    border-radius: 18px;
+    background: #f2f2f7;
     border: none;
     font-size: 14px;
-    color: var(--tg-theme-text-color, #000000);
-    white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .tg-chip.active {
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
+    background: #3390ec;
+    color: #fff;
+    transform: scale(1.05);
 }
 
-.tg-chip-icon {
-    font-size: 14px;
-}
-
-.tg-chip-text {
-    font-weight: 500;
-}
-
-/* ===============================
-   SEARCH RESULTS
-=============================== */
-.tg-search-results {
-    margin: 0 16px 16px;
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.tg-search-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e5e5ea);
-    cursor: pointer;
-}
-
-.tg-search-item:last-child {
-    border-bottom: none;
-}
-
-.tg-search-item:hover {
-    background: var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.tg-search-item-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 2px;
-}
-
-.tg-search-item-type {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-/* ===============================
-   TELEGRAM CONTENT
-=============================== */
-.tg-content {
-    padding: 0 16px 24px;
-}
-
-/* ===============================
-   TELEGRAM SECTION
-=============================== */
+/* SECTION */
 .tg-section {
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 10px;
-    margin-bottom: 12px;
+    margin: 0 16px;
+    background: #f2f2f7;
+    border-radius: 14px;
     overflow: hidden;
 }
 
 .tg-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 14px 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.tg-section-header:hover {
-    background: var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.tg-section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
     font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
 }
 
-.tg-section-icon {
-    font-size: 16px;
+/* FAQ */
+.tg-faq {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.rotated {
+.tg-faq-header {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tg-faq-header:active {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.tg-faq .arrow {
+    transition: transform 0.3s ease;
+}
+
+.tg-faq.open .arrow {
     transform: rotate(180deg);
 }
 
-/* ===============================
-   TELEGRAM LIST
-=============================== */
-.tg-list {
-    border-top: 1px solid var(--tg-theme-section-bg-color, #e5e5ea);
+/* ANIMATED BODY */
+.tg-faq-body {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 16px;
+    transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.tg-list-item {
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.tg-list-item:last-child {
-    border-bottom: none;
-}
-
-.tg-list-item-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.tg-list-item-header:hover {
-    background: var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.tg-list-item-title {
-    font-size: 15px;
-    color: var(--tg-theme-text-color, #000000);
-    flex: 1;
-    margin-right: 8px;
-}
-
-.tg-list-item-content {
+.tg-faq.open .tg-faq-body {
+    max-height: 500px;
+    opacity: 1;
     padding: 0 16px 14px;
-}
-
-.tg-text {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    line-height: 1.4;
-    margin-bottom: 6px;
-}
-
-.tg-text:last-child {
-    margin-bottom: 0;
-}
-
-/* ===============================
-   TELEGRAM RULES
-=============================== */
-.tg-rule-item {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e5e5ea);
-}
-
-.tg-rule-item:last-child {
-    border-bottom: none;
-}
-
-.tg-rule-title {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 6px;
-}
-
-.tg-rule-content {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    line-height: 1.4;
-}
-
-/* ===============================
-   TELEGRAM SUPPORT
-=============================== */
-.tg-support {
-    margin-top: 24px;
-    background: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    border-radius: 10px;
-    padding: 16px;
-}
-
-.tg-support-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.tg-support-icon {
-    font-size: 24px;
-}
-
-.tg-support-text {
-    flex: 1;
-}
-
-.tg-support-title {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 2px;
-}
-
-.tg-support-subtitle {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-.tg-support-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-/* ===============================
-   TELEGRAM BUTTONS
-=============================== */
-.tg-button {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: none;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-}
-
-.tg-button.primary {
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-}
-
-.tg-button.primary:hover {
-    opacity: 0.9;
-}
-
-.tg-button.secondary {
-    background: transparent;
-    color: var(--tg-theme-button-color, #3390ec);
-    border: 1px solid var(--tg-theme-button-color, #3390ec);
-}
-
-.tg-button.secondary:hover {
-    background: rgba(51, 144, 236, 0.1);
-}
-
-/* ===============================
-   DARK THEME ADJUSTMENTS
-=============================== */
-[data-theme="dark"] .tg-search-input,
-[data-theme="dark"] .tg-chip:not(.active),
-[data-theme="dark"] .tg-search-results,
-[data-theme="dark"] .tg-section,
-[data-theme="dark"] .tg-support {
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-}
-
-[data-theme="dark"] .tg-search-item,
-[data-theme="dark"] .tg-list-item,
-[data-theme="dark"] .tg-rule-item {
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .tg-section-header:hover,
-[data-theme="dark"] .tg-list-item-header:hover,
-[data-theme="dark"] .tg-search-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* ===============================
-   RESPONSIVE
-=============================== */
-@media (max-width: 380px) {
-    .tg-categories {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-    
-    .tg-content {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-    
-    .tg-search-container {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-    
-    .tg-support-buttons {
-        flex-direction: column;
-    }
 }

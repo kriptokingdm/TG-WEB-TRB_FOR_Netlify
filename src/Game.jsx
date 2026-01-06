@@ -1,37 +1,106 @@
-import { useEffect, useState } from 'react';
-import './Game.css';
+import { useEffect, useRef, useState } from 'react';
+import {
+  createPlayer,
+  generatePlatforms,
+  updatePlayer,
+  handleJump,
+  updatePlatforms,
+  GAME_HEIGHT,
+} from './gameLogic';
+import './WallKickersGame.css';
 
-export default function Game() {
-    const [x, setX] = useState(50);
-    const [dir, setDir] = useState(1);
-    const [score, setScore] = useState(0);
+export default function WallKickersGame() {
+  const canvasRef = useRef(null);
+  const [player, setPlayer] = useState(createPlayer());
+  const [platforms, setPlatforms] = useState(generatePlatforms());
+  const [running, setRunning] = useState(true);
 
-    const jump = () => {
-        setDir(d => -d);
-        setScore(s => s + 1);
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
+  const tapTimeout = useRef(null);
+  const tapCount = useRef(0);
+
+  useEffect(() => {
+    const ctx = canvasRef.current.getContext('2d');
+    let animationId;
+
+    const loop = () => {
+      ctx.clearRect(0, 0, 360, GAME_HEIGHT);
+
+      if (player.alive && running) {
+        updatePlayer(player);
+        updatePlatforms(platforms);
+
+        if (player.y < GAME_HEIGHT / 3) {
+          const diff = GAME_HEIGHT / 3 - player.y;
+          player.y = GAME_HEIGHT / 3;
+          platforms.forEach(p => (p.y += diff));
+          player.score += Math.floor(diff);
+        }
+
+        if (player.y > GAME_HEIGHT) {
+          player.alive = false;
+        }
+      }
+
+      draw(ctx);
+      animationId = requestAnimationFrame(loop);
     };
 
-    useEffect(() => {
-        const i = setInterval(() => {
-            setX(p => {
-                let n = p + dir * 1.5;
-                if (n <= 2 || n >= 92) {
-                    setDir(d => -d);
-                }
-                return n;
-            });
-        }, 16);
-        return () => clearInterval(i);
-    }, [dir]);
+    loop();
+    return () => cancelAnimationFrame(animationId);
+  }, [player, platforms, running]);
 
-    return (
-        <div className="game" onClick={jump}>
-            <div className="score">Score: {score}</div>
-            <div className="wall left" />
-            <div className="wall right" />
-            <div className="player" style={{ left: `${x}%` }} />
-            <div className="hint">Тапай, чтобы отскакивать</div>
-        </div>
-    );
+  const handleTap = () => {
+    if (!player.alive) return;
+
+    tapCount.current++;
+
+    if (!tapTimeout.current) {
+      tapTimeout.current = setTimeout(() => {
+        handleJump(player, platforms);
+        tapCount.current = 0;
+        tapTimeout.current = null;
+      }, 180);
+    }
+  };
+
+  const restart = () => {
+    setPlayer(createPlayer());
+    setPlatforms(generatePlatforms());
+    setRunning(true);
+  };
+
+  const draw = ctx => {
+    ctx.fillStyle = '#1c1c1e';
+    ctx.fillRect(0, 0, 360, GAME_HEIGHT);
+
+    platforms.forEach(p => {
+      if (p.type === 'spike') ctx.fillStyle = '#ff3b30';
+      else if (p.type === 'spring') ctx.fillStyle = '#34c759';
+      else ctx.fillStyle = '#8e8e93';
+
+      ctx.fillRect(p.x, p.y, p.width, p.height);
+    });
+
+    ctx.fillStyle = '#3390ec';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px system-ui';
+    ctx.fillText(`Score: ${player.score}`, 12, 24);
+
+    if (!player.alive) {
+      ctx.fillText('GAME OVER', 120, 300);
+    }
+  };
+
+  return (
+    <div className="wk-container" onClick={handleTap}>
+      <canvas ref={canvasRef} width="360" height="640" />
+      {!player.alive && (
+        <button className="wk-restart" onClick={restart}>
+          Restart
+        </button>
+      )}
+    </div>
+  );
 }

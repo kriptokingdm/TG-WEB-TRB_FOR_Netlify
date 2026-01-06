@@ -469,7 +469,7 @@ function History({ navigateTo, showToast }) {
                         </div>
                     </div>
 
-                    <button
+                    {/* <button
                         className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
                         onClick={handleRefresh}
                         disabled={refreshing}
@@ -477,7 +477,7 @@ function History({ navigateTo, showToast }) {
                     >
                         <span className="refresh-icon">{refreshing ? '🔄' : '🔄'}</span>
                         <span className="refresh-text">{refreshing ? 'Обновление...' : 'Обновить'}</span>
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Статистика */}

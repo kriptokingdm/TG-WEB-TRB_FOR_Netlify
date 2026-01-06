@@ -1123,7 +1123,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={handleAddPayment}
                   className="add-button"
                 >
-                  + Добавить реквизиты
+                  +
                 </button>
               </div>
 

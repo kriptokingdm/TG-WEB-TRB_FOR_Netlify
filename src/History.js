@@ -114,44 +114,60 @@ function History({ navigateTo, showToast }) {
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     };
 
-    // Получение ID пользователя
+    // Получение ID пользователя (исправленная версия)
     const getUserId = () => {
         try {
             let userId = null;
 
+            // Сначала пробуем получить из Telegram WebApp
             if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
                 const tgUser = tg.initDataUnsafe?.user;
                 if (tgUser?.id) {
                     userId = tgUser.id.toString();
+                    console.log('✅ Получен ID из Telegram:', userId);
                 }
             }
 
+            // Если нет Telegram ID, пробуем из localStorage
             if (!userId) {
                 const savedUser = localStorage.getItem('currentUser');
                 if (savedUser) {
-                    const parsed = JSON.parse(savedUser);
-                    userId = (parsed.id || parsed.telegramId)?.toString();
+                    try {
+                        const parsed = JSON.parse(savedUser);
+                        userId = (parsed.id || parsed.telegramId || parsed.userId)?.toString();
+                        if (userId) {
+                            console.log('✅ Получен ID из localStorage:', userId);
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка парсинга user из localStorage:', e);
+                    }
                 }
             }
 
-            if (userId) {
-                userId = userId.replace(/^user_/, '');
-                return 'user_' + userId;
+            // Если всё ещё нет ID, используем тестовый
+            if (!userId) {
+                userId = '7879866656';
+                console.log('⚠️ Используем тестовый ID:', userId);
             }
 
-            return 'user_7879866656';
+            // Убираем префикс user_ если есть
+            userId = userId.replace(/^user_/, '');
+
+            console.log('🔍 Итоговый User ID для запроса:', userId);
+            return userId;
 
         } catch (error) {
             console.error('❌ Ошибка получения ID:', error);
-            return 'user_7879866656';
+            return '7879866656';
         }
     };
 
-    // Основная функция загрузки ордеров
+    // Основная функция загрузки ордеров (ИСПРАВЛЕННАЯ)
     const fetchUserOrders = async (showLoading = true) => {
         const now = Date.now();
 
+        // Защита от слишком частых запросов
         if (lastUpdateRef.current && (now - lastUpdateRef.current < 3000)) {
             if (showLoading) setIsLoading(false);
             return;
@@ -164,64 +180,108 @@ function History({ navigateTo, showToast }) {
         }
 
         setRefreshing(true);
+        setError('');
 
         try {
             const userId = getUserId();
 
             if (!userId) {
                 setError('Пользователь не определен. Авторизуйтесь заново.');
+                showMessage('error', 'Ошибка авторизации');
                 setIsLoading(false);
                 setRefreshing(false);
                 return;
             }
 
+            console.log('🔄 Запрос истории ордеров для userId:', userId);
+            console.log('🔗 URL:', `${API_BASE_URL}/user-orders/${userId}`);
+
             const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`, {
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                }
+                },
+                timeout: 10000
             });
 
+            console.log('📊 Статус ответа:', response.status);
+
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const result = await response.json();
+            console.log('📊 Ответ сервера:', result);
 
             if (result.success) {
                 const ordersData = result.orders || [];
-                const sortedOrders = ordersData.sort((a, b) => {
-                    const dateA = new Date(a.created_at || a.createdAt || Date.now());
-                    const dateB = new Date(b.created_at || b.createdAt || Date.now());
+                console.log('📦 Получено ордеров:', ordersData.length);
+
+                // Форматируем данные для отображения
+                const formattedOrders = ordersData.map(order => ({
+                    id: order.id || order.order_id || `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    order_id: order.order_id || order.id,
+                    type: order.type || order.operation_type || 'buy',
+                    operation_type: order.operation_type || order.type || 'buy',
+                    amount: parseFloat(order.amount || 0),
+                    rate: parseFloat(order.rate || 0),
+                    status: order.status || order.admin_status || 'pending',
+                    admin_status: order.admin_status || order.status || 'pending',
+                    admin_comment: order.admin_comment || order.comment || '',
+                    created_at: order.created_at || order.createdAt || new Date().toISOString(),
+                    createdAt: order.created_at || order.createdAt || new Date().toISOString(),
+                    user_id: order.user_id || `user_${userId}`,
+                    telegram_id: order.telegram_id || userId,
+                    username: order.username || '',
+                    first_name: order.first_name || '',
+                    crypto_address: order.crypto_address || '',
+                    bank_details: order.bank_details || ''
+                }));
+
+                // Сортируем по дате (новые сверху)
+                const sortedOrders = formattedOrders.sort((a, b) => {
+                    const dateA = new Date(a.created_at || a.createdAt);
+                    const dateB = new Date(b.created_at || b.createdAt);
                     return dateB - dateA;
                 });
+
+                console.log('📦 Отформатировано ордеров:', sortedOrders.length);
 
                 setOrders(sortedOrders);
                 setError('');
 
-                localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
+                // Сохраняем в localStorage для офлайн режима
+                try {
+                    localStorage.setItem('userOrders', JSON.stringify(sortedOrders));
+                    localStorage.setItem('lastOrdersUpdate', new Date().toISOString());
+                } catch (e) {
+                    console.error('❌ Ошибка сохранения в localStorage:', e);
+                }
 
-                if (isInitialMount.current) {
-                    showMessage('success', `Загружено ${sortedOrders.length} ордеров`);
+                if (isInitialMount.current && sortedOrders.length > 0) {
+                    showMessage('success', `Загружено ${sortedOrders.length} операций`);
                     isInitialMount.current = false;
                 }
 
             } else {
-                throw new Error(result.error || 'Ошибка сервера');
+                throw new Error(result.error || 'Ошибка сервера при получении данных');
             }
 
         } catch (error) {
-            console.error('❌ Ошибка загрузки:', error.message);
+            console.error('❌ Ошибка загрузки истории:', error.message);
 
+            // Пробуем загрузить из localStorage при ошибке
             try {
                 const localOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
                 if (localOrders.length > 0) {
+                    console.log('📦 Загружаем из localStorage:', localOrders.length, 'ордеров');
                     setOrders(localOrders);
-                    setError('⚠️ Используем кэшированные данные');
-                    showMessage('warning', 'Используем сохраненные данные');
+                    setError('⚠️ Используем сохраненные данные. Проблемы с соединением.');
+                    showMessage('warning', 'Используем кэшированные данные');
                 } else {
-                    setError('Не удалось загрузить историю');
-                    showMessage('error', 'Ошибка загрузки данных');
+                    setError('Не удалось загрузить историю операций');
+                    showMessage('error', 'Нет данных для отображения');
                 }
             } catch (localError) {
                 console.error('❌ Ошибка локальных данных:', localError);
@@ -232,41 +292,54 @@ function History({ navigateTo, showToast }) {
         } finally {
             setIsLoading(false);
             setRefreshing(false);
+            console.log('✅ Загрузка завершена');
         }
     };
 
     // Инициализация
     useEffect(() => {
+        console.log('🚀 Компонент History инициализирован');
+        
+        // Устанавливаем тестового пользователя для отладки
         const debugUser = {
             id: '7879866656',
             telegramId: '7879866656',
+            telegram_id: '7879866656',
             username: 'TERBCEO',
             firstName: 'G'
         };
         localStorage.setItem('currentUser', JSON.stringify(debugUser));
+        console.log('👤 Установлен тестовый пользователь:', debugUser);
 
+        // Загружаем данные
         fetchUserOrders();
 
+        // Настраиваем автообновление каждые 30 секунд
         refreshIntervalRef.current = setInterval(() => {
+            console.log('🔄 Автообновление истории...');
             fetchUserOrders(false);
         }, 30000);
 
+        // Очистка при размонтировании
         return () => {
             if (refreshIntervalRef.current) {
                 clearInterval(refreshIntervalRef.current);
+                console.log('🧹 Интервал очищен');
             }
         };
     }, []);
 
     // Фильтрация ордеров
     const getFilteredOrders = () => {
+        const allOrders = orders || [];
+        
         if (viewMode === 'active') {
-            return orders.filter(order => {
+            return allOrders.filter(order => {
                 const status = (order.admin_status || order.status || '').toLowerCase();
                 return ['pending', 'processing', 'accepted'].includes(status);
             });
         }
-        return orders;
+        return allOrders;
     };
 
     // Расчет итоговой суммы
@@ -276,9 +349,11 @@ function History({ navigateTo, showToast }) {
         const isBuy = order.type === 'buy' || order.operation_type === 'buy';
 
         if (isBuy) {
-            return (order.amount / order.rate).toFixed(2) + ' USDT';
+            const total = order.amount / order.rate;
+            return isNaN(total) ? '—' : total.toFixed(2) + ' USDT';
         } else {
-            return (order.amount * order.rate).toFixed(2) + ' RUB';
+            const total = order.amount * order.rate;
+            return isNaN(total) ? '—' : total.toFixed(2) + ' RUB';
         }
     };
 
@@ -297,6 +372,7 @@ function History({ navigateTo, showToast }) {
                 minute: '2-digit'
             });
         } catch (e) {
+            console.error('❌ Ошибка форматирования даты:', e);
             return '—';
         }
     };
@@ -319,8 +395,20 @@ function History({ navigateTo, showToast }) {
 
     // Копирование ID
     const copyOrderId = (orderId) => {
-        navigator.clipboard.writeText(orderId);
-        showMessage('success', 'ID скопирован');
+        if (!orderId) {
+            showMessage('error', 'Нет ID для копирования');
+            return;
+        }
+        
+        navigator.clipboard.writeText(orderId).then(
+            () => {
+                showMessage('success', 'ID скопирован в буфер');
+            },
+            (err) => {
+                console.error('❌ Ошибка копирования:', err);
+                showMessage('error', 'Не удалось скопировать ID');
+            }
+        );
     };
 
     // Переключение раскрытия ордера
@@ -330,23 +418,25 @@ function History({ navigateTo, showToast }) {
 
     // Статистика
     const getOrdersStats = () => {
-        const activeOrders = orders.filter(order => {
+        const allOrders = orders || [];
+        
+        const activeOrders = allOrders.filter(order => {
             const status = (order.admin_status || order.status || '').toLowerCase();
             return ['pending', 'processing', 'accepted'].includes(status);
         });
 
-        const completedOrders = orders.filter(order => {
+        const completedOrders = allOrders.filter(order => {
             const status = (order.admin_status || order.status || '').toLowerCase();
             return ['completed', 'success'].includes(status);
         });
 
-        const rejectedOrders = orders.filter(order => {
+        const rejectedOrders = allOrders.filter(order => {
             const status = (order.admin_status || order.status || '').toLowerCase();
             return ['rejected', 'cancelled', 'failed'].includes(status);
         });
 
         return {
-            total: orders.length,
+            total: allOrders.length,
             active: activeOrders.length,
             completed: completedOrders.length,
             rejected: rejectedOrders.length
@@ -356,12 +446,16 @@ function History({ navigateTo, showToast }) {
     // Ручное обновление
     const handleRefresh = () => {
         if (!refreshing) {
+            console.log('🔄 Ручное обновление истории...');
             fetchUserOrders(true);
         }
     };
 
     const stats = getOrdersStats();
     const filteredOrders = getFilteredOrders();
+
+    console.log('📊 Статистика:', stats);
+    console.log('📦 Отфильтровано ордеров:', filteredOrders.length);
 
     return (
         <div className="history-container">
@@ -375,13 +469,15 @@ function History({ navigateTo, showToast }) {
                         </div>
                     </div>
 
-                    {/* <button
-                        className={`test-connection-btn ${refreshing ? 'refreshing' : ''}`}
+                    <button
+                        className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
                         onClick={handleRefresh}
+                        disabled={refreshing}
                         title="Обновить историю"
                     >
-                        🔄
-                    </button> */}
+                        <span className="refresh-icon">{refreshing ? '🔄' : '🔄'}</span>
+                        <span className="refresh-text">{refreshing ? 'Обновление...' : 'Обновить'}</span>
+                    </button>
                 </div>
 
                 {/* Статистика */}
@@ -440,6 +536,9 @@ function History({ navigateTo, showToast }) {
                             <LoadingSVG />
                         </div>
                         <p className="loading-text">Загрузка истории...</p>
+                        {error && (
+                            <p className="loading-error">{error}</p>
+                        )}
                     </div>
                 ) : filteredOrders.length === 0 ? (
                     <div className="empty-state-new">
@@ -459,15 +558,19 @@ function History({ navigateTo, showToast }) {
                         {error && (
                             <div className="connection-error-info">
                                 <p className="error-title">⚠️ {error}</p>
-                                <p className="error-message">Попробуйте обновить страницу</p>
+                                <button 
+                                    className="retry-btn"
+                                    onClick={handleRefresh}
+                                >
+                                    Попробовать снова
+                                </button>
                             </div>
                         )}
-                        <br />
+                        
                         <button
                             className="exchange-btn-new"
                             onClick={() => navigateTo('home')}
                         >
-                            
                             <span>Начать обмен</span>
                         </button>
                     </div>
@@ -484,7 +587,7 @@ function History({ navigateTo, showToast }) {
 
                             return (
                                 <div
-                                    key={order.id || index}
+                                    key={order.id || `order-${index}`}
                                     className="order-card-new"
                                     style={{ '--order-index': index }}
                                 >
@@ -503,7 +606,7 @@ function History({ navigateTo, showToast }) {
                                                 onClick={() => copyOrderId(order.id)}
                                                 title="Копировать ID"
                                             >
-                                                #{order.id ? order.id.substring(0, 10) + '...' : 'N/A'}
+                                                #{order.id ? (order.id.length > 10 ? order.id.substring(0, 10) + '...' : order.id) : 'N/A'}
                                             </button>
                                         </div>
                                         <div className={`order-status ${statusClass}`}>
@@ -555,7 +658,7 @@ function History({ navigateTo, showToast }) {
                                         <div className="order-details-expanded">
                                             <div className="detail-row">
                                                 <span className="detail-label">ID ордера:</span>
-                                                <span className="detail-value code">{order.id}</span>
+                                                <span className="detail-value code">{order.id || 'N/A'}</span>
                                             </div>
                                             <div className="detail-row">
                                                 <span className="detail-label">Дата создания:</span>
@@ -589,12 +692,6 @@ function History({ navigateTo, showToast }) {
                                                 <div className="detail-row">
                                                     <span className="detail-label">Комментарий оператора:</span>
                                                     <span className="detail-value comment">{order.admin_comment}</span>
-                                                </div>
-                                            )}
-                                            {order.admin_action_at && (
-                                                <div className="detail-row">
-                                                    <span className="detail-label">Время действия:</span>
-                                                    <span className="detail-value">{formatDate(order.admin_action_at)}</span>
                                                 </div>
                                             )}
                                         </div>

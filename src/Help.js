@@ -4,12 +4,8 @@ import Game from './Game';
 
 function Help({ navigateTo }) {
     const [activeTab, setActiveTab] = useState('help');
-    const [activeSection, setActiveSection] = useState('faq');
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [showSearchResults, setShowSearchResults] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [filteredFaqItems, setFilteredFaqItems] = useState([]);
     const [expandedFaqs, setExpandedFaqs] = useState({});
 
     /* ===============================
@@ -33,135 +29,119 @@ function Help({ navigateTo }) {
     =============================== */
     const faqItems = [
         {
-            id: 'faq-0',
+            id: '1',
             category: 'exchange',
-            question: "Как происходит обмен?",
-            answer: "1. Выберите направление\n2. Введите сумму\n3. Подтвердите\n4. Оператор завершает обмен"
+            question: 'Как происходит обмен?',
+            answer: 'Вы создаёте заявку, переводите средства, оператор завершает обмен.'
         },
         {
-            id: 'faq-1',
+            id: '2',
             category: 'exchange',
-            question: "Сколько времени занимает обмен?",
-            answer: "Покупка: 5–15 минут\nПродажа: 15–30 минут"
+            question: 'Сколько времени занимает обмен?',
+            answer: 'В среднем от 5 до 30 минут.'
         },
         {
-            id: 'faq-2',
+            id: '3',
             category: 'security',
-            question: "Это безопасно?",
-            answer: "Мы не храним средства и не используем приватные ключи."
-        }
-    ];
-
-    const rulesContent = [
-        {
-            id: 'rule-1',
-            title: "Общие положения",
-            content: "Сервис предоставляет услуги обмена. Все операции модерируются."
+            question: 'Это безопасно?',
+            answer: 'Мы не храним средства и не используем приватные ключи.'
         }
     ];
 
     const categories = [
-        { id: 'all', name: 'Все', icon: '📚' },
-        { id: 'exchange', name: 'Обмен', icon: '💱' },
-        { id: 'security', name: 'Безопасность', icon: '🔐' }
+        { id: 'all', label: 'Все' },
+        { id: 'exchange', label: 'Обмен' },
+        { id: 'security', label: 'Безопасность' }
     ];
 
-    /* ===============================
-       FILTERS / SEARCH
-    =============================== */
-    useEffect(() => {
-        setFilteredFaqItems(
-            selectedCategory === 'all'
-                ? faqItems
-                : faqItems.filter(i => i.category === selectedCategory)
-        );
-    }, [selectedCategory]);
+    const filteredFaq = faqItems.filter(item => {
+        const matchCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const matchSearch =
+            item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.answer.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchCategory && matchSearch;
+    });
 
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setSearchResults([]);
-            setShowSearchResults(false);
-            return;
-        }
-
-        const q = searchQuery.toLowerCase();
-        const res = faqItems.filter(i =>
-            i.question.toLowerCase().includes(q) ||
-            i.answer.toLowerCase().includes(q)
-        );
-
-        setSearchResults(res);
-        setShowSearchResults(res.length > 0);
-    }, [searchQuery]);
-
-    /* ===============================
-       HANDLERS
-    =============================== */
-    const toggleFaq = (id) => {
-        setExpandedFaqs(p => ({ ...p, [id]: !p[id] }));
+    const toggleFaq = id => {
+        setExpandedFaqs(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     /* ===============================
-       RENDER
+       GAME TAB — ВАЖНО
+       ПОЛНОЕ ОТКЛЮЧЕНИЕ HELP
+    =============================== */
+    if (activeTab === 'game') {
+        return (
+            <div className="telegram-help">
+                <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                <Game />
+            </div>
+        );
+    }
+
+    /* ===============================
+       HELP CONTENT
     =============================== */
     return (
         <div className="telegram-help">
+            <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {/* TABS */}
-            <div className="tg-tabs">
-                <button className={activeTab === 'help' ? 'active' : ''} onClick={() => setActiveTab('help')}>📚</button>
-                <button className={activeTab === 'exchange' ? 'active' : ''} onClick={() => setActiveTab('exchange')}>💱</button>
-                <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>🔐</button>
-                <button className={activeTab === 'game' ? 'active' : ''} onClick={() => setActiveTab('game')}>🎮</button>
+            {/* SEARCH */}
+            <div className="tg-search">
+                <input
+                    placeholder="Поиск"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                />
             </div>
 
-            {activeTab === 'game' && <Game />}
+            {/* CATEGORIES */}
+            <div className="tg-categories">
+                {categories.map(c => (
+                    <button
+                        key={c.id}
+                        className={selectedCategory === c.id ? 'active' : ''}
+                        onClick={() => setSelectedCategory(c.id)}
+                    >
+                        {c.label}
+                    </button>
+                ))}
+            </div>
 
-            {activeTab !== 'game' && (
-                <>
-                    {/* SEARCH */}
-                    <div className="tg-search-container">
-                        <input
-                            className="tg-search"
-                            placeholder="Поиск"
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+            {/* FAQ */}
+            <div className="tg-list">
+                {filteredFaq.map(item => (
+                    <div key={item.id} className="tg-item">
+                        <div
+                            className="tg-item-header"
+                            onClick={() => toggleFaq(item.id)}
+                        >
+                            {item.question}
+                            <span className={expandedFaqs[item.id] ? 'rotated' : ''}>⌄</span>
+                        </div>
 
-                    {/* CATEGORIES */}
-                    <div className="tg-categories">
-                        {categories.map(c => (
-                            <button
-                                key={c.id}
-                                className={`tg-chip ${selectedCategory === c.id ? 'active' : ''}`}
-                                onClick={() => setSelectedCategory(c.id)}
-                            >
-                                {c.icon} {c.name}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* CONTENT */}
-                    <div className="tg-content">
-                        {filteredFaqItems.map(item => (
-                            <div key={item.id} className="tg-list-item">
-                                <div className="tg-list-item-header" onClick={() => toggleFaq(item.id)}>
-                                    {item.question}
-                                    <span className={expandedFaqs[item.id] ? 'rotated' : ''}>⌄</span>
-                                </div>
-                                {expandedFaqs[item.id] && (
-                                    <div className="tg-list-item-content">
-                                        {item.answer.split('\n').map((l, i) => (
-                                            <div key={i} className="tg-text">{l}</div>
-                                        ))}
-                                    </div>
-                                )}
+                        {expandedFaqs[item.id] && (
+                            <div className="tg-item-body">
+                                {item.answer}
                             </div>
-                        ))}
+                        )}
                     </div>
-                </>
-            )}
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/* ===============================
+   TABS — ВЫНЕСЕНЫ
+=============================== */
+function Tabs({ activeTab, setActiveTab }) {
+    return (
+        <div className="tg-tabs">
+            <button onClick={() => setActiveTab('help')} className={activeTab === 'help' ? 'active' : ''}>📚</button>
+            <button onClick={() => setActiveTab('exchange')} className={activeTab === 'exchange' ? 'active' : ''}>💱</button>
+            <button onClick={() => setActiveTab('security')} className={activeTab === 'security' ? 'active' : ''}>🔐</button>
+            <button onClick={() => setActiveTab('game')} className={activeTab === 'game' ? 'active' : ''}>🎮</button>
         </div>
     );
 }

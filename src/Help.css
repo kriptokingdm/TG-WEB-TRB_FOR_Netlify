@@ -1,4 +1,4 @@
-.tg-root {
+.telegram-help {
     min-height: 100vh;
     background: var(--tg-theme-bg-color);
     color: var(--tg-theme-text-color);
@@ -16,105 +16,82 @@
 .tg-tabs button {
     background: none;
     border: none;
-    font-size: 18px;
-    opacity: 0.6;
+    font-size: 20px;
+    opacity: .5;
 }
 
 .tg-tabs button.active {
     opacity: 1;
 }
 
-/* SECTION */
-.tg-section {
-    padding: 16px;
-    background: var(--tg-theme-secondary-bg-color);
-    margin: 12px;
-    border-radius: 12px;
-}
-
-.tg-section.text {
-    line-height: 1.5;
-}
-
 /* SEARCH */
+.tg-search-container {
+    padding: 12px 16px;
+}
+
 .tg-search {
     width: 100%;
-    padding: 10px 0;
-    font-size: 15px;
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--tg-theme-hint-color);
+    padding: 8px 0;
     color: var(--tg-theme-text-color);
     outline: none;
 }
 
-/* FAQ */
-.tg-faq {
-    border-top: 1px solid var(--tg-theme-hint-color);
+/* CATEGORIES */
+.tg-categories {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+    overflow-x: auto;
 }
 
-.tg-faq-header {
-    padding: 12px 0;
+.tg-chip {
+    padding: 6px 12px;
+    border-radius: 14px;
+    background: var(--tg-theme-secondary-bg-color);
+    border: none;
+    color: var(--tg-theme-text-color);
+}
+
+.tg-chip.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+/* LIST */
+.tg-content {
+    padding: 16px;
+}
+
+.tg-list-item {
+    border-bottom: 1px solid var(--tg-theme-hint-color);
+}
+
+.tg-list-item-header {
+    padding: 14px 0;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
 }
 
-.tg-faq-body {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.tg-faq.open .tg-faq-body {
-    max-height: 200px;
-    opacity: 1;
+.tg-list-item-content {
     padding-bottom: 12px;
+    animation: fadeIn .25s ease;
 }
 
-/* GAME */
-.tg-game {
-    position: relative;
-    height: 300px;
-    background: var(--tg-theme-secondary-bg-color);
-    margin: 12px;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.tg-player {
-    position: absolute;
-    bottom: 20px;
-    width: 20px;
-    height: 20px;
-    background: var(--tg-theme-button-color);
-    border-radius: 50%;
-}
-
-.tg-wall {
-    position: absolute;
-    top: 0;
-    width: 6px;
-    height: 100%;
-    background: var(--tg-theme-hint-color);
-}
-
-.tg-wall.left { left: 0; }
-.tg-wall.right { right: 0; }
-
-.tg-score {
-    position: absolute;
-    top: 10px;
-    left: 12px;
+.tg-text {
     font-size: 14px;
+    opacity: .8;
 }
 
-.tg-game-hint {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    text-align: center;
-    font-size: 13px;
-    opacity: 0.6;
+.rotated {
+    transform: rotate(180deg);
+    transition: .2s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
 }

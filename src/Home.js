@@ -995,7 +995,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={handleAddCryptoAddress}
                   className="add-button"
                 >
-                  + Добавить {cryptoType === 'address' ? 'адрес' : 'UID'}
+                  +{cryptoType === 'address' ? '' : ''}
                 </button>
               </div>
 

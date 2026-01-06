@@ -509,7 +509,7 @@ function History({ navigateTo, showToast }) {
                         className={`view-tab-new ${viewMode === 'active' ? 'active' : ''}`}
                         onClick={() => setViewMode('active')}
                     >
-                        <span className="tab-icon">🔥</span>
+                        <span className="tab-icon"></span>
                         <span className="tab-text">Активные</span>
                         {stats.active > 0 && (
                             <span className="tab-badge">{stats.active}</span>
@@ -519,7 +519,7 @@ function History({ navigateTo, showToast }) {
                         className={`view-tab-new ${viewMode === 'all' ? 'active' : ''}`}
                         onClick={() => setViewMode('all')}
                     >
-                        <span className="tab-icon">📋</span>
+                        <span className="tab-icon"></span>
                         <span className="tab-text">Все</span>
                         {stats.total > 0 && (
                             <span className="tab-badge">{stats.total}</span>

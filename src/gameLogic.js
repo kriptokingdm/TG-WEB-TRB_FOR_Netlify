@@ -1,5 +1,3 @@
-// src/gameLogic.js
-
 export const GAME_WIDTH = 360;
 export const GAME_HEIGHT = 640;
 const GRAVITY = 0.6;
@@ -23,7 +21,7 @@ export function createPlayer() {
 }
 
 /* ======================
-   PLATFORMS
+   PLАТФОРМЫ
 ====================== */
 export function generatePlatforms() {
   const platforms = [];
@@ -60,7 +58,7 @@ export function updatePlayer(player) {
 }
 
 /* ======================
-   UPDATE PLATFORMS (ВОТ ОН!)
+   UPDATE PLATFORMS
 ====================== */
 export function updatePlatforms(platforms) {
   platforms.forEach(p => {
@@ -75,7 +73,7 @@ export function updatePlatforms(platforms) {
 }
 
 /* ======================
-   JUMP LOGIC (WALL KICKERS)
+   JUMP LOGIC
 ====================== */
 export function handleJump(player, platforms) {
   player.direction *= -1;

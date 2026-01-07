@@ -15,9 +15,30 @@ export default function Game() {
   const [platforms, setPlatforms] = useState(generatePlatforms());
   const [running, setRunning] = useState(true);
 
+  // Рефы для актуального состояния
+  const playerRef = useRef(player);
+  const platformsRef = useRef(platforms);
+
   const tapTimeout = useRef(null);
   const tapCount = useRef(0);
 
+  // Синхронизация рефов с state
+  useEffect(() => { playerRef.current = player; }, [player]);
+  useEffect(() => { platformsRef.current = platforms; }, [platforms]);
+
+  // Садим игрока на стартовую платформу
+  useEffect(() => {
+    const startPlatform = platformsRef.current[platformsRef.current.length - 1];
+    setPlayer(p => ({
+      ...p,
+      y: startPlatform.y - p.height,
+      alive: true,
+      velocityY: 0,
+      score: 0,
+    }));
+  }, [platforms]);
+
+  // Главный игровой цикл
   useEffect(() => {
     const ctx = canvasRef.current.getContext('2d');
     let animationId;
@@ -25,19 +46,22 @@ export default function Game() {
     const loop = () => {
       ctx.clearRect(0, 0, 360, GAME_HEIGHT);
 
-      if (player.alive && running) {
-        updatePlayer(player);
-        updatePlatforms(platforms);
+      if (playerRef.current.alive && running) {
+        updatePlayer(playerRef.current);
+        updatePlatforms(platformsRef.current);
 
-        if (player.y < GAME_HEIGHT / 3) {
-          const diff = GAME_HEIGHT / 3 - player.y;
-          player.y = GAME_HEIGHT / 3;
-          platforms.forEach(p => (p.y += diff));
-          player.score += Math.floor(diff);
+        // Скролл вверх при подъеме
+        if (playerRef.current.y < GAME_HEIGHT / 3) {
+          const diff = GAME_HEIGHT / 3 - playerRef.current.y;
+          playerRef.current.y = GAME_HEIGHT / 3;
+          platformsRef.current.forEach(p => (p.y += diff));
+          playerRef.current.score += Math.floor(diff);
         }
 
-        if (player.y > GAME_HEIGHT) {
-          player.alive = false;
+        // Проверка смерти
+        if (playerRef.current.y > GAME_HEIGHT) {
+          playerRef.current.alive = false;
+          setRunning(false);
         }
       }
 
@@ -47,16 +71,15 @@ export default function Game() {
 
     loop();
     return () => cancelAnimationFrame(animationId);
-  }, [player, platforms, running]);
+  }, [running]);
 
   const handleTap = () => {
-    if (!player.alive) return;
+    if (!playerRef.current.alive) return;
 
     tapCount.current++;
-
     if (!tapTimeout.current) {
       tapTimeout.current = setTimeout(() => {
-        handleJump(player, platforms);
+        handleJump(playerRef.current, platformsRef.current);
         tapCount.current = 0;
         tapTimeout.current = null;
       }, 180);
@@ -64,16 +87,28 @@ export default function Game() {
   };
 
   const restart = () => {
-    setPlayer(createPlayer());
-    setPlatforms(generatePlatforms());
+    const newPlatforms = generatePlatforms();
+    const newPlayer = createPlayer();
+
+    setPlatforms(newPlatforms);
+    platformsRef.current = newPlatforms;
+
+    setPlayer(newPlayer);
+    playerRef.current = newPlayer;
+
     setRunning(true);
+
+    // Садим игрока на стартовую платформу
+    const startPlatform = newPlatforms[newPlatforms.length - 1];
+    playerRef.current.y = startPlatform.y - playerRef.current.height;
   };
 
   const draw = ctx => {
     ctx.fillStyle = '#1c1c1e';
     ctx.fillRect(0, 0, 360, GAME_HEIGHT);
 
-    platforms.forEach(p => {
+    // Платформы
+    platformsRef.current.forEach(p => {
       if (p.type === 'spike') ctx.fillStyle = '#ff3b30';
       else if (p.type === 'spring') ctx.fillStyle = '#34c759';
       else ctx.fillStyle = '#8e8e93';
@@ -81,22 +116,27 @@ export default function Game() {
       ctx.fillRect(p.x, p.y, p.width, p.height);
     });
 
+    // Игрок
     ctx.fillStyle = '#3390ec';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    ctx.fillRect(playerRef.current.x, playerRef.current.y, playerRef.current.width, playerRef.current.height);
 
+    // Счёт
     ctx.fillStyle = '#fff';
     ctx.font = '16px system-ui';
-    ctx.fillText(`Score: ${player.score}`, 12, 24);
+    ctx.fillText(`Score: ${playerRef.current.score}`, 12, 24);
 
-    if (!player.alive) {
-      ctx.fillText('GAME OVER', 120, 300);
+    // Game over
+    if (!playerRef.current.alive) {
+      ctx.fillStyle = '#ff3b30';
+      ctx.font = '24px system-ui';
+      ctx.fillText('GAME OVER', 110, 300);
     }
   };
 
   return (
     <div className="wk-container" onClick={handleTap}>
       <canvas ref={canvasRef} width="360" height="640" />
-      {!player.alive && (
+      {!playerRef.current.alive && (
         <button className="wk-restart" onClick={restart}>
           Restart
         </button>

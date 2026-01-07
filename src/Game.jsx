@@ -7,7 +7,7 @@ import {
   updatePlatforms,
   GAME_HEIGHT,
 } from './gameLogic';
-import './WallKickersGame.css';
+import './Game.css';
 
 export default function Game() {
   const canvasRef = useRef(null);

@@ -6,6 +6,7 @@ import {
   handleJump,
   updatePlatforms,
   GAME_HEIGHT,
+  GAME_WIDTH
 } from './gameLogic';
 import './Game.css';
 
@@ -15,28 +16,12 @@ export default function Game() {
   const [platforms, setPlatforms] = useState(generatePlatforms());
   const [running, setRunning] = useState(true);
 
-  // Рефы для актуального состояния
   const playerRef = useRef(player);
   const platformsRef = useRef(platforms);
 
-  const tapTimeout = useRef(null);
-  const tapCount = useRef(0);
-
-  // Синхронизация рефов с state
+  // Синхронизация ref с state
   useEffect(() => { playerRef.current = player; }, [player]);
   useEffect(() => { platformsRef.current = platforms; }, [platforms]);
-
-  // Садим игрока на стартовую платформу
-  useEffect(() => {
-    const startPlatform = platformsRef.current[platformsRef.current.length - 1];
-    setPlayer(p => ({
-      ...p,
-      y: startPlatform.y - p.height,
-      alive: true,
-      velocityY: 0,
-      score: 0,
-    }));
-  }, [platforms]);
 
   // Главный игровой цикл
   useEffect(() => {
@@ -44,24 +29,18 @@ export default function Game() {
     let animationId;
 
     const loop = () => {
-      ctx.clearRect(0, 0, 360, GAME_HEIGHT);
+      ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
       if (playerRef.current.alive && running) {
-        updatePlayer(playerRef.current);
-        updatePlatforms(platformsRef.current);
+        updatePlayer(playerRef.current, platformsRef.current);
+        updatePlatforms(platformsRef.current, playerRef.current.score);
 
-        // Скролл вверх при подъеме
+        // Скролл вверх
         if (playerRef.current.y < GAME_HEIGHT / 3) {
           const diff = GAME_HEIGHT / 3 - playerRef.current.y;
           playerRef.current.y = GAME_HEIGHT / 3;
           platformsRef.current.forEach(p => (p.y += diff));
           playerRef.current.score += Math.floor(diff);
-        }
-
-        // Проверка смерти
-        if (playerRef.current.y > GAME_HEIGHT) {
-          playerRef.current.alive = false;
-          setRunning(false);
         }
       }
 
@@ -75,37 +54,23 @@ export default function Game() {
 
   const handleTap = () => {
     if (!playerRef.current.alive) return;
-
-    tapCount.current++;
-    if (!tapTimeout.current) {
-      tapTimeout.current = setTimeout(() => {
-        handleJump(playerRef.current, platformsRef.current);
-        tapCount.current = 0;
-        tapTimeout.current = null;
-      }, 180);
-    }
+    handleJump(playerRef.current);
   };
 
   const restart = () => {
     const newPlatforms = generatePlatforms();
     const newPlayer = createPlayer();
-
     setPlatforms(newPlatforms);
     platformsRef.current = newPlatforms;
-
     setPlayer(newPlayer);
     playerRef.current = newPlayer;
-
     setRunning(true);
-
-    // Садим игрока на стартовую платформу
-    const startPlatform = newPlatforms[newPlatforms.length - 1];
-    playerRef.current.y = startPlatform.y - playerRef.current.height;
   };
 
   const draw = ctx => {
+    // Фон
     ctx.fillStyle = '#1c1c1e';
-    ctx.fillRect(0, 0, 360, GAME_HEIGHT);
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     // Платформы
     platformsRef.current.forEach(p => {
@@ -125,7 +90,7 @@ export default function Game() {
     ctx.font = '16px system-ui';
     ctx.fillText(`Score: ${playerRef.current.score}`, 12, 24);
 
-    // Game over
+    // Game Over
     if (!playerRef.current.alive) {
       ctx.fillStyle = '#ff3b30';
       ctx.font = '24px system-ui';
@@ -135,7 +100,7 @@ export default function Game() {
 
   return (
     <div className="wk-container" onClick={handleTap}>
-      <canvas ref={canvasRef} width="360" height="640" />
+      <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} />
       {!playerRef.current.alive && (
         <button className="wk-restart" onClick={restart}>
           Restart

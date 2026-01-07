@@ -19,11 +19,12 @@ export default function Game() {
   const [particles, setParticles] = useState([]);
   const [running, setRunning] = useState(true);
   const [highScore, setHighScore] = useState(0);
-  const [lastTime, setLastTime] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
 
   const playerRef = useRef(player);
   const platformsRef = useRef(platforms);
   const particlesRef = useRef(particles);
+  const lastPlayerY = useRef(player.y);
 
   useEffect(() => { playerRef.current = player; }, [player]);
   useEffect(() => { platformsRef.current = platforms; }, [platforms]);
@@ -39,56 +40,59 @@ export default function Game() {
       setHighScore(parseInt(storedHighScore));
     }
 
-    const loop = (currentTime) => {
-      const deltaTime = Math.min((currentTime - (lastTime || currentTime)) / 16.67, 2);
-      setLastTime(currentTime);
-      
+    const loop = () => {
       ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-      if (playerRef.current.alive && running) {
-        updatePlayer(playerRef.current, platformsRef.current, deltaTime);
-        updatePlatforms(platformsRef.current, playerRef.current.score);
-        updateParticles(particlesRef.current, deltaTime);
+      if (playerRef.current.alive && running && gameStarted) {
+        updatePlayer(playerRef.current, platformsRef.current);
+        updateParticles(particlesRef.current);
+        
+        // Если игрок поднялся выше - двигаем платформы вниз
+        if (playerRef.current.y < lastPlayerY.current) {
+          const diff = lastPlayerY.current - playerRef.current.y;
+          platformsRef.current.forEach(p => {
+            p.y += diff;
+          });
+          lastPlayerY.current = playerRef.current.y;
+          
+          // Обновляем счет на основе высоты
+          const heightScore = Math.floor((GAME_HEIGHT - playerRef.current.y) / 5);
+          playerRef.current.score = Math.max(playerRef.current.score, heightScore);
+        }
+        
+        updatePlatforms(platformsRef.current, playerRef.current.y);
         
         setPlayer({...playerRef.current});
         setPlatforms([...platformsRef.current]);
         setParticles([...particlesRef.current]);
-
-        // Автоскролл
-        if (playerRef.current.y < GAME_HEIGHT / 3) {
-          const diff = GAME_HEIGHT / 3 - playerRef.current.y;
-          playerRef.current.y = GAME_HEIGHT / 3;
-          platformsRef.current.forEach(p => (p.y += diff));
-          particlesRef.current.forEach(p => (p.y += diff));
-          playerRef.current.score += Math.floor(diff * 0.5);
-        }
       }
 
-      draw(ctx, deltaTime);
+      draw(ctx);
       animationId = requestAnimationFrame(loop);
     };
 
     loop();
     return () => cancelAnimationFrame(animationId);
-  }, [running, lastTime, highScore]);
+  }, [running, gameStarted, highScore]);
 
-  const handleTap = (e) => {
+  const handleTap = () => {
+    if (!gameStarted) {
+      setGameStarted(true);
+      return;
+    }
+    
     if (!playerRef.current.alive) return;
     
-    const rect = canvasRef.current.getBoundingClientRect();
-    const tapX = e.clientX - rect.left;
-    const dashMode = tapX < GAME_WIDTH / 2; // Левая половина - дэш, правая - прыжок
-    
-    handleJump(playerRef.current, platformsRef.current, dashMode);
-    
-    // Частицы при прыжке
-    const newParticles = createParticles(
+    // Создаем частицы при прыжке
+    const jumpParticles = createParticles(
       playerRef.current.x + playerRef.current.width / 2,
       playerRef.current.y + playerRef.current.height,
-      dashMode ? '#ff9500' : '#3390ec',
+      playerRef.current.onWall ? '#ff9500' : '#3390ec',
       8
     );
-    setParticles([...particlesRef.current, ...newParticles]);
+    setParticles([...particlesRef.current, ...jumpParticles]);
+    
+    handleJump(playerRef.current);
   };
 
   const restart = () => {
@@ -103,38 +107,49 @@ export default function Game() {
     platformsRef.current = newPlatforms;
     setPlayer(newPlayer);
     playerRef.current = newPlayer;
+    lastPlayerY.current = newPlayer.y;
     setParticles([]);
     particlesRef.current = [];
+    setGameStarted(false);
     setRunning(true);
   };
 
-  const draw = (ctx, deltaTime) => {
+  const draw = (ctx) => {
     // Градиентный фон
     const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-    gradient.addColorStop(0, '#0a0a0f');
-    gradient.addColorStop(1, '#1a1a2e');
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(0.5, '#16213e');
+    gradient.addColorStop(1, '#0f3460');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     
-    // Звезды (декор)
-    for (let i = 0; i < 50; i++) {
-      const star = platformsRef.current[i];
-      if (star) {
-        const alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.fillRect(
-          Math.sin(Date.now() * 0.0005 + i) * GAME_WIDTH + GAME_WIDTH / 2,
-          (star.y * 0.1 + i * 20) % GAME_HEIGHT,
-          1, 1
-        );
-      }
+    // Сетка для фона
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    
+    // Вертикальные линии
+    for (let x = 0; x < GAME_WIDTH; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, GAME_HEIGHT);
+      ctx.stroke();
+    }
+    
+    // Горизонтальные линии
+    for (let y = 0; y < GAME_HEIGHT; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(GAME_WIDTH, y);
+      ctx.stroke();
     }
 
     // Частицы
     particlesRef.current.forEach(p => {
       ctx.globalAlpha = p.life;
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fill();
     });
     ctx.globalAlpha = 1;
 
@@ -142,9 +157,9 @@ export default function Game() {
     platformsRef.current.forEach(p => {
       if (p.broken && p.height <= 0) return;
       
-      // Тень платформы
+      // Тень
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.fillRect(p.x + 2, p.y + 2, p.width, p.height);
+      ctx.fillRect(p.x, p.y + 2, p.width, p.height);
       
       // Сама платформа
       switch(p.type) {
@@ -153,46 +168,30 @@ export default function Game() {
           ctx.fillRect(p.x, p.y, p.width, p.height);
           // Шипы
           ctx.fillStyle = '#ff6b66';
-          for (let i = 0; i < 5; i++) {
-            const spikeX = p.x + i * (p.width / 5);
+          const spikeCount = Math.floor(p.width / 15);
+          for (let i = 0; i < spikeCount; i++) {
+            const spikeX = p.x + i * (p.width / spikeCount) + 8;
             ctx.beginPath();
-            ctx.moveTo(spikeX + 4, p.y);
-            ctx.lineTo(spikeX + 8, p.y - 8);
-            ctx.lineTo(spikeX + 12, p.y);
+            ctx.moveTo(spikeX, p.y);
+            ctx.lineTo(spikeX - 4, p.y - 8);
+            ctx.lineTo(spikeX + 4, p.y - 8);
+            ctx.closePath();
             ctx.fill();
-          }
-          break;
-        case 'spring':
-          ctx.fillStyle = '#34c759';
-          ctx.fillRect(p.x, p.y, p.width, p.height);
-          // Пружина
-          ctx.fillStyle = '#2da84e';
-          for (let i = 0; i < 3; i++) {
-            ctx.fillRect(p.x + 20 + i * 15, p.y - 4, 8, 4);
           }
           break;
         case 'breakable':
           ctx.fillStyle = p.broken ? '#8a8a8e' : '#ff9500';
           ctx.fillRect(p.x, p.y, p.width, p.height);
-          // Трещины
           if (!p.broken) {
-            ctx.strokeStyle = '#ff7700';
+            // Трещины
+            ctx.strokeStyle = '#cc5500';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(p.x + 10, p.y + 3);
-            ctx.lineTo(p.x + 20, p.y + 9);
-            ctx.moveTo(p.x + 40, p.y + 4);
-            ctx.lineTo(p.x + 50, p.y + 8);
+            ctx.moveTo(p.x + 15, p.y + 3);
+            ctx.lineTo(p.x + 25, p.y + 9);
+            ctx.moveTo(p.x + 35, p.y + 4);
+            ctx.lineTo(p.x + 45, p.y + 8);
             ctx.stroke();
-          }
-          break;
-        case 'bouncy':
-          ctx.fillStyle = '#af52de';
-          ctx.fillRect(p.x, p.y, p.width, p.height);
-          // Полосы
-          ctx.fillStyle = '#9b45c7';
-          for (let i = 0; i < 4; i++) {
-            ctx.fillRect(p.x + i * 20, p.y, 10, p.height);
           }
           break;
         case 'moving':
@@ -200,68 +199,108 @@ export default function Game() {
           ctx.fillRect(p.x, p.y, p.width, p.height);
           // Стрелки направления
           ctx.fillStyle = '#4846c6';
-          const arrowX = p.dir > 0 ? p.x + p.width - 10 : p.x + 10;
-          ctx.beginPath();
-          ctx.moveTo(arrowX, p.y + 6);
-          ctx.lineTo(arrowX + 6 * p.dir, p.y + 3);
-          ctx.lineTo(arrowX + 6 * p.dir, p.y + 9);
-          ctx.closePath();
-          ctx.fill();
+          const arrowCount = Math.floor(p.width / 20);
+          for (let i = 0; i < arrowCount; i++) {
+            const arrowX = p.x + i * 20 + 10;
+            ctx.beginPath();
+            ctx.moveTo(arrowX, p.y + 6);
+            ctx.lineTo(arrowX + 4 * p.dir, p.y + 3);
+            ctx.lineTo(arrowX + 4 * p.dir, p.y + 9);
+            ctx.closePath();
+            ctx.fill();
+          }
           break;
         default:
-          ctx.fillStyle = '#8e8e93';
-          ctx.fillRect(p.x, p.y, p.width, p.height);
+          if (p.isStart) {
+            // Стартовая платформа
+            ctx.fillStyle = '#34c759';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+            // Текст "START"
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px system-ui';
+            ctx.textAlign = 'center';
+            ctx.fillText('START', p.x + p.width/2, p.y + 9);
+            ctx.textAlign = 'left';
+          } else {
+            ctx.fillStyle = '#8e8e93';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+          }
       }
     });
 
     // Трейл игрока
     playerRef.current.trail.forEach((pos, i) => {
-      ctx.globalAlpha = pos.alpha * 0.5;
+      ctx.globalAlpha = pos.alpha;
       ctx.fillStyle = '#3390ec';
       ctx.fillRect(pos.x, pos.y, playerRef.current.width, playerRef.current.height);
     });
     ctx.globalAlpha = 1;
 
     // Игрок
-    const invAlpha = playerRef.current.invincible > 0 ? 0.5 + Math.sin(Date.now() * 0.1) * 0.5 : 1;
-    ctx.globalAlpha = invAlpha;
-    ctx.fillStyle = '#3390ec';
+    ctx.fillStyle = playerRef.current.onWall ? '#ff9500' : '#3390ec';
     ctx.fillRect(playerRef.current.x, playerRef.current.y, playerRef.current.width, playerRef.current.height);
     
-    // Глаза игрока
+    // Глаза
     ctx.fillStyle = '#fff';
-    const eyeX = playerRef.current.direction > 0 ? 4 : -4;
+    const eyeOffset = playerRef.current.onWall ? 
+      (playerRef.current.wallSide * 4) : 
+      (playerRef.current.velocityX > 0 ? 4 : -4);
+    
     ctx.fillRect(
-      playerRef.current.x + playerRef.current.width / 2 + eyeX - 3,
+      playerRef.current.x + playerRef.current.width/2 + eyeOffset - 2,
       playerRef.current.y + 8,
-      3, 3
+      4, 4
     );
-    ctx.globalAlpha = 1;
 
-    // Счет и информация
+    // UI
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 18px system-ui';
     ctx.fillText(`Score: ${playerRef.current.score}`, 12, 26);
     
     ctx.font = '14px system-ui';
-    ctx.fillText(`High: ${highScore}`, 12, 46);
+    ctx.fillText(`High: ${highScore}`, 12, 48);
     
     // Комбо
-    if (playerRef.current.combo > 3) {
-      ctx.fillStyle = `hsl(${Math.min(playerRef.current.combo * 10, 120)}, 100%, 60%)`;
+    if (playerRef.current.combo > 1) {
+      ctx.fillStyle = `hsl(${Math.min(playerRef.current.combo * 15, 60)}, 100%, 60%)`;
       ctx.font = 'bold 16px system-ui';
-      ctx.fillText(`${Math.floor(playerRef.current.combo)}x COMBO!`, GAME_WIDTH - 100, 26);
+      ctx.fillText(`${playerRef.current.combo}x`, GAME_WIDTH - 50, 30);
     }
     
-    // Заряды дэша
-    for (let i = 0; i < 2; i++) {
-      ctx.fillStyle = i < playerRef.current.dashCharges ? '#ff9500' : '#555';
-      ctx.fillRect(GAME_WIDTH - 40 - i * 15, 40, 12, 4);
+    // Индикатор на стене
+    if (playerRef.current.onWall) {
+      ctx.fillStyle = 'rgba(255, 149, 0, 0.3)';
+      const wallX = playerRef.current.wallSide === -1 ? 0 : GAME_WIDTH - 10;
+      ctx.fillRect(wallX, 0, 10, GAME_HEIGHT);
+    }
+
+    // Начальный экран
+    if (!gameStarted) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 28px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('WALL KICKERS', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60);
+      
+      ctx.font = '18px system-ui';
+      ctx.fillText('Tap to jump from walls', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
+      ctx.fillText('Reach the highest score!', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10);
+      
+      ctx.fillStyle = '#3390ec';
+      ctx.font = 'bold 20px system-ui';
+      ctx.fillText('TAP TO START', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60);
+      
+      ctx.font = '14px system-ui';
+      ctx.fillStyle = '#8e8e93';
+      ctx.fillText(`Best Score: ${highScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100);
+      ctx.textAlign = 'left';
     }
 
     // Game Over
     if (!playerRef.current.alive) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
       ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
       
       ctx.fillStyle = '#ff3b30';
@@ -270,20 +309,19 @@ export default function Game() {
       ctx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40);
       
       ctx.fillStyle = '#fff';
-      ctx.font = '18px system-ui';
-      ctx.fillText(`Final Score: ${playerRef.current.score}`, GAME_WIDTH / 2, GAME_HEIGHT / 2);
-      ctx.fillText(`Best: ${highScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 25);
+      ctx.font = '20px system-ui';
+      ctx.fillText(`Score: ${playerRef.current.score}`, GAME_WIDTH / 2, GAME_HEIGHT / 2);
+      ctx.fillText(`Best: ${highScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30);
+      
+      ctx.fillStyle = '#3390ec';
+      ctx.font = 'bold 18px system-ui';
+      ctx.fillText('TAP RESTART BUTTON', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 80);
+      ctx.textAlign = 'left';
     }
-    
-    ctx.textAlign = 'left';
   };
 
   return (
     <div className="wk-container">
-      <div className="wk-instructions">
-        <div>← Tap left side to DASH</div>
-        <div>→ Tap right side to JUMP</div>
-      </div>
       <canvas 
         ref={canvasRef} 
         width={GAME_WIDTH} 
@@ -294,6 +332,11 @@ export default function Game() {
         <button className="wk-restart" onClick={restart}>
           Play Again
         </button>
+      )}
+      {!gameStarted && playerRef.current.alive && (
+        <div className="wk-start-hint">
+          Tap anywhere to start
+        </div>
       )}
     </div>
   );

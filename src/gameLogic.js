@@ -1,9 +1,10 @@
 export const GAME_WIDTH = 360;
 export const GAME_HEIGHT = 640;
-const GRAVITY = 0.6;
-const JUMP_FORCE = -12;
-const PLATFORM_GAP = 90;
-const MAX_SPEED = 8;
+const GRAVITY = 0.4;
+const JUMP_FORCE = 11;
+const WALL_SLIDE_SPEED = 2;
+const WALL_JUMP_FORCE_X = 8;
+const WALL_JUMP_FORCE_Y = -10;
 
 /* ======================
    PLAYER
@@ -11,277 +12,279 @@ const MAX_SPEED = 8;
 export function createPlayer() {
   return {
     x: GAME_WIDTH / 2 - 12,
-    y: GAME_HEIGHT - 100,
+    y: GAME_HEIGHT - 150,
     width: 24,
     height: 24,
-    velocityY: 0,
     velocityX: 0,
-    direction: 1,
+    velocityY: 0,
+    onWall: false,
+    wallSide: 0, // -1 left, 1 right, 0 none
     alive: true,
     score: 0,
     combo: 0,
-    lastPlatformY: 0,
-    dashCooldown: 0,
-    dashCharges: 2,
-    invincible: 0,
+    isJumping: false,
     trail: []
   };
 }
 
 /* ======================
-   PLATFORMS
+   PLATFORMS (вертикальные - как стены)
 ====================== */
-export function generatePlatforms(count = 12, startY = GAME_HEIGHT - 40) {
+export function generatePlatforms(count = 15, startY = GAME_HEIGHT - 100) {
   const platforms = [];
   let y = startY;
 
   for (let i = 0; i < count; i++) {
-    platforms.push(createPlatform(y, i));
-    y -= PLATFORM_GAP;
+    platforms.push(createPlatform(y));
+    y -= 120; // Вертикальное расстояние между платформами
   }
+
+  // Добавляем стартовую платформу
+  platforms.push({
+    x: GAME_WIDTH / 2 - 40,
+    y: GAME_HEIGHT - 50,
+    width: 80,
+    height: 12,
+    type: 'normal',
+    isStart: true
+  });
 
   return platforms;
 }
 
-function createPlatform(y, index) {
-  const types = ['normal', 'spring', 'spike', 'moving', 'breakable', 'bouncy'];
-  const weights = [4, 1, 1, 1, 1, 1]; // Веса для разных типов
+function createPlatform(y) {
+  const types = ['normal', 'normal', 'normal', 'moving', 'breakable', 'spike'];
+  const type = types[Math.floor(Math.random() * types.length)];
   
-  // Первые 3 платформы всегда нормальные
-  if (index < 3) {
-    return createPlatformByType(y, 'normal');
+  // Платформы появляются то слева, то справа
+  const side = Math.random() > 0.5 ? 'left' : 'right';
+  let x;
+  
+  if (side === 'left') {
+    x = 20 + Math.random() * 120;
+  } else {
+    x = GAME_WIDTH - 140 + Math.random() * 120;
   }
-  
-  // Случайный выбор с учетом весов
-  let totalWeight = weights.reduce((a, b) => a + b, 0);
-  let random = Math.random() * totalWeight;
-  let typeIndex = 0;
-  
-  for (let i = 0; i < weights.length; i++) {
-    random -= weights[i];
-    if (random <= 0) {
-      typeIndex = i;
-      break;
-    }
-  }
-  
-  return createPlatformByType(y, types[typeIndex]);
-}
 
-function createPlatformByType(y, type) {
-  const platform = {
-    x: Math.random() * (GAME_WIDTH - 80),
+  return {
+    x,
     y,
-    width: 80,
+    width: 60 + Math.random() * 40,
     height: 12,
     type,
     dir: Math.random() > 0.5 ? 1 : -1,
-    speed: 1.2 + Math.random() * 0.8,
-    broken: false,
-    bounceForce: JUMP_FORCE * 1.3
+    speed: 0.5 + Math.random() * 1,
+    broken: false
   };
-  
-  // Разные размеры для разных типов
-  if (type === 'breakable') platform.width = 60;
-  if (type === 'spike') platform.width = 50;
-  
-  return platform;
 }
 
 /* ======================
-   UPDATES
+   ОБНОВЛЕНИЕ ИГРОКА
 ====================== */
-export function updatePlayer(player, platforms, deltaTime) {
-  // Обновление таймеров
-  if (player.dashCooldown > 0) player.dashCooldown -= deltaTime;
-  if (player.invincible > 0) player.invincible -= deltaTime;
-  
-  // Добавление позиции в трейл
+export function updatePlayer(player, platforms) {
+  // Сохраняем предыдущую позицию для трейла
   player.trail.unshift({
     x: player.x,
     y: player.y,
     alpha: 1
   });
   
-  // Ограничение длины трейла
-  if (player.trail.length > 10) {
+  if (player.trail.length > 8) {
     player.trail.pop();
   }
   
-  // Обновление альфы трейла
   player.trail.forEach((pos, i) => {
-    pos.alpha = 1 - (i / player.trail.length);
+    pos.alpha = 0.3 - (i * 0.04);
   });
-  
+
   // Гравитация
   player.velocityY += GRAVITY;
-  player.velocityY = Math.min(player.velocityY, MAX_SPEED);
   
-  // Движение по горизонтали
+  // Если на стене - замедляем падение
+  if (player.onWall && player.velocityY > 0) {
+    player.velocityY = Math.min(player.velocityY, WALL_SLIDE_SPEED);
+  }
+
+  // Обновление позиции
   player.x += player.velocityX;
-  player.velocityX *= 0.92; // Замедление
+  player.y += player.velocityY;
+
+  // Проверка столкновения со стенами (границами экрана)
+  let onWall = false;
+  let wallSide = 0;
   
-  // Ограничение экрана по горизонтали
-  if (player.x < 0) {
+  if (player.x <= 0) {
     player.x = 0;
-    player.velocityX = Math.abs(player.velocityX) * 0.5;
-  }
-  if (player.x + player.width > GAME_WIDTH) {
+    player.onWall = true;
+    player.wallSide = -1;
+    onWall = true;
+    wallSide = -1;
+  } else if (player.x + player.width >= GAME_WIDTH) {
     player.x = GAME_WIDTH - player.width;
-    player.velocityX = -Math.abs(player.velocityX) * 0.5;
+    player.onWall = true;
+    player.wallSide = 1;
+    onWall = true;
+    wallSide = 1;
   }
   
-  let onPlatform = false;
-  let platformUsed = false;
+  // Если не касаемся границ - сбрасываем состояние стены
+  if (!onWall) {
+    player.onWall = false;
+    player.wallSide = 0;
+  }
+
+  // Проверка столкновения с платформами
+  let landedOnPlatform = false;
   
-  // Проверка столкновений
   platforms.forEach(p => {
     if (p.broken) return;
     
-    const isFalling = player.velocityY > 0;
-    const hit =
-      isFalling &&
-      player.x + player.width - 2 > p.x &&
-      player.x + 2 < p.x + p.width &&
+    // Проверка приземления на платформу сверху
+    const wasAbove = (player.y + player.height) <= p.y;
+    const verticalCollision = 
       player.y + player.height >= p.y &&
-      player.y + player.height <= p.y + p.height + 10;
+      player.y + player.height <= p.y + p.height + 5 &&
+      player.velocityY > 0;
     
-    if (hit && !platformUsed) {
-      platformUsed = true;
-      
-      // Проверка на шипы
-      if (p.type === 'spike' && player.invincible <= 0) {
-        player.alive = false;
-        return;
-      }
-      
-      // Прыжок с платформы
-      let jumpForce = JUMP_FORCE;
-      
-      switch(p.type) {
-        case 'spring':
-          jumpForce = JUMP_FORCE * 1.8;
-          player.combo++;
-          break;
-        case 'bouncy':
-          jumpForce = p.bounceForce;
-          player.combo++;
-          break;
-        case 'breakable':
-          jumpForce = JUMP_FORCE;
-          p.broken = true;
-          break;
-        default:
-          jumpForce = JUMP_FORCE;
-          player.combo = Math.max(0, player.combo - 0.5);
-      }
-      
-      // Бонус за комбо
-      if (player.combo > 5) {
-        jumpForce *= (1 + player.combo * 0.05);
-      }
-      
-      player.velocityY = jumpForce;
+    const horizontalCollision =
+      player.x + player.width > p.x &&
+      player.x < p.x + p.width;
+    
+    if (verticalCollision && horizontalCollision && wasAbove) {
+      // Приземление на платформу
       player.y = p.y - player.height;
-      onPlatform = true;
+      player.velocityY = 0;
+      player.onWall = false;
+      player.wallSide = 0;
+      landedOnPlatform = true;
+      
+      // Эффекты платформ
+      if (p.type === 'spike') {
+        player.alive = false;
+      } else if (p.type === 'breakable') {
+        p.broken = true;
+      }
       
       // Обновление счета
-      const heightDiff = Math.abs(p.y - player.lastPlatformY);
-      if (heightDiff > PLATFORM_GAP * 0.8) {
-        player.score += Math.floor(10 + player.combo);
+      if (!p.isStart) {
+        const heightScore = Math.floor((GAME_HEIGHT - p.y) / 10);
+        player.score = Math.max(player.score, heightScore);
+        player.combo++;
       }
-      player.lastPlatformY = p.y;
+    }
+    
+    // Проверка столкновения сбоку (при движении в сторону платформы)
+    const sideCollision =
+      player.x + player.width >= p.x &&
+      player.x <= p.x + p.width &&
+      player.y + player.height > p.y &&
+      player.y < p.y + p.height;
+    
+    if (sideCollision && !landedOnPlatform) {
+      if (player.velocityX > 0 && player.x + player.width > p.x) {
+        // Столкновение справа
+        player.x = p.x - player.width;
+        player.velocityX = 0;
+      } else if (player.velocityX < 0 && player.x < p.x + p.width) {
+        // Столкновение слева
+        player.x = p.x + p.width;
+        player.velocityX = 0;
+      }
     }
   });
-  
-  // Сброс комбо если не на платформе
-  if (!onPlatform && player.velocityY > 0) {
-    player.combo = Math.max(0, player.combo - 0.1);
+
+  // Сброс комбо если упал с платформы
+  if (!landedOnPlatform && !player.onWall && player.velocityY > 0) {
+    player.combo = 0;
   }
-  
-  // Смерть за экраном
+
+  // Смерть если упал вниз
   if (player.y > GAME_HEIGHT + 100) {
     player.alive = false;
   }
 }
 
-export function updatePlatforms(platforms, playerScore) {
+/* ======================
+   ОБНОВЛЕНИЕ ПЛАТФОРМ
+====================== */
+export function updatePlatforms(platforms, playerY) {
+  // Двигаем платформы вниз (создаем иллюзию подъема игрока)
   platforms.forEach(p => {
     if (p.type === 'moving' && !p.broken) {
       p.x += p.dir * p.speed;
-      if (p.x < 0 || p.x + p.width > GAME_WIDTH) p.dir *= -1;
+      if (p.x < 20 || p.x + p.width > GAME_WIDTH - 20) {
+        p.dir *= -1;
+      }
     }
     
     // Плавное исчезновение сломанных платформ
     if (p.broken) {
-      p.height = Math.max(0, p.height - 2);
+      p.height = Math.max(0, p.height - 1);
     }
   });
   
-  // Удаление старых платформ
-  while (platforms.length && platforms[0].y > GAME_HEIGHT + 100) {
+  // Удаляем платформы, которые ушли слишком далеко вниз
+  while (platforms.length && platforms[0].y > GAME_HEIGHT + 200) {
     platforms.shift();
   }
   
-  // Добавление новых
-  const neededPlatforms = 12 + Math.min(Math.floor(playerScore / 1000), 8);
-  while (platforms.length < neededPlatforms) {
-    const lastY = platforms[platforms.length - 1]?.y || 0;
-    platforms.push(createPlatform(lastY - PLATFORM_GAP, platforms.length));
+  // Добавляем новые платформы сверху
+  const highestPlatform = Math.min(...platforms.map(p => p.y));
+  if (highestPlatform > 100) { // Если самая высокая платформа ниже 100px от верха
+    platforms.push(createPlatform(highestPlatform - 120));
   }
 }
 
 /* ======================
-   CONTROLS
+   ПРЫЖОК
 ====================== */
-export function handleJump(player, platforms, dashMode = false) {
+export function handleJump(player) {
   if (!player.alive) return;
   
-  if (dashMode && player.dashCharges > 0 && player.dashCooldown <= 0) {
-    // Дэш в сторону
-    player.velocityX = 15 * player.direction;
-    player.velocityY = -3;
-    player.dashCharges--;
-    player.dashCooldown = 1.0;
-    player.invincible = 0.3;
-    return;
+  if (player.onWall) {
+    // Прыжок от стены
+    player.velocityX = WALL_JUMP_FORCE_X * -player.wallSide;
+    player.velocityY = WALL_JUMP_FORCE_Y;
+    player.onWall = false;
+    player.wallSide = 0;
+  } else if (Math.abs(player.velocityY) < 3) {
+    // Обычный прыжок с платформы
+    player.velocityY = -JUMP_FORCE;
+    // Немного случайного смещения в сторону
+    player.velocityX = (Math.random() - 0.5) * 4;
   }
   
-  // Обычный прыжок от стены
-  player.direction *= -1;
-  player.velocityX = 4 * player.direction;
-  player.velocityY = JUMP_FORCE * 0.8;
-  
-  // Перезарядка дэша при касании стены
-  if (player.x <= 2 || player.x + player.width >= GAME_WIDTH - 2) {
-    player.dashCharges = Math.min(2, player.dashCharges + 1);
-  }
+  player.isJumping = true;
+  setTimeout(() => {
+    player.isJumping = false;
+  }, 200);
 }
 
 /* ======================
-   PARTICLES
+   ЧАСТИЦЫ
 ====================== */
-export function createParticles(x, y, color, count = 5) {
+export function createParticles(x, y, color, count = 6) {
   const particles = [];
   for (let i = 0; i < count; i++) {
     particles.push({
       x,
       y,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8 - 2,
       life: 1,
+      size: 2 + Math.random() * 4,
       color
     });
   }
   return particles;
 }
 
-export function updateParticles(particles, deltaTime) {
+export function updateParticles(particles) {
   for (let i = particles.length - 1; i >= 0; i--) {
     particles[i].x += particles[i].vx;
     particles[i].y += particles[i].vy;
-    particles[i].vy += 0.1;
-    particles[i].life -= 0.02;
+    particles[i].vy += 0.2;
+    particles[i].life -= 0.03;
     
     if (particles[i].life <= 0) {
       particles.splice(i, 1);

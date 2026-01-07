@@ -1,77 +1,228 @@
-.tg-help {
-  background: var(--tg-theme-bg-color, #fff);
+/* ===============================
+   TELEGRAM THEME VARIABLES
+=============================== */
+:root {
+  --bg: var(--tg-theme-bg-color, #ffffff);
+  --secondary-bg: var(--tg-theme-secondary-bg-color, #f2f2f7);
+  --text: var(--tg-theme-text-color, #000000);
+  --hint: var(--tg-theme-hint-color, #8e8e93);
+  --button: var(--tg-theme-button-color, #3390ec);
+  --button-text: var(--tg-theme-button-text-color, #ffffff);
+  --border: rgba(0, 0, 0, 0.08);
+}
+
+/* ===============================
+   BASE
+=============================== */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, system-ui, sans-serif;
+}
+
+/* ===============================
+   MAIN CONTAINER
+=============================== */
+.telegram-help {
   min-height: 100vh;
-  font-family: system-ui;
+  background: var(--bg);
+  padding-bottom: 24px;
+  animation: fadeIn 0.25s ease;
 }
 
-.tg-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  font-weight: 600;
+/* ===============================
+   SEARCH
+=============================== */
+.tg-search-container {
+  padding: 12px 16px;
 }
 
-.tg-back {
+.tg-search-input {
+  width: 100%;
   border: none;
-  background: none;
-  font-size: 22px;
+  background: var(--secondary-bg);
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
 }
 
+.tg-search-input::placeholder {
+  color: var(--hint);
+}
+
+/* ===============================
+   CATEGORIES
+=============================== */
+.tg-categories {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  margin-bottom: 14px;
+}
+
+.tg-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--secondary-bg);
+  border: none;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.tg-chip.active {
+  background: var(--button);
+  color: var(--button-text);
+}
+
+/* ===============================
+   GAME BOX
+=============================== */
+.tg-box {
+  margin: 0 16px 16px;
+  padding: 16px;
+  background: var(--secondary-bg);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s;
+}
+
+.tg-box:active {
+  transform: scale(0.97);
+}
+
+.tg-box-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.tg-box-subtitle {
+  font-size: 14px;
+  color: var(--hint);
+}
+
+/* ===============================
+   SECTION
+=============================== */
 .tg-section {
-  margin: 12px;
-  background: var(--tg-theme-secondary-bg-color, #f4f4f5);
+  margin: 0 16px 14px;
+  background: var(--secondary-bg);
   border-radius: 16px;
   overflow: hidden;
 }
 
 .tg-section-header {
   padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   justify-content: space-between;
-  cursor: pointer;
+  align-items: center;
 }
 
+/* ===============================
+   LIST
+=============================== */
 .tg-list {
-  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
 }
 
-.tg-item {
-  border-top: 1px solid rgba(0,0,0,.08);
+.tg-list-item {
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.tg-item-title {
-  padding: 14px 0;
+.tg-list-item:last-child {
+  border-bottom: none;
+}
+
+.tg-list-title {
+  padding: 16px 0;
+  font-size: 15px;
+  font-weight: 500;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   cursor: pointer;
 }
 
-.tg-item-body {
-  padding-bottom: 12px;
-  color: #8e8e93;
-}
-
-/* animations */
-.fade-in {
-  animation: fade .25s ease-out;
-}
-
-.slide-down {
-  animation: slide .25s ease-out;
+.tg-list-title span {
+  font-size: 14px;
+  color: var(--hint);
+  transition: transform 0.2s;
 }
 
 .rotated {
   transform: rotate(180deg);
-  transition: .2s;
 }
 
-@keyframes fade {
-  from { opacity: 0 }
-  to { opacity: 1 }
+/* ===============================
+   LIST CONTENT
+=============================== */
+.tg-list-content {
+  padding-bottom: 16px;
+  font-size: 14px;
+  color: var(--hint);
+  line-height: 1.5;
+  animation: fadeIn 0.2s ease;
 }
 
-@keyframes slide {
-  from { transform: translateY(-6px); opacity: 0 }
-  to { transform: translateY(0); opacity: 1 }
+/* ===============================
+   RULES
+=============================== */
+.tg-rule {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tg-rule:last-child {
+  border-bottom: none;
+}
+
+.tg-rule-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tg-rule-content {
+  font-size: 14px;
+  color: var(--hint);
+  line-height: 1.5;
+}
+
+/* ===============================
+   DARK THEME FIX
+=============================== */
+[data-theme='dark'] {
+  --border: rgba(255, 255, 255, 0.12);
+}
+
+/* ===============================
+   ANIMATIONS
+=============================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

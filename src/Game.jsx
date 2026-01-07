@@ -9,7 +9,7 @@ import {
 } from './gameLogic';
 import './WallKickersGame.css';
 
-export default function WallKickersGame() {
+export default function Game() {
   const canvasRef = useRef(null);
   const [player, setPlayer] = useState(createPlayer());
   const [platforms, setPlatforms] = useState(generatePlatforms());

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Profile.css';
-import './Wallet.css'; // Импортируем стили баланса
+import './Wallet.css';
 import ReferralSystem from './ReferralSystem';
 
 const API_BASE_URL = 'https://tethrab.shop';
@@ -19,7 +19,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [referralData, setReferralData] = useState(null);
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState('balance'); // По умолчанию баланс
     const [transactions, setTransactions] = useState([]);
 
     // Получаем ID пользователя
@@ -232,7 +232,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Информация профиля */}
+            {/* Информация профиля (всегда отображается) */}
             <div className="profile-card">
                 <div className="profile-avatar">
                     {userData?.photoUrl ? (
@@ -264,7 +264,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Баланс пользователя */}
+            {/* Баланс пользователя (всегда отображается) */}
             {balanceData && (
                 <div className="balance-card">
                     <div className="balance-header">
@@ -337,21 +337,12 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             )}
 
-            {/* Вкладки */}
+            {/* Вкладки - только 2 */}
             <div className="profile-tabs">
-                <button 
-                    className={`profile-tab ${activeTab === 'profile' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('profile')}
-                    aria-label="Профиль"
-                >
-                    <span className="profile-tab-icon">👤</span>
-                    <span className="profile-tab-text">Профиль</span>
-                </button>
-                
                 <button 
                     className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('balance')}
-                    aria-label="История"
+                    aria-label="Баланс"
                 >
                     <span className="profile-tab-icon">💰</span>
                     <span className="profile-tab-text">Баланс</span>
@@ -374,45 +365,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
             {/* Контент вкладок */}
             <div className="profile-content">
-                {activeTab === 'profile' ? (
-                    <>
-                        {/* Краткая реферальная информация */}
-                        {referralData && (
-                            <div className="referral-quick">
-                                <div className="referral-quick-header">
-                                    <div className="referral-quick-icon">👥</div>
-                                    <div className="referral-quick-info">
-                                        <h3>Реферальная система</h3>
-                                        <p>1% комиссия с каждой сделки реферала</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="referral-quick-stats">
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{referralData.stats.total_referrals}</div>
-                                        <div className="stat-label">Рефералов</div>
-                                    </div>
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{formatUSD(referralData.stats.total_earnings)}</div>
-                                        <div className="stat-label">Заработано</div>
-                                    </div>
-                                    <div className="referral-quick-stat">
-                                        <div className="stat-value">{formatUSD(referralData.stats.available_earnings)}</div>
-                                        <div className="stat-label">Доступно</div>
-                                    </div>
-                                </div>
-                                
-                                <button
-                                    className="show-referrals-button"
-                                    onClick={() => setActiveTab('referrals')}
-                                    aria-label="Перейти к рефералам"
-                                >
-                                    Перейти к рефералам
-                                </button>
-                            </div>
-                        )}
-                    </>
-                ) : activeTab === 'balance' ? (
+                {activeTab === 'balance' ? (
                     /* История транзакций */
                     <div className="transactions-history">
                         <div className="history-header">
@@ -473,10 +426,10 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         )}
                     </div>
                 ) : (
-                    /* Полная реферальная система */
+                    /* Реферальная система */
                     <ReferralSystem 
                         referralData={referralData}
-                        onClose={() => setActiveTab('profile')}
+                        onClose={() => setActiveTab('balance')}
                         showMessage={showMessage}
                     />
                 )}

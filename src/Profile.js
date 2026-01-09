@@ -11,24 +11,6 @@ const HelpSVG = () => (
     </svg>
 );
 
-const DepositSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 6 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7.5H11V13L16.25 16.15L17 14.92L12.5 12.25V7.5Z" fill="currentColor"/>
-    </svg>
-);
-
-const WithdrawSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 6 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM15.5 11.5H13V7H11V11.5H8.5L12 15.5L15.5 11.5Z" fill="currentColor"/>
-    </svg>
-);
-
-const RefreshSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="currentColor"/>
-    </svg>
-);
-
 const HistorySVG = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M11.99 2C6.47 2 2 6.48 2 12C2 17.52 6.47 22 11.99 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 11.99 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z" fill="currentColor"/>
@@ -45,7 +27,6 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     const [userData, setUserData] = useState(null);
     const [balanceData, setBalanceData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [referralData, setReferralData] = useState(null);
     const [activeTab, setActiveTab] = useState('balance');
@@ -75,7 +56,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             }
 
         } catch (error) {
-            console.error('Ошибка получения ID:', error);
+            console.error('❌ Ошибка получения ID:', error);
         }
 
         return '7879866656';
@@ -110,14 +91,29 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 if (balanceResult.success) {
                     setBalanceData(balanceResult.data);
                 } else {
-                    // Тестовые данные если API не работает
-                    useTestBalanceData(userId);
+                    // Тестовые данные
+                    setBalanceData({
+                        available: 150.50,
+                        escrow: 45.25,
+                        total: 195.75,
+                        currency: "USD",
+                        totalDeposited: 300.00,
+                        totalWithdrawn: 104.25
+                    });
                 }
             } else {
-                useTestBalanceData(userId);
+                // Тестовые данные
+                setBalanceData({
+                    available: 150.50,
+                    escrow: 45.25,
+                    total: 195.75,
+                    currency: "USD",
+                    totalDeposited: 300.00,
+                    totalWithdrawn: 104.25
+                });
             }
 
-            // Загружаем транзакции
+            // Загружаем последние транзакции
             const txResponse = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userId}?limit=5`);
             if (txResponse.ok) {
                 const txResult = await txResponse.json();
@@ -127,56 +123,27 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             }
 
         } catch (error) {
-            console.error('Ошибка загрузки баланса:', error);
-            useTestBalanceData(userId);
+            console.error('❌ Ошибка загрузки баланса:', error);
+            // Тестовые данные при ошибке
+            setBalanceData({
+                available: 150.50,
+                escrow: 45.25,
+                total: 195.75,
+                currency: "USD",
+                totalDeposited: 300.00,
+                totalWithdrawn: 104.25
+            });
         }
     };
 
-    // Тестовые данные
-    const useTestBalanceData = (userId) => {
-        const testBalance = {
-            available: 150.50,
-            escrow: 45.25,
-            total: 195.75,
-            currency: "USD",
-            totalDeposited: 300.00,
-            totalWithdrawn: 104.25
-        };
-        
-        setBalanceData(testBalance);
-        
-        const testTransactions = [
-            {
-                _id: "1",
-                type: "deposit",
-                amount: 100,
-                status: "completed",
-                description: "Пополнение через USDT",
-                createdAt: new Date(Date.now() - 86400000 * 2),
-                metadata: { method: "crypto" }
-            },
-            {
-                _id: "2",
-                type: "referral_bonus",
-                amount: 25.50,
-                status: "completed",
-                description: "Реферальный бонус",
-                createdAt: new Date(Date.now() - 86400000),
-                metadata: { referralId: "ref_123" }
-            }
-        ];
-        
-        setTransactions(testTransactions);
-    };
-
-    // Загрузка всех данных
-    const loadUserData = async (showLoading = true) => {
+    // Загрузка всех данных пользователя
+    const loadUserData = async () => {
         const userId = getUserId();
         
         try {
-            if (showLoading) setIsLoading(true);
+            setIsLoading(true);
             
-            // Данные профиля
+            // 1. Загружаем данные профиля
             if (telegramUser && !userData) {
                 setUserData({
                     id: telegramUser.id,
@@ -186,10 +153,10 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 });
             }
 
-            // Баланс и транзакции
+            // 2. Загружаем баланс и транзакции
             await loadBalanceData();
 
-            // Реферальные данные
+            // 3. Загружаем реферальные данные
             try {
                 const referralResponse = await fetch(`${API_BASE_URL}/api/referrals/info/${userId}`);
                 if (referralResponse.ok) {
@@ -203,12 +170,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                     setReferralData(getDefaultReferralData(userId));
                 }
             } catch (referralError) {
+                console.error('Ошибка загрузки реферальных данных:', referralError);
                 setReferralData(getDefaultReferralData(userId));
             }
 
         } catch (error) {
-            console.error('Общая ошибка загрузки:', error);
+            console.error('❌ Общая ошибка загрузки:', error);
             
+            // Используем данные из Telegram или localStorage
             if (!userData) {
                 const savedUser = JSON.parse(localStorage.getItem('telegramUser') || localStorage.getItem('currentUser') || '{}');
                 setUserData({
@@ -221,16 +190,8 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             
             setReferralData(getDefaultReferralData(userId));
         } finally {
-            if (showLoading) setIsLoading(false);
-            setIsRefreshing(false);
+            setIsLoading(false);
         }
-    };
-
-    // Обновление баланса
-    const refreshBalance = async () => {
-        setIsRefreshing(true);
-        await loadBalanceData();
-        setTimeout(() => setIsRefreshing(false), 500);
     };
 
     // Данные по умолчанию для рефералов
@@ -264,6 +225,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     useEffect(() => {
         loadUserData();
         
+        // Обновляем каждые 30 секунд
         const interval = setInterval(loadUserData, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -281,24 +243,27 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
     return (
         <div className="profile-container">
-            {/* Хедер */}
-            <div className="profile-header">
+            {/* Хедер - цвет фона Telegram WebApp */}
+            <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-bg-color, #ffffff)' }}>
                 <div className="header-content">
                     <div className="header-left">
-                        <h1 className="profile-header-title">Профиль</h1>
+                        <h1 className="profile-header-title" style={{ color: 'var(--tg-theme-text-color, #000000)' }}>
+                            Профиль
+                        </h1>
                     </div>
                     <button
                         className="help-button"
                         onClick={() => navigateTo('help')}
                         title="Помощь"
                         aria-label="Помощь"
+                        style={{ color: 'var(--tg-theme-button-color, #3390ec)' }}
                     >
                         <HelpSVG />
                     </button>
                 </div>
             </div>
 
-            {/* Информация профиля */}
+            {/* Информация профиля - оставляем как было */}
             <div className="profile-card">
                 <div className="profile-avatar">
                     {userData?.photoUrl ? (
@@ -330,86 +295,26 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Карточка баланса */}
-            <div className="tg-card balance-section">
-                <div className="section-header">
-                    <div className="section-title">
-                        <span className="section-icon">💰</span>
-                        <span>Баланс</span>
-                    </div>
-                    <button 
-                        className={`refresh-button ${isRefreshing ? 'loading' : ''}`}
-                        onClick={refreshBalance}
-                        title="Обновить баланс"
-                        disabled={isRefreshing}
-                    >
-                        <RefreshSVG />
-                    </button>
-                </div>
-                
-                <div className="balance-main">
-                    <div className="balance-total">
-                        <span className="balance-amount">{formatUSD(balanceData?.total || 0)}</span>
-                        <span className="balance-currency">USD</span>
-                    </div>
-                    
-                    <div className="balance-details">
-                        <div className="balance-row">
-                            <span className="balance-label">Доступно:</span>
-                            <span className="balance-value positive">
-                                {formatUSD(balanceData?.available || 0)}
-                            </span>
-                        </div>
-                        <div className="balance-row">
-                            <span className="balance-label">В эскроу:</span>
-                            <span className="balance-value">
-                                {formatUSD(balanceData?.escrow || 0)}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="balance-actions">
-                    <button 
-                        className="tg-button primary deposit-button"
-                        onClick={() => navigateTo('deposit')}
-                    >
-                        <DepositSVG />
-                        <span>Пополнить</span>
-                    </button>
-                    <button 
-                        className="tg-button secondary withdraw-button"
-                        onClick={() => navigateTo('withdraw')}
-                        disabled={!balanceData || balanceData.available < 10}
-                        title={balanceData?.available < 10 ? "Минимум $10 для вывода" : ""}
-                    >
-                        <WithdrawSVG />
-                        <span>Вывести</span>
-                        {balanceData?.available < 10 && (
-                            <span className="min-badge">$10</span>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            {/* Вкладки */}
-            <div className="tg-tabs">
+            {/* Вкладки - только 2 */}
+            <div className="profile-tabs">
                 <button 
-                    className={`tg-tab ${activeTab === 'balance' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('balance')}
+                    aria-label="Баланс"
                 >
-                    <HistorySVG />
-                    <span>История</span>
+                    <span className="profile-tab-icon">💰</span>
+                    <span className="profile-tab-text">Баланс</span>
                 </button>
                 
                 <button 
-                    className={`tg-tab ${activeTab === 'referrals' ? 'active' : ''}`}
+                    className={`profile-tab ${activeTab === 'referrals' ? 'active' : ''}`}
                     onClick={() => setActiveTab('referrals')}
+                    aria-label="Рефералы"
                 >
-                    <ReferralSVG />
-                    <span>Рефералы</span>
+                    <span className="profile-tab-icon">👥</span>
+                    <span className="profile-tab-text">Рефералы</span>
                     {referralData?.stats.available_earnings > 0 && (
-                        <span className="tab-badge">
+                        <span className="profile-tab-badge">
                             {formatUSD(referralData.stats.available_earnings)}
                         </span>
                     )}
@@ -419,65 +324,106 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             {/* Контент вкладок */}
             <div className="profile-content">
                 {activeTab === 'balance' ? (
-                    <div className="transactions-section">
-                        <div className="section-header">
-                            <h3>История операций</h3>
-                            {transactions.length > 0 && (
+                    <div className="balance-tab">
+                        {/* Карточка с балансом */}
+                        <div className="balance-card">
+                            <div className="balance-main">
+                                <div className="balance-label">Ваш баланс</div>
+                                <div className="balance-amount">
+                                    {formatUSD(balanceData?.total || 0)}
+                                </div>
+                                <div className="balance-hint">USD</div>
+                            </div>
+                            
+                            <div className="balance-actions">
+                                <button 
+                                    className="deposit-button"
+                                    onClick={() => navigateTo('deposit')}
+                                    style={{
+                                        backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
+                                        color: 'var(--tg-theme-button-text-color, #ffffff)'
+                                    }}
+                                >
+                                    Пополнить
+                                </button>
+                                <button 
+                                    className="withdraw-button"
+                                    onClick={() => navigateTo('withdraw')}
+                                    disabled={balanceData?.available < 10}
+                                    title={balanceData?.available < 10 ? "Минимум $10 для вывода" : ""}
+                                >
+                                    Вывести
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Блок с историей */}
+                        <div className="history-section">
+                            <div className="history-header">
+                                <h3>
+                                    <HistorySVG />
+                                    <span>История операций</span>
+                                </h3>
                                 <button 
                                     className="view-all-button"
                                     onClick={() => navigateTo('transactions')}
                                 >
-                                    Все →
+                                    Все операции →
                                 </button>
+                            </div>
+                            
+                            {transactions.length === 0 ? (
+                                <div className="no-transactions">
+                                    <div className="no-transactions-icon">📭</div>
+                                    <p>Нет операций</p>
+                                    <button 
+                                        className="make-first-deposit"
+                                        onClick={() => navigateTo('deposit')}
+                                        style={{
+                                            backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
+                                            color: 'var(--tg-theme-button-text-color, #ffffff)'
+                                        }}
+                                    >
+                                        Сделать первый депозит
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="transactions-list">
+                                    {transactions.map((tx) => (
+                                        <div key={tx._id} className="transaction-item">
+                                            <div className="transaction-icon">
+                                                {getTransactionIcon(tx.type)}
+                                            </div>
+                                            
+                                            <div className="transaction-details">
+                                                <div className="transaction-info">
+                                                    <span className="transaction-type">
+                                                        {getTransactionTypeLabel(tx.type)}
+                                                    </span>
+                                                    <span className="transaction-date">
+                                                        {new Date(tx.createdAt).toLocaleDateString('ru-RU')}
+                                                    </span>
+                                                </div>
+                                                <div className="transaction-description">
+                                                    {tx.description || getDefaultDescription(tx.type)}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className={`transaction-amount ${getAmountClass(tx.type)}`}>
+                                                {getAmountPrefix(tx.type)}{formatUSD(tx.amount)}
+                                            </div>
+                                            
+                                            <div className={`transaction-status ${tx.status}`}>
+                                                {getStatusLabel(tx.status)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
-                        
-                        {transactions.length === 0 ? (
-                            <div className="empty-state">
-                                <div className="empty-icon">📭</div>
-                                <p>Нет операций</p>
-                                <button 
-                                    className="tg-button primary"
-                                    onClick={() => navigateTo('deposit')}
-                                >
-                                    Сделать первый депозит
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="transactions-list">
-                                {transactions.map((tx) => (
-                                    <div key={tx._id} className="transaction-item">
-                                        <div className="transaction-icon">
-                                            {getTransactionIcon(tx.type)}
-                                        </div>
-                                        
-                                        <div className="transaction-info">
-                                            <div className="transaction-header">
-                                                <span className="transaction-type">
-                                                    {getTransactionTypeLabel(tx.type)}
-                                                </span>
-                                                <span className="transaction-date">
-                                                    {new Date(tx.createdAt).toLocaleDateString('ru-RU')}
-                                                </span>
-                                            </div>
-                                            <p className="transaction-description">
-                                                {tx.description || getDefaultDescription(tx.type)}
-                                            </p>
-                                        </div>
-                                        
-                                        <div className={`transaction-amount ${getAmountClass(tx.type)}`}>
-                                            {getAmountPrefix(tx.type)}{formatUSD(tx.amount)}
-                                        </div>
-                                        
-                                        <div className={`transaction-status ${tx.status}`}>
-                                            {getStatusLabel(tx.status)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 ) : (
+                    /* Реферальная система */
                     <ReferralSystem 
                         referralData={referralData}
                         onClose={() => setActiveTab('balance')}
@@ -488,7 +434,11 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
             {/* Toast сообщения */}
             {(!showToast && message.text) && (
-                <div className={`tg-toast ${message.type}`}>
+                <div className={`message-toast message-${message.type}`}>
+                    <span className="toast-icon">
+                        {message.type === 'success' ? '✅' :
+                         message.type === 'error' ? '❌' : 'ℹ️'}
+                    </span>
                     <span className="toast-text">{message.text}</span>
                 </div>
             )}
@@ -522,7 +472,7 @@ function getTransactionTypeLabel(type) {
         referral_bonus: 'Реферальный бонус',
         commission: 'Комиссия',
         bonus: 'Бонус',
-        fee: 'Комиссия'
+        fee: 'Комиссия платформы'
     };
     return labels[type] || type;
 }
@@ -531,11 +481,11 @@ function getDefaultDescription(type) {
     const descriptions = {
         deposit: 'Пополнение баланса',
         withdrawal: 'Вывод средств',
-        referral_bonus: 'Реферальный бонус',
+        referral_bonus: 'Бонус за реферала',
         commission: 'Комиссия по сделке',
-        bonus: 'Бонус'
+        bonus: 'Бонус от платформы'
     };
-    return descriptions[type] || 'Операция';
+    return descriptions[type] || 'Транзакция';
 }
 
 function getAmountClass(type) {
@@ -550,10 +500,10 @@ function getAmountPrefix(type) {
 
 function getStatusLabel(status) {
     const labels = {
-        pending: '⏳',
-        completed: '✅',
-        failed: '❌',
-        cancelled: '🚫'
+        pending: '⏳ В обработке',
+        completed: '✅ Завершено',
+        failed: '❌ Ошибка',
+        cancelled: '🚫 Отменено'
     };
     return labels[status] || status;
 }

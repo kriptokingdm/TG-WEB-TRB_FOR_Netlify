@@ -1,87 +1,62 @@
-/* Profile.css - Telegram WebApp стиль */
+/* Profile.css - Исправленные цвета для Telegram WebApp */
 
-/* Telegram цветовые переменные */
 :root {
-    /* Основные цвета Telegram */
-    --tg-color-bg: var(--tg-theme-bg-color, #ffffff);
-    --tg-color-text: var(--tg-theme-text-color, #000000);
-    --tg-color-hint: var(--tg-theme-hint-color, #999999);
-    --tg-color-button: var(--tg-theme-button-color, #3390ec);
-    --tg-color-button-text: var(--tg-theme-button-text-color, #ffffff);
-    --tg-color-secondary-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    --tg-color-section-bg: var(--tg-theme-section-bg-color, #f9f9f9);
+    /* Telegram theme colors - будут установлены через JS */
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #000000;
+    --tg-theme-hint-color: #8e8e93;
+    --tg-theme-button-color: #3390ec;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-secondary-bg-color: #f1f1f1;
+    --tg-theme-section-bg-color: #e7e8ec;
     
-    /* Дополнительные цвета */
-    --tg-color-success: #34c759;
-    --tg-color-error: #ff3b30;
-    --tg-color-warning: #ff9500;
-    --tg-color-link: #007aff;
-    
-    /* Градиенты */
-    --tg-gradient-primary: linear-gradient(135deg, #3390ec 0%, #2d84e3 100%);
-    --tg-gradient-success: linear-gradient(135deg, #34c759 0%, #30b850 100%);
-    --tg-gradient-warning: linear-gradient(135deg, #ff9500 0%, #f08c00 100%);
-    
-    /* Тени */
-    --tg-shadow-small: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --tg-shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --tg-shadow-large: 0 8px 24px rgba(0, 0, 0, 0.12);
-    
-    /* Скругления */
-    --tg-radius-small: 8px;
-    --tg-radius-medium: 12px;
-    --tg-radius-large: 16px;
-    --tg-radius-circle: 50%;
-    
-    /* Отступы */
-    --tg-spacing-xs: 4px;
-    --tg-spacing-sm: 8px;
-    --tg-spacing-md: 12px;
-    --tg-spacing-lg: 16px;
-    --tg-spacing-xl: 20px;
-    --tg-spacing-xxl: 24px;
-    
-    /* Шрифты */
-    --tg-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-    --tg-font-size-xs: 13px;
-    --tg-font-size-sm: 15px;
-    --tg-font-size-md: 17px;
-    --tg-font-size-lg: 22px;
-    --tg-font-size-xl: 28px;
+    /* Дополнительные переменные */
+    --tg-success-color: #34c759;
+    --tg-error-color: #ff3b30;
+    --tg-warning-color: #ff9500;
+    --tg-info-color: #5856d6;
+    --tg-card-bg: #ffffff;
+    --tg-input-bg: #f2f2f7;
+    --tg-border-color: #e5e5ea;
 }
 
 /* Темная тема */
 [data-theme="dark"] {
-    --tg-color-bg: var(--tg-theme-bg-color, #0f0f0f);
-    --tg-color-text: var(--tg-theme-text-color, #ffffff);
-    --tg-color-hint: var(--tg-theme-hint-color, #8e8e93);
-    --tg-color-button: var(--tg-theme-button-color, #3390ec);
-    --tg-color-button-text: var(--tg-theme-button-text-color, #ffffff);
-    --tg-color-secondary-bg: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    --tg-color-section-bg: var(--tg-theme-section-bg-color, #2c2c2e);
+    --tg-theme-bg-color: #0f0f0f;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #8e8e93;
+    --tg-theme-button-color: #3390ec;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-secondary-bg-color: #1c1c1e;
+    --tg-theme-section-bg-color: #2c2c2e;
+    
+    --tg-card-bg: #1c1c1e;
+    --tg-input-bg: #2c2c2e;
+    --tg-border-color: #3c3c3e;
 }
 
-/* Базовые стили */
+/* Основные стили */
 .profile-container {
     min-height: 100vh;
-    background: var(--tg-color-bg);
-    color: var(--tg-color-text);
-    font-family: var(--tg-font-family);
-    font-size: var(--tg-font-size-sm);
-    line-height: 1.4;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     padding-bottom: 80px;
 }
 
-/* Хедер в стиле Telegram */
+/* Хедер - фон как у Telegram WebApp */
 .profile-header {
-    padding: 60px var(--tg-spacing-lg) var(--tg-spacing-xl);
-    background: var(--tg-color-bg);
-    position: relative;
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+    background: var(--tg-theme-bg-color);
+    padding: 60px 16px 20px;
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
-[data-theme="dark"] .profile-header {
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+.profile-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
+    margin: 0;
+    letter-spacing: -0.4px;
 }
 
 .header-content {
@@ -94,16 +69,9 @@
     flex: 1;
 }
 
-.profile-header-title {
-    font-size: var(--tg-font-size-lg);
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.4px;
-}
-
 /* Кнопка помощи */
 .help-button {
-    background: none;
+    background: transparent;
     border: none;
     width: 40px;
     height: 40px;
@@ -111,14 +79,13 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--tg-color-button);
-    border-radius: var(--tg-radius-circle);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0;
+    color: var(--tg-theme-button-color);
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .help-button:hover {
-    background: rgba(var(--tg-color-button-rgb, 51, 144, 236), 0.1);
+    background: rgba(var(--tg-theme-button-color-rgb, 51, 144, 236), 0.1);
 }
 
 .help-button:active {
@@ -132,370 +99,141 @@
 
 /* Карточка профиля */
 .profile-card {
-    background: var(--tg-color-bg);
-    padding: var(--tg-spacing-xl) var(--tg-spacing-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--tg-spacing-lg);
+    background: var(--tg-theme-bg-color);
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
 .profile-avatar {
-    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
 }
 
 .avatar-image {
-    width: 70px;
-    height: 70px;
-    border-radius: var(--tg-radius-circle);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--tg-color-button);
-    background: var(--tg-color-secondary-bg);
+    border: 3px solid var(--tg-theme-button-color);
 }
 
 .avatar-placeholder {
-    width: 70px;
-    height: 70px;
-    border-radius: var(--tg-radius-circle);
-    background: var(--tg-gradient-primary);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--tg-theme-button-color) 0%, #3a9aff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--tg-color-button-text);
-    border: 2px solid var(--tg-color-button);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--tg-theme-button-text-color);
+    border: 3px solid var(--tg-theme-button-color);
 }
 
 .profile-info {
-    flex: 1;
-    min-width: 0;
+    text-align: center;
 }
 
 .profile-name {
-    font-size: var(--tg-font-size-md);
-    font-weight: 600;
-    margin: 0 0 var(--tg-spacing-xs) 0;
-    color: var(--tg-color-text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
+    margin: 0 0 4px 0;
 }
 
 .profile-username {
-    font-size: var(--tg-font-size-sm);
-    color: var(--tg-color-hint);
-    margin: 0 0 var(--tg-spacing-md) 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin: 0 0 16px 0;
+    font-weight: 400;
 }
 
+/* ID пользователя */
 .profile-id {
     display: flex;
+    justify-content: center;
 }
 
 .id-button {
-    background: var(--tg-color-secondary-bg);
-    border: none;
-    border-radius: var(--tg-radius-medium);
-    padding: var(--tg-spacing-sm) var(--tg-spacing-md);
-    font-size: var(--tg-font-size-xs);
-    font-family: 'SF Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    color: var(--tg-color-text);
+    background: var(--tg-theme-secondary-bg-color);
+    border: 1px solid var(--tg-border-color);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    color: var(--tg-theme-text-color);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    gap: var(--tg-spacing-xs);
-    max-width: 100%;
-    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
 .id-button:hover {
-    background: rgba(var(--tg-color-text-rgb, 0, 0, 0), 0.05);
+    background: var(--tg-input-bg);
 }
 
 .id-button:active {
     transform: scale(0.98);
 }
 
-/* Telegram карточки */
-.tg-card {
-    background: var(--tg-color-bg);
-    border-radius: var(--tg-radius-large);
-    margin: 0 var(--tg-spacing-lg) var(--tg-spacing-lg);
-    overflow: hidden;
-    border: 0.5px solid rgba(0, 0, 0, 0.08);
-    box-shadow: var(--tg-shadow-small);
-}
-
-[data-theme="dark"] .tg-card {
-    border: 0.5px solid rgba(255, 255, 255, 0.08);
-    box-shadow: var(--tg-shadow-medium);
-}
-
-/* Секция баланса */
-.balance-section {
-    padding: var(--tg-spacing-xl);
-}
-
-.section-header {
+/* Вкладки */
+.profile-tabs {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--tg-spacing-xl);
+    background: var(--tg-theme-bg-color);
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--tg-spacing-md);
-    font-size: var(--tg-font-size-md);
-    font-weight: 600;
-    color: var(--tg-color-text);
-}
-
-.section-icon {
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: rgba(var(--tg-color-button-rgb, 51, 144, 236), 0.1);
-    border-radius: var(--tg-radius-medium);
-    color: var(--tg-color-button);
-}
-
-.refresh-button {
-    background: var(--tg-color-secondary-bg);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--tg-radius-circle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--tg-color-text);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0;
-}
-
-.refresh-button:hover {
-    background: rgba(var(--tg-color-text-rgb, 0, 0, 0), 0.05);
-}
-
-.refresh-button.loading {
-    animation: rotate 1s linear infinite;
-}
-
-.refresh-button svg {
-    width: 20px;
-    height: 20px;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Основной баланс */
-.balance-main {
-    text-align: center;
-    margin-bottom: var(--tg-spacing-xl);
-}
-
-.balance-total {
-    margin-bottom: var(--tg-spacing-lg);
-}
-
-.balance-amount {
-    font-size: var(--tg-font-size-xl);
-    font-weight: 700;
-    color: var(--tg-color-text);
-    display: block;
-    line-height: 1.2;
-}
-
-.balance-currency {
-    font-size: var(--tg-font-size-md);
-    color: var(--tg-color-hint);
-    font-weight: 500;
-}
-
-/* Детали баланса */
-.balance-details {
-    background: var(--tg-color-secondary-bg);
-    border-radius: var(--tg-radius-medium);
-    padding: var(--tg-spacing-md);
-}
-
-.balance-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--tg-spacing-sm) 0;
-}
-
-.balance-row:not(:last-child) {
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .balance-row:not(:last-child) {
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
-}
-
-.balance-label {
-    font-size: var(--tg-font-size-sm);
-    color: var(--tg-color-hint);
-}
-
-.balance-value {
-    font-size: var(--tg-font-size-sm);
-    font-weight: 600;
-    color: var(--tg-color-text);
-}
-
-.balance-value.positive {
-    color: var(--tg-color-success);
-}
-
-/* Кнопки баланса */
-.balance-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--tg-spacing-md);
-    margin-top: var(--tg-spacing-xl);
-}
-
-.tg-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--tg-spacing-sm);
-    padding: var(--tg-spacing-lg);
-    border: none;
-    border-radius: var(--tg-radius-medium);
-    font-size: var(--tg-font-size-sm);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    position: relative;
-}
-
-.tg-button.primary {
-    background: var(--tg-gradient-primary);
-    color: var(--tg-color-button-text);
-}
-
-.tg-button.primary:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-    box-shadow: var(--tg-shadow-medium);
-}
-
-.tg-button.primary:active {
-    transform: translateY(0);
-}
-
-.tg-button.secondary {
-    background: var(--tg-color-secondary-bg);
-    color: var(--tg-color-text);
-}
-
-.tg-button.secondary:hover {
-    background: rgba(var(--tg-color-text-rgb, 0, 0, 0), 0.05);
-}
-
-.tg-button.secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.tg-button svg {
-    width: 20px;
-    height: 20px;
-}
-
-.min-badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: var(--tg-color-warning);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 10px;
-    min-width: 24px;
-    text-align: center;
-    border: 2px solid var(--tg-color-bg);
-}
-
-/* Вкладки в стиле Telegram */
-.tg-tabs {
-    display: flex;
-    background: var(--tg-color-bg);
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
-    padding: 0 var(--tg-spacing-lg);
-    margin-bottom: var(--tg-spacing-lg);
-}
-
-[data-theme="dark"] .tg-tabs {
-    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-}
-
-.tg-tab {
+.profile-tab {
     flex: 1;
+    background: none;
+    border: none;
+    padding: 16px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--tg-spacing-md) var(--tg-spacing-sm);
-    background: none;
-    border: none;
-    color: var(--tg-color-hint);
-    font-size: var(--tg-font-size-xs);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--tg-theme-hint-color);
     position: relative;
-    gap: var(--tg-spacing-xs);
+    gap: 6px;
+    transition: color 0.2s ease;
 }
 
-.tg-tab:hover {
-    color: var(--tg-color-text);
+.profile-tab.active {
+    color: var(--tg-theme-button-color);
 }
 
-.tg-tab.active {
-    color: var(--tg-color-button);
-}
-
-.tg-tab.active::after {
+.profile-tab.active::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--tg-color-button);
-    border-radius: 3px 3px 0 0;
+    background: var(--tg-theme-button-color);
 }
 
-.tg-tab svg {
-    width: 24px;
+.profile-tab-icon {
+    font-size: 20px;
     height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-tab-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
     color: currentColor;
 }
 
-.tab-badge {
+.profile-tab-badge {
     position: absolute;
     top: 8px;
     right: calc(50% - 40px);
-    background: var(--tg-gradient-success);
-    color: white;
+    background: linear-gradient(135deg, #34C759 0%, #32D74B 100%);
+    color: var(--tg-theme-button-text-color);
     font-size: 11px;
     font-weight: 600;
     padding: 2px 6px;
@@ -503,126 +241,244 @@
     min-width: 40px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
-    border: 2px solid var(--tg-color-bg);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Контент вкладок */
 .profile-content {
-    padding: 0 var(--tg-spacing-lg);
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
 }
 
-/* Секция транзакций */
-.transactions-section {
-    background: var(--tg-color-bg);
+/* Вкладка баланса */
+.balance-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.transactions-section .section-header {
-    margin-bottom: var(--tg-spacing-lg);
+/* Карточка баланса */
+.balance-card {
+    background: var(--tg-card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    border: 1px solid var(--tg-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.transactions-section h3 {
-    font-size: var(--tg-font-size-md);
+.balance-main {
+    margin-bottom: 24px;
+}
+
+.balance-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.balance-amount {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.balance-hint {
+    font-size: 16px;
+    color: var(--tg-theme-hint-color);
+}
+
+.balance-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.deposit-button,
+.withdraw-button {
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.deposit-button {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.deposit-button:hover {
+    opacity: 0.9;
+}
+
+.deposit-button:active {
+    transform: scale(0.98);
+}
+
+.withdraw-button {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    border: 1px solid var(--tg-border-color);
+}
+
+.withdraw-button:hover {
+    background: var(--tg-input-bg);
+}
+
+.withdraw-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.withdraw-button:disabled:hover {
+    background: var(--tg-theme-secondary-bg-color);
+}
+
+/* Секция истории */
+.history-section {
+    background: var(--tg-card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--tg-border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.history-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
     margin: 0;
-    color: var(--tg-color-text);
+}
+
+.history-header svg {
+    width: 20px;
+    height: 20px;
+    color: var(--tg-theme-button-color);
 }
 
 .view-all-button {
     background: none;
     border: none;
-    color: var(--tg-color-button);
-    font-size: var(--tg-font-size-sm);
+    color: var(--tg-theme-button-color);
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    padding: var(--tg-spacing-xs) var(--tg-spacing-sm);
-    border-radius: var(--tg-radius-small);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
 .view-all-button:hover {
-    background: rgba(var(--tg-color-button-rgb, 51, 144, 236), 0.1);
+    background: rgba(var(--tg-theme-button-color-rgb, 51, 144, 236), 0.1);
 }
 
 /* Пустое состояние */
-.empty-state {
+.no-transactions {
     text-align: center;
-    padding: var(--tg-spacing-xxl) var(--tg-spacing-lg);
-    color: var(--tg-color-hint);
+    padding: 40px 20px;
+    color: var(--tg-theme-hint-color);
 }
 
-.empty-icon {
+.no-transactions-icon {
     font-size: 48px;
-    margin-bottom: var(--tg-spacing-lg);
+    margin-bottom: 16px;
     opacity: 0.5;
 }
 
-.empty-state p {
-    font-size: var(--tg-font-size-md);
-    margin-bottom: var(--tg-spacing-xl);
-    color: var(--tg-color-hint);
+.no-transactions p {
+    font-size: 16px;
+    margin-bottom: 20px;
 }
 
-.empty-state .tg-button {
-    width: 100%;
-    max-width: 240px;
-    margin: 0 auto;
+.make-first-deposit {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.make-first-deposit:hover {
+    opacity: 0.9;
+}
+
+.make-first-deposit:active {
+    transform: scale(0.98);
 }
 
 /* Список транзакций */
 .transactions-list {
     display: flex;
     flex-direction: column;
-    gap: var(--tg-spacing-sm);
+    gap: 12px;
 }
 
 .transaction-item {
-    background: var(--tg-color-bg);
-    border-radius: var(--tg-radius-medium);
-    padding: var(--tg-spacing-md);
     display: flex;
     align-items: center;
-    gap: var(--tg-spacing-md);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 0.5px solid rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .transaction-item {
-    border: 0.5px solid rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    gap: 16px;
+    transition: all 0.2s ease;
 }
 
 .transaction-item:hover {
-    background: var(--tg-color-secondary-bg);
+    background: var(--tg-input-bg);
 }
 
 .transaction-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(var(--tg-color-button-rgb, 51, 144, 236), 0.1);
-    border-radius: var(--tg-radius-medium);
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    background: rgba(51, 144, 236, 0.1);
+    border-radius: 12px;
     flex-shrink: 0;
-    color: var(--tg-color-button);
+    color: var(--tg-theme-button-color);
 }
 
-.transaction-info {
+.transaction-details {
     flex: 1;
     min-width: 0;
 }
 
-.transaction-header {
+.transaction-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--tg-spacing-xs);
+    margin-bottom: 4px;
 }
 
 .transaction-type {
-    font-size: var(--tg-font-size-sm);
+    font-size: 15px;
     font-weight: 600;
-    color: var(--tg-color-text);
+    color: var(--tg-theme-text-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -630,70 +486,121 @@
 }
 
 .transaction-date {
-    font-size: var(--tg-font-size-xs);
-    color: var(--tg-color-hint);
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
     flex-shrink: 0;
-    margin-left: var(--tg-spacing-sm);
+    margin-left: 8px;
 }
 
 .transaction-description {
-    font-size: var(--tg-font-size-xs);
-    color: var(--tg-color-hint);
-    margin: 0;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .transaction-amount {
-    font-size: var(--tg-font-size-sm);
+    font-size: 16px;
     font-weight: 600;
-    margin-left: var(--tg-spacing-sm);
+    margin-left: 8px;
     flex-shrink: 0;
     white-space: nowrap;
 }
 
 .transaction-amount.positive {
-    color: var(--tg-color-success);
+    color: var(--tg-success-color);
 }
 
 .transaction-amount.negative {
-    color: var(--tg-color-error);
+    color: var(--tg-error-color);
 }
 
 .transaction-status {
     font-size: 12px;
-    margin-left: var(--tg-spacing-sm);
-    flex-shrink: 0;
-    opacity: 0.8;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.transaction-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.transaction-status.completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.transaction-status.failed {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.transaction-status.cancelled {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+/* Загрузка */
+.profile-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 0 20px;
+    background: var(--tg-theme-bg-color);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--tg-border-color);
+    border-top-color: var(--tg-theme-button-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.profile-loading p {
+    font-size: 15px;
+    color: var(--tg-theme-hint-color);
+    font-weight: 500;
 }
 
 /* Toast сообщения */
-.tg-toast {
+.message-toast {
     position: fixed;
-    bottom: var(--tg-spacing-xl);
+    top: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--tg-color-section-bg);
+    background: var(--tg-card-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-radius: var(--tg-radius-large);
-    padding: var(--tg-spacing-md) var(--tg-spacing-lg);
-    max-width: 90%;
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    animation: slideUpToast 0.3s cubic-bezier(0.4, 0, 0.2, 1), fadeOut 0.3s ease 2.7s forwards;
-    border: 0.5px solid rgba(0, 0, 0, 0.1);
-    box-shadow: var(--tg-shadow-large);
+    animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    border: 1px solid var(--tg-border-color);
+    max-width: 90%;
 }
 
-[data-theme="dark"] .tg-toast {
-    border: 0.5px solid rgba(255, 255, 255, 0.1);
-}
-
-@keyframes slideUpToast {
+@keyframes slideDownToast {
     from {
         opacity: 0;
-        transform: translateX(-50%) translateY(20px);
+        transform: translateX(-50%) translateY(-10px);
     }
     to {
         opacity: 1;
@@ -708,49 +615,26 @@
     }
 }
 
-.tg-toast.success {
-    border-left: 4px solid var(--tg-color-success);
+.toast-icon {
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
-.tg-toast.error {
-    border-left: 4px solid var(--tg-color-error);
-}
-
-.tg-toast .toast-text {
-    font-size: var(--tg-font-size-sm);
+.toast-text {
+    font-size: 15px;
     font-weight: 500;
-    color: var(--tg-color-text);
-    text-align: center;
+    color: var(--tg-theme-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Загрузка */
-.profile-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: var(--tg-color-bg);
+.message-toast.message-success {
+    border-left: 4px solid var(--tg-success-color);
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(var(--tg-color-button-rgb, 51, 144, 236), 0.1);
-    border-top-color: var(--tg-color-button);
-    border-radius: var(--tg-radius-circle);
-    animation: spin 1s linear infinite;
-    margin-bottom: var(--tg-spacing-lg);
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.profile-loading p {
-    font-size: var(--tg-font-size-md);
-    color: var(--tg-color-hint);
-    font-weight: 500;
+.message-toast.message-error {
+    border-left: 4px solid var(--tg-error-color);
 }
 
 /* Адаптивность */
@@ -765,12 +649,16 @@
     
     .avatar-image,
     .avatar-placeholder {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
+    }
+    
+    .profile-name {
+        font-size: 18px;
     }
     
     .balance-amount {
-        font-size: 24px;
+        font-size: 36px;
     }
     
     .balance-actions {
@@ -780,22 +668,25 @@
 
 @media (max-width: 480px) {
     .profile-header {
-        padding: 45px var(--tg-spacing-md) var(--tg-spacing-lg);
+        padding: 45px 12px 16px;
     }
     
-    .tg-card,
     .profile-content {
-        margin-left: var(--tg-spacing-md);
-        margin-right: var(--tg-spacing-md);
+        padding: 12px;
     }
     
-    .balance-section {
-        padding: var(--tg-spacing-lg);
+    .balance-card,
+    .history-section {
+        padding: 16px;
+    }
+    
+    .balance-amount {
+        font-size: 32px;
     }
     
     .transaction-item {
         flex-wrap: wrap;
-        gap: var(--tg-spacing-sm);
+        gap: 12px;
     }
     
     .transaction-amount {
@@ -803,8 +694,31 @@
         width: 100%;
         text-align: right;
         margin-left: 0;
-        margin-top: var(--tg-spacing-xs);
+        margin-top: 8px;
     }
+}
+
+/* Для темной темы - специальные стили */
+[data-theme="dark"] .profile-header {
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+[data-theme="dark"] .balance-card,
+[data-theme="dark"] .history-section {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .help-button {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .help-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .message-toast {
+    background: var(--tg-card-bg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Safe area для iOS */
@@ -816,66 +730,4 @@
     .profile-container {
         padding-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
     }
-}
-
-/* Плавные переходы */
-* {
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Стили для скроллбара */
-.profile-content::-webkit-scrollbar {
-    width: 3px;
-}
-
-.profile-content::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.profile-content::-webkit-scrollbar-thumb {
-    background: rgba(var(--tg-color-text-rgb, 0, 0, 0), 0.1);
-    border-radius: 1.5px;
-}
-
-[data-theme="dark"] .profile-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.profile-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(var(--tg-color-text-rgb, 0, 0, 0), 0.2);
-}
-
-[data-theme="dark"] .profile-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* Поддержка Safari */
-@supports (-webkit-touch-callout: none) {
-    .tg-toast {
-        -webkit-backdrop-filter: blur(20px);
-        backdrop-filter: blur(20px);
-    }
-}
-
-/* Анимации появления */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.profile-card,
-.tg-card,
-.tg-tabs,
-.profile-content {
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -31,6 +31,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     const [referralData, setReferralData] = useState(null);
     const [activeTab, setActiveTab] = useState('balance');
     const [transactions, setTransactions] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Получаем ID пользователя
     const getUserId = () => {
@@ -39,6 +40,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 const tg = window.Telegram.WebApp;
                 const tgUser = tg.initDataUnsafe?.user;
                 if (tgUser?.id) {
+                    console.log('📱 Telegram ID найден:', tgUser.id);
                     return tgUser.id.toString();
                 }
             }
@@ -46,6 +48,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             const savedTelegramUser = localStorage.getItem('telegramUser');
             if (savedTelegramUser) {
                 const parsed = JSON.parse(savedTelegramUser);
+                console.log('📱 ID из localStorage:', parsed.id);
                 return parsed.id?.toString();
             }
 
@@ -59,6 +62,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             console.error('❌ Ошибка получения ID:', error);
         }
 
+        console.log('📱 Используем дефолтный ID: 7879866656');
         return '7879866656';
     };
 
@@ -82,63 +86,73 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     // Загрузка данных баланса
     const loadBalanceData = async () => {
         const userId = getUserId();
+        console.log('🔄 Загрузка баланса для ID:', userId);
         
         try {
-            // Загружаем баланс
+            // 1. Загружаем баланс с API
             const balanceResponse = await fetch(`${API_BASE_URL}/api/wallet/balance/${userId}`);
+            console.log('🌐 Ответ API баланса:', balanceResponse.status);
+            
             if (balanceResponse.ok) {
                 const balanceResult = await balanceResponse.json();
+                console.log('📊 Данные баланса:', balanceResult);
+                
                 if (balanceResult.success) {
+                    // Реальные данные с API
                     setBalanceData(balanceResult.data);
+                    console.log('✅ Реальный баланс загружен:', balanceResult.data.total);
                 } else {
-                    // Тестовые данные
-                    setBalanceData({
-                        available: 150.50,
-                        escrow: 45.25,
-                        total: 195.75,
-                        currency: "USD",
-                        totalDeposited: 300.00,
-                        totalWithdrawn: 104.25
-                    });
+                    // Если API вернул ошибку
+                    console.log('⚠️ API вернул ошибку');
+                    showMessage('warning', 'Баланс временно недоступен. Используются тестовые данные.');
+                    setBalanceData(getTestBalanceData());
                 }
             } else {
-                // Тестовые данные
-                setBalanceData({
-                    available: 150.50,
-                    escrow: 45.25,
-                    total: 195.75,
-                    currency: "USD",
-                    totalDeposited: 300.00,
-                    totalWithdrawn: 104.25
-                });
+                // Если HTTP ошибка
+                console.log('⚠️ Ошибка HTTP при загрузке баланса');
+                showMessage('error', 'Ошибка соединения с сервером');
+                setBalanceData(getTestBalanceData());
             }
 
-            // Загружаем последние транзакции
-            const txResponse = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userId}?limit=5`);
-            if (txResponse.ok) {
-                const txResult = await txResponse.json();
-                if (txResult.success) {
-                    setTransactions(txResult.data);
+            // 2. Загружаем последние транзакции
+            try {
+                const txResponse = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userId}?limit=5`);
+                if (txResponse.ok) {
+                    const txResult = await txResponse.json();
+                    console.log('📋 Данные транзакций:', txResult);
+                    
+                    if (txResult.success) {
+                        setTransactions(txResult.data);
+                    }
                 }
+            } catch (txError) {
+                console.error('Ошибка загрузки транзакций:', txError);
             }
 
         } catch (error) {
-            console.error('❌ Ошибка загрузки баланса:', error);
-            // Тестовые данные при ошибке
-            setBalanceData({
-                available: 150.50,
-                escrow: 45.25,
-                total: 195.75,
-                currency: "USD",
-                totalDeposited: 300.00,
-                totalWithdrawn: 104.25
-            });
+            console.error('❌ Общая ошибка загрузки баланса:', error);
+            // При ошибке показываем тестовые данные
+            showMessage('error', 'Ошибка загрузки баланса');
+            setBalanceData(getTestBalanceData());
         }
+    };
+
+    // Тестовые данные для демонстрации (если API не работает)
+    const getTestBalanceData = () => {
+        return {
+            available: 150.50,
+            escrow: 0,
+            total: 150.50,
+            currency: "USD",
+            totalDeposited: 200.00,
+            totalWithdrawn: 49.50
+        };
     };
 
     // Загрузка всех данных пользователя
     const loadUserData = async () => {
         const userId = getUserId();
+        console.log('🚀 Загрузка всех данных для ID:', userId);
         
         try {
             setIsLoading(true);
@@ -191,7 +205,19 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             setReferralData(getDefaultReferralData(userId));
         } finally {
             setIsLoading(false);
+            setIsRefreshing(false);
         }
+    };
+
+    // Обновление баланса
+    const refreshBalance = async () => {
+        console.log('🔄 Ручное обновление баланса');
+        setIsRefreshing(true);
+        await loadBalanceData();
+        setTimeout(() => {
+            setIsRefreshing(false);
+            showMessage('success', 'Баланс обновлен');
+        }, 1000);
     };
 
     // Данные по умолчанию для рефералов
@@ -226,16 +252,65 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         loadUserData();
         
         // Обновляем каждые 30 секунд
-        const interval = setInterval(loadUserData, 30000);
+        const interval = setInterval(loadBalanceData, 30000);
         return () => clearInterval(interval);
     }, []);
+
+    // Обработчик кнопки пополнения
+    const handleDeposit = () => {
+        const userId = getUserId();
+        console.log('📥 Пополнение баланса для:', userId);
+        
+        // Здесь будет логика открытия страницы пополнения
+        // Пока просто показываем сообщение
+        showMessage('info', 'Функция пополнения скоро будет доступна');
+        
+        // В будущем можно использовать navigateTo('deposit')
+        // navigateTo('deposit');
+    };
+
+    // Обработчик кнопки вывода
+    const handleWithdraw = () => {
+        const userId = getUserId();
+        console.log('📤 Вывод средств для:', userId);
+        
+        if (!balanceData || balanceData.available < 10) {
+            showMessage('warning', 'Минимальная сумма для вывода $10');
+            return;
+        }
+        
+        // Здесь будет логика открытия страницы вывода
+        showMessage('info', 'Функция вывода скоро будет доступна');
+        
+        // В будущем можно использовать navigateTo('withdraw')
+        // navigateTo('withdraw');
+    };
+
+    // Тестовая функция для проверки API
+    const testWalletAPI = async () => {
+        const userId = getUserId();
+        console.log('🧪 Тестирование Wallet API для:', userId);
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/wallet/test`);
+            const result = await response.json();
+            console.log('✅ API тест:', result);
+            
+            if (result.success) {
+                showMessage('success', 'Wallet API работает!');
+            }
+        } catch (error) {
+            console.error('❌ Ошибка теста API:', error);
+            showMessage('error', 'Wallet API недоступен');
+        }
+    };
 
     if (isLoading) {
         return (
             <div className="profile-container">
                 <div className="profile-loading">
                     <div className="loading-spinner"></div>
-                    <p>Загрузка...</p>
+                    <p>Загрузка профиля...</p>
                 </div>
             </div>
         );
@@ -243,7 +318,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
     return (
         <div className="profile-container">
-            {/* Хедер - цвет фона Telegram WebApp */}
+            {/* Хедер */}
             <div className="profile-header" style={{ backgroundColor: 'var(--tg-theme-bg-color, #ffffff)' }}>
                 <div className="header-content">
                     <div className="header-left">
@@ -263,7 +338,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Информация профиля - оставляем как было */}
+            {/* Информация профиля */}
             <div className="profile-card">
                 <div className="profile-avatar">
                     {userData?.photoUrl ? (
@@ -271,6 +346,10 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             src={userData.photoUrl} 
                             alt={userData.firstName}
                             className="avatar-image"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML = '<div class="avatar-placeholder">' + (userData?.firstName?.[0]?.toUpperCase() || 'U') + '</div>';
+                            }}
                         />
                     ) : (
                         <div className="avatar-placeholder">
@@ -295,7 +374,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 </div>
             </div>
 
-            {/* Вкладки - только 2 */}
+            {/* Вкладки */}
             <div className="profile-tabs">
                 <button 
                     className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
@@ -330,15 +409,24 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             <div className="balance-main">
                                 <div className="balance-label">Ваш баланс</div>
                                 <div className="balance-amount">
-                                    {formatUSD(balanceData?.total || 0)}
+                                    {balanceData ? formatUSD(balanceData.total) : '$0.00'}
                                 </div>
                                 <div className="balance-hint">USD</div>
+                                
+                                <button 
+                                    className="refresh-balance-btn"
+                                    onClick={refreshBalance}
+                                    disabled={isRefreshing}
+                                    title="Обновить баланс"
+                                >
+                                    {isRefreshing ? '⏳' : '🔄'}
+                                </button>
                             </div>
                             
                             <div className="balance-actions">
                                 <button 
                                     className="deposit-button"
-                                    onClick={() => navigateTo('deposit')}
+                                    onClick={handleDeposit}
                                     style={{
                                         backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
                                         color: 'var(--tg-theme-button-text-color, #ffffff)'
@@ -348,11 +436,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                                 </button>
                                 <button 
                                     className="withdraw-button"
-                                    onClick={() => navigateTo('withdraw')}
-                                    disabled={balanceData?.available < 10}
+                                    onClick={handleWithdraw}
+                                    disabled={!balanceData || balanceData.available < 10}
                                     title={balanceData?.available < 10 ? "Минимум $10 для вывода" : ""}
                                 >
                                     Вывести
+                                    {balanceData?.available < 10 && (
+                                        <span className="min-badge">$10</span>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -378,7 +469,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                                     <p>Нет операций</p>
                                     <button 
                                         className="make-first-deposit"
-                                        onClick={() => navigateTo('deposit')}
+                                        onClick={handleDeposit}
                                         style={{
                                             backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
                                             color: 'var(--tg-theme-button-text-color, #ffffff)'
@@ -431,6 +522,29 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                     />
                 )}
             </div>
+
+            {/* Кнопка тестирования API (только в разработке) */}
+            {process.env.NODE_ENV === 'development' && (
+                <button 
+                    onClick={testWalletAPI}
+                    style={{
+                        position: 'fixed',
+                        bottom: '100px',
+                        right: '16px',
+                        background: '#ff3b30',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '40px',
+                        height: '40px',
+                        fontSize: '12px',
+                        zIndex: 1000
+                    }}
+                    title="Тест API"
+                >
+                    🧪
+                </button>
+            )}
 
             {/* Toast сообщения */}
             {(!showToast && message.text) && (

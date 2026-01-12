@@ -114,6 +114,15 @@
 
 .swap-center-button:hover:not(:disabled) {
   transform: translate(-50%, -50%) scale(1.05) !important;
+  /* УБРАНО: box-shadow: none; */
+}
+.swap-center-button {
+  background: var(--tg-theme-button-color) !important;
+  /* УБРАНО: box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important; */
+}
+[data-theme="dark"] .swap-center-button {
+  background: var(--tg-theme-button-color);
+  /* УБРАНО: box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3); */
 }
 
 .swap-center-button:active:not(:disabled) {

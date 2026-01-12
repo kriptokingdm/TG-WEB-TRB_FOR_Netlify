@@ -107,7 +107,6 @@
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   /* Исправление для мобильных */
   -webkit-appearance: none;
   appearance: none;

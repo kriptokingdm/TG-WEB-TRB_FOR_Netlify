@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Profile.css';
 import ReferralSystem from './ReferralSystem';
+import USDTWallet from './USDTWallet'; // Импортируем USDT кошелек
 
 const API_BASE_URL = 'https://tethrab.shop';
 
@@ -23,13 +24,21 @@ const ReferralSVG = () => (
     </svg>
 );
 
+// Новая иконка для USDT
+const USDTSVG = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 1.75L5.75 5V11C5.75 16 12 22.25 12 22.25C12 22.25 18.25 16 18.25 11V5L12 1.75ZM12 3.25L16.75 6V11C16.75 14.5 13.33 18 12 19.5C10.67 18 7.25 14.5 7.25 11V6L12 3.25ZM13 11.5V13H15.5V15H13V16.5H11V15H8.5V13H11V11.5H8.5V9.5H11V8H13V9.5H15.5V11.5H13Z" fill="currentColor"/>
+    </svg>
+);
+
 function Profile({ navigateTo, telegramUser, showToast }) {
     const [userData, setUserData] = useState(null);
     const [balanceData, setBalanceData] = useState(null);
+    const [usdtBalanceData, setUsdtBalanceData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [referralData, setReferralData] = useState(null);
-    const [activeTab, setActiveTab] = useState('balance');
+    const [activeTab, setActiveTab] = useState('balance'); // 'balance', 'usdt', 'referrals'
     const [transactions, setTransactions] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -83,44 +92,35 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         showMessage('success', `✅ ${label} скопирован`);
     };
 
-    // Загрузка данных баланса
+    // Загрузка данных баланса USD
     const loadBalanceData = async () => {
         const userId = getUserId();
-        console.log('🔄 Загрузка баланса для ID:', userId);
+        console.log('🔄 Загрузка USD баланса для ID:', userId);
         
         try {
-            // 1. Загружаем баланс с API
             const balanceResponse = await fetch(`${API_BASE_URL}/api/wallet/balance/${userId}`);
-            console.log('🌐 Ответ API баланса:', balanceResponse.status);
+            console.log('🌐 Ответ API баланса USD:', balanceResponse.status);
             
             if (balanceResponse.ok) {
                 const balanceResult = await balanceResponse.json();
-                console.log('📊 Данные баланса:', balanceResult);
+                console.log('📊 Данные баланса USD:', balanceResult);
                 
                 if (balanceResult.success) {
-                    // Реальные данные с API
                     setBalanceData(balanceResult.data);
-                    console.log('✅ Реальный баланс загружен:', balanceResult.data.total);
                 } else {
-                    // Если API вернул ошибку
-                    console.log('⚠️ API вернул ошибку');
-                    showMessage('warning', 'Баланс временно недоступен. Используются тестовые данные.');
+                    showMessage('warning', 'Баланс USD временно недоступен');
                     setBalanceData(getTestBalanceData());
                 }
             } else {
-                // Если HTTP ошибка
-                console.log('⚠️ Ошибка HTTP при загрузке баланса');
-                showMessage('error', 'Ошибка соединения с сервером');
+                showMessage('error', 'Ошибка соединения с сервером USD');
                 setBalanceData(getTestBalanceData());
             }
 
-            // 2. Загружаем последние транзакции
+            // Загружаем последние транзакции
             try {
                 const txResponse = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userId}?limit=5`);
                 if (txResponse.ok) {
                     const txResult = await txResponse.json();
-                    console.log('📋 Данные транзакций:', txResult);
-                    
                     if (txResult.success) {
                         setTransactions(txResult.data);
                     }
@@ -130,14 +130,32 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             }
 
         } catch (error) {
-            console.error('❌ Общая ошибка загрузки баланса:', error);
-            // При ошибке показываем тестовые данные
-            showMessage('error', 'Ошибка загрузки баланса');
+            console.error('❌ Общая ошибка загрузки USD баланса:', error);
+            showMessage('error', 'Ошибка загрузки баланса USD');
             setBalanceData(getTestBalanceData());
         }
     };
 
-    // Тестовые данные для демонстрации (если API не работает)
+    // Загрузка данных баланса USDT
+    const loadUSDTBalanceData = async () => {
+        const userId = getUserId();
+        console.log('🔄 Загрузка USDT баланса для ID:', userId);
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`);
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    setUsdtBalanceData(result.data);
+                    console.log('✅ Баланс USDT загружен:', result.data.total);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки баланса USDT:', error);
+        }
+    };
+
+    // Тестовые данные для демонстрации
     const getTestBalanceData = () => {
         return {
             available: 150.50,
@@ -167,8 +185,11 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 });
             }
 
-            // 2. Загружаем баланс и транзакции
-            await loadBalanceData();
+            // 2. Загружаем оба баланса параллельно
+            await Promise.all([
+                loadBalanceData(),
+                loadUSDTBalanceData()
+            ]);
 
             // 3. Загружаем реферальные данные
             try {
@@ -213,7 +234,13 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     const refreshBalance = async () => {
         console.log('🔄 Ручное обновление баланса');
         setIsRefreshing(true);
-        await loadBalanceData();
+        
+        if (activeTab === 'balance') {
+            await loadBalanceData();
+        } else if (activeTab === 'usdt') {
+            await loadUSDTBalanceData();
+        }
+        
         setTimeout(() => {
             setIsRefreshing(false);
             showMessage('success', 'Баланс обновлен');
@@ -247,43 +274,46 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         return `$${value.toFixed(2)}`;
     };
 
+    // Форматирование USDT
+    const formatUSDT = (num) => {
+        const value = parseFloat(num || 0);
+        return `${value.toFixed(2)} USDT`;
+    };
+
     // Эффект загрузки данных
     useEffect(() => {
         loadUserData();
         
         // Обновляем каждые 30 секунд
-        const interval = setInterval(loadBalanceData, 30000);
+        const interval = setInterval(() => {
+            if (activeTab === 'balance') {
+                loadBalanceData();
+            } else if (activeTab === 'usdt') {
+                loadUSDTBalanceData();
+            }
+        }, 30000);
+        
         return () => clearInterval(interval);
-    }, []);
+    }, [activeTab]);
 
-    // Обработчик кнопки пополнения
-    const handleDeposit = () => {
+    // Обработчик кнопки пополнения USD
+    const handleDepositUSD = () => {
         const userId = getUserId();
-        console.log('📥 Пополнение баланса для:', userId);
-        
-        // Здесь будет логика открытия страницы пополнения
-        // Пока просто показываем сообщение
-        showMessage('info', 'Функция пополнения скоро будет доступна');
-        
-        // В будущем можно использовать navigateTo('deposit')
-        // navigateTo('deposit');
+        console.log('📥 Пополнение USD баланса для:', userId);
+        showMessage('info', 'Функция пополнения USD скоро будет доступна');
     };
 
-    // Обработчик кнопки вывода
-    const handleWithdraw = () => {
+    // Обработчик кнопки вывода USD
+    const handleWithdrawUSD = () => {
         const userId = getUserId();
-        console.log('📤 Вывод средств для:', userId);
+        console.log('📤 Вывод USD средств для:', userId);
         
         if (!balanceData || balanceData.available < 10) {
             showMessage('warning', 'Минимальная сумма для вывода $10');
             return;
         }
         
-        // Здесь будет логика открытия страницы вывода
-        showMessage('info', 'Функция вывода скоро будет доступна');
-        
-        // В будущем можно использовать navigateTo('withdraw')
-        // navigateTo('withdraw');
+        showMessage('info', 'Функция вывода USD скоро будет доступна');
     };
 
     // Тестовая функция для проверки API
@@ -379,10 +409,26 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                 <button 
                     className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('balance')}
-                    aria-label="Баланс"
+                    aria-label="USD Баланс"
                 >
                     <span className="profile-tab-icon">💰</span>
-                    <span className="profile-tab-text">Баланс</span>
+                    <span className="profile-tab-text">USD</span>
+                </button>
+                
+                <button 
+                    className={`profile-tab ${activeTab === 'usdt' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('usdt')}
+                    aria-label="USDT Кошелек"
+                >
+                    <span className="profile-tab-icon">
+                        <USDTSVG />
+                    </span>
+                    <span className="profile-tab-text">USDT</span>
+                    {usdtBalanceData?.available > 0 && (
+                        <span className="profile-tab-badge">
+                            {formatUSDT(usdtBalanceData.available)}
+                        </span>
+                    )}
                 </button>
                 
                 <button 
@@ -402,16 +448,17 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
             {/* Контент вкладок */}
             <div className="profile-content">
-                {activeTab === 'balance' ? (
+                {/* Вкладка USD баланса */}
+                {activeTab === 'balance' && (
                     <div className="balance-tab">
-                        {/* Карточка с балансом */}
+                        {/* Карточка с балансом USD */}
                         <div className="balance-card">
                             <div className="balance-main">
-                                <div className="balance-label">Ваш баланс</div>
+                                <div className="balance-label">Ваш баланс USD</div>
                                 <div className="balance-amount">
                                     {balanceData ? formatUSD(balanceData.total) : '$0.00'}
                                 </div>
-                                <div className="balance-hint">USD</div>
+                                <div className="balance-hint">USD (Фиат)</div>
                                 
                                 <button 
                                     className="refresh-balance-btn"
@@ -426,25 +473,56 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             <div className="balance-actions">
                                 <button 
                                     className="deposit-button"
-                                    onClick={handleDeposit}
+                                    onClick={handleDepositUSD}
                                     style={{
                                         backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
                                         color: 'var(--tg-theme-button-text-color, #ffffff)'
                                     }}
                                 >
-                                    Пополнить
+                                    Пополнить USD
                                 </button>
                                 <button 
                                     className="withdraw-button"
-                                    onClick={handleWithdraw}
+                                    onClick={handleWithdrawUSD}
                                     disabled={!balanceData || balanceData.available < 10}
                                     title={balanceData?.available < 10 ? "Минимум $10 для вывода" : ""}
                                 >
-                                    Вывести
+                                    Вывести USD
                                     {balanceData?.available < 10 && (
                                         <span className="min-badge">$10</span>
                                     )}
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Детали баланса */}
+                        <div className="balance-details-card">
+                            <h3>Детали баланса USD</h3>
+                            <div className="details-grid">
+                                <div className="detail-item">
+                                    <span className="detail-label">Доступно:</span>
+                                    <span className="detail-value available">
+                                        {balanceData ? formatUSD(balanceData.available) : '$0.00'}
+                                    </span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">В эскроу:</span>
+                                    <span className="detail-value">
+                                        {balanceData ? formatUSD(balanceData.escrow) : '$0.00'}
+                                    </span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Всего пополнено:</span>
+                                    <span className="detail-value">
+                                        {balanceData ? formatUSD(balanceData.totalDeposited) : '$0.00'}
+                                    </span>
+                                </div>
+                                <div className="detail-item">
+                                    <span className="detail-label">Выведено:</span>
+                                    <span className="detail-value">
+                                        {balanceData ? formatUSD(balanceData.totalWithdrawn) : '$0.00'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -453,7 +531,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             <div className="history-header">
                                 <h3>
                                     <HistorySVG />
-                                    <span>История операций</span>
+                                    <span>История операций USD</span>
                                 </h3>
                                 <button 
                                     className="view-all-button"
@@ -466,16 +544,16 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             {transactions.length === 0 ? (
                                 <div className="no-transactions">
                                     <div className="no-transactions-icon">📭</div>
-                                    <p>Нет операций</p>
+                                    <p>Нет операций с USD</p>
                                     <button 
                                         className="make-first-deposit"
-                                        onClick={handleDeposit}
+                                        onClick={handleDepositUSD}
                                         style={{
                                             backgroundColor: 'var(--tg-theme-button-color, #3390ec)',
                                             color: 'var(--tg-theme-button-text-color, #ffffff)'
                                         }}
                                     >
-                                        Сделать первый депозит
+                                        Сделать первый депозит USD
                                     </button>
                                 </div>
                             ) : (
@@ -513,8 +591,18 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                             )}
                         </div>
                     </div>
-                ) : (
-                    /* Реферальная система */
+                )}
+
+                {/* Вкладка USDT кошелька */}
+                {activeTab === 'usdt' && (
+                    <USDTWallet 
+                        telegramId={getUserId()}
+                        showToast={showToast || showMessage}
+                    />
+                )}
+
+                {/* Вкладка реферальной системы */}
+                {activeTab === 'referrals' && (
                     <ReferralSystem 
                         referralData={referralData}
                         onClose={() => setActiveTab('balance')}
@@ -578,9 +666,9 @@ function getTransactionIcon(type) {
 
 function getTransactionTypeLabel(type) {
     const labels = {
-        deposit: 'Пополнение',
-        withdrawal: 'Вывод',
-        transfer: 'Перевод',
+        deposit: 'Пополнение USD',
+        withdrawal: 'Вывод USD',
+        transfer: 'Перевод USD',
         escrow_deposit: 'Депозит в эскроу',
         escrow_release: 'Выплата из эскроу',
         referral_bonus: 'Реферальный бонус',
@@ -593,13 +681,13 @@ function getTransactionTypeLabel(type) {
 
 function getDefaultDescription(type) {
     const descriptions = {
-        deposit: 'Пополнение баланса',
-        withdrawal: 'Вывод средств',
+        deposit: 'Пополнение баланса USD',
+        withdrawal: 'Вывод средств USD',
         referral_bonus: 'Бонус за реферала',
         commission: 'Комиссия по сделке',
         bonus: 'Бонус от платформы'
     };
-    return descriptions[type] || 'Транзакция';
+    return descriptions[type] || 'Транзакция USD';
 }
 
 function getAmountClass(type) {

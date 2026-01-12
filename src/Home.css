@@ -85,14 +85,14 @@
   color: var(--tg-theme-hint-color, #8e8e93);
 }
 
-/* Swap кнопка - ИСПРАВЛЕНИЕ: убрано свечение и улучшена совместимость */
+/* Swap кнопка - ФИКСИРОВАННАЯ ВЕРСИЯ */
 .swap-center-button {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   background: var(--tg-theme-button-color, #3390ec);
   border: none;
   border-radius: 50%;
@@ -107,23 +107,21 @@
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  /* Убрано свечение */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  /* Для мобильной совместимости */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  /* Исправление для мобильных */
   -webkit-appearance: none;
+  appearance: none;
   touch-action: manipulation;
+  /* Убираем передвижение кнопки */
+  transform: translate(-50%, -50%) !important;
 }
 
-/* Убраны эффекты при наведении на мобильных */
-@media (hover: hover) and (pointer: fine) {
-  .swap-center-button:hover:not(:disabled) {
-    transform: translate(-50%, -50%) scale(1.05);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  }
+.swap-center-button:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.05) !important;
 }
 
 .swap-center-button:active:not(:disabled) {
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: translate(-50%, -50%) scale(0.95) !important;
 }
 
 .swap-center-button:disabled {
@@ -132,39 +130,21 @@
   pointer-events: none;
 }
 
+/* Кнопка НЕ должна двигаться при swapped */
 .swap-center-button.swapped {
-  transform: translate(-50%, -50%) rotate(180deg);
+  transform: translate(-50%, -50%) !important;
 }
 
-/* Для мобильных: плавная анимация */
-@media (hover: hover) and (pointer: fine) {
-  .swap-center-button.swapped:hover:not(:disabled) {
-    transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
-  }
+.swap-center-button.swapped:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.05) !important;
 }
 
-/* SVG иконка свапа */
-.swap-icon {
-  transition: transform 0.3s ease;
+/* SVG иконка внутри кнопки */
+.swap-center-button svg {
   width: 52px;
   height: 52px;
   display: block;
-}
-
-.swap-icon.swapped {
-  transform: rotate(180deg);
-}
-
-.swap-circle {
-  fill: var(--tg-theme-button-color, #3390ec);
-  stroke: none; /* Убрана обводка для чистоты */
-}
-
-.swap-arrow {
-  stroke: var(--tg-theme-button-text-color, #ffffff);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  transition: transform 0.3s ease;
 }
 
 /* Поля ввода */
@@ -290,8 +270,6 @@
   transition: all 0.3s ease;
   background: transparent;
   color: var(--tg-theme-hint-color, #8e8e93);
-  -webkit-appearance: none;
-  touch-action: manipulation;
 }
 
 .crypto-type-btn.active {
@@ -332,8 +310,6 @@
   outline: none;
   transition: all 0.3s ease;
   font-family: inherit;
-  -webkit-appearance: none;
-  appearance: none;
 }
 
 .select-with-icon {
@@ -355,14 +331,6 @@
   height: 20px;
 }
 
-/* Исправление иконок - убедимся, что они правильно отображаются */
-.selected-network-icon svg,
-.selected-exchange-icon svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
 /* Кнопки */
 .add-button {
   width: 100%;
@@ -378,10 +346,8 @@
   font-family: inherit;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .add-button:hover {
-    opacity: 0.9;
-  }
+.add-button:hover {
+  opacity: 0.9;
 }
 
 /* Списки */
@@ -412,14 +378,11 @@
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  -webkit-tap-highlight-color: transparent;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .crypto-item:hover,
-  .payment-item:hover {
-    border-color: var(--tg-theme-button-color, #3390ec);
-  }
+.crypto-item:hover,
+.payment-item:hover {
+  border-color: var(--tg-theme-button-color, #3390ec);
 }
 
 .crypto-item.selected,
@@ -466,13 +429,6 @@
   margin-left: 8px;
 }
 
-/* Исправление для отображения иконок в бейджах */
-.crypto-network-badge svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
 .crypto-address,
 .payment-number {
   font-size: 13px;
@@ -501,8 +457,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-appearance: none;
-  touch-action: manipulation;
 }
 
 .action-btn.copy-btn {
@@ -513,10 +467,8 @@
   color: #ff3b30;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .action-btn:hover {
-    opacity: 0.8;
-  }
+.action-btn:hover {
+  opacity: 0.8;
 }
 
 .sbp-badge {
@@ -546,19 +498,11 @@
   justify-content: center;
   gap: 12px;
   font-family: inherit;
-  -webkit-appearance: none;
-  touch-action: manipulation;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .exchange-button-new:hover:not(.disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-}
-
-.exchange-button-new:active:not(.disabled) {
-  transform: translateY(0);
+.exchange-button-new:hover:not(.disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .exchange-button-new.disabled {
@@ -675,14 +619,10 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
   color: var(--tg-theme-button-color, #3390ec);
-  -webkit-appearance: none;
-  touch-action: manipulation;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tg-back-btn:hover {
-    opacity: 0.8;
-  }
+.tg-back-btn:hover {
+  opacity: 0.8;
 }
 
 .tg-back-btn svg {
@@ -843,21 +783,17 @@
   justify-content: center;
   gap: 10px;
   font-family: inherit;
-  -webkit-appearance: none;
-  touch-action: manipulation;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tg-action-btn:hover {
-    opacity: 0.9;
-  }
+.tg-action-btn:hover {
+  opacity: 0.9;
 }
 
 .tg-btn-icon {
   font-size: 20px;
 }
 
-/* Адаптивность для мобильных устройств */
+/* Адаптивность */
 @media (max-width: 768px) {
   .currency-cards-horizontal {
     gap: 12px;
@@ -870,17 +806,6 @@
   
   .tg-order-title {
     font-size: 20px;
-  }
-  
-  /* Улучшение свапа на мобильных */
-  .swap-center-button {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .swap-icon {
-    width: 50px;
-    height: 50px;
   }
 }
 
@@ -901,11 +826,11 @@
   }
   
   .swap-center-button {
-    width: 46px;
-    height: 46px;
+    width: 50px;
+    height: 50px;
   }
   
-  .swap-icon {
+  .swap-center-button svg {
     width: 46px;
     height: 46px;
   }
@@ -937,21 +862,16 @@
     position: relative;
     left: auto;
     top: auto;
-    transform: none;
+    transform: none !important;
     margin: 8px auto;
-    order: 1;
   }
   
-  .swap-center-button.swapped {
-    transform: rotate(180deg);
+  .swap-center-button:hover:not(:disabled) {
+    transform: scale(1.05) !important;
   }
   
-  .currency-card-side {
-    order: 0;
-  }
-  
-  .currency-card-side.right-card {
-    order: 2;
+  .swap-center-button.swapped:hover:not(:disabled) {
+    transform: scale(1.05) !important;
   }
 }
 
@@ -976,7 +896,8 @@
   }
 }
 
-/* Улучшения для темной темы */
+/* Улучшения для темной темы в Home.css */
+
 [data-theme="dark"] .currency-cards-section {
   background: var(--tg-theme-bg-color);
   border: 0.5px solid var(--tg-theme-section-bg-color);
@@ -991,7 +912,7 @@
 
 [data-theme="dark"] .swap-center-button {
   background: var(--tg-theme-button-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3);
 }
 
 [data-theme="dark"] .amount-input {
@@ -1027,47 +948,168 @@
   box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  [data-theme="dark"] .exchange-button-new:hover:not(.disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(58, 154, 255, 0.4);
-  }
+[data-theme="dark"] .exchange-button-new:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(58, 154, 255, 0.4);
 }
 
-/* Универсальные переменные для тем */
-:root {
-  --tg-card-bg: var(--tg-theme-bg-color, #ffffff);
-  --tg-border-color: var(--tg-theme-section-bg-color, #e7e8ec);
-  --tg-input-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
+/* Единые стили для всех устройств в Home.css */
+
+.home-container {
+  background: var(--tg-theme-bg-color) !important;
+  color: var(--tg-theme-text-color) !important;
 }
 
-/* Улучшенная поддержка для экранов с сенсорным вводом */
-@media (pointer: coarse) {
-  .swap-center-button,
-  .crypto-type-btn,
-  .action-btn,
-  .add-button,
-  .exchange-button-new,
-  .tg-back-btn,
-  .tg-action-btn {
-    min-height: 44px; /* Минимальная высота для касания */
-  }
-  
-  .swap-center-button:active:not(:disabled) {
-    transform: translate(-50%, -50%) scale(0.9);
-  }
+.currency-cards-section,
+.payment-section-new,
+.security-info {
+  background: var(--tg-card-bg) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
 }
 
-/* Исправление для иконок в выпадающих списках */
-.select-with-icon select {
-  padding-right: 60px; /* Оставляем место для иконки */
+.currency-card-side {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 15%, transparent) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
 }
 
-/* Дополнительные исправления для иконок */
-.crypto-network-badge svg,
-.selected-network-icon svg,
-.selected-exchange-icon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+.swap-center-button {
+  background: var(--tg-theme-button-color) !important;
+  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important;
+}
+
+.amount-input,
+.network-select,
+.exchange-select,
+.bank-select,
+.address-input,
+.uid-input,
+.phone-input,
+.card-input {
+  background: var(--tg-input-bg) !important;
+  color: var(--tg-theme-text-color) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.crypto-item,
+.payment-item {
+  background: var(--tg-input-bg) !important;
+  border: 0.5px solid var(--tg-border-color) !important;
+}
+
+.crypto-item.selected,
+.payment-item.selected {
+  background: color-mix(in srgb, var(--tg-theme-button-color) 20%, transparent) !important;
+  border: 0.5px solid var(--tg-theme-button-color) !important;
+}
+
+.exchange-button-new {
+  background: var(--tg-theme-button-color) !important;
+  color: var(--tg-theme-button-text-color) !important;
+  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important;
+}
+
+.exchange-button-new:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(51, 144, 236, 0.45) !important;
+}
+
+/* Стили для History */
+.history-container {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.history-header-new,
+.order-card-new,
+.stat-card-new {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Стили для Help */
+.help-container-new {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.help-header-new {
+  background: var(--tg-theme-button-color) !important;
+}
+
+.help-section-new,
+.search-results-new {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Стили для Profile */
+.profile-container {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+.profile-card,
+.referral-card {
+  background: var(--tg-card-bg) !important;
+  border-color: var(--tg-border-color) !important;
+}
+
+/* Убедитесь, что все тексты читаемы */
+* {
+  color: var(--tg-theme-text-color) !important;
+}
+
+/* Переопределение для мест, где используются inline цвета */
+[style*="color:"] {
+  color: var(--tg-theme-text-color) !important;
+}
+
+[style*="background:"]:not([style*="var("]) {
+  background: var(--tg-card-bg) !important;
+}
+
+/* Принудительный красивый фон для всех компонентов */
+.home-container,
+.profile-container,
+.history-container,
+.help-container-new,
+.support-chat-new {
+  background: var(--tg-theme-bg-color) !important;
+}
+
+/* Для карточек */
+.card, .section, .panel,
+.currency-cards-section, .payment-section-new, .security-info,
+.profile-card, .referral-card, .order-card-new,
+.help-section-new, .search-results-new,
+.chat-header-new, .message-content-new {
+  background: var(--tg-card-bg) !important;
+  border: 1px solid var(--tg-border-color) !important;
+}
+
+/* Для инпутов */
+input, textarea, select,
+.amount-input, .network-select, .exchange-select,
+.bank-select, .address-input, .uid-input,
+.phone-input, .card-input,
+.chat-input-new, .search-input-new {
+  background: var(--tg-input-bg) !important;
+  color: var(--tg-theme-text-color) !important;
+  border: 1px solid var(--tg-border-color) !important;
+}
+
+/* Для хедеров */
+.header, .chat-header-new, .help-header-new {
+  background: var(--tg-theme-button-color) !important;
+}
+
+/* Убедитесь, что все тексты видны */
+* {
+  color: var(--tg-theme-text-color) !important;
+}
+
+/* Переопределяем inline стили */
+[style*="background"]:not([style*="var("]) {
+  background: var(--tg-card-bg) !important;
+}
+
+[style*="color"]:not([style*="var("]) {
+  color: var(--tg-theme-text-color) !important;
 }

@@ -93,7 +93,7 @@
   transform: translate(-50%, -50%);
   width: 56px;
   height: 56px;
-  background: var(--tg-theme-button-color, #3390ec);
+  /* background: var(--tg-theme-button-color, #3390ec); */
   border: none;
   border-radius: 50%;
   cursor: pointer;

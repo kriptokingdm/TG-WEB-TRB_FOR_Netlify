@@ -85,6 +85,7 @@
   color: var(--tg-theme-hint-color, #8e8e93);
 }
 
+/* Swap кнопка - БЕЗ ПОДСВЕТКИ */
 .swap-center-button {
   position: absolute;
   left: 50%;
@@ -92,6 +93,7 @@
   transform: translate(-50%, -50%);
   width: 56px;
   height: 56px;
+  background: var(--tg-theme-button-color, #3390ec);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -114,15 +116,6 @@
 
 .swap-center-button:hover:not(:disabled) {
   transform: translate(-50%, -50%) scale(1.05) !important;
-  /* УБРАНО: box-shadow: none; */
-}
-.swap-center-button {
-  background: var(--tg-theme-button-color) !important;
-  /* УБРАНО: box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important; */
-}
-[data-theme="dark"] .swap-center-button {
-  background: var(--tg-theme-button-color);
-  /* УБРАНО: box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3); */
 }
 
 .swap-center-button:active:not(:disabled) {
@@ -135,7 +128,6 @@
   pointer-events: none;
 }
 
-/* Кнопка НЕ должна двигаться при swapped */
 .swap-center-button.swapped {
   transform: translate(-50%, -50%) !important;
 }
@@ -917,7 +909,7 @@
 
 [data-theme="dark"] .swap-center-button {
   background: var(--tg-theme-button-color);
-  box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3);
+  /* УБРАНО: box-shadow: 0 4px 20px rgba(58, 154, 255, 0.3); */
 }
 
 [data-theme="dark"] .amount-input {
@@ -979,7 +971,7 @@
 
 .swap-center-button {
   background: var(--tg-theme-button-color) !important;
-  box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important;
+  /* УБРАНО: box-shadow: 0 4px 20px rgba(51, 144, 236, 0.35) !important; */
 }
 
 .amount-input,

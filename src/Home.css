@@ -85,7 +85,6 @@
   color: var(--tg-theme-hint-color, #8e8e93);
 }
 
-/* Swap кнопка - ФИКСИРОВАННАЯ ВЕРСИЯ */
 .swap-center-button {
   position: absolute;
   left: 50%;
@@ -93,7 +92,7 @@
   transform: translate(-50%, -50%);
   width: 56px;
   height: 56px;
-  /* background: var(--tg-theme-button-color, #3390ec); */
+  background: var(--tg-theme-button-color, #3390ec);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -107,11 +106,10 @@
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  /* Исправление для мобильных */
+  /* УБРАНО: box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
   -webkit-appearance: none;
   appearance: none;
   touch-action: manipulation;
-  /* Убираем передвижение кнопки */
   transform: translate(-50%, -50%) !important;
 }
 

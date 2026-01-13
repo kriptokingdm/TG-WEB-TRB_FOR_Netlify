@@ -1,60 +1,22 @@
-/* ======================================================
-   Telegram Mini App – Official Wallet Style
-====================================================== */
-
 .usdt-wallet {
-    background: var(--tg-theme-bg-color, #ffffff);
     min-height: 100vh;
-    color: var(--tg-theme-text-color, #000);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-        "SF Pro Display", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto;
 }
-
-/* ================= LOADING ================= */
-
-.usdt-loading {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.loading-spinner {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 3px solid rgba(51,144,236,.2);
-    border-top-color: var(--tg-theme-button-color, #3390ec);
-    animation: spin 1s linear infinite;
-}
-
-.usdt-loading p {
-    margin-top: 12px;
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-}
-
-/* ================= TABS ================= */
 
 .usdt-tabs {
     display: flex;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--tg-theme-bg-color);
     border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
 }
 
 .usdt-tab {
     flex: 1;
-    padding: 14px 6px;
+    padding: 14px;
     background: none;
     border: none;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
     color: var(--tg-theme-hint-color);
-    cursor: pointer;
 }
 
 .usdt-tab.active {
@@ -62,17 +24,12 @@
     border-bottom: 2px solid var(--tg-theme-button-color);
 }
 
-/* ================= CONTENT ================= */
-
 .usdt-content {
     padding: 12px;
 }
 
-/* ================= CARD BASE ================= */
-
 .usdt-balance-card,
 .deposit-card,
-.withdraw-card,
 .history-card {
     background: var(--tg-theme-secondary-bg-color);
     border-radius: 14px;
@@ -80,37 +37,10 @@
     margin-bottom: 12px;
 }
 
-/* ================= BALANCE ================= */
-
-.balance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.balance-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.refresh-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    font-size: 16px;
-    cursor: pointer;
-}
-
 .balance-total {
-    margin-top: 16px;
     font-size: 34px;
     font-weight: 700;
-}
-
-.balance-details {
-    margin-top: 12px;
+    margin: 12px 0;
 }
 
 .balance-detail {
@@ -120,169 +50,68 @@
     padding: 6px 0;
 }
 
-.detail-label {
-    color: var(--tg-theme-hint-color);
-}
-
-.detail-value.available {
+.available {
     color: #31b545;
 }
-
-/* ================= ACTION BUTTONS ================= */
 
 .balance-actions {
     display: flex;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 12px;
 }
 
 .action-btn {
     flex: 1;
     padding: 12px;
     border-radius: 10px;
-    border: none;
-    font-size: 15px;
     font-weight: 600;
-    cursor: pointer;
+    border: none;
 }
 
-.deposit-btn {
+.primary {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
 }
 
-.withdraw-btn {
+.secondary {
     background: transparent;
     border: 1px solid var(--tg-theme-hint-color);
 }
 
-/* ================= QUICK ACTIONS ================= */
-
-.quick-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.quick-action {
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: var(--tg-theme-secondary-bg-color);
-    font-size: 14px;
-    text-align: center;
-}
-
-/* ================= DEPOSIT ================= */
-
 .address-container {
     display: flex;
     gap: 8px;
-    align-items: center;
     background: var(--tg-theme-bg-color);
-    border-radius: 10px;
     padding: 12px;
-}
-
-.address-value {
-    font-size: 12px;
-    word-break: break-all;
-}
-
-.copy-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.qr-code-container {
-    margin: 16px 0;
-    padding: 16px;
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    text-align: center;
+    border-radius: 10px;
 }
 
 .qr-code {
-    width: 180px;
-    height: 180px;
+    width: 200px;
+    margin: 16px auto;
+    display: block;
 }
-
-.deposit-warning {
-    margin-top: 12px;
-    padding: 10px;
-    border-radius: 8px;
-    background: rgba(255,149,0,.12);
-    font-size: 13px;
-}
-
-/* ================= FORM ================= */
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: var(--tg-theme-bg-color);
-    font-size: 15px;
-}
-
-/* ================= HISTORY ================= */
 
 .transaction-item {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    justify-content: space-between;
     padding: 12px;
-    border-radius: 10px;
     background: var(--tg-theme-bg-color);
+    border-radius: 10px;
+    margin-bottom: 8px;
 }
 
-.transaction-icon {
-    font-size: 22px;
+.pos { color: #31b545; }
+.neg { color: #e53935; }
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid rgba(0,0,0,.1);
+    border-top-color: var(--tg-theme-button-color);
+    animation: spin 1s linear infinite;
 }
-
-.transaction-type {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.transaction-description {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color);
-}
-
-.transaction-amount {
-    font-weight: 600;
-}
-
-.transaction-amount.positive {
-    color: #31b545;
-}
-
-.transaction-amount.negative {
-    color: #e53935;
-}
-
-/* ================= NO DATA ================= */
-
-.no-transactions {
-    text-align: center;
-    padding: 32px 12px;
-}
-
-/* ================= DARK ================= */
-
-[data-theme="dark"] .usdt-balance-card,
-[data-theme="dark"] .deposit-card,
-[data-theme="dark"] .withdraw-card,
-[data-theme="dark"] .history-card {
-    background: #1c1c1e;
-}
-
-/* ================= ANIMATION ================= */
 
 @keyframes spin {
     to { transform: rotate(360deg); }

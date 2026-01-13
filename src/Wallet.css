@@ -1,4 +1,4 @@
-/* Wallet.css - только основные стили для компонента Wallet */
+/* Wallet.css - только основные стили для компонента Wallet
 
 .wallet-container {
     width: 100%;
@@ -26,4 +26,4 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
+} */

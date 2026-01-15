@@ -405,7 +405,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* Вкладки */}
-            <div className="profile-tabs">
+            {/* <div className="profile-tabs">
                 <button 
                     className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('balance')}
@@ -444,7 +444,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         </span>
                     )}
                 </button>
-            </div>
+            </div> */}
 
             {/* Контент вкладок */}
             <div className="profile-content">

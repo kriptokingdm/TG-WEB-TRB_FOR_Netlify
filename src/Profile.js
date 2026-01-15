@@ -405,15 +405,15 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* Вкладки */}
-            {/* <div className="profile-tabs">
-                <button 
+            <div className="profile-tabs">
+                {/* <button 
                     className={`profile-tab ${activeTab === 'balance' ? 'active' : ''}`}
                     onClick={() => setActiveTab('balance')}
                     aria-label="USD Баланс"
                 >
                     <span className="profile-tab-icon">💰</span>
                     <span className="profile-tab-text">USD</span>
-                </button>
+                </button> */}
                 
                 <button 
                     className={`profile-tab ${activeTab === 'usdt' ? 'active' : ''}`}
@@ -444,7 +444,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
                         </span>
                     )}
                 </button>
-            </div> */}
+            </div>
 
             {/* Контент вкладок */}
             <div className="profile-content">

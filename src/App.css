@@ -639,3 +639,41 @@ html, body, #root {
 .settings-footer div:last-child {
     font-size: 12px;
 }
+
+/* PAGE TRANSITIONS — TELEGRAM STYLE */
+
+.page-transition {
+  width: 100%;
+  height: 100%;
+  will-change: opacity, transform;
+}
+
+.page-enter {
+  animation: pageEnter 0.32s ease forwards;
+}
+
+.page-exit {
+  animation: pageExit 0.16s ease forwards;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

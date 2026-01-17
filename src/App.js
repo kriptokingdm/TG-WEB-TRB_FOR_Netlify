@@ -1,32 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-
 import Home from './Home';
 import History from './History';
 import Profile from './Profile';
 import Help from './Help';
 import SettingsApp from './SettingsApp';
-import Game from './Game';
-
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
+import Game from './Game';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const [displayPage, setDisplayPage] = useState('home');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
+  const [prevPage, setPrevPage] = useState(null);
   const [telegramUser, setTelegramUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [referralData, setReferralData] = useState(null);
   const [toast, setToast] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [hideHints, setHideHints] = useState(false);
-
-  /* =========================
-     SETTINGS
-  ========================= */
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
@@ -34,90 +27,64 @@ function App() {
   }, []);
 
   /* =========================
-     THEME
+     TELEGRAM THEME (FIX)
   ========================= */
-
-  const telegramColorToHex = useCallback((color) => {
-    if (!color && color !== 0) return null;
-    if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
-    if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
-    return null;
-  }, []);
-
   const detectDarkMode = useCallback(() => {
-    if (window.Telegram?.WebApp?.themeParams?.bg_color) {
-      const c = parseInt(
-        window.Telegram.WebApp.themeParams.bg_color.replace('#', ''),
-        16
-      );
-      const r = (c >> 16) & 255;
-      const g = (c >> 8) & 255;
-      const b = c & 255;
-      return (r * 299 + g * 587 + b * 114) / 1000 < 180;
+    if (window.Telegram?.WebApp?.colorScheme) {
+      return window.Telegram.WebApp.colorScheme === 'dark';
     }
-    return true;
+    return false; // ⚠️ ВАЖНО: Telegram light по умолчанию
   }, []);
 
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
-    const dark = detectDarkMode();
-    setIsDarkMode(dark);
+    const darkMode = detectDarkMode();
+    setIsDarkMode(darkMode);
 
-    let button = '#3390ec';
-    let text = '#000';
-    let hint = '#8e8e93';
-
-    const p = window.Telegram?.WebApp?.themeParams;
-    if (p) {
-      button = telegramColorToHex(p.button_color) || button;
-      text = telegramColorToHex(p.text_color) || text;
-      hint = telegramColorToHex(p.hint_color) || hint;
+    if (darkMode) {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
     }
-
-    root.style.setProperty('--tg-theme-button-color', button);
-    root.style.setProperty('--tg-theme-text-color', dark ? '#fff' : '#000');
-    root.style.setProperty('--tg-theme-hint-color', hint);
-
-    if (dark) root.setAttribute('data-theme', 'dark');
-    else root.removeAttribute('data-theme');
-  }, [detectDarkMode, telegramColorToHex]);
+  }, [detectDarkMode]);
 
   /* =========================
      TOAST
   ========================= */
-
   const showToast = useCallback((message, type = 'info') => {
     if (hideHints && type === 'info') return;
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, [hideHints]);
 
+  const updateHideHints = useCallback((value) => {
+    setHideHints(value);
+    localStorage.setItem('hideHints', value.toString());
+  }, []);
+
   /* =========================
-     NAVIGATION WITH SMOOTH TRANSITION
+     NAVIGATION (SMOOTH)
   ========================= */
-
   const navigateTo = useCallback((page) => {
-    if (page === currentPage || isTransitioning) return;
+    if (page === currentPage || isAnimating) return;
 
-    setIsTransitioning(true);
-    window.location.hash = page;
+    setIsAnimating(true);
+    setPrevPage(currentPage);
 
-    // сначала запускаем уход текущей страницы
     setTimeout(() => {
-      setDisplayPage(page);
+      window.location.hash = page;
       setCurrentPage(page);
-    }, 160);
+    }, 120);
 
-    // затем показываем новую
     setTimeout(() => {
-      setIsTransitioning(false);
+      setPrevPage(null);
+      setIsAnimating(false);
     }, 320);
-  }, [currentPage, isTransitioning]);
+  }, [currentPage, isAnimating]);
 
   /* =========================
      INIT TELEGRAM
   ========================= */
-
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -125,17 +92,15 @@ function App() {
       tg.expand();
       applyTheme();
 
-      tg.onEvent('themeChanged', () => {
-        setTimeout(applyTheme, 100);
-      });
+      tg.onEvent('themeChanged', applyTheme);
 
       if (tg.initDataUnsafe?.user) {
         const u = tg.initDataUnsafe.user;
         const user = {
           id: u.id.toString(),
           telegramId: u.id,
-          username: u.username || `user_${u.id}`,
-          firstName: u.first_name || 'Пользователь',
+          username: u.username,
+          firstName: u.first_name,
           photoUrl: u.photo_url || null
         };
         setTelegramUser(user);
@@ -147,59 +112,87 @@ function App() {
   }, [applyTheme]);
 
   /* =========================
-     RENDER PAGE
+     PAGE RENDER
   ========================= */
+  const commonProps = {
+    telegramUser,
+    navigateTo,
+    API_BASE_URL,
+    showToast,
+    isDarkMode,
+    hideHints,
+    updateHideHints
+  };
 
-  const renderPage = () => {
-    const props = {
-      telegramUser,
-      navigateTo,
-      API_BASE_URL,
-      showToast,
-      isDarkMode,
-      hideHints,
-      updateHideHints: setHideHints
-    };
-
-    switch (displayPage) {
-      case 'profile': return <Profile {...props} />;
-      case 'history': return <History {...props} />;
-      case 'help': return <Help {...props} />;
-      case 'settings': return <SettingsApp {...props} />;
-      case 'game': return <Game {...props} />;
-      default: return <Home {...props} />;
+  const renderPage = (page) => {
+    switch (page) {
+      case 'profile': return <Profile {...commonProps} />;
+      case 'history': return <History {...commonProps} />;
+      case 'help': return <Help {...commonProps} />;
+      case 'settings': return <SettingsApp {...commonProps} />;
+      case 'game': return <Game {...commonProps} />;
+      default: return <Home {...commonProps} />;
     }
   };
 
   /* =========================
      LOADER
   ========================= */
-
   if (isLoading) {
     return (
       <div className="app-loading">
         <div className="loading-spinner"></div>
-        <p>Загрузка TetherRabbit...</p>
+        <p>Загрузка…</p>
       </div>
     );
   }
 
   return (
     <div className="app">
-      <div className="app-content">
-        <div
-          className={`page-transition ${
-            isTransitioning ? 'page-exit' : 'page-enter'
-          }`}
-        >
-          {renderPage()}
+      <div className="app-wrapper">
+
+        <div className={`page-container ${isAnimating ? 'fade' : 'show'}`}>
+          {prevPage && (
+            <div className="page old">
+              {renderPage(prevPage)}
+            </div>
+          )}
+
+          <div className="page new">
+            {renderPage(currentPage)}
+          </div>
         </div>
+
+        {currentPage !== 'help' && currentPage !== 'settings' && (
+          <div className="floating-nav">
+            <button
+              className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
+              onClick={() => navigateTo('profile')}
+            >
+              <ProfileIcon active={currentPage === 'profile'} />
+              <span>Профиль</span>
+            </button>
+
+            <button className="nav-center-circle-floating" onClick={() => navigateTo('home')}>
+              <ExchangeIcon active />
+            </button>
+
+            <button
+              className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
+              onClick={() => navigateTo('history')}
+            >
+              <HistoryIcon active={currentPage === 'history'} />
+              <span>История</span>
+            </button>
+          </div>
+        )}
 
         {toast && (
           <div className={`telegram-toast ${toast.type}`}>
-            <span>{toast.message}</span>
+            {toast.message}
           </div>
         )}
+
       </div>
     </div>
   );

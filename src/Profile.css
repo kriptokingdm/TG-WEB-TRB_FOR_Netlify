@@ -1,589 +1,195 @@
-/* Profile.css - Telegram WebApp Style */
+/* Profile.css — Telegram WebApp Native Style */
 
 :root {
-    --tg-bg-color: var(--tg-theme-bg-color, #ffffff);
-    --tg-text-color: var(--tg-theme-text-color, #000000);
-    --tg-hint-color: var(--tg-theme-hint-color, #8e8e93);
-    --tg-button-color: var(--tg-theme-button-color, #3390ec);
-    --tg-button-text-color: var(--tg-theme-button-text-color, #ffffff);
-    --tg-secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    --tg-section-bg-color: var(--tg-theme-section-bg-color, #f7f7f8);
-    --tg-border-color: #e5e5ea;
-    --tg-success-color: #34c759;
-    --tg-error-color: #ff3b30;
-    --tg-warning-color: #ff9500;
+    --tg-bg: var(--tg-theme-bg-color, #ffffff);
+    --tg-text: var(--tg-theme-text-color, #000000);
+    --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+    --tg-button: var(--tg-theme-button-color, #3390ec);
+    --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+    --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f7);
+    --tg-border: #e5e5ea;
+    --tg-success: #34c759;
+    --tg-error: #ff3b30;
 }
 
-[data-theme="dark"] {
-    --tg-border-color: #3c3c3e;
-    --tg-section-bg-color: #1c1c1e;
-}
+/* ===== BASE ===== */
 
-/* Основной контейнер */
 .profile-container {
     min-height: 100vh;
-    background: var(--tg-bg-color);
-    color: var(--tg-text-color);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    position: relative;
-    padding-bottom: 80px;
+    background: var(--tg-bg);
+    color: var(--tg-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    padding-bottom: 64px;
 }
 
-/* Telegram-style Header */
+/* ===== HEADER ===== */
+
 .profile-header {
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--tg-bg-color);
-    border-bottom: 1px solid var(--tg-border-color);
+    padding: 0 12px;
+    border-bottom: 1px solid var(--tg-border);
+    background: var(--tg-bg);
     position: sticky;
     top: 0;
-    z-index: 100;
-    height: 56px;
-    box-sizing: border-box;
-}
-
-.back-button,
-.help-button {
-    background: none;
-    border: none;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--tg-button-color);
-    border-radius: 50%;
-    padding: 0;
-    flex-shrink: 0;
-}
-
-.back-button:hover,
-.help-button:hover {
-    background: rgba(var(--tg-button-color), 0.1);
-}
-
-.back-button svg,
-.help-button svg {
-    width: 24px;
-    height: 24px;
+    z-index: 10;
 }
 
 .profile-header-title {
     font-size: 17px;
     font-weight: 600;
     margin: 0;
-    color: var(--tg-text-color);
-    text-align: center;
-    flex: 1;
-    padding: 0 8px;
 }
 
-/* Информация пользователя */
-.profile-info-section {
-    padding: 20px 16px;
-    background: var(--tg-bg-color);
-    border-bottom: 1px solid var(--tg-border-color);
+.back-button,
+.help-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--tg-button);
     display: flex;
     align-items: center;
+    justify-content: center;
+}
+
+/* ===== USER INFO ===== */
+
+.profile-info-section {
+    display: flex;
     gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid var(--tg-border);
 }
 
-.profile-avatar-container {
-    flex-shrink: 0;
-}
-
-.profile-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--tg-button-color);
-}
-
+.profile-avatar,
 .profile-avatar-placeholder {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--tg-button-color) 0%, #5aa3ff 100%);
+}
+
+.profile-avatar-placeholder {
+    background: var(--tg-secondary-bg);
+    color: var(--tg-button);
+    font-size: 24px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--tg-button-text-color);
-    border: 3px solid var(--tg-button-color);
-}
-
-.profile-info-content {
-    flex: 1;
-    min-width: 0;
 }
 
 .profile-name {
     font-size: 17px;
     font-weight: 600;
-    margin: 0 0 4px 0;
-    color: var(--tg-text-color);
-    line-height: 1.2;
+    margin: 0;
 }
 
 .profile-username {
     font-size: 14px;
-    color: var(--tg-hint-color);
-    margin: 0 0 12px 0;
-    font-weight: 400;
-    line-height: 1.2;
-}
-
-.profile-id-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.profile-id-label {
-    font-size: 14px;
-    color: var(--tg-hint-color);
-    font-weight: 400;
+    color: var(--tg-hint);
+    margin: 4px 0 8px;
 }
 
 .profile-id-button {
-    background: none;
-    border: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-size: 13px;
+    color: var(--tg-text);
+    border: none;
+    background: var(--tg-secondary-bg);
     padding: 6px 10px;
     border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
 }
 
-.profile-id-button:hover {
-    background: var(--tg-secondary-bg-color);
-}
+/* ===== TABS (TG STYLE) ===== */
 
-.profile-id-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-text-color);
-}
-
-.profile-id-button svg {
-    width: 16px;
-    height: 16px;
-    color: var(--tg-hint-color);
-}
-
-/* Вкладки */
 .profile-tabs-container {
-    background: var(--tg-bg-color);
-    border-bottom: 1px solid var(--tg-border-color);
+    border-bottom: 1px solid var(--tg-border);
 }
 
 .profile-tabs {
     display: flex;
-    padding: 0 16px;
-    gap: 1px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.profile-tabs::-webkit-scrollbar {
-    display: none;
 }
 
 .profile-tab {
     flex: 1;
-    min-width: 120px;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--tg-hint);
     background: none;
     border: none;
-    padding: 16px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
     position: relative;
-    transition: all 0.2s ease;
-    border-bottom: 3px solid transparent;
 }
 
 .profile-tab.active {
-    border-bottom-color: var(--tg-button-color);
-    color: var(--tg-button-color);
-}
-
-.profile-tab:not(.active) {
-    color: var(--tg-hint-color);
-}
-
-.profile-tab:hover:not(.active) {
-    background: var(--tg-secondary-bg-color);
-}
-
-.tab-icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tab-icon svg {
-    width: 100%;
-    height: 100%;
-    fill: currentColor;
-}
-
-.tab-text {
-    font-size: 13px;
+    color: var(--tg-button);
     font-weight: 500;
-    line-height: 1.2;
-    text-align: center;
-    white-space: nowrap;
+}
+
+.profile-tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--tg-button);
+    border-radius: 2px;
 }
 
 .tab-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 6px;
+    right: 12px;
     font-size: 11px;
-    font-weight: 600;
+    background: var(--tg-success);
+    color: #fff;
     padding: 2px 6px;
     border-radius: 10px;
-    background: var(--tg-success-color);
-    color: var(--tg-button-text-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Контент вкладок */
+/* ===== CONTENT ===== */
+
 .profile-content {
     padding: 16px;
-    background: var(--tg-bg-color);
 }
 
-.tab-content {
-    animation: fadeIn 0.3s ease;
-}
+/* ===== TOAST ===== */
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Загрузка */
-.profile-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    padding: 0 20px;
-    background: var(--tg-bg-color);
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--tg-border-color);
-    border-top-color: var(--tg-button-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.profile-loading p {
-    font-size: 15px;
-    color: var(--tg-hint-color);
-    font-weight: 500;
-}
-
-/* No Data Message */
-.no-data-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--tg-hint-color);
-}
-
-.no-data-message p {
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-.retry-button {
-    background: var(--tg-button-color);
-    color: var(--tg-button-text-color);
-    border: none;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-
-.retry-button:hover {
-    opacity: 0.9;
-}
-
-/* Toast сообщения */
 .message-toast {
     position: fixed;
-    top: 80px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--tg-secondary-bg-color);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--tg-secondary-bg);
     border-radius: 12px;
     padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    border: 1px solid var(--tg-border-color);
-    max-width: calc(100% - 32px);
-    width: auto;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        visibility: hidden;
-    }
-}
-
-.toast-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-}
-
-.toast-icon {
-    font-size: 16px;
-    flex-shrink: 0;
-}
-
-.toast-text {
     font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    border: 1px solid var(--tg-border);
 }
 
-.message-success .toast-icon {
-    color: var(--tg-success-color);
-}
+/* ===== REFRESH ===== */
 
-.message-error .toast-icon {
-    color: var(--tg-error-color);
-}
-
-.message-info .toast-icon {
-    color: var(--tg-button-color);
-}
-
-/* Кнопка обновления */
 .refresh-button {
     position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 48px;
-    height: 48px;
+    right: 16px;
+    bottom: 16px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: var(--tg-button-color);
-    color: var(--tg-button-text-color);
+    background: var(--tg-button);
+    color: var(--tg-button-text);
     border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(51, 144, 236, 0.3);
-    z-index: 90;
-    transition: all 0.3s ease;
-    font-size: 20px;
+    font-size: 18px;
 }
 
-.refresh-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 25px rgba(51, 144, 236, 0.4);
-}
+/* ===== DARK ===== */
 
-.refresh-button:active {
-    transform: scale(0.95);
-}
-
-.refresh-button.refreshing {
-    animation: spin 1s linear infinite;
-}
-
-.refresh-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .profile-header {
-        padding: 12px;
-    }
-    
-    .profile-info-section {
-        padding: 16px;
-    }
-    
-    .profile-avatar,
-    .profile-avatar-placeholder {
-        width: 56px;
-        height: 56px;
-        font-size: 20px;
-    }
-    
-    .profile-name {
-        font-size: 16px;
-    }
-    
-    .profile-tabs {
-        padding: 0 12px;
-    }
-    
-    .profile-tab {
-        padding: 14px 8px;
-        min-width: 100px;
-    }
-    
-    .tab-text {
-        font-size: 12px;
-    }
-    
-    .refresh-button {
-        bottom: 80px;
-        right: 16px;
-        width: 44px;
-        height: 44px;
-    }
-}
-
-@media (max-width: 480px) {
-    .profile-header {
-        height: 52px;
-        padding: 10px 12px;
-    }
-    
-    .profile-header-title {
-        font-size: 16px;
-    }
-    
-    .back-button,
-    .help-button {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .profile-info-section {
-        flex-direction: column;
-        text-align: center;
-        padding: 20px 16px;
-        gap: 12px;
-    }
-    
-    .profile-info-content {
-        width: 100%;
-    }
-    
-    .profile-id-container {
-        justify-content: center;
-    }
-    
-    .profile-tabs {
-        justify-content: center;
-    }
-    
-    .profile-tab {
-        flex: none;
-        min-width: 90px;
-    }
-    
-    .tab-badge {
-        font-size: 10px;
-        padding: 1px 4px;
-        top: 6px;
-        right: 6px;
-    }
-}
-
-/* Поддержка Safe Area для iOS */
-@supports (padding: max(0px)) {
-    .profile-container {
-        padding-bottom: max(80px, env(safe-area-inset-bottom) + 80px);
-    }
-    
-    .refresh-button {
-        bottom: max(90px, env(safe-area-inset-bottom) + 90px);
-    }
-    
-    .profile-header {
-        padding-top: max(12px, env(safe-area-inset-top) + 12px);
-        height: max(56px, env(safe-area-inset-top) + 56px);
-    }
-}
-
-/* Темная тема улучшения */
-[data-theme="dark"] .profile-header {
-    border-bottom-color: #2c2c2e;
-}
-
-[data-theme="dark"] .profile-info-section {
-    border-bottom-color: #2c2c2e;
-}
-
-[data-theme="dark"] .profile-tabs-container {
-    border-bottom-color: #2c2c2e;
-}
-
-[data-theme="dark"] .message-toast {
-    background: #2c2c2e;
-    border-color: #3c3c3e;
-}
-
-[data-theme="dark"] .refresh-button {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .refresh-button:hover {
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+[data-theme="dark"] {
+    --tg-border: #2c2c2e;
 }

@@ -196,7 +196,7 @@ function History({ navigateTo, showToast }) {
             console.log('🔄 Запрос истории ордеров для userId:', userId);
             console.log('🔗 URL:', `${API_BASE_URL}/user-orders/${userId}`);
 
-            const response = await fetch(`${API_BASE_URL}/user-orders/${userId}`, {
+           const response = await fetch(`${API_BASE_URL}/api/public/user-orders/${userId}`, { 
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',

@@ -1,552 +1,456 @@
+// USDTWalletTG.js - Стиль Telegram Web App
 import React, { useState, useEffect } from 'react';
-import './USDTWallet.css';
+import './USDTWalletTG.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
-// Иконки
-const CopySVG = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
-    </svg>
-);
-
-const QRCodeSVG = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1H5V5H1V1ZM1 19H5V23H1V19ZM19 1H23V5H19V1ZM19 19H23V23H19V19ZM3 3V3H3V3ZM3 21V21H3V3ZM21 3V3H3V3ZM21 21V21H3V3ZM7 7H11V11H7V7ZM7 13H11V17H7V13ZM13 7H17V11H13V7ZM13 13H17V17H13V13Z" fill="currentColor"/>
-    </svg>
-);
-
-function USDTWallet({ telegramId, showToast }) {
+function USDTWalletTG({ telegramId, onBack }) {
     const [activeTab, setActiveTab] = useState('balance');
-    const [balanceData, setBalanceData] = useState(null);
-    const [addressData, setAddressData] = useState(null);
-    const [transactions, setTransactions] = useState([]);
+    const [balance, setBalance] = useState({ available: 0, total: 0, totalDeposited: 0, totalWithdrawn: 0 });
+    const [address, setAddress] = useState('');
+    const [withdrawals, setWithdrawals] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [withdrawAmount, setWithdrawAmount] = useState('');
-    const [withdrawAddress, setWithdrawAddress] = useState('');
-    const [withdrawNetwork, setWithdrawNetwork] = useState('BEP20');
+    const [withdrawData, setWithdrawData] = useState({
+        amount: '',
+        address: '',
+        network: 'BEP20'
+    });
+    const [showQR, setShowQR] = useState(false);
 
-    // Загрузка баланса USDT
-    const loadBalanceData = async () => {
-        if (!telegramId) return;
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    setBalanceData(result.data);
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки баланса USDT:', error);
-        }
+    // Цвета Telegram
+    const tgColors = {
+        bg: 'var(--tg-theme-bg-color, #ffffff)',
+        secondaryBg: 'var(--tg-theme-secondary-bg-color, #f1f1f1)',
+        text: 'var(--tg-theme-text-color, #000000)',
+        hint: 'var(--tg-theme-hint-color, #8e8e93)',
+        link: 'var(--tg-theme-link-color, #3390ec)',
+        button: 'var(--tg-theme-button-color, #3390ec)',
+        buttonText: 'var(--tg-theme-button-text-color, #ffffff)'
     };
 
-    // Загрузка уникального адреса
-    const loadAddressData = async () => {
+    // Загрузка данных
+    const loadData = async () => {
         if (!telegramId) return;
         
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    setAddressData(result.data);
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки адреса:', error);
-        }
-    };
-
-    // Загрузка истории транзакций
-    const loadTransactions = async () => {
-        if (!telegramId) return;
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/wallet/usdt/transactions/${telegramId}?limit=10`);
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    setTransactions(result.data);
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки транзакций:', error);
-        }
-    };
-
-    // Загрузка всех данных
-    const loadAllData = async () => {
         setIsLoading(true);
-        await Promise.all([
-            loadBalanceData(),
-            loadAddressData(),
-            loadTransactions()
-        ]);
-        setIsLoading(false);
-        setIsRefreshing(false);
+        try {
+            // Баланс
+            const balanceRes = await fetch(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`);
+            if (balanceRes.ok) {
+                const data = await balanceRes.json();
+                if (data.success) setBalance(data.data);
+            }
+            
+            // Адрес
+            const addrRes = await fetch(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}`);
+            if (addrRes.ok) {
+                const data = await addrRes.json();
+                if (data.success) setAddress(data.data.address);
+            }
+            
+            // Выводы
+            const wdRes = await fetch(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`);
+            if (wdRes.ok) {
+                const data = await wdRes.json();
+                if (data.success) setWithdrawals(data.withdrawals);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    // Обновление данных
-    const refreshData = async () => {
-        setIsRefreshing(true);
-        await loadAllData();
-        showToast?.('✅ Данные обновлены', 'success');
-    };
+    useEffect(() => {
+        loadData();
+    }, [telegramId]);
 
-    // Копирование в буфер обмена
-    const copyToClipboard = (text, label) => {
-        if (!text) return;
-        navigator.clipboard.writeText(text);
-        showToast?.(`✅ ${label} скопирован`, 'success');
-    };
+    // Форматирование
+    const formatUSDT = (amount) => `${parseFloat(amount || 0).toFixed(2)} USDT`;
+    const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 
-    // Форматирование USDT
-    const formatUSDT = (num) => {
-        const value = parseFloat(num || 0);
-        return `${value.toFixed(2)} USDT`;
-    };
-
-    // Обработка пополнения
-    const handleDeposit = () => {
-        // Адрес уже загружен и отображается
-    };
-
-    // Обработка вывода
-    const handleWithdrawSubmit = async (e) => {
+    // Вывод средств
+    const handleWithdraw = async (e) => {
         e.preventDefault();
         
-        if (!telegramId) {
-            showToast?.('❌ Не указан ID пользователя', 'error');
+        if (!withdrawData.amount || parseFloat(withdrawData.amount) < 10) {
+            alert('Минимальная сумма вывода: 10 USDT');
             return;
         }
-
-        const amount = parseFloat(withdrawAmount);
-        if (!amount || amount < 10) {
-            showToast?.('❌ Минимальная сумма вывода: 10 USDT', 'error');
+        
+        if (parseFloat(withdrawData.amount) > balance.available) {
+            alert(`Недостаточно средств. Доступно: ${formatUSDT(balance.available)}`);
             return;
         }
-
-        if (!withdrawAddress || withdrawAddress.length < 20) {
-            showToast?.('❌ Введите корректный адрес USDT', 'error');
+        
+        if (!withdrawData.address || withdrawData.address.length < 20) {
+            alert('Введите корректный адрес кошелька');
             return;
         }
-
-        if (balanceData && amount > balanceData.available) {
-            showToast?.(`❌ Недостаточно средств. Доступно: ${formatUSDT(balanceData.available)}`, 'error');
-            return;
-        }
-
+        
         try {
-            const response = await fetch(`${API_BASE_URL}/api/wallet/withdrawal/request`, {
+            const res = await fetch(`${API_BASE_URL}/api/wallet/withdrawal/request`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     telegramId,
-                    amount: amount,
-                    address: withdrawAddress,
-                    network: withdrawNetwork,
+                    ...withdrawData,
                     currency: 'USDT'
                 })
             });
-
-            const result = await response.json();
-            if (result.success) {
-                showToast?.(`✅ Запрос на вывод ${formatUSDT(amount)} создан!`, 'success');
-                setWithdrawAmount('');
-                setWithdrawAddress('');
-                // Обновляем баланс
-                setTimeout(() => loadBalanceData(), 2000);
+            
+            const data = await res.json();
+            if (data.success) {
+                alert('✅ Запрос на вывод создан!');
+                setWithdrawData({ amount: '', address: '', network: 'BEP20' });
+                loadData();
+                setActiveTab('history');
             } else {
-                showToast?.(`❌ ${result.error}`, 'error');
+                alert(`❌ ${data.error}`);
             }
         } catch (error) {
-            console.error('Ошибка вывода:', error);
-            showToast?.('❌ Ошибка при создании запроса на вывод', 'error');
+            alert('❌ Ошибка при создании запроса');
         }
     };
 
-    // Ручная проверка депозитов (для админа)
-    const checkDeposits = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/check-usdt-deposits`);
-            const result = await response.json();
-            if (result.success) {
-                showToast?.(`✅ ${result.message}`, 'success');
-                setTimeout(() => loadAllData(), 3000);
-            }
-        } catch (error) {
-            showToast?.('❌ Ошибка проверки депозитов', 'error');
-        }
+    // Копирование
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        alert('✅ Скопировано!');
     };
 
-    // Эффект загрузки данных при монтировании
-    useEffect(() => {
-        if (telegramId) {
-            loadAllData();
-        }
-    }, [telegramId]);
-
-    if (isLoading && !balanceData) {
+    if (isLoading && activeTab === 'balance') {
         return (
-            <div className="usdt-loading">
-                <div className="loading-spinner"></div>
-                <p>Загрузка USDT кошелька...</p>
+            <div className="tg-loading">
+                <div className="tg-spinner"></div>
+                <p style={{ color: tgColors.hint }}>Загрузка...</p>
             </div>
         );
     }
 
     return (
-        <div className="usdt-wallet">
-            {/* Вкладки */}
-            <div className="usdt-tabs">
-                <button 
-                    className={`usdt-tab ${activeTab === 'balance' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('balance')}
-                >
-                    💎 Баланс
+        <div className="tg-container" style={{ backgroundColor: tgColors.bg }}>
+            {/* Хедер */}
+            <div className="tg-header" style={{ backgroundColor: tgColors.bg }}>
+                <button className="tg-back-btn" onClick={onBack}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 12H5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M12 19L5 12L12 5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
                 </button>
-                <button 
-                    className={`usdt-tab ${activeTab === 'deposit' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('deposit')}
-                >
-                    📥 Пополнить
-                </button>
-                <button 
-                    className={`usdt-tab ${activeTab === 'withdraw' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('withdraw')}
-                >
-                    📤 Вывести
-                </button>
-                <button 
-                    className={`usdt-tab ${activeTab === 'history' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('history')}
-                >
-                    📋 История
-                </button>
+                <h2 className="tg-title" style={{ color: tgColors.text }}>USDT Кошелек</h2>
+                <div className="tg-header-placeholder"></div>
             </div>
 
-            {/* Контент вкладок */}
-            <div className="usdt-content">
-                {/* Вкладка баланса */}
+            {/* Вкладки */}
+            <div className="tg-tabs">
+                {['balance', 'deposit', 'withdraw', 'history'].map((tab) => (
+                    <button
+                        key={tab}
+                        className={`tg-tab ${activeTab === tab ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tab)}
+                        style={{
+                            color: activeTab === tab ? tgColors.button : tgColors.hint,
+                            borderBottomColor: activeTab === tab ? tgColors.button : 'transparent'
+                        }}
+                    >
+                        {tab === 'balance' && '💎 Баланс'}
+                        {tab === 'deposit' && '📥 Пополнить'}
+                        {tab === 'withdraw' && '📤 Вывести'}
+                        {tab === 'history' && '📋 История'}
+                    </button>
+                ))}
+            </div>
+
+            {/* Контент */}
+            <div className="tg-content">
+                {/* БАЛАНС */}
                 {activeTab === 'balance' && (
-                    <div className="balance-tab">
-                        <div className="usdt-balance-card">
-                            <div className="balance-header">
-                                <h3>Ваш баланс USDT</h3>
-                                <button 
-                                    className="refresh-btn"
-                                    onClick={refreshData}
-                                    disabled={isRefreshing}
-                                    title="Обновить"
-                                >
-                                    {isRefreshing ? '⏳' : '🔄'}
-                                </button>
-                            </div>
-                            
-                            <div className="balance-main">
-                                <div className="balance-total">
-                                    {balanceData ? formatUSDT(balanceData.total) : '0.00 USDT'}
+                    <div className="tg-section">
+                        <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+                            <div className="tg-balance-main">
+                                <div className="tg-balance-total" style={{ color: tgColors.text }}>
+                                    {formatUSDT(balance.total)}
                                 </div>
-                                
-                                <div className="balance-details">
-                                    <div className="balance-detail">
-                                        <span className="detail-label">Доступно:</span>
-                                        <span className="detail-value available">
-                                            {balanceData ? formatUSDT(balanceData.available) : '0.00 USDT'}
-                                        </span>
-                                    </div>
-                                    <div className="balance-detail">
-                                        <span className="detail-label">Всего пополнено:</span>
-                                        <span className="detail-value">
-                                            {balanceData ? formatUSDT(balanceData.totalDeposited) : '0.00 USDT'}
-                                        </span>
-                                    </div>
-                                    <div className="balance-detail">
-                                        <span className="detail-label">Выведено:</span>
-                                        <span className="detail-value">
-                                            {balanceData ? formatUSDT(balanceData.totalWithdrawn) : '0.00 USDT'}
-                                        </span>
-                                    </div>
+                                <div className="tg-balance-label" style={{ color: tgColors.hint }}>
+                                    Общий баланс
                                 </div>
                             </div>
                             
-                            <div className="balance-actions">
-                                <button 
-                                    className="action-btn deposit-btn"
+                            <div className="tg-balance-details">
+                                <div className="tg-balance-row">
+                                    <span style={{ color: tgColors.hint }}>Доступно</span>
+                                    <span style={{ color: tgColors.text, fontWeight: '500' }}>
+                                        {formatUSDT(balance.available)}
+                                    </span>
+                                </div>
+                                <div className="tg-balance-row">
+                                    <span style={{ color: tgColors.hint }}>Пополнено</span>
+                                    <span style={{ color: tgColors.text }}>
+                                        {formatUSDT(balance.totalDeposited)}
+                                    </span>
+                                </div>
+                                <div className="tg-balance-row">
+                                    <span style={{ color: tgColors.hint }}>Выведено</span>
+                                    <span style={{ color: tgColors.text }}>
+                                        {formatUSDT(balance.totalWithdrawn)}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div className="tg-actions">
+                                <button
+                                    className="tg-action-btn primary"
                                     onClick={() => setActiveTab('deposit')}
+                                    style={{
+                                        backgroundColor: tgColors.button,
+                                        color: tgColors.buttonText
+                                    }}
                                 >
                                     Пополнить
                                 </button>
-                                <button 
-                                    className="action-btn withdraw-btn"
+                                <button
+                                    className="tg-action-btn secondary"
                                     onClick={() => setActiveTab('withdraw')}
-                                    disabled={!balanceData || balanceData.available < 10}
+                                    disabled={balance.available < 10}
+                                    style={{
+                                        borderColor: tgColors.hint,
+                                        color: tgColors.text
+                                    }}
                                 >
                                     Вывести
                                 </button>
                             </div>
                         </div>
-
+                        
                         {/* Быстрые действия */}
-                        <div className="quick-actions">
-                            <button 
-                                className="quick-action"
-                                onClick={() => checkDeposits()}
-                                title="Проверить депозиты"
+                        <div className="tg-quick-actions">
+                            <button
+                                className="tg-quick-btn"
+                                onClick={loadData}
+                                style={{ color: tgColors.button }}
                             >
-                                🔍 Проверить депозиты
-                            </button>
-                            <button 
-                                className="quick-action"
-                                onClick={() => loadAddressData()}
-                                title="Обновить адрес"
-                            >
-                                🔄 Обновить адрес
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909" stroke="currentColor" strokeWidth="2"/>
+                                    <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2"/>
+                                </svg>
+                                Обновить
                             </button>
                         </div>
                     </div>
                 )}
 
-                {/* Вкладка пополнения */}
-                {activeTab === 'deposit' && addressData && (
-                    <div className="deposit-tab">
-                        <div className="deposit-card">
-                            <div className="deposit-header">
-                                <h3>Пополнение USDT</h3>
-                                <div className="network-badge">{addressData.network}</div>
-                            </div>
+                {/* ПОПОЛНЕНИЕ */}
+                {activeTab === 'deposit' && (
+                    <div className="tg-section">
+                        <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+                            <h3 style={{ color: tgColors.text, marginBottom: '16px' }}>
+                                Ваш адрес для пополнения
+                            </h3>
                             
-                            <div className="address-info">
-                                <div className="address-label">Ваш уникальный адрес:</div>
-                                <div className="address-container">
-                                    <code className="address-value">
-                                        {addressData.address}
+                            <div className="tg-address-container">
+                                <div className="tg-address-label" style={{ color: tgColors.hint }}>
+                                    USDT (BEP20)
+                                </div>
+                                <div className="tg-address-value">
+                                    <code style={{ color: tgColors.text }}>
+                                        {address || 'Загрузка...'}
                                     </code>
-                                    <button 
-                                        className="copy-btn"
-                                        onClick={() => copyToClipboard(addressData.address, 'Адрес')}
-                                        title="Копировать адрес"
+                                    <button
+                                        className="tg-copy-btn"
+                                        onClick={() => copyToClipboard(address)}
+                                        style={{ color: tgColors.button }}
                                     >
-                                        <CopySVG />
+                                        Копировать
                                     </button>
                                 </div>
                             </div>
                             
-                            <div className="qr-code-container">
-                                {addressData.qrCode && (
-                                    <>
-                                        <img 
-                                            src={addressData.qrCode} 
-                                            alt="QR Code" 
-                                            className="qr-code"
-                                        />
-                                        <div className="qr-hint">Отсканируйте для пополнения</div>
-                                    </>
+                            <div className="tg-qr-section">
+                                {showQR && address ? (
+                                    <div className="tg-qr-container">
+                                        {/* QR код генерируется на сервере */}
+                                        <div className="tg-qr-placeholder">
+                                            <div className="tg-qr-code" onClick={() => setShowQR(false)}>
+                                                {/* Здесь будет QR код */}
+                                                QR Code
+                                            </div>
+                                            <p style={{ color: tgColors.hint, fontSize: '14px' }}>
+                                                Отсканируйте для пополнения
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        className="tg-qr-btn"
+                                        onClick={() => setShowQR(true)}
+                                        style={{ color: tgColors.button }}
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M1 1H5V5H1V1ZM1 19H5V23H1V19ZM19 1H23V5H19V1ZM19 19H23V23H19V19ZM3 3V3H3V3ZM3 21V21H3V3ZM21 3V3H3V3ZM21 21V21H3V3ZM7 7H11V11H7V7ZM7 13H11V17H7V13ZM13 7H17V11H13V7ZM13 13H17V17H13V13Z" fill="currentColor"/>
+                                        </svg>
+                                        Показать QR код
+                                    </button>
                                 )}
                             </div>
                             
-                            <div className="deposit-instructions">
-                                <h4>Инструкция по пополнению:</h4>
-                                <ol>
-                                    <li>Откройте Trust Wallet или Binance</li>
-                                    <li>Выберите USDT (BEP20 сеть)</li>
-                                    <li>Отправьте USDT на адрес выше</li>
+                            <div className="tg-instructions">
+                                <h4 style={{ color: tgColors.text, marginBottom: '12px' }}>
+                                    📝 Инструкция
+                                </h4>
+                                <ol style={{ color: tgColors.text, fontSize: '14px', lineHeight: '1.6' }}>
+                                    <li>Отправляйте только USDT в сети BEP20</li>
                                     <li>Минимальная сумма: 10 USDT</li>
-                                    <li>Средства зачислятся автоматически</li>
+                                    <li>Депозит обрабатывается автоматически</li>
+                                    <li>Обычное время зачисления: 5-30 минут</li>
                                 </ol>
-                                
-                                <div className="deposit-warning">
-                                    ⚠️ <strong>Внимание:</strong> Отправляйте только USDT в сети {addressData.network}!<br/>
-                                    Другие монеты будут утеряны!
-                                </div>
-                            </div>
-                            
-                            <div className="deposit-actions">
-                                <button 
-                                    className="action-btn copy-all-btn"
-                                    onClick={() => copyToClipboard(addressData.address, 'Адрес')}
-                                >
-                                    <CopySVG /> Копировать адрес
-                                </button>
-                                <button 
-                                    className="action-btn back-btn"
-                                    onClick={() => setActiveTab('balance')}
-                                >
-                                    Назад
-                                </button>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Вкладка вывода */}
+                {/* ВЫВОД */}
                 {activeTab === 'withdraw' && (
-                    <div className="withdraw-tab">
-                        <div className="withdraw-card">
-                            <div className="withdraw-header">
-                                <h3>Вывод USDT</h3>
-                                {balanceData && (
-                                    <div className="available-balance">
-                                        Доступно: {formatUSDT(balanceData.available)}
-                                    </div>
-                                )}
+                    <div className="tg-section">
+                        <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+                            <h3 style={{ color: tgColors.text, marginBottom: '20px' }}>
+                                Вывод USDT
+                            </h3>
+                            
+                            <div className="tg-withdraw-info" style={{ color: tgColors.hint, marginBottom: '20px' }}>
+                                Доступно: <span style={{ color: tgColors.text, fontWeight: '500' }}>
+                                    {formatUSDT(balance.available)}
+                                </span>
                             </div>
                             
-                            <form onSubmit={handleWithdrawSubmit} className="withdraw-form">
-                                <div className="form-group">
-                                    <label htmlFor="withdrawAmount">
-                                        Сумма вывода (USDT)
+                            <form onSubmit={handleWithdraw} className="tg-form">
+                                <div className="tg-form-group">
+                                    <label style={{ color: tgColors.hint, fontSize: '14px' }}>
+                                        Сумма (USDT)
                                     </label>
                                     <input
-                                        id="withdrawAmount"
                                         type="number"
                                         step="0.01"
                                         min="10"
-                                        max={balanceData?.available || 0}
-                                        value={withdrawAmount}
-                                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                                        placeholder="Введите сумму"
+                                        max={balance.available}
+                                        value={withdrawData.amount}
+                                        onChange={(e) => setWithdrawData({...withdrawData, amount: e.target.value})}
+                                        placeholder="10.00"
+                                        style={{
+                                            backgroundColor: tgColors.bg,
+                                            color: tgColors.text,
+                                            borderColor: tgColors.hint
+                                        }}
                                         required
                                     />
-                                    <div className="amount-hint">
+                                    <div className="tg-form-hint" style={{ color: tgColors.hint }}>
                                         Минимум: 10 USDT
                                     </div>
                                 </div>
                                 
-                                <div className="form-group">
-                                    <label htmlFor="withdrawNetwork">
+                                <div className="tg-form-group">
+                                    <label style={{ color: tgColors.hint, fontSize: '14px' }}>
                                         Сеть
                                     </label>
                                     <select
-                                        id="withdrawNetwork"
-                                        value={withdrawNetwork}
-                                        onChange={(e) => setWithdrawNetwork(e.target.value)}
+                                        value={withdrawData.network}
+                                        onChange={(e) => setWithdrawData({...withdrawData, network: e.target.value})}
+                                        style={{
+                                            backgroundColor: tgColors.bg,
+                                            color: tgColors.text,
+                                            borderColor: tgColors.hint
+                                        }}
                                     >
                                         <option value="BEP20">BEP20 (Binance Smart Chain)</option>
                                         <option value="ERC20">ERC20 (Ethereum)</option>
                                         <option value="TRC20">TRC20 (Tron)</option>
                                     </select>
-                                    <div className="network-hint">
-                                        Убедитесь, что адрес поддерживает выбранную сеть
-                                    </div>
                                 </div>
                                 
-                                <div className="form-group">
-                                    <label htmlFor="withdrawAddress">
+                                <div className="tg-form-group">
+                                    <label style={{ color: tgColors.hint, fontSize: '14px' }}>
                                         Адрес кошелька
                                     </label>
                                     <textarea
-                                        id="withdrawAddress"
-                                        value={withdrawAddress}
-                                        onChange={(e) => setWithdrawAddress(e.target.value)}
-                                        placeholder="Введите адрес USDT кошелька"
-                                        rows="2"
+                                        value={withdrawData.address}
+                                        onChange={(e) => setWithdrawData({...withdrawData, address: e.target.value})}
+                                        placeholder="0x..."
+                                        rows="3"
+                                        style={{
+                                            backgroundColor: tgColors.bg,
+                                            color: tgColors.text,
+                                            borderColor: tgColors.hint
+                                        }}
                                         required
                                     />
-                                    <div className="address-hint">
-                                        Пример: 0x742d35Cc6634C0532925a3b844Bc9e
-                                    </div>
                                 </div>
                                 
-                                <div className="withdraw-info">
-                                    <div className="info-item">
-                                        <span>Комиссия сети:</span>
-                                        <span>≈ $1-3</span>
-                                    </div>
-                                    <div className="info-item">
-                                        <span>Время обработки:</span>
-                                        <span>1-24 часа</span>
-                                    </div>
+                                <div className="tg-withdraw-note" style={{ color: tgColors.hint, fontSize: '13px' }}>
+                                    ⚠️ Проверьте адрес перед отправкой. Ошибки необратимы.
                                 </div>
                                 
-                                <div className="withdraw-actions">
-                                    <button 
-                                        type="submit"
-                                        className="action-btn submit-btn"
-                                        disabled={!withdrawAmount || !withdrawAddress}
-                                    >
-                                        📤 Отправить запрос на вывод
-                                    </button>
-                                    <button 
-                                        type="button"
-                                        className="action-btn back-btn"
-                                        onClick={() => setActiveTab('balance')}
-                                    >
-                                        Отмена
-                                    </button>
-                                </div>
+                                <button
+                                    type="submit"
+                                    className="tg-submit-btn"
+                                    disabled={!withdrawData.amount || !withdrawData.address}
+                                    style={{
+                                        backgroundColor: withdrawData.amount && withdrawData.address ? tgColors.button : tgColors.hint,
+                                        color: tgColors.buttonText,
+                                        opacity: withdrawData.amount && withdrawData.address ? 1 : 0.5
+                                    }}
+                                >
+                                    📤 Отправить на вывод
+                                </button>
                             </form>
                         </div>
                     </div>
                 )}
 
-                {/* Вкладка истории */}
+                {/* ИСТОРИЯ */}
                 {activeTab === 'history' && (
-                    <div className="history-tab">
-                        <div className="history-card">
-                            <div className="history-header">
-                                <h3>История операций USDT</h3>
-                                <button 
-                                    className="refresh-btn"
-                                    onClick={() => loadTransactions()}
-                                    title="Обновить историю"
-                                >
-                                    🔄
-                                </button>
-                            </div>
+                    <div className="tg-section">
+                        <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+                            <h3 style={{ color: tgColors.text, marginBottom: '20px' }}>
+                                История операций
+                            </h3>
                             
-                            {transactions.length === 0 ? (
-                                <div className="no-transactions">
-                                    <div className="no-transactions-icon">📭</div>
-                                    <p>Нет операций с USDT</p>
-                                    <button 
-                                        className="action-btn make-deposit"
-                                        onClick={() => setActiveTab('deposit')}
-                                    >
-                                        Сделать первый депозит
-                                    </button>
+                            {withdrawals.length === 0 ? (
+                                <div className="tg-empty" style={{ color: tgColors.hint }}>
+                                    📭 Нет операций
                                 </div>
                             ) : (
-                                <div className="transactions-list">
-                                    {transactions.map((tx) => (
-                                        <div key={tx._id} className="transaction-item">
-                                            <div className="transaction-icon">
-                                                {tx.type === 'deposit' ? '📥' : 
-                                                 tx.type === 'withdrawal' ? '📤' : '💸'}
+                                <div className="tg-history-list">
+                                    {withdrawals.map((wd) => (
+                                        <div key={wd.id} className="tg-history-item">
+                                            <div className="tg-history-icon">
+                                                📤
                                             </div>
-                                            
-                                            <div className="transaction-details">
-                                                <div className="transaction-header">
-                                                    <span className="transaction-type">
-                                                        {tx.type === 'deposit' ? 'Пополнение' : 
-                                                         tx.type === 'withdrawal' ? 'Вывод' : tx.type}
+                                            <div className="tg-history-details">
+                                                <div className="tg-history-top">
+                                                    <span style={{ color: tgColors.text, fontWeight: '500' }}>
+                                                        Вывод USDT
                                                     </span>
-                                                    <span className="transaction-date">
-                                                        {new Date(tx.createdAt).toLocaleDateString('ru-RU')}
+                                                    <span style={{ color: tgColors.hint, fontSize: '12px' }}>
+                                                        {formatDate(wd.created_at)}
                                                     </span>
                                                 </div>
-                                                
-                                                <div className="transaction-description">
-                                                    {tx.description || 'USDT транзакция'}
+                                                <div className="tg-history-address" style={{ color: tgColors.hint }}>
+                                                    {wd.address.substring(0, 20)}...
                                                 </div>
-                                                
-                                                {tx.status && (
-                                                    <div className={`transaction-status ${tx.status}`}>
-                                                        {tx.status === 'completed' ? '✅ Завершено' : 
-                                                         tx.status === 'pending' ? '⏳ В обработке' : 
-                                                         tx.status === 'failed' ? '❌ Ошибка' : tx.status}
-                                                    </div>
-                                                )}
+                                                <div className={`tg-history-status status-${wd.status}`}>
+                                                    {wd.status === 'pending' && '⏳ Ожидание'}
+                                                    {wd.status === 'completed' && '✅ Выполнено'}
+                                                    {wd.status === 'rejected' && '❌ Отклонено'}
+                                                    {wd.status === 'processing' && '🔄 В обработке'}
+                                                </div>
                                             </div>
-                                            
-                                            <div className={`transaction-amount ${tx.type === 'deposit' ? 'positive' : 'negative'}`}>
-                                                {tx.type === 'deposit' ? '+' : '-'}{formatUSDT(tx.amount)}
+                                            <div className="tg-history-amount" style={{ color: wd.status === 'completed' ? '#34C759' : tgColors.text }}>
+                                                -{formatUSDT(wd.amount)}
                                             </div>
                                         </div>
                                     ))}
@@ -560,4 +464,4 @@ function USDTWallet({ telegramId, showToast }) {
     );
 }
 
-export default USDTWallet;
+export default USDTWalletTG;

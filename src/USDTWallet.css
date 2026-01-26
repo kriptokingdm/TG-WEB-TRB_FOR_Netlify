@@ -1,795 +1,478 @@
-/* USDTWallet.css - Стили для USDT кошелька в стиле Telegram */
-
-.usdt-wallet {
-    background: var(--tg-theme-bg-color, #ffffff);
+/* USDTWalletTG.css */
+.tg-container {
     min-height: 100vh;
-    color: var(--tg-theme-text-color, #000000);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Загрузка */
-.usdt-loading {
+.tg-header {
+    padding: 12px 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    min-height: 300px;
-}
-
-.usdt-loading .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(51, 144, 236, 0.2);
-    border-top: 3px solid var(--tg-theme-button-color, #3390ec);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-}
-
-.usdt-loading p {
-    color: var(--tg-theme-hint-color, #8e8e93);
-    font-size: 15px;
-}
-
-/* Вкладки */
-.usdt-tabs {
-    display: flex;
-    background: var(--tg-theme-bg-color, #ffffff);
-    border-bottom: 1px solid var(--tg-border-color, #e5e5ea);
+    justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
-.usdt-tab {
+.tg-back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tg-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    text-align: center;
+    flex: 1;
+}
+
+.tg-header-placeholder {
+    width: 48px;
+}
+
+.tg-tabs {
+    display: flex;
+    border-bottom: 1px solid;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tg-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.tg-tab {
     flex: 1;
     padding: 16px 8px;
     background: none;
     border: none;
-    border-bottom: 3px solid transparent;
-    color: var(--tg-theme-hint-color, #8e8e93);
+    border-bottom: 3px solid;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
+    white-space: nowrap;
+    min-width: 80px;
 }
 
-.usdt-tab:hover {
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.usdt-tab.active {
-    color: var(--tg-theme-button-color, #3390ec);
-    border-bottom-color: var(--tg-theme-button-color, #3390ec);
-    font-weight: 600;
-}
-
-/* Контент вкладок */
-.usdt-content {
+.tg-content {
     padding: 16px;
 }
 
-/* Карточка баланса */
-.usdt-balance-card {
-    background: var(--tg-card-bg, #ffffff);
+.tg-section {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tg-card {
     border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
     margin-bottom: 16px;
 }
 
-.balance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.tg-balance-main {
+    text-align: center;
     margin-bottom: 24px;
 }
 
-.balance-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.refresh-btn {
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--tg-theme-text-color, #000000);
-    font-size: 16px;
-    transition: all 0.2s ease;
-}
-
-.refresh-btn:hover:not(:disabled) {
-    background: var(--tg-input-bg, #f2f2f7);
-}
-
-.refresh-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.balance-main {
-    margin-bottom: 24px;
-}
-
-.balance-total {
+.tg-balance-total {
     font-size: 40px;
     font-weight: 700;
-    color: var(--tg-theme-text-color, #000000);
-    margin-bottom: 16px;
-    line-height: 1.2;
+    line-height: 1;
+    margin-bottom: 8px;
 }
 
-.balance-details {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.tg-balance-label {
+    font-size: 14px;
 }
 
-.balance-detail {
+.tg-balance-details {
+    margin-bottom: 24px;
+}
+
+.tg-balance-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--tg-border-color, #e5e5ea);
+    padding: 12px 0;
+    border-bottom: 1px solid;
 }
 
-.balance-detail:last-child {
+.tg-balance-row:last-child {
     border-bottom: none;
 }
 
-.detail-label {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-.detail-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.detail-value.available {
-    color: #34C759; /* Зеленый для доступных средств */
-}
-
-.balance-actions {
+.tg-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-.action-btn {
+.tg-action-btn {
     padding: 14px;
-    border: none;
     border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    border: none;
+    transition: opacity 0.2s ease;
 }
 
-.deposit-btn {
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-}
-
-.deposit-btn:hover {
+.tg-action-btn.primary:hover {
     opacity: 0.9;
 }
 
-.withdraw-btn {
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    color: var(--tg-theme-text-color, #000000);
-    border: 1px solid var(--tg-border-color, #e5e5ea);
+.tg-action-btn.secondary {
+    background: transparent;
+    border: 1px solid;
 }
 
-.withdraw-btn:hover:not(:disabled) {
-    background: var(--tg-input-bg, #f2f2f7);
-}
-
-.withdraw-btn:disabled {
+.tg-action-btn.secondary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-/* Быстрые действия */
-.quick-actions {
+.tg-quick-actions {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
 }
 
-.quick-action {
-    flex: 1;
-    min-width: 150px;
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 14px;
-    color: var(--tg-theme-text-color, #000000);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-}
-
-.quick-action:hover {
-    background: var(--tg-input-bg, #f2f2f7);
-}
-
-/* Карточка пополнения */
-.deposit-card {
-    background: var(--tg-card-bg, #ffffff);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.deposit-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-.deposit-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.network-badge {
-    background: linear-gradient(135deg, #3390ec 0%, #1e6fd9 100%);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.address-info {
-    margin-bottom: 24px;
-}
-
-.address-label {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin-bottom: 8px;
-}
-
-.address-container {
+.tg-quick-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    border-radius: 12px;
-    padding: 16px;
-}
-
-.address-value {
-    flex: 1;
-    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-    font-size: 13px;
-    color: var(--tg-theme-text-color, #000000);
-    word-break: break-all;
-}
-
-.copy-btn {
+    gap: 8px;
     background: none;
     border: none;
-    width: 36px;
-    height: 36px;
+    padding: 12px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.tg-address-container {
+    margin-bottom: 20px;
+}
+
+.tg-address-label {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.tg-address-value {
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid;
+}
+
+.tg-address-value code {
+    font-family: 'Menlo', monospace;
+    font-size: 13px;
+    word-break: break-all;
+    flex: 1;
+}
+
+.tg-copy-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.tg-qr-section {
+    margin-bottom: 24px;
+}
+
+.tg-qr-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border: 1px solid;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.tg-qr-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    border: 1px solid;
+}
+
+.tg-qr-placeholder {
+    cursor: pointer;
+}
+
+.tg-qr-code {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 12px;
+    background: #f5f5f5;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    color: var(--tg-theme-text-color, #000000);
-    transition: all 0.2s ease;
+    color: #666;
+    font-size: 14px;
 }
 
-.copy-btn:hover {
-    background: var(--tg-input-bg, #f2f2f7);
-}
-
-.copy-btn svg {
-    width: 16px;
-    height: 16px;
-}
-
-.qr-code-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 24px;
-    padding: 24px;
-    background: white;
+.tg-instructions {
+    background: var(--tg-theme-bg-color, #ffffff);
     border-radius: 12px;
-    border: 1px solid var(--tg-border-color, #e5e5ea);
+    padding: 16px;
+    border: 1px solid;
 }
 
-.qr-code {
-    width: 200px;
-    height: 200px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-}
-
-.qr-hint {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    text-align: center;
-}
-
-.deposit-instructions {
-    margin-bottom: 24px;
-}
-
-.deposit-instructions h4 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.deposit-instructions ol {
-    padding-left: 20px;
-    margin-bottom: 16px;
-}
-
-.deposit-instructions li {
-    margin-bottom: 8px;
-    color: var(--tg-theme-text-color, #000000);
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.deposit-warning {
-    background: rgba(255, 149, 0, 0.1);
-    border: 1px solid rgba(255, 149, 0, 0.3);
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 13px;
-    color: #FF9500;
-    line-height: 1.5;
-}
-
-.deposit-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.copy-all-btn {
-    flex: 2;
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-}
-
-.back-btn {
-    flex: 1;
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    color: var(--tg-theme-text-color, #000000);
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-}
-
-/* Карточка вывода */
-.withdraw-card {
-    background: var(--tg-card-bg, #ffffff);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.withdraw-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-.withdraw-header h3 {
+.tg-instructions ol {
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
+    padding-left: 20px;
 }
 
-.available-balance {
-    background: rgba(52, 199, 89, 0.1);
-    color: #34C759;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+.tg-instructions li {
+    margin-bottom: 8px;
 }
 
-.withdraw-form {
+.tg-instructions li:last-child {
+    margin-bottom: 0;
+}
+
+.tg-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.form-group {
+.tg-form-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.form-group label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    border-radius: 12px;
+.tg-form-group input,
+.tg-form-group select,
+.tg-form-group textarea {
     padding: 14px;
-    font-size: 16px;
-    color: var(--tg-theme-text-color, #000000);
-    font-family: inherit;
-    transition: all 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #3390ec);
-    box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.amount-hint,
-.network-hint,
-.address-hint {
-    font-size: 13px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    margin-top: 4px;
-}
-
-.withdraw-info {
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
     border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 1px solid;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.tg-form-group input:focus,
+.tg-form-group select:focus,
+.tg-form-group textarea:focus {
+    border-color: var(--tg-theme-link-color, #3390ec);
+}
+
+.tg-form-hint {
+    font-size: 13px;
+}
+
+.tg-withdraw-note {
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255, 149, 0, 0.1);
+}
+
+.tg-submit-btn {
     padding: 16px;
-    margin-top: 8px;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--tg-border-color, #e5e5ea);
-}
-
-.info-item:last-child {
-    border-bottom: none;
-}
-
-.info-item span:first-child {
-    color: var(--tg-theme-hint-color, #8e8e93);
-    font-size: 14px;
-}
-
-.info-item span:last-child {
-    color: var(--tg-theme-text-color, #000000);
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 600;
-    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s ease;
 }
 
-.withdraw-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
+.tg-submit-btn:hover:not(:disabled) {
+    opacity: 0.9;
 }
 
-.submit-btn {
-    flex: 2;
-    background: linear-gradient(135deg, #FF3B30 0%, #FF9500 100%);
-    color: white;
-}
-
-.submit-btn:disabled {
-    opacity: 0.5;
+.tg-submit-btn:disabled {
     cursor: not-allowed;
 }
 
-/* Карточка истории */
-.history-card {
-    background: var(--tg-card-bg, #ffffff);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--tg-border-color, #e5e5ea);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+.tg-empty {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
 }
 
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--tg-border-color, #e5e5ea);
-}
-
-.history-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-/* Список транзакций */
-.transactions-list {
+.tg-history-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.transaction-item {
+.tg-history-item {
     display: flex;
     align-items: center;
-    padding: 16px;
-    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
-    border-radius: 12px;
     gap: 16px;
-    transition: all 0.2s ease;
+    padding: 16px;
+    background: var(--tg-theme-bg-color, #ffffff);
+    border-radius: 12px;
+    border: 1px solid;
 }
 
-.transaction-item:hover {
-    background: var(--tg-input-bg, #f2f2f7);
-}
-
-.transaction-icon {
+.tg-history-icon {
     font-size: 24px;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(51, 144, 236, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     flex-shrink: 0;
-    color: var(--tg-theme-button-color, #3390ec);
 }
 
-.transaction-details {
+.tg-history-details {
     flex: 1;
     min-width: 0;
 }
 
-.transaction-header {
+.tg-history-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 4px;
 }
 
-.transaction-type {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000000);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-}
-
-.transaction-date {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    flex-shrink: 0;
-    margin-left: 8px;
-}
-
-.transaction-description {
+.tg-history-address {
     font-size: 13px;
-    color: var(--tg-theme-hint-color, #8e8e93);
     margin-bottom: 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-break: break-all;
 }
 
-.transaction-status {
+.tg-history-status {
     display: inline-block;
-    font-size: 12px;
     padding: 4px 8px;
     border-radius: 6px;
-    font-weight: 600;
-    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.transaction-status.completed {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
-}
-
-.transaction-status.pending {
+.status-pending {
     background: rgba(245, 158, 11, 0.1);
     color: #d97706;
 }
 
-.transaction-status.failed {
+.status-completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.status-rejected {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
 }
 
-.transaction-amount {
+.status-processing {
+    background: rgba(51, 144, 236, 0.1);
+    color: #3390ec;
+}
+
+.tg-history-amount {
     font-size: 16px;
     font-weight: 600;
-    margin-left: 8px;
     flex-shrink: 0;
-    white-space: nowrap;
 }
 
-.transaction-amount.positive {
-    color: #34C759;
+.tg-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    min-height: 200px;
 }
 
-.transaction-amount.negative {
-    color: #FF3B30;
-}
-
-/* Нет транзакций */
-.no-transactions {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-.no-transactions-icon {
-    font-size: 48px;
+.tg-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
     margin-bottom: 16px;
-    opacity: 0.5;
 }
 
-.no-transactions p {
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-.make-deposit {
-    background: var(--tg-theme-button-color, #3390ec);
-    color: var(--tg-theme-button-text-color, #ffffff);
-    border: none;
-    border-radius: 12px;
-    padding: 14px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.make-deposit:hover {
-    opacity: 0.9;
-}
-
-/* Анимации */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
 /* Темная тема */
-[data-theme="dark"] .usdt-balance-card,
-[data-theme="dark"] .deposit-card,
-[data-theme="dark"] .withdraw-card,
-[data-theme="dark"] .history-card {
-    background: var(--tg-card-bg, #1c1c1e);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-[data-theme="dark"] .qr-code-container {
-    background: #2c2c2e;
-    border-color: #3c3c3e;
-}
-
-[data-theme="dark"] .withdraw-info {
-    background: #2c2c2e;
+[data-theme="dark"] .tg-address-value,
+[data-theme="dark"] .tg-qr-btn,
+[data-theme="dark"] .tg-instructions,
+[data-theme="dark"] .tg-history-item {
+    background: var(--tg-theme-bg-color, #1c1c1e);
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .usdt-content {
+    .tg-content {
         padding: 12px;
     }
     
-    .usdt-balance-card,
-    .deposit-card,
-    .withdraw-card,
-    .history-card {
+    .tg-card {
         padding: 16px;
     }
     
-    .balance-total {
+    .tg-balance-total {
         font-size: 36px;
     }
     
-    .balance-actions {
-        grid-template-columns: 1fr;
-    }
-    
-    .deposit-actions,
-    .withdraw-actions {
-        flex-direction: column;
-    }
-    
-    .qr-code {
+    .tg-qr-code {
         width: 180px;
         height: 180px;
-    }
-    
-    .quick-actions {
-        flex-direction: column;
-    }
-    
-    .quick-action {
-        min-width: 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .usdt-tab {
-        padding: 14px 4px;
-        font-size: 12px;
+    .tg-tab {
+        font-size: 13px;
+        padding: 14px 6px;
     }
     
-    .balance-total {
+    .tg-balance-total {
         font-size: 32px;
     }
     
-    .transaction-item {
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    
-    .transaction-amount {
-        order: 3;
-        width: 100%;
-        text-align: right;
-        margin-left: 0;
-        margin-top: 8px;
+    .tg-actions {
+        grid-template-columns: 1fr;
     }
 }
 
-/* Safe area для iOS */
+/* iOS safe areas */
 @supports (padding: max(0px)) {
-    .usdt-tabs {
-        padding-top: env(safe-area-inset-top);
-    }
-    
-    .usdt-content {
+    .tg-content {
         padding-bottom: max(16px, env(safe-area-inset-bottom));
     }
 }

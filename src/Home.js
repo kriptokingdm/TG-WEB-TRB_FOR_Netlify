@@ -245,12 +245,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
       console.log('🔍 Ответ активного ордера:', response);
       
       if (response.success && response.hasActiveOrder && response.order) {
-        setHasActiveOrder(true);
-        setActiveOrderId(response.order.order_id);
-        setActiveOrderStatus(response.order.admin_status);
-        setActiveOrderData(response.order);
-        return true;
-      } else {
+  setHasActiveOrder(true);
+  setActiveOrderId(String(response.order.id || response.order.order_id));
+  setActiveOrderStatus(response.order.status);
+  setActiveOrderData(response.order);
+  return true;
+} else {
         setHasActiveOrder(false);
         setActiveOrderId(null);
         setActiveOrderStatus('');
@@ -753,8 +753,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 </div>
                 <div className="tg-order-info">
                   <h2 className="tg-order-title">
-                    Заявка #{activeOrderId?.substring(0, 8)}
-                  </h2>
+  Заявка #{String(activeOrderId || '').substring(0, 8)}
+</h2>
                   <p className="tg-order-subtitle">
                     {activeOrderData?.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                   </p>

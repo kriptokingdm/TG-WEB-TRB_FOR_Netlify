@@ -1,6 +1,6 @@
 // USDTWalletTG.js - Telegram Web App style (optimized)
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import './USDTWalletTG.css';
+import './USDTWallet.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
 

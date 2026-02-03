@@ -1,222 +1,292 @@
-/* Profile.css — Telegram WebApp Classic Profile */
+/* Profile.css - Telegram WebApp native-like profile */
 
 :root {
-    --tg-bg: var(--tg-theme-bg-color, #ffffff);
-    --tg-text: var(--tg-theme-text-color, #000000);
-    --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-    --tg-button: var(--tg-theme-button-color, #3390ec);
-    --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-    --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f7);
-    --tg-border: #e5e5ea;
+  --tg-bg: var(--tg-theme-bg-color, #ffffff);
+  --tg-text: var(--tg-theme-text-color, #000000);
+  --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+  --tg-link: var(--tg-theme-link-color, #3390ec);
+  --tg-button: var(--tg-theme-button-color, #3390ec);
+  --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f7);
+  --tg-separator: rgba(60, 60, 67, 0.12);
+  --tg-card: rgba(120, 120, 128, 0.08);
 }
 
-/* ===== BASE ===== */
-
-.profile-container {
-    min-height: 100vh;
-    background: var(--tg-bg);
-    color: var(--tg-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    padding-bottom: 72px;
+.tg-page {
+  min-height: 100vh;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* ===== HEADER ===== */
-
-.profile-header {
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 12px;
-    border-bottom: 1px solid var(--tg-border);
-    background: var(--tg-bg);
-    position: sticky;
-    top: 0;
-    z-index: 10;
+.tg-header {
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: color-mix(in srgb, var(--tg-bg) 92%, transparent);
+  border-bottom: 1px solid var(--tg-separator);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
-.profile-header-title {
-    font-size: 17px;
-    font-weight: 600;
-    margin: 0;
+.tg-header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
-.back-button,
-.help-button {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: none;
-    color: var(--tg-button);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.tg-header-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: none;
+  color: var(--tg-link);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
 }
 
-/* ===== PROFILE INFO (VERTICAL) ===== */
-
-.profile-info-section {
-    padding: 24px 16px 16px;
-    border-bottom: 1px solid var(--tg-border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+.tg-header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.profile-avatar,
-.profile-avatar-placeholder {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+.is-rotating {
+  animation: tgSpin 0.9s linear infinite;
 }
 
-.profile-avatar-placeholder {
-    background: var(--tg-secondary-bg);
-    color: var(--tg-button);
-    font-size: 32px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+@keyframes tgSpin {
+  to { transform: rotate(360deg); }
 }
 
-.profile-info-content {
-    margin-top: 12px;
+.tg-section {
+  padding: 12px 14px 0;
 }
 
-.profile-name {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
+.tg-content {
+  padding: 12px 14px 24px;
 }
 
-.profile-username {
-    font-size: 14px;
-    color: var(--tg-hint);
-    margin: 4px 0 10px;
+/* Profile card */
+.tg-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--tg-separator);
 }
 
-.profile-id-container {
-    display: flex;
-    justify-content: center;
+.tg-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--tg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.profile-id-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--tg-text);
-    border: none;
-    background: var(--tg-secondary-bg);
-    padding: 6px 10px;
-    border-radius: 8px;
+.tg-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* ===== TABS ===== */
-
-.profile-tabs-container {
-    border-bottom: 1px solid var(--tg-border);
+.tg-avatar-fallback {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--tg-link);
 }
 
-.profile-tabs {
-    display: flex;
+.tg-profile-meta {
+  flex: 1;
+  min-width: 0;
 }
 
-.profile-tab {
-    flex: 1;
-    padding: 12px 0;
-    font-size: 14px;
-    color: var(--tg-hint);
-    background: none;
-    border: none;
-    position: relative;
-    text-align: center;
+.tg-profile-name {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
-.profile-tab.active {
-    color: var(--tg-button);
-    font-weight: 500;
+.tg-profile-username {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--tg-hint);
 }
 
-.profile-tab.active::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 25%;
-    right: 25%;
-    height: 2px;
-    background: var(--tg-button);
-    border-radius: 2px;
+.tg-id-chip {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--tg-separator);
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-/* ❌ УБИРАЕМ БАЛАНСЫ ВО ВКЛАДКАХ */
-.tab-badge {
-    display: none !important;
+.tg-id-chip svg {
+  opacity: 0.9;
 }
 
-/* ===== CONTENT ===== */
-
-.profile-content {
-    padding: 16px;
+.tg-help-chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--tg-separator);
+  background: var(--tg-bg);
+  color: var(--tg-link);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
-/* ===== LOADING ===== */
-
-.profile-loading {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+/* Segmented control (Telegram-like) */
+.tg-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.loading-spinner {
-    width: 36px;
-    height: 36px;
-    border: 3px solid var(--tg-border);
-    border-top-color: var(--tg-button);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 12px;
+.tg-seg-btn {
+  border: 1px solid var(--tg-separator);
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  border-radius: 16px;
+  padding: 12px 12px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+  text-align: left;
+  font-weight: 800;
+  font-size: 14px;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.tg-seg-btn .tg-icon {
+  grid-row: 1 / span 2;
+  color: var(--tg-link);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ===== TOAST ===== */
-
-.message-toast {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--tg-secondary-bg);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 14px;
-    border: 1px solid var(--tg-border);
+.tg-seg-sub {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--tg-hint);
 }
 
-/* ===== REFRESH BUTTON ===== */
-
-.refresh-button {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--tg-button);
-    color: var(--tg-button-text);
-    border: none;
-    font-size: 18px;
+.tg-seg-btn.active {
+  background: color-mix(in srgb, var(--tg-button) 10%, var(--tg-secondary-bg));
+  border-color: color-mix(in srgb, var(--tg-button) 30%, var(--tg-separator));
 }
 
-/* ===== DARK ===== */
+.tg-seg-btn.active .tg-icon {
+  color: var(--tg-button);
+}
 
+/* Loading */
+.tg-loading {
+  height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.tg-spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--tg-separator);
+  border-top-color: var(--tg-button);
+  animation: tgSpin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+.tg-loading-text {
+  color: var(--tg-hint);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Empty */
+.tg-empty {
+  padding: 18px;
+  border: 1px solid var(--tg-separator);
+  border-radius: 18px;
+  background: var(--tg-secondary-bg);
+  text-align: center;
+}
+
+.tg-empty-title {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.tg-primary-btn {
+  border: none;
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Toast */
+.tg-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 200;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 13px;
+  background: rgba(0,0,0,0.78);
+  color: white;
+  max-width: calc(100% - 28px);
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.tg-toast-success { background: rgba(16,185,129,0.92); }
+.tg-toast-error { background: rgba(239,68,68,0.92); }
+.tg-toast-warn { background: rgba(245,158,11,0.92); }
+.tg-toast-info { background: rgba(0,0,0,0.78); }
+
+/* Dark */
 [data-theme="dark"] {
-    --tg-border: #2c2c2e;
+  --tg-separator: rgba(84,84,88,0.65);
+  --tg-card: rgba(255,255,255,0.08);
 }

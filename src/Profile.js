@@ -1,4 +1,4 @@
-// src/Profile.js - Telegram WebApp native-like profile
+// src/Profile.js - NO header, NO toasts, Telegram BackButton only
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './Profile.css';
 import ReferralSystem from './ReferralSystem';
@@ -6,20 +6,8 @@ import USDTWallet from './USDTWallet';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
-// --- Icons (Telegram-like) -------------------------------------------------
+// --- Icons -------------------------------------------------
 const Icon = ({ children }) => <span className="tg-icon">{children}</span>;
-
-const BackSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor" />
-  </svg>
-);
-
-const HelpSVG = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
-  </svg>
-);
 
 const RefreshSVG = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -29,6 +17,12 @@ const RefreshSVG = () => (
       strokeWidth="2"
     />
     <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" />
+  </svg>
+);
+
+const HelpSVG = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
   </svg>
 );
 
@@ -66,7 +60,6 @@ async function fetchJSON(url, { timeoutMs = 8000 } = {}) {
     const text = await res.text();
     let json = null;
     try { json = text ? JSON.parse(text) : null; } catch { json = null; }
-
     return { ok: res.ok, status: res.status, json };
   } catch (e) {
     return { ok: false, status: e?.name === 'AbortError' ? 408 : 0, json: null, error: e };
@@ -75,41 +68,28 @@ async function fetchJSON(url, { timeoutMs = 8000 } = {}) {
   }
 }
 
-function Profile({ navigateTo, telegramUser, showToast }) {
+function Profile({ navigateTo, telegramUser }) {
   const [userData, setUserData] = useState(null);
   const [usdtBalanceData, setUsdtBalanceData] = useState(null);
   const [referralData, setReferralData] = useState(null);
 
-  const [activeTab, setActiveTab] = useState('usdt'); // usdt | referrals
+  const [activeTab, setActiveTab] = useState('usdt');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [message, setMessage] = useState({ type: '', text: '' });
   const refreshTimerRef = useRef(null);
 
   const tg = useMemo(() => window.Telegram?.WebApp || null, []);
   const tgUser = useMemo(() => tg?.initDataUnsafe?.user || null, [tg]);
 
-  const haptic = (type = 'impact', style = 'light') => {
+  const haptic = (type = 'selection', style = 'light') => {
     try {
       const hf = tg?.HapticFeedback;
       if (!hf) return;
       if (type === 'impact') hf.impactOccurred(style);
-      if (type === 'notification') hf.notificationOccurred(style); // 'success'|'warning'|'error'
       if (type === 'selection') hf.selectionChanged();
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
-
-  const showMessage = useCallback((type, text) => {
-    if (showToast) {
-      showToast(text, type);
-      return;
-    }
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 2600);
-  }, [showToast]);
 
   const getUserId = useCallback(() => {
     try {
@@ -136,19 +116,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
   const formatUSDT = (num) => `${Number(num || 0).toFixed(2)} USDT`;
   const formatUSD = (num) => `$${Number(num || 0).toFixed(2)}`;
 
-  const copyToClipboard = useCallback(async (text, label) => {
+  const copyToClipboard = useCallback(async (text) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(String(text));
-      haptic('notification', 'success');
-      showMessage('success', `✅ ${label} скопирован`);
-    } catch {
-      haptic('notification', 'error');
-      showMessage('error', 'Не удалось скопировать');
-    }
-  }, [showMessage]);
+      haptic('impact', 'light');
+    } catch {}
+  }, [haptic]);
 
-  // --- loaders -------------------------------------------------------------
   const loadUSDTBalanceData = useCallback(async () => {
     const userId = getUserId();
     const r = await fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`, { timeoutMs: 8000 });
@@ -181,9 +156,7 @@ function Profile({ navigateTo, telegramUser, showToast }) {
       photoUrl: telegramUser?.photoUrl || tgUser?.photo_url || null,
     });
 
-    // параллельно
     await Promise.allSettled([loadUSDTBalanceData(), loadReferralData()]);
-
     setIsLoading(false);
   }, [getUserId, telegramUser, tgUser, loadUSDTBalanceData, loadReferralData]);
 
@@ -193,19 +166,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     haptic('selection');
 
     try {
-      if (activeTab === 'usdt') {
-        const ok = await loadUSDTBalanceData();
-        showMessage(ok ? 'info' : 'error', ok ? 'Обновлено' : 'Не удалось обновить');
-      } else {
-        const ok = await loadReferralData();
-        showMessage(ok ? 'info' : 'warn', ok ? 'Обновлено' : 'Данные обновлены (fallback)');
-      }
+      if (activeTab === 'usdt') await loadUSDTBalanceData();
+      else await loadReferralData();
     } finally {
       setIsRefreshing(false);
     }
-  }, [activeTab, isRefreshing, loadUSDTBalanceData, loadReferralData, showMessage]);
+  }, [activeTab, isRefreshing, loadUSDTBalanceData, loadReferralData, haptic]);
 
-  // --- Telegram WebApp integration ----------------------------------------
+  // Telegram WebApp: системная кнопка назад (никакого header)
   useEffect(() => {
     if (!tg) return;
 
@@ -214,33 +182,21 @@ function Profile({ navigateTo, telegramUser, showToast }) {
       tg.expand();
       tg.setHeaderColor?.('secondary_bg_color');
       tg.setBackgroundColor?.('bg_color');
-    } catch {
-      // ignore
-    }
+    } catch {}
 
-    // Back button
     try {
       tg.BackButton.show();
       tg.BackButton.onClick(() => navigateTo('home'));
-    } catch {
-      // ignore
-    }
+    } catch {}
 
     return () => {
-      try {
-        tg.BackButton.offClick(() => navigateTo('home'));
-        tg.BackButton.hide();
-      } catch {
-        // ignore
-      }
+      try { tg.BackButton.hide(); } catch {}
     };
   }, [tg, navigateTo]);
 
-  // --- lifecycle -----------------------------------------------------------
   useEffect(() => {
     loadUserData();
 
-    // авто-обновление (только баланс)
     if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     refreshTimerRef.current = setInterval(() => {
       if (activeTab === 'usdt') loadUSDTBalanceData();
@@ -251,25 +207,12 @@ function Profile({ navigateTo, telegramUser, showToast }) {
     };
   }, [activeTab, loadUserData, loadUSDTBalanceData]);
 
-  const handleBack = () => navigateTo('home');
-
-  // --- UI ------------------------------------------------------------------
   if (isLoading) {
     return (
       <div className="tg-page">
-        <div className="tg-header">
-          <button className="tg-header-btn" onClick={handleBack} aria-label="Назад">
-            <BackSVG />
-          </button>
-          <div className="tg-header-title">Профиль</div>
-          <button className="tg-header-btn" onClick={() => navigateTo('help')} aria-label="Помощь">
-            <HelpSVG />
-          </button>
-        </div>
-
         <div className="tg-loading">
           <div className="tg-spinner" />
-          <div className="tg-loading-text">Загрузка профиля…</div>
+          <div className="tg-loading-text">Загрузка…</div>
         </div>
       </div>
     );
@@ -277,26 +220,26 @@ function Profile({ navigateTo, telegramUser, showToast }) {
 
   return (
     <div className="tg-page">
-      {/* Header */}
-      <div className="tg-header">
-        <button className="tg-header-btn" onClick={handleBack} aria-label="Назад">
-          <BackSVG />
+      {/* только иконки справа, без “Профиль” */}
+      <div className="tg-top-actions">
+        <button
+          className="tg-action-icon"
+          onClick={refreshData}
+          disabled={isRefreshing}
+          aria-label="Обновить"
+        >
+          <span className={isRefreshing ? 'is-rotating' : ''}><RefreshSVG /></span>
         </button>
 
-        <div className="tg-header-title">Профиль</div>
-
         <button
-          className={`tg-header-btn ${isRefreshing ? 'is-rotating' : ''}`}
-          onClick={refreshData}
-          aria-label="Обновить"
-          disabled={isRefreshing}
-          title="Обновить"
+          className="tg-action-icon"
+          onClick={() => navigateTo('help')}
+          aria-label="Помощь"
         >
-          <RefreshSVG />
+          <HelpSVG />
         </button>
       </div>
 
-      {/* Profile Card (Telegram-like) */}
       <div className="tg-section">
         <div className="tg-profile-card">
           <div className="tg-avatar">
@@ -313,19 +256,14 @@ function Profile({ navigateTo, telegramUser, showToast }) {
             <div className="tg-profile-name">{userData?.firstName || 'Пользователь'}</div>
             <div className="tg-profile-username">@{userData?.username || 'user'}</div>
 
-            <button className="tg-id-chip" onClick={() => copyToClipboard(userData?.id, 'ID')}>
+            <button className="tg-id-chip" onClick={() => copyToClipboard(userData?.id)}>
               <span>ID: {userData?.id || '—'}</span>
               <CopySVG />
             </button>
           </div>
-
-          <button className="tg-help-chip" onClick={() => navigateTo('help')} aria-label="Помощь">
-            <HelpSVG />
-          </button>
         </div>
       </div>
 
-      {/* Segmented control */}
       <div className="tg-section">
         <div className="tg-segment">
           <button
@@ -352,43 +290,25 @@ function Profile({ navigateTo, telegramUser, showToast }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="tg-content">
         {activeTab === 'usdt' && (
           <USDTWallet
             telegramId={getUserId()}
-            showToast={showToast || showMessage}
+            // ВАЖНО: ничего не показываем — передаем пустые функции
+            showToast={() => {}}
             onRefresh={refreshData}
             isRefreshing={isRefreshing}
           />
         )}
 
         {activeTab === 'referrals' && (
-          <>
-            {referralData ? (
-              <ReferralSystem
-                referralData={referralData}
-                onClose={() => setActiveTab('usdt')}
-                showMessage={showToast || showMessage}
-              />
-            ) : (
-              <div className="tg-empty">
-                <div className="tg-empty-title">Реферальные данные не загружены</div>
-                <button className="tg-primary-btn" onClick={loadReferralData}>
-                  Повторить
-                </button>
-              </div>
-            )}
-          </>
+          <ReferralSystem
+            referralData={referralData || getDefaultReferralData(getUserId())}
+            onClose={() => setActiveTab('usdt')}
+            showMessage={() => {}}
+          />
         )}
       </div>
-
-      {/* Local toast */}
-      {!showToast && message.text && (
-        <div className={`tg-toast tg-toast-${message.type}`}>
-          {message.text}
-        </div>
-      )}
     </div>
   );
 }

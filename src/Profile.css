@@ -1,4 +1,4 @@
-/* Profile.css - Telegram WebApp profile (centered, no header) */
+/* Profile.css - NO header, NO toast, centered like Telegram */
 
 :root {
   --tg-bg: var(--tg-theme-bg-color, #ffffff);
@@ -10,7 +10,7 @@
   --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f7);
   --tg-separator: rgba(60, 60, 67, 0.12);
   --tg-card: rgba(120, 120, 128, 0.08);
-  --tg-maxw: 520px; /* чтобы было по центру и “как системное” */
+  --tg-maxw: 520px;
 }
 
 .tg-page {
@@ -20,7 +20,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Верхняя панель действий (без header) */
+/* top actions (no header title) */
 .tg-top-actions {
   display: flex;
   justify-content: flex-end;
@@ -57,7 +57,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Центрирование секций */
+/* center container */
 .tg-section,
 .tg-content {
   max-width: var(--tg-maxw);
@@ -72,7 +72,7 @@
   padding: 12px 14px 24px;
 }
 
-/* Profile card */
+/* profile card */
 .tg-profile-card {
   display: flex;
   align-items: center;
@@ -144,7 +144,7 @@
   cursor: pointer;
 }
 
-/* Segmented buttons */
+/* segmented */
 .tg-segment {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -192,7 +192,7 @@
   color: var(--tg-button);
 }
 
-/* Loading */
+/* loading */
 .tg-loading {
   height: 70vh;
   display: flex;
@@ -218,55 +218,7 @@
   font-weight: 600;
 }
 
-/* Empty */
-.tg-empty {
-  padding: 18px;
-  border: 1px solid var(--tg-separator);
-  border-radius: 18px;
-  background: var(--tg-secondary-bg);
-  text-align: center;
-}
-
-.tg-empty-title {
-  font-weight: 800;
-  margin-bottom: 10px;
-}
-
-.tg-primary-btn {
-  border: none;
-  background: var(--tg-button);
-  color: var(--tg-button-text);
-  padding: 12px 14px;
-  border-radius: 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-/* ✅ Маленький toast-«таблетка», не на весь экран */
-.tg-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  z-index: 200;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 13px;
-  background: rgba(0,0,0,0.78);
-  color: white;
-  width: max-content;
-  max-width: min(320px, calc(100% - 28px));
-  text-align: center;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-
-.tg-toast-success { background: rgba(16,185,129,0.92); }
-.tg-toast-error { background: rgba(239,68,68,0.92); }
-.tg-toast-warn { background: rgba(245,158,11,0.92); }
-.tg-toast-info { background: rgba(0,0,0,0.78); }
-
-/* Dark */
+/* dark */
 [data-theme="dark"] {
   --tg-separator: rgba(84,84,88,0.65);
   --tg-card: rgba(255,255,255,0.08);

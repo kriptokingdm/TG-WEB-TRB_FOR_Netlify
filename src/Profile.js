@@ -1,4 +1,4 @@
-// src/Profile.js - NO header, NO toasts, Telegram BackButton only
+// src/Profile.js
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './Profile.css';
 import ReferralSystem from './ReferralSystem';
@@ -6,46 +6,48 @@ import USDTWallet from './USDTWallet';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
-// --- Icons -------------------------------------------------
 const Icon = ({ children }) => <span className="tg-icon">{children}</span>;
-
-const RefreshSVG = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909"
-      stroke="currentColor"
-      strokeWidth="2"
-    />
-    <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" />
-  </svg>
-);
 
 const HelpSVG = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+    <path
+      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+      fill="currentColor"
+    />
   </svg>
 );
 
 const USDTSVG = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path d="M19 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H19ZM20 18H4V6H20V18Z" fill="currentColor"/>
-    <path d="M13.25 10.5H12.75V9H10.25V10.5H9.75V12H10.25V13.5H9.75V15H12.25V13.5H12.75V12H13.25V10.5ZM11 12H10.5V13.5H11V12ZM12.5 12H12V13.5H12.5V12Z" fill="currentColor"/>
+    <path
+      d="M19 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H19ZM20 18H4V6H20V18Z"
+      fill="currentColor"
+    />
+    <path
+      d="M13.25 10.5H12.75V9H10.25V10.5H9.75V12H10.25V13.5H9.75V15H12.25V13.5H12.75V12H13.25V10.5ZM11 12H10.5V13.5H11V12ZM12.5 12H12V13.5H12.5V12Z"
+      fill="currentColor"
+    />
   </svg>
 );
 
 const ReferralSVG = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-    <path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z" fill="currentColor"/>
+    <path
+      d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z"
+      fill="currentColor"
+    />
   </svg>
 );
 
 const CopySVG = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
+    <path
+      d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"
+      fill="currentColor"
+    />
   </svg>
 );
 
-// --- Fetch helper with timeout --------------------------------------------
 async function fetchJSON(url, { timeoutMs = 8000 } = {}) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
@@ -72,10 +74,8 @@ function Profile({ navigateTo, telegramUser }) {
   const [userData, setUserData] = useState(null);
   const [usdtBalanceData, setUsdtBalanceData] = useState(null);
   const [referralData, setReferralData] = useState(null);
-
   const [activeTab, setActiveTab] = useState('usdt');
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refreshTimerRef = useRef(null);
 
@@ -126,23 +126,15 @@ function Profile({ navigateTo, telegramUser }) {
 
   const loadUSDTBalanceData = useCallback(async () => {
     const userId = getUserId();
-    const r = await fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`, { timeoutMs: 8000 });
-    if (r.ok && r.json?.success) {
-      setUsdtBalanceData(r.json.data);
-      return true;
-    }
-    return false;
+    const r = await fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`);
+    if (r.ok && r.json?.success) setUsdtBalanceData(r.json.data);
   }, [getUserId]);
 
   const loadReferralData = useCallback(async () => {
     const userId = getUserId();
-    const r = await fetchJSON(`${API_BASE_URL}/api/referrals/info/${userId}`, { timeoutMs: 8000 });
-    if (r.ok && r.json?.success) {
-      setReferralData(r.json.data);
-      return true;
-    }
-    setReferralData(getDefaultReferralData(userId));
-    return false;
+    const r = await fetchJSON(`${API_BASE_URL}/api/referrals/info/${userId}`);
+    if (r.ok && r.json?.success) setReferralData(r.json.data);
+    else setReferralData(getDefaultReferralData(userId));
   }, [getUserId, getDefaultReferralData]);
 
   const loadUserData = useCallback(async () => {
@@ -160,20 +152,7 @@ function Profile({ navigateTo, telegramUser }) {
     setIsLoading(false);
   }, [getUserId, telegramUser, tgUser, loadUSDTBalanceData, loadReferralData]);
 
-  const refreshData = useCallback(async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    haptic('selection');
-
-    try {
-      if (activeTab === 'usdt') await loadUSDTBalanceData();
-      else await loadReferralData();
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [activeTab, isRefreshing, loadUSDTBalanceData, loadReferralData, haptic]);
-
-  // Telegram WebApp: системная кнопка назад (никакого header)
+  // Telegram BackButton only
   useEffect(() => {
     if (!tg) return;
 
@@ -210,9 +189,11 @@ function Profile({ navigateTo, telegramUser }) {
   if (isLoading) {
     return (
       <div className="tg-page">
-        <div className="tg-loading">
-          <div className="tg-spinner" />
-          <div className="tg-loading-text">Загрузка…</div>
+        <div className="tg-shell">
+          <div className="tg-loading">
+            <div className="tg-spinner" />
+            <div className="tg-loading-text">Загрузка…</div>
+          </div>
         </div>
       </div>
     );
@@ -220,94 +201,85 @@ function Profile({ navigateTo, telegramUser }) {
 
   return (
     <div className="tg-page">
-      {/* только иконки справа, без “Профиль” */}
-      <div className="tg-top-actions">
-        <button
-          className="tg-action-icon"
-          onClick={refreshData}
-          disabled={isRefreshing}
-          aria-label="Обновить"
-        >
-          <span className={isRefreshing ? 'is-rotating' : ''}><RefreshSVG /></span>
-        </button>
+      <div className="tg-shell">
+        <div className="tg-section">
+          <div className="tg-profile-card">
+            <div className="tg-avatar">
+              {userData?.photoUrl ? (
+                <img src={userData.photoUrl} alt={userData.firstName} />
+              ) : (
+                <div className="tg-avatar-fallback">
+                  {(userData?.firstName?.[0] || 'U').toUpperCase()}
+                </div>
+              )}
+            </div>
 
-        <button
-          className="tg-action-icon"
-          onClick={() => navigateTo('help')}
-          aria-label="Помощь"
-        >
-          <HelpSVG />
-        </button>
-      </div>
+            <div className="tg-profile-meta">
+              <div className="tg-profile-name">{userData?.firstName || 'Пользователь'}</div>
+              <div className="tg-profile-username">@{userData?.username || 'user'}</div>
 
-      <div className="tg-section">
-        <div className="tg-profile-card">
-          <div className="tg-avatar">
-            {userData?.photoUrl ? (
-              <img src={userData.photoUrl} alt={userData.firstName} />
-            ) : (
-              <div className="tg-avatar-fallback">
-                {(userData?.firstName?.[0] || 'U').toUpperCase()}
-              </div>
-            )}
-          </div>
+              <button className="tg-id-chip" onClick={() => copyToClipboard(userData?.id)}>
+                <span>ID: {userData?.id || '—'}</span>
+                <CopySVG />
+              </button>
+            </div>
 
-          <div className="tg-profile-meta">
-            <div className="tg-profile-name">{userData?.firstName || 'Пользователь'}</div>
-            <div className="tg-profile-username">@{userData?.username || 'user'}</div>
-
-            <button className="tg-id-chip" onClick={() => copyToClipboard(userData?.id)}>
-              <span>ID: {userData?.id || '—'}</span>
-              <CopySVG />
+            {/* ✅ только кнопка справки, справа по центру */}
+            <button
+              className="tg-help-btn"
+              onClick={() => { haptic('selection'); navigateTo('help'); }}
+              aria-label="Справка"
+              title="Справка"
+            >
+              <HelpSVG />
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="tg-section">
-        <div className="tg-segment">
-          <button
-            className={`tg-seg-btn ${activeTab === 'usdt' ? 'active' : ''}`}
-            onClick={() => { haptic('selection'); setActiveTab('usdt'); }}
-          >
-            <Icon><USDTSVG /></Icon>
-            USDT
-            {usdtBalanceData?.available > 0 ? (
-              <span className="tg-seg-sub">{formatUSDT(usdtBalanceData.available)}</span>
-            ) : null}
-          </button>
+        <div className="tg-section">
+          <div className="tg-segment">
+            <button
+              className={`tg-seg-btn ${activeTab === 'usdt' ? 'active' : ''}`}
+              onClick={() => { haptic('selection'); setActiveTab('usdt'); }}
+            >
+              <Icon><USDTSVG /></Icon>
+              USDT
+              {usdtBalanceData?.available > 0 ? (
+                <span className="tg-seg-sub">{formatUSDT(usdtBalanceData.available)}</span>
+              ) : null}
+            </button>
 
-          <button
-            className={`tg-seg-btn ${activeTab === 'referrals' ? 'active' : ''}`}
-            onClick={() => { haptic('selection'); setActiveTab('referrals'); }}
-          >
-            <Icon><ReferralSVG /></Icon>
-            Рефералы
-            {referralData?.stats?.totalEarnings > 0 ? (
-              <span className="tg-seg-sub">{formatUSD(referralData.stats.totalEarnings)}</span>
-            ) : null}
-          </button>
+            <button
+              className={`tg-seg-btn ${activeTab === 'referrals' ? 'active' : ''}`}
+              onClick={() => { haptic('selection'); setActiveTab('referrals'); }}
+            >
+              <Icon><ReferralSVG /></Icon>
+              Рефералы
+              {referralData?.stats?.totalEarnings > 0 ? (
+                <span className="tg-seg-sub">{formatUSD(referralData.stats.totalEarnings)}</span>
+              ) : null}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="tg-content">
-        {activeTab === 'usdt' && (
-          <USDTWallet
-            telegramId={getUserId()}
-            // ВАЖНО: ничего не показываем — передаем пустые функции
-            showToast={() => {}}
-            onRefresh={refreshData}
-            isRefreshing={isRefreshing}
-          />
-        )}
+        <div className="tg-content">
+          {activeTab === 'usdt' && (
+            <USDTWallet
+              telegramId={getUserId()}
+              showToast={() => {}}
+              onRefresh={() => {}}
+              isRefreshing={false}
+            />
+          )}
 
-        {activeTab === 'referrals' && (
-          <ReferralSystem
-            referralData={referralData || getDefaultReferralData(getUserId())}
-            onClose={() => setActiveTab('usdt')}
-            showMessage={() => {}}
-          />
-        )}
+          {activeTab === 'referrals' && (
+            <ReferralSystem
+              referralData={referralData || getDefaultReferralData(getUserId())}
+              onClose={() => setActiveTab('usdt')}
+              showMessage={() => {}}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

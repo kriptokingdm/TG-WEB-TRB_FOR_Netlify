@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { ChatApi } from './ChatApi';
 import './SupportChat.css';
 
 function SupportChat({ orderId, onClose }) {
@@ -17,22 +18,12 @@ function SupportChat({ orderId, onClose }) {
   const updateIntervalRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // ===== API BASE =====
-  // Всегда бьём в тот же домен, где открыт фронт (tethrab.shop)
-  const API_BASE = useMemo(() => {
-    // если вдруг ты открываешь локально в дев-режиме:
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://127.0.0.1:3000';
-    }
-    return window.location.origin; // https://tethrab.shop
-  }, []);
-
-  // ===== get userId =====
+  // ===== userId detect =====
   useEffect(() => {
     const getUserData = () => {
       try {
         if (window.Telegram?.WebApp) {
-          const tgUser = window.Telegram.WebApp?.initDataUnsafe?.user;
+          const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
           if (tgUser?.id) return tgUser.id.toString();
         }
 
@@ -59,123 +50,9 @@ function SupportChat({ orderId, onClose }) {
     };
 
     const id = getUserData();
-    console.log('👤 userId in chat:', id);
+    console.log('👤 ID пользователя в чате:', id);
     setUserId(id);
   }, []);
-
-  // ===== helpers =====
-  const safeJsonParse = (str) => {
-    try {
-      return JSON.parse(str);
-    } catch {
-      return null;
-    }
-  };
-
-  const parseMessageContent = (msg) => {
-    const content = msg?.message ?? '';
-    const parsed = safeJsonParse(content);
-    if (parsed && (parsed.text || parsed.attachments)) {
-      return { text: parsed.text || '', attachments: parsed.attachments || [] };
-    }
-    return { text: content, attachments: [] };
-  };
-
-  const getMessageType = (msg) => {
-    const t = msg?.sender_type || msg?.senderType;
-    return t === 'user' ? 'user' : 'admin';
-  };
-
-  const formatTime = (dateString) => {
-    try {
-      if (!dateString) return '';
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return '';
-      return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return '';
-    }
-  };
-
-  const formatDate = (dateString) => {
-    try {
-      if (!dateString) return '';
-      const d = new Date(dateString);
-      if (isNaN(d.getTime())) return '';
-      const today = new Date();
-      const yesterday = new Date();
-      yesterday.setDate(today.getDate() - 1);
-
-      if (d.toDateString() === today.toDateString()) return 'Сегодня';
-      if (d.toDateString() === yesterday.toDateString()) return 'Вчера';
-
-      return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-    } catch {
-      return '';
-    }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (!bytes) return '';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-    };
-
-  // ===== API calls =====
-  const apiGetMessages = async (oid) => {
-    const r = await fetch(`${API_BASE}/chat/messages/${encodeURIComponent(oid)}`, { method: 'GET' });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json(); // ожидаем массив сообщений
-  };
-
-  const apiMarkRead = async (oid, uid) => {
-    await fetch(`${API_BASE}/chat/mark-read`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId: oid, userId: uid })
-    });
-  };
-
-  const apiSendMessage = async (oid, uid, senderType, message) => {
-    const r = await fetch(`${API_BASE}/chat/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId: oid, userId: uid, senderType, message })
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json(); // {success, message}
-  };
-
-  const uploadFile = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('orderId', orderId);
-    formData.append('userId', userId);
-
-    const r = await fetch(`${API_BASE}/chat/upload`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!r.ok) {
-      const txt = await r.text().catch(() => '');
-      throw new Error(`Upload failed: HTTP ${r.status} ${txt}`);
-    }
-
-    const result = await r.json();
-    if (!result.success) throw new Error(result.error || 'Upload failed');
-
-    // result.url типа "/uploads/xxx.png"
-    const url = result.url?.startsWith('http') ? result.url : `${API_BASE}${result.url}`;
-    return {
-      url,
-      name: result.name || file.name,
-      type: result.type || file.type,
-      size: result.size || file.size
-    };
-  };
 
   // ===== load messages =====
   const loadMessages = async (silent = false) => {
@@ -184,17 +61,20 @@ function SupportChat({ orderId, onClose }) {
     try {
       if (!silent) setIsLoading(true);
 
-      const loaded = await apiGetMessages(orderId);
+      const loaded = await ChatApi.getMessages(orderId);
 
-      setMessages((prev) => {
-        const prevStr = JSON.stringify(prev);
-        const newStr = JSON.stringify(loaded);
-        return prevStr !== newStr ? loaded : prev;
+      setMessages(prev => {
+        const a = JSON.stringify(prev);
+        const b = JSON.stringify(loaded);
+        return a !== b ? loaded : prev;
       });
 
+      // mark read
+      try {
+        await ChatApi.markAsRead(orderId, userId, 'user');
+      } catch (_) {}
+
       setError('');
-      // отметка прочитанного — не критично
-      apiMarkRead(orderId, userId).catch(() => {});
     } catch (e) {
       console.error('❌ loadMessages error:', e);
       if (!silent) setError('Не удалось загрузить сообщения');
@@ -203,57 +83,61 @@ function SupportChat({ orderId, onClose }) {
     }
   };
 
-  // auto refresh
+  // first load + polling
   useEffect(() => {
     if (!orderId || !userId) return;
 
     loadMessages(false);
-    updateIntervalRef.current = setInterval(() => loadMessages(true), 15000);
+
+    updateIntervalRef.current = setInterval(() => {
+      loadMessages(true);
+    }, 15000);
 
     return () => {
       if (updateIntervalRef.current) clearInterval(updateIntervalRef.current);
     };
-  }, [orderId, userId]); // eslint-disable-line
+  }, [orderId, userId]);
 
-  // scroll to end
+  // scroll down
   useEffect(() => {
-    if (isLoading) return;
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 80);
+    if (!isLoading) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+    }
   }, [messages, isLoading]);
 
-  // focus input on open
+  // focus input
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 300);
+    setTimeout(() => inputRef.current?.focus(), 250);
   }, []);
 
   // ===== attachments =====
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files || []);
     const maxSize = 10 * 1024 * 1024;
-    const images = files
-      .filter((f) => f.size <= maxSize)
-      .filter((f) => f.type?.startsWith('image/'));
 
-    if (images.length !== files.length) {
-      setError('Можно загружать только изображения до 10MB (JPG/PNG/GIF)');
+    const valid = files.filter(f => f.size <= maxSize && f.type.startsWith('image/'));
+    if (valid.length !== files.length) {
+      setError('Можно загружать только изображения до 10MB');
     }
 
-    const newAttachments = images.map((file) => ({
+    const mapped = valid.map(file => ({
       file,
       preview: URL.createObjectURL(file),
       name: file.name,
       size: file.size,
       type: file.type,
-      uploadProgress: 0
+      uploadProgress: 0,
     }));
 
-    setAttachments((prev) => [...prev, ...newAttachments]);
+    setAttachments(prev => [...prev, ...mapped]);
 
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeAttachment = (index) => {
-    setAttachments((prev) => {
+    setAttachments(prev => {
       const next = [...prev];
       if (next[index]?.preview) URL.revokeObjectURL(next[index].preview);
       next.splice(index, 1);
@@ -263,11 +147,99 @@ function SupportChat({ orderId, onClose }) {
 
   useEffect(() => {
     return () => {
-      attachments.forEach((a) => a.preview && URL.revokeObjectURL(a.preview));
+      attachments.forEach(a => a.preview && URL.revokeObjectURL(a.preview));
     };
   }, [attachments]);
 
-  // ===== send message =====
+  // ===== format helpers =====
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '';
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (d.toDateString() === today.toDateString()) return 'Сегодня';
+    if (d.toDateString() === yesterday.toDateString()) return 'Вчера';
+
+    const monthNames = [
+      'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+      'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    return `${d.getDate()} ${monthNames[d.getMonth()]}`;
+  };
+
+  const getMessageType = (msg) => {
+    const t = (msg.sender_type || msg.senderType || '').toLowerCase();
+    return t === 'user' ? 'user' : 'admin';
+  };
+
+  const getSenderDisplayName = (msg) => {
+    const t = (msg.sender_type || msg.senderType || '').toLowerCase();
+    if (t === 'user') return 'Вы';
+    if (t === 'admin') return 'Оператор';
+    if (t === 'system') return 'Система';
+    return 'Оператор';
+  };
+
+  const parseMessageContent = (msg) => {
+    const raw = msg?.message || '';
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && (parsed.text !== undefined || parsed.attachments !== undefined)) {
+        return {
+          text: parsed.text || '',
+          attachments: Array.isArray(parsed.attachments) ? parsed.attachments : []
+        };
+      }
+    } catch (_) {}
+    return { text: raw, attachments: [] };
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
+  };
+
+  const groupMessagesByDate = () => {
+    const groups = {};
+    messages.forEach((msg, index) => {
+      const key = formatDate(msg.created_at);
+      if (!groups[key]) groups[key] = [];
+
+      const prev = messages[index - 1];
+      let marginTop = 'normal';
+
+      if (prev) {
+        const prevTime = new Date(prev.created_at).getTime();
+        const curTime = new Date(msg.created_at).getTime();
+        const diff = (curTime - prevTime) / 1000;
+        const sameSender = (prev.sender_type === msg.sender_type);
+
+        if (sameSender && diff < 60) marginTop = 'small';
+        else if (diff > 300) marginTop = 'large';
+      }
+
+      groups[key].push({ ...msg, marginTop });
+    });
+    return groups;
+  };
+
+  const messageGroups = groupMessagesByDate();
+
+  // ===== send =====
   const handleSendMessage = async () => {
     const hasText = newMessage.trim().length > 0;
     const hasAttachments = attachments.length > 0;
@@ -277,21 +249,25 @@ function SupportChat({ orderId, onClose }) {
       setError('Не удалось определить пользователя');
       return;
     }
+
     if (isSending || isUploading) return;
 
     try {
-      setIsSending(true);
-      setIsUploading(true);
       setError('');
+      setIsSending(true);
 
       let uploadedFiles = [];
 
       if (hasAttachments) {
+        setIsUploading(true);
+
         for (let i = 0; i < attachments.length; i++) {
-          const fileData = await uploadFile(attachments[i].file);
+          const a = attachments[i];
+
+          const fileData = await ChatApi.uploadFile(a.file, orderId, userId);
           uploadedFiles.push(fileData);
 
-          setAttachments((prev) => {
+          setAttachments(prev => {
             const next = [...prev];
             next[i] = { ...next[i], uploadProgress: 100, uploaded: true };
             return next;
@@ -299,24 +275,30 @@ function SupportChat({ orderId, onClose }) {
         }
       }
 
-      const payload = {
+      const messageData = {
         text: newMessage.trim(),
         attachments: uploadedFiles
       };
 
-      const result = await apiSendMessage(orderId, userId, 'user', JSON.stringify(payload));
+      const result = await ChatApi.sendMessage(
+        orderId,
+        userId,
+        'user',
+        JSON.stringify(messageData)
+      );
 
       if (result?.success && result?.message) {
-        setMessages((prev) => [...prev, result.message]);
+        setMessages(prev => [...prev, result.message]);
         setNewMessage('');
         setAttachments([]);
+
         setTimeout(() => inputRef.current?.focus(), 100);
         setTimeout(() => loadMessages(true), 800);
       } else {
         setError(result?.error || 'Ошибка отправки сообщения');
       }
     } catch (e) {
-      console.error('❌ send error:', e);
+      console.error('❌ send message error:', e);
       setError(e.message || 'Ошибка отправки сообщения');
     } finally {
       setIsSending(false);
@@ -331,34 +313,9 @@ function SupportChat({ orderId, onClose }) {
     }
   };
 
-  const groupMessagesByDate = () => {
-    const groups = {};
-    messages.forEach((msg, index) => {
-      const dateKey = formatDate(msg.created_at);
-      if (!groups[dateKey]) groups[dateKey] = [];
-
-      const prev = messages[index - 1];
-      let marginTop = 'normal';
-
-      if (prev) {
-        const prevTime = new Date(prev.created_at).getTime();
-        const curTime = new Date(msg.created_at).getTime();
-        const diff = (curTime - prevTime) / 1000;
-        const sameSender = (prev.sender_type || prev.senderType) === (msg.sender_type || msg.senderType);
-
-        if (sameSender && diff < 60) marginTop = 'small';
-        else if (diff > 300) marginTop = 'large';
-      }
-
-      groups[dateKey].push({ ...msg, marginTop });
-    });
-    return groups;
-  };
-
-  const messageGroups = groupMessagesByDate();
-
   const handleManualRefresh = () => loadMessages(false);
 
+  // ===== render =====
   return (
     <div className="support-chat-new">
       <div className="chat-header-new">
@@ -366,8 +323,8 @@ function SupportChat({ orderId, onClose }) {
           <div className="chat-title-section">
             <button className="chat-back-btn" onClick={onClose} aria-label="Назад">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
             <div className="chat-title-icon">💬</div>
@@ -378,26 +335,24 @@ function SupportChat({ orderId, onClose }) {
           </div>
 
           <div className="chat-header-actions">
-            <button className="chat-refresh-btn" onClick={handleManualRefresh} title="Обновить" disabled={isLoading}>
-              {isLoading ? (
-                <div className="refresh-spinner" />
-              ) : (
+            <button
+              className="chat-refresh-btn"
+              onClick={handleManualRefresh}
+              title="Обновить"
+              disabled={isLoading}
+            >
+              {isLoading ? <div className="refresh-spinner"></div> : (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}
             </button>
 
             <button className="chat-close-btn-new" onClick={onClose} aria-label="Закрыть чат">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>
           </div>
@@ -407,16 +362,14 @@ function SupportChat({ orderId, onClose }) {
       <div className="chat-messages-container-new">
         {isLoading && messages.length === 0 ? (
           <div className="chat-loading-new">
-            <div className="chat-spinner-new" />
+            <div className="chat-spinner-new"></div>
             <p className="chat-loading-text">Загрузка сообщений...</p>
           </div>
         ) : error ? (
           <div className="chat-error-new">
             <div className="error-icon">⚠️</div>
             <p className="error-text">{error}</p>
-            <button className="retry-btn-new" onClick={() => loadMessages(false)}>
-              Повторить
-            </button>
+            <button className="retry-btn-new" onClick={() => loadMessages(false)}>Повторить</button>
           </div>
         ) : messages.length === 0 ? (
           <div className="chat-empty-new">
@@ -428,17 +381,16 @@ function SupportChat({ orderId, onClose }) {
           <div className="chat-messages-list">
             {Object.entries(messageGroups).map(([date, dateMessages]) => (
               <div key={date} className="message-date-group">
-                <div className="date-divider">
-                  <span className="date-text">{date}</span>
-                </div>
+                <div className="date-divider"><span className="date-text">{date}</span></div>
 
                 {dateMessages.map((msg, idx) => {
                   const messageType = getMessageType(msg);
+                  const senderName = getSenderDisplayName(msg);
                   const content = parseMessageContent(msg);
 
                   return (
                     <div
-                      key={msg.id || `${msg.created_at}_${idx}`}
+                      key={msg.id}
                       className={`chat-message-new ${messageType}-message-new message-margin-${msg.marginTop}`}
                     >
                       <div className="message-bubble">
@@ -449,31 +401,18 @@ function SupportChat({ orderId, onClose }) {
                             <div className="message-attachments">
                               {content.attachments.map((a, i) => (
                                 <div key={i} className="attachment-item">
-                                  {a.type?.startsWith('image/') ? (
-                                    <div className="attachment-image">
-                                      <img
-                                        src={a.url}
-                                        alt={a.name || `Вложение ${i + 1}`}
-                                        className="attachment-preview"
-                                        onClick={() => window.open(a.url, '_blank')}
-                                      />
-                                      <div className="attachment-info">
-                                        <span className="attachment-name">{a.name}</span>
-                                        <span className="attachment-size">{formatFileSize(a.size)}</span>
-                                      </div>
+                                  <div className="attachment-image">
+                                    <img
+                                      src={a.url}
+                                      alt={a.name || `Вложение ${i + 1}`}
+                                      className="attachment-preview"
+                                      onClick={() => window.open(a.url, '_blank')}
+                                    />
+                                    <div className="attachment-info">
+                                      <span className="attachment-name">{a.name}</span>
+                                      <span className="attachment-size">{formatFileSize(a.size)}</span>
                                     </div>
-                                  ) : (
-                                    <div className="attachment-file">
-                                      <div className="file-icon">📎</div>
-                                      <div className="file-info">
-                                        <span className="file-name">{a.name}</span>
-                                        <span className="file-size">{formatFileSize(a.size)}</span>
-                                      </div>
-                                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="download-btn">
-                                        Скачать
-                                      </a>
-                                    </div>
-                                  )}
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -485,7 +424,7 @@ function SupportChat({ orderId, onClose }) {
                         </div>
 
                         {idx === dateMessages.length - 1 && (
-                          <div className="message-sender">{messageType === 'user' ? 'Вы' : 'Оператор'}</div>
+                          <div className="message-sender">{senderName}</div>
                         )}
                       </div>
                     </div>
@@ -493,7 +432,6 @@ function SupportChat({ orderId, onClose }) {
                 })}
               </div>
             ))}
-
             <div ref={messagesEndRef} className="messages-end" />
           </div>
         )}
@@ -503,7 +441,7 @@ function SupportChat({ orderId, onClose }) {
         <div className="attachments-preview">
           <div className="attachments-header">
             <span className="attachments-title">Вложения ({attachments.length})</span>
-            <button className="clear-attachments-btn" onClick={() => setAttachments([])} title="Удалить все вложения">
+            <button className="clear-attachments-btn" onClick={() => setAttachments([])} title="Удалить все">
               ✕
             </button>
           </div>
@@ -513,8 +451,13 @@ function SupportChat({ orderId, onClose }) {
               <div key={i} className="attachment-preview-item">
                 <div className="preview-image-container">
                   <img src={a.preview} alt={a.name} className="preview-image" />
+                  {a.uploadProgress < 100 && (
+                    <div className="upload-progress">
+                      <div className="progress-bar" style={{ width: `${a.uploadProgress}%` }} />
+                      <span className="progress-text">{a.uploadProgress}%</span>
+                    </div>
+                  )}
                 </div>
-
                 <button className="remove-attachment-btn" onClick={() => removeAttachment(i)} title="Удалить">
                   ✕
                 </button>
@@ -542,7 +485,7 @@ function SupportChat({ orderId, onClose }) {
             disabled={isUploading}
             type="button"
           >
-            {isUploading ? <div className="upload-spinner" /> : '📎'}
+            {isUploading ? <div className="upload-spinner"></div> : '📎'}
           </button>
 
           <div className="input-container">
@@ -556,17 +499,6 @@ function SupportChat({ orderId, onClose }) {
               rows={1}
               className="chat-input-new"
             />
-            {newMessage.trim() && (
-              <button
-                className="clear-input-btn"
-                onClick={() => setNewMessage('')}
-                title="Очистить"
-                type="button"
-                disabled={isSending || isUploading}
-              >
-                ✕
-              </button>
-            )}
           </div>
 
           <button
@@ -576,7 +508,7 @@ function SupportChat({ orderId, onClose }) {
             title="Отправить"
             type="button"
           >
-            {isSending || isUploading ? <div className="send-spinner" /> : '➤'}
+            {isSending || isUploading ? <div className="send-spinner"></div> : '➤'}
           </button>
         </div>
 
@@ -586,11 +518,6 @@ function SupportChat({ orderId, onClose }) {
             <span className="error-text-small">{error}</span>
           </div>
         )}
-
-        <div className="chat-hint-new">
-          <span className="hint-icon">💡</span>
-          <span className="hint-text">Enter — отправить. Можно прикрепить изображения</span>
-        </div>
       </div>
     </div>
   );

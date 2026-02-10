@@ -339,7 +339,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
     try {
       const queryAmount = amount || (isBuyMode ? 1000 : 10);
       const type = isBuyMode ? 'buy' : 'sell';
-      const result = await simpleFetch(`/exchange-rate?amount=${queryAmount}&type=${type}`);
+      const result = await simpleFetch(`/api/exchange-rate?amount=${queryAmount}&type=${type}`);
       console.log('📊 Получены курсы и лимиты:', result);
       
       if (result.success) {
@@ -653,7 +653,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
     try {
       setIsLoading(true);
       showMessage('info', '🔄 Создание ордера...');
-      const result = await simpleFetch('/create-order', orderData);
+      const result = await simpleFetch('/api/create-order', orderData);
 
       if (result.success) {
         showMessage('success', `✅ Ордер создан! ID: ${result.order?.id}`);

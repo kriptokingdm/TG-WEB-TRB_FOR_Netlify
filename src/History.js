@@ -1,7 +1,4 @@
 // History.js (Telegram clean version)
-// Под бекенд: GET {API_BASE_URL}/api/public/user-orders/:userId
-// user_orders: id, public_id, order_type, amount, rate, status, created_at, updated_at
-
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SupportChat from './SupportChat';
 import { API_BASE_URL } from './config';
@@ -10,10 +7,8 @@ const STATUS = {
   pending:    { text: 'Ожидание',     tone: 'muted',  emoji: '🟡' },
   processing: { text: 'В обработке',  tone: 'warn',   emoji: '🟠' },
   accepted:   { text: 'Принят',       tone: 'ok',     emoji: '✅' },
-
   completed:  { text: 'Завершён',     tone: 'ok',     emoji: '🏁' },
   success:    { text: 'Завершён',     tone: 'ok',     emoji: '🏁' },
-
   rejected:   { text: 'Отклонён',     tone: 'bad',    emoji: '❌' },
   cancelled:  { text: 'Отменён',      tone: 'bad',    emoji: '❌' },
   failed:     { text: 'Ошибка',       tone: 'bad',    emoji: '❌' },
@@ -29,11 +24,9 @@ function safeLower(v) {
 
 function getUserId() {
   try {
-    // Telegram WebApp
     const tgId = window?.Telegram?.WebApp?.initDataUnsafe?.user?.id;
     if (tgId) return String(tgId);
 
-    // localStorage currentUser
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       const parsed = JSON.parse(savedUser);
@@ -41,8 +34,6 @@ function getUserId() {
       if (id) return String(id);
     }
   } catch (e) {}
-
-  // fallback
   return '7879866656';
 }
 
@@ -67,7 +58,6 @@ function formatTime(dateString) {
 }
 
 function orderDisplayId(order) {
-  // Публичный красивый ID для UI
   return order?.public_id ? order.public_id : `#${order?.id ?? '—'}`;
 }
 
@@ -78,12 +68,10 @@ function calcTotal(order) {
 
   const isBuy = safeLower(order?.order_type) === 'buy';
   if (isBuy) {
-    // buy: amount в RUB -> result в USDT
     const usdt = amount / rate;
     if (Number.isNaN(usdt)) return '—';
     return `${usdt.toFixed(2)} USDT`;
   } else {
-    // sell: amount в USDT -> result в RUB
     const rub = amount * rate;
     if (Number.isNaN(rub)) return '—';
     return `${rub.toFixed(2)} RUB`;
@@ -101,9 +89,9 @@ async function safeCopy(text) {
 
 export default function History({ navigateTo, showToast }) {
   const [orders, setOrders] = useState([]);
-  const [viewMode, setViewMode] = useState('active'); // active | all
+  const [viewMode, setViewMode] = useState('active');
   const [expandedId, setExpandedId] = useState(null);
-  const [activeChat, setActiveChat] = useState(null); // { orderId: number }
+  const [activeChat, setActiveChat] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -116,10 +104,10 @@ export default function History({ navigateTo, showToast }) {
       showToast(type, text);
       return;
     }
-    // fallback
     console.log(`[${type}] ${text}`);
   };
 
+  // 🔥 ОБНОВЛЁННЫЙ fetch с правильной обработкой CORS ошибок
   const fetchOrders = async (withSpinner = true) => {
     const now = Date.now();
     if (now - lastFetchRef.current < 2000) return;
@@ -133,58 +121,81 @@ export default function History({ navigateTo, showToast }) {
 
     try {
       const url = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
+      console.log(`📡 Загружаем историю: ${url}`);
+      
       const resp = await fetch(url, {
         method: 'GET',
-        headers: { Accept: 'application/json' },
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Важно для cookies/session
       });
 
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      console.log(`📥 Ответ: ${resp.status} ${resp.statusText}`);
+      
+      if (!resp.ok) {
+        // Проверяем CORS ошибку
+        const corsHeader = resp.headers.get('Access-Control-Allow-Origin');
+        if (!corsHeader) {
+          throw new Error(`CORS блокировка: сервер не разрешает доступ для ${window.location.origin}`);
+        }
+        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      }
 
       const data = await resp.json();
-      if (!data?.success) throw new Error(data?.error || 'Ошибка сервера');
+      console.log('📊 Данные получены:', data);
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Ошибка сервера');
+      }
 
       const raw = Array.isArray(data.orders) ? data.orders : [];
 
-      // нормализуем под UI
       const normalized = raw.map((o) => {
         const status = safeLower(o.status);
         return {
-          id: Number(o.id),                // numeric id (для чата)
-          public_id: o.public_id || null,  // TRB...
+          id: Number(o.id),
+          public_id: o.public_id || null,
           order_type: safeLower(o.order_type) || 'buy',
           amount: Number(o.amount || 0),
           rate: Number(o.rate || 0),
           status,
           created_at: o.created_at,
           updated_at: o.updated_at,
+          bank_details: o.bank_details || null,
+          crypto_address: o.crypto_address || null,
         };
       }).filter(o => Number.isFinite(o.id));
 
-      // сортировка: новые сверху
       normalized.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
       setOrders(normalized);
 
-      // cache
+      // Кэшируем
       try {
         localStorage.setItem('userOrders', JSON.stringify(normalized));
         localStorage.setItem('lastOrdersUpdate', new Date().toISOString());
       } catch (e) {}
+      
+      setError(''); // Очищаем ошибку при успехе
+      
     } catch (e) {
-      // fallback cache
+      console.error('❌ Ошибка загрузки истории:', e);
+      
+      // Пробуем кэш
       try {
         const cached = JSON.parse(localStorage.getItem('userOrders') || '[]');
         if (Array.isArray(cached) && cached.length) {
           setOrders(cached);
-          setError('⚠️ Нет связи с сервером. Показан кэш.');
+          setError(`⚠️ Используем кэш. Ошибка сервера: ${e.message}`);
           toast('warning', 'Показаны сохранённые данные');
         } else {
-          setError('Не удалось загрузить историю');
-          toast('error', 'Ошибка загрузки истории');
+          setError(`Ошибка загрузки: ${e.message}`);
+          toast('error', 'Не удалось загрузить историю');
         }
       } catch (e2) {
-        setError('Ошибка сети');
-        toast('error', 'Ошибка сети');
+        setError(`Ошибка сети: ${e.message}`);
+        toast('error', 'Проверьте соединение');
       }
     } finally {
       setLoading(false);
@@ -193,14 +204,11 @@ export default function History({ navigateTo, showToast }) {
   };
 
   useEffect(() => {
-    // если хочешь убрать debug-подстановку — просто не трогаем currentUser
     fetchOrders(true);
-
     intervalRef.current = setInterval(() => fetchOrders(false), 30000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats = useMemo(() => {
@@ -219,7 +227,7 @@ export default function History({ navigateTo, showToast }) {
     return orders;
   }, [orders, viewMode]);
 
-  const styles = useMemo(() => ({
+  const styles = {
     page: {
       padding: 12,
       background: '#0b0b0d',
@@ -295,7 +303,6 @@ export default function History({ navigateTo, showToast }) {
       gap: 8,
       alignItems: 'center'
     },
-
     list: { padding: '10px 0 80px', display: 'grid', gap: 10 },
     card: {
       borderRadius: 16,
@@ -351,7 +358,6 @@ export default function History({ navigateTo, showToast }) {
     k: { fontSize: 12, opacity: 0.7 },
     v: { fontSize: 13, fontWeight: 800 },
     vSoft: { fontSize: 13, fontWeight: 700, opacity: 0.9 },
-
     actions: {
       padding: 12,
       display: 'flex',
@@ -369,7 +375,6 @@ export default function History({ navigateTo, showToast }) {
       fontSize: 13,
       cursor: 'pointer',
     }),
-
     expand: {
       padding: 12,
       borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -384,7 +389,6 @@ export default function History({ navigateTo, showToast }) {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
       opacity: 0.95
     },
-
     empty: {
       marginTop: 18,
       padding: 16,
@@ -426,26 +430,22 @@ export default function History({ navigateTo, showToast }) {
       borderTopColor: 'rgba(255,255,255,0.85)',
       animation: 'spin 0.9s linear infinite'
     }
-  }), [refreshing]);
+  };
 
   const onCopy = async (order) => {
     const text = order?.public_id || String(order?.id || '');
     if (!text) return toast('error', 'Нет ID для копирования');
-
     const ok = await safeCopy(text);
     toast(ok ? 'success' : 'error', ok ? 'Скопировано' : 'Не удалось скопировать');
   };
 
   const onOpenChat = (order) => {
-    // ВАЖНО: чат принимает orderId как числовой ID из user_orders.id
     setActiveChat({ orderId: order.id });
   };
 
   return (
     <div style={styles.page}>
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg);} to {transform: rotate(360deg);} }
-      `}</style>
+      <style>{`@keyframes spin { from { transform: rotate(0deg);} to {transform: rotate(360deg);} }`}</style>
 
       <div style={styles.header}>
         <div style={styles.titleRow}>
@@ -453,12 +453,10 @@ export default function History({ navigateTo, showToast }) {
             <h1 style={styles.title}>История</h1>
             <p style={styles.subtitle}>Ваши заявки и статусы</p>
           </div>
-
           <button
             style={styles.refreshBtn}
             onClick={() => !refreshing && fetchOrders(true)}
             disabled={refreshing}
-            title="Обновить"
           >
             <span style={styles.spinner} />
             <span>{refreshing ? 'Обновляю…' : 'Обновить'}</span>
@@ -473,7 +471,6 @@ export default function History({ navigateTo, showToast }) {
             </div>
             <div style={{ fontSize: 20 }}>🏁</div>
           </div>
-
           <div style={styles.statCard}>
             <div>
               <div style={styles.statLabel}>Отклонено</div>
@@ -494,7 +491,7 @@ export default function History({ navigateTo, showToast }) {
           </button>
         </div>
 
-        {error ? <div style={styles.error}>{error}</div> : null}
+        {error && <div style={styles.error}>{error}</div>}
       </div>
 
       <div style={styles.list}>
@@ -513,7 +510,6 @@ export default function History({ navigateTo, showToast }) {
                 ? 'Все заявки завершены или отменены'
                 : 'Создайте первую заявку на обмен'}
             </p>
-
             <button style={styles.emptyBtn} onClick={() => navigateTo?.('home')}>
               Начать обмен
             </button>
@@ -532,16 +528,10 @@ export default function History({ navigateTo, showToast }) {
                     <div style={styles.type}>
                       {isBuy ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                     </div>
-
-                    <button
-                      style={styles.idBtn}
-                      onClick={() => onCopy(o)}
-                      title="Скопировать ID"
-                    >
+                    <button style={styles.idBtn} onClick={() => onCopy(o)} title="Скопировать ID">
                       {orderDisplayId(o)}
                     </button>
                   </div>
-
                   <div style={styles.status(st.tone)}>
                     {st.emoji} {st.text}
                   </div>
@@ -554,17 +544,14 @@ export default function History({ navigateTo, showToast }) {
                       {o.amount.toFixed(2)} {isBuy ? 'RUB' : 'USDT'}
                     </div>
                   </div>
-
                   <div style={styles.kv}>
                     <div style={styles.k}>Курс</div>
                     <div style={styles.vSoft}>{o.rate.toFixed(2)} ₽</div>
                   </div>
-
                   <div style={styles.kv}>
                     <div style={styles.k}>Итого</div>
                     <div style={styles.v}>{calcTotal(o)}</div>
                   </div>
-
                   <div style={styles.kv}>
                     <div style={styles.k}>Время</div>
                     <div style={styles.vSoft}>{formatTime(o.created_at)}</div>
@@ -575,16 +562,12 @@ export default function History({ navigateTo, showToast }) {
                   <button style={styles.btn(false)} onClick={() => onCopy(o)}>
                     📋 Копировать
                   </button>
-
                   {canChat ? (
                     <button style={styles.btn(true)} onClick={() => onOpenChat(o)}>
                       💬 Чат
                     </button>
                   ) : (
-                    <button
-                      style={styles.btn(false)}
-                      onClick={() => setExpandedId(isExpanded ? null : o.id)}
-                    >
+                    <button style={styles.btn(false)} onClick={() => setExpandedId(isExpanded ? null : o.id)}>
                       {isExpanded ? 'Скрыть' : 'Детали'}
                     </button>
                   )}
@@ -608,6 +591,18 @@ export default function History({ navigateTo, showToast }) {
                       <span>Обновлён</span>
                       <span>{formatDateTime(o.updated_at)}</span>
                     </div>
+                    {o.bank_details && (
+                      <div style={styles.row}>
+                        <span>Банк</span>
+                        <span style={styles.code}>{o.bank_details}</span>
+                      </div>
+                    )}
+                    {o.crypto_address && (
+                      <div style={styles.row}>
+                        <span>Адрес USDT</span>
+                        <span style={styles.code}>{o.crypto_address}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -616,7 +611,7 @@ export default function History({ navigateTo, showToast }) {
         )}
       </div>
 
-      {activeChat ? (
+      {activeChat && (
         <div
           style={{
             position: 'fixed',
@@ -643,12 +638,12 @@ export default function History({ navigateTo, showToast }) {
             onClick={(e) => e.stopPropagation()}
           >
             <SupportChat
-              orderId={activeChat.orderId} // ✅ numeric id для /chat/messages/:orderId
+              orderId={activeChat.orderId}
               onClose={() => setActiveChat(null)}
             />
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

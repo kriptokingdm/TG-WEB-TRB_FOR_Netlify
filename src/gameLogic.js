@@ -2,35 +2,105 @@
 export const GAME_WIDTH = 360;
 export const GAME_HEIGHT = 640;
 
-// Физика
-const GRAVITY = 0.55;
-const MAX_FALL = 14;
-const WALL_SLIDE_SPEED = 2.2;
+/* =========================
+   BASE PHYSICS (будет скейлиться сложностью)
+========================= */
+const BASE_GRAVITY = 0.55;
+const BASE_MAX_FALL = 14;
+const BASE_WALL_SLIDE = 2.2;
 
 // Прыжки
-const WALL_KICK_X = 9.2;
-const WALL_KICK_Y = 12.0; // вверх
-const GROUND_JUMP = 11.2;
+const BASE_WALL_KICK_X = 9.2;
+const BASE_WALL_KICK_Y = 12.0; // вверх
+const BASE_GROUND_JUMP = 11.2;
 const AIR_NUDGE = 0.7;
 
-// Генерация
-const PLATFORM_GAP_Y = 105;
-const PLATFORM_MIN_W = 56;
-const PLATFORM_MAX_W = 94;
+// Генерация мира
+const MARGIN_X = 18;
+const PLATFORM_H = 12;
 
-const DESPAWN_BELOW = 260; // запас снизу
-const SPAWN_AHEAD = 220;   // запас сверху
+// Платформы-уступы (короткие "ступеньки" у стен как в Wall Kickers)
+const LEDGE_W_MIN = 34;
+const LEDGE_W_MAX = 68;
 
+// “обычные” платформы (чуть длиннее)
+const PLATFORM_W_MIN = 54;
+const PLATFORM_W_MAX = 96;
+
+// Гап по Y (будет увеличиваться с прогрессом, но без тупиков)
+const GAP_Y_MIN = 78;
+const GAP_Y_MAX = 118;
+
+// Сколько держать игрока в верхней трети
+const TARGET_SCREEN_Y = GAME_HEIGHT * 0.35;
+
+// Спавн/деспавн
+const DESPAWN_BELOW = 260;
+const SPAWN_AHEAD = 240;
+
+// Safety: гарантируем “спасательную” платформу
+const SAFETY_EVERY = 5;
+
+/* =========================
+   UTILS
+========================= */
 function rand(min, max) {
   return min + Math.random() * (max - min);
 }
 function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v));
 }
+function pickWeighted(items) {
+  // items: [{v, w}]
+  let sum = 0;
+  for (const it of items) sum += it.w;
+  let r = Math.random() * sum;
+  for (const it of items) {
+    r -= it.w;
+    if (r <= 0) return it.v;
+  }
+  return items[items.length - 1].v;
+}
 function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
+function id() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
 
+/* =========================
+   DIFFICULTY (по score/высоте)
+   - больше spike/moving
+   - меньше ширина
+   - больше gap
+   - чуть сильнее гравитация/скорости
+========================= */
+function difficultyFromScore(score) {
+  // 0..1.2 примерно
+  const t = clamp(score / 350, 0, 1);
+  return {
+    t,
+    gravity: BASE_GRAVITY + 0.08 * t,
+    maxFall: BASE_MAX_FALL + 3.5 * t,
+    wallSlide: BASE_WALL_SLIDE + 0.6 * t,
+    wallKickX: BASE_WALL_KICK_X + 0.8 * t,
+    wallKickY: BASE_WALL_KICK_Y + 0.6 * t, // чуть выше на сложности
+    groundJump: BASE_GROUND_JUMP + 0.3 * t,
+
+    gapY: clamp(rand(GAP_Y_MIN, GAP_Y_MAX) + 18 * t, GAP_Y_MIN, GAP_Y_MAX + 26),
+    widthMul: 1 - 0.22 * t,
+
+    spikeChance: 0.06 + 0.18 * t,
+    breakChance: 0.10 + 0.12 * t,
+    movingChance: 0.10 + 0.16 * t,
+
+    movingSpeedMul: 1 + 0.65 * t,
+  };
+}
+
+/* =========================
+   PLAYER
+========================= */
 export function createPlayer() {
   return {
     x: GAME_WIDTH / 2 - 12,
@@ -53,69 +123,138 @@ export function createPlayer() {
   };
 }
 
-function createPlatform(y, isStart = false) {
-  if (isStart) {
-    return {
-      id: cryptoRandomId(),
-      x: GAME_WIDTH / 2 - 46,
-      y,
-      w: 92,
-      h: 12,
-      type: 'start',
-      broken: false,
-      dir: 1,
-      speed: 0,
-    };
-  }
+/* =========================
+   PLATFORMS
+   Типы:
+   - ledge: короткая у стены (основа Wall Kickers)
+   - normal: обычная
+   - moving: движется по X
+   - breakable: ломается
+   - spike: убивает при касании сверху
+   - start: стартовая
+========================= */
 
-  const types = ['normal', 'normal', 'normal', 'moving', 'breakable', 'spike'];
-  const type = types[Math.floor(Math.random() * types.length)];
-
-  // чаще слева/справа как в wall kickers
-  const side = Math.random() > 0.5 ? 'left' : 'right';
-  const w = rand(PLATFORM_MIN_W, PLATFORM_MAX_W);
-
-  const margin = 20;
-  let x;
-  if (side === 'left') {
-    x = rand(margin, 140);
-  } else {
-    x = rand(GAME_WIDTH - 140, GAME_WIDTH - margin - w);
-  }
-
+function createStartPlatform(y) {
   return {
-    id: cryptoRandomId(),
-    x,
+    id: id(),
+    x: GAME_WIDTH / 2 - 46,
     y,
-    w,
-    h: 12,
-    type,
+    w: 92,
+    h: PLATFORM_H,
+    type: 'start',
     broken: false,
-    // moving
-    dir: Math.random() > 0.5 ? 1 : -1,
-    speed: rand(0.6, 1.3),
-    // breakable anim
-    crumble: 0, // 0..1
+    dir: 1,
+    speed: 0,
+    crumble: 0,
+    safe: true,
   };
 }
 
-function cryptoRandomId() {
-  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+function createLedge(y, side, diff, forceSafe = false) {
+  // side: -1 left wall, 1 right wall
+  const w = clamp(rand(LEDGE_W_MIN, LEDGE_W_MAX) * diff.widthMul, 26, LEDGE_W_MAX);
+  const x = side === -1 ? MARGIN_X : (GAME_WIDTH - MARGIN_X - w);
+
+  const type = forceSafe
+    ? 'ledge'
+    : pickPlatformType(diff, /*preferLedge*/ true);
+
+  return buildPlatform({ x, y, w, type, diff, safe: forceSafe });
 }
 
-export function generatePlatforms(count = 16, startY = GAME_HEIGHT - 90) {
+function createCenterishPlatform(y, sideHint, diff, forceSafe = false) {
+  // иногда нужны “не у стены”, но так, чтобы не было тупика.
+  // sideHint влияет на позицию (чтобы траектория читалась)
+  const w = clamp(rand(PLATFORM_W_MIN, PLATFORM_W_MAX) * diff.widthMul, 42, PLATFORM_W_MAX);
+  const rangeLeft = MARGIN_X + 20;
+  const rangeRight = GAME_WIDTH - MARGIN_X - 20 - w;
+
+  let x;
+  if (sideHint === -1) {
+    x = rand(rangeLeft, clamp(rangeLeft + 130, rangeLeft, rangeRight));
+  } else if (sideHint === 1) {
+    x = rand(clamp(rangeRight - 130, rangeLeft, rangeRight), rangeRight);
+  } else {
+    x = rand(rangeLeft, rangeRight);
+  }
+
+  const type = forceSafe
+    ? 'normal'
+    : pickPlatformType(diff, /*preferLedge*/ false);
+
+  return buildPlatform({ x, y, w, type, diff, safe: forceSafe });
+}
+
+function pickPlatformType(diff, preferLedge) {
+  // Чем выше сложность — тем больше moving/spike/breakable
+  const spike = diff.spikeChance;
+  const moving = diff.movingChance;
+  const brk = diff.breakChance;
+
+  // ledge — это форма, а type — поведение. Для ledge чаще делаем normal/ledge,
+  // чтобы игра была честной.
+  const baseNormal = preferLedge ? 0.78 : 0.62;
+
+  return pickWeighted([
+    { v: 'normal', w: baseNormal },
+    { v: 'moving', w: moving },
+    { v: 'breakable', w: brk },
+    { v: 'spike', w: spike },
+  ]);
+}
+
+function buildPlatform({ x, y, w, type, diff, safe }) {
+  const p = {
+    id: id(),
+    x,
+    y,
+    w,
+    h: PLATFORM_H,
+    type,
+    broken: false,
+    crumble: 0,
+    dir: Math.random() > 0.5 ? 1 : -1,
+    speed: rand(0.6, 1.35) * diff.movingSpeedMul,
+    safe: !!safe, // safe=true => никогда не spike
+  };
+
+  if (p.safe && p.type === 'spike') p.type = 'normal';
+  return p;
+}
+
+export function generatePlatforms(count = 18, startY = GAME_HEIGHT - 90) {
   const platforms = [];
-  platforms.push(createPlatform(GAME_HEIGHT - 50, true));
+  platforms.push(createStartPlatform(GAME_HEIGHT - 50));
 
   let y = startY;
+  let side = Math.random() > 0.5 ? 1 : -1;
+  let safetyCounter = 0;
+
+  // Ранние платформы — больше ledge, чтобы сразу “wall kick” чувствовался
   for (let i = 0; i < count; i++) {
-    platforms.push(createPlatform(y));
-    y -= PLATFORM_GAP_Y;
+    const diff = difficultyFromScore(0);
+    const gap = diff.gapY;
+
+    // чередуем стороны почти всегда
+    side *= -1;
+
+    const forceSafe = safetyCounter >= SAFETY_EVERY;
+    const useLedge = Math.random() < 0.75;
+
+    platforms.push(
+      useLedge ? createLedge(y, side, diff, forceSafe) : createCenterishPlatform(y, side, diff, forceSafe)
+    );
+
+    safetyCounter = forceSafe ? 0 : safetyCounter + 1;
+    y -= gap;
   }
+
   return platforms;
 }
 
-/** Частицы */
+/* =========================
+   PARTICLES
+========================= */
 export function createParticles(x, y, color, count = 7) {
   const parts = [];
   for (let i = 0; i < count; i++) {
@@ -143,16 +282,22 @@ export function updateParticles(particles, dt) {
   }
 }
 
-/** GAME */
+/* =========================
+   GAME STATE
+========================= */
 export function createGame() {
   return {
     started: false,
     running: true,
 
-    cameraY: 0, // world -> screen offset
+    cameraY: 0,
     player: createPlayer(),
     platforms: generatePlatforms(),
     particles: [],
+
+    // генератор
+    nextSide: Math.random() > 0.5 ? 1 : -1,
+    safetyCounter: 0,
 
     _dirty: true,
   };
@@ -162,79 +307,84 @@ export function restartGame(game) {
   game.started = false;
   game.running = true;
   game.cameraY = 0;
+
   game.player = createPlayer();
   game.platforms = generatePlatforms();
   game.particles = [];
+
+  game.nextSide = Math.random() > 0.5 ? 1 : -1;
+  game.safetyCounter = 0;
+
   game._dirty = true;
 }
 
-/**
- * Прыжок: wall-kick / jump-from-platform / air nudge
- */
+/* =========================
+   JUMP ACTION (Wall kick feel)
+========================= */
 export function jumpAction(game) {
   const pl = game.player;
   if (!pl.alive) return;
 
-  // частицы
+  const diff = difficultyFromScore(pl.score);
+
+  // particles
   const px = pl.x + pl.w / 2;
   const py = pl.y + pl.h;
   const color = pl.onWall ? '#ff9500' : '#3390ec';
   game.particles.push(...createParticles(px, py, color, 8));
 
   if (pl.onWall) {
-    // wall kick
-    pl.vx = WALL_KICK_X * -pl.wallSide;
-    pl.vy = -WALL_KICK_Y;
+    pl.vx = diff.wallKickX * -pl.wallSide;
+    pl.vy = -diff.wallKickY;
     pl.onWall = false;
     pl.wallSide = 0;
     pl.onGround = false;
-
-    // комбо за серию wall kicks
     pl.combo = clamp(pl.combo + 1, 1, 99);
     return;
   }
 
   if (pl.onGround) {
-    // обычный прыжок с платформы
-    pl.vy = -GROUND_JUMP;
-    // слегка толкаем в сторону последнего движения
+    pl.vy = -diff.groundJump;
     if (Math.abs(pl.vx) < 1) pl.vx = (Math.random() > 0.5 ? 1 : -1) * 1.8;
     pl.onGround = false;
     pl.combo = 1;
     return;
   }
 
-  // воздух: маленький nudge (чтобы было “живее”, но не ломало)
+  // air nudge (лёгкий контроль)
   if (pl.vx > 0) pl.vx += AIR_NUDGE;
   else if (pl.vx < 0) pl.vx -= AIR_NUDGE;
   else pl.vx = (Math.random() > 0.5 ? 1 : -1) * AIR_NUDGE;
 }
 
+/* =========================
+   STEP
+========================= */
 export function stepGame(game, dt = 1) {
   const pl = game.player;
   const platforms = game.platforms;
+  const diff = difficultyFromScore(pl.score);
 
   // trail
   pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.22 });
   if (pl.trail.length > 10) pl.trail.pop();
   pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.26 - i * 0.022)));
 
-  // particles
   updateParticles(game.particles, dt);
 
-  // platform movement + crumble
+  // platform updates
   for (const p of platforms) {
     if (p.type === 'moving' && !p.broken) {
       p.x += p.dir * p.speed * dt;
-      const left = 18;
-      const right = GAME_WIDTH - 18 - p.w;
+      const left = MARGIN_X;
+      const right = GAME_WIDTH - MARGIN_X - p.w;
       if (p.x < left) { p.x = left; p.dir *= -1; }
       if (p.x > right) { p.x = right; p.dir *= -1; }
     }
 
     if (p.type === 'breakable' && p.broken) {
       p.crumble = clamp(p.crumble + 0.08 * dt, 0, 1);
-      p.h = clamp(12 * (1 - p.crumble), 0, 12);
+      p.h = clamp(PLATFORM_H * (1 - p.crumble), 0, PLATFORM_H);
     }
   }
 
@@ -242,19 +392,18 @@ export function stepGame(game, dt = 1) {
   const prevX = pl.x;
   const prevY = pl.y;
 
-  pl.vy += GRAVITY * dt;
-  pl.vy = clamp(pl.vy, -50, MAX_FALL);
+  pl.vy += diff.gravity * dt;
+  pl.vy = clamp(pl.vy, -50, diff.maxFall);
 
-  // wall slide cap
-  if (pl.onWall && pl.vy > 0) pl.vy = Math.min(pl.vy, WALL_SLIDE_SPEED);
+  if (pl.onWall && pl.vy > 0) pl.vy = Math.min(pl.vy, diff.wallSlide);
 
   pl.x += pl.vx * dt;
   pl.y += pl.vy * dt;
 
-  // немного трения в воздухе
+  // air drag
   pl.vx *= Math.pow(0.992, dt);
 
-  // world bounds walls
+  // walls bounds
   pl.onWall = false;
   pl.wallSide = 0;
 
@@ -270,54 +419,51 @@ export function stepGame(game, dt = 1) {
     pl.vx = 0;
   }
 
-  // collisions with platforms (mainly landing)
+  // collisions
   pl.onGround = false;
 
   for (const p of platforms) {
     if (p.type === 'breakable' && p.broken && p.h <= 0.1) continue;
 
-    // AABB now
     if (!aabb(pl.x, pl.y, pl.w, pl.h, p.x, p.y, p.w, p.h)) continue;
 
-    // Landing check: was above and moving down
+    // landing check
     const wasAbove = prevY + pl.h <= p.y + 1;
     const movingDown = pl.vy > 0;
 
     if (wasAbove && movingDown) {
-      // land
       pl.y = p.y - pl.h;
       pl.vy = 0;
       pl.onGround = true;
       pl.onWall = false;
       pl.wallSide = 0;
 
-      // spike kills on touch
       if (p.type === 'spike') {
         pl.alive = false;
         break;
       }
 
-      // breakable breaks after landing
       if (p.type === 'breakable' && !p.broken) {
         p.broken = true;
-        // бонус particles
         game.particles.push(...createParticles(pl.x + pl.w / 2, pl.y + pl.h, '#ff9500', 10));
       }
 
-      // scoring: max height
+      // score by bestY
       if (p.type !== 'start') {
         pl.bestY = Math.min(pl.bestY, pl.y);
         const height = Math.max(0, (GAME_HEIGHT - pl.bestY));
         pl.score = Math.max(pl.score, Math.floor(height / 6));
       } else {
-        // на старте комбо сброс
         pl.combo = 1;
       }
+
+      // landing resets combo a bit (как “разрядка”)
+      if (pl.combo > 1) pl.combo = Math.max(1, Math.floor(pl.combo * 0.9));
 
       break;
     }
 
-    // side push-out (мягко, чтобы не застревать)
+    // side push-out
     const fromLeft = prevX + pl.w <= p.x;
     const fromRight = prevX >= p.x + p.w;
 
@@ -330,10 +476,8 @@ export function stepGame(game, dt = 1) {
     }
   }
 
-  // camera: держим игрока примерно в верхней трети экрана
-  const targetScreenY = GAME_HEIGHT * 0.35;
-  const desiredCam = pl.y - targetScreenY;
-  // камера только "вверх" (как в wall kickers), вниз не догоняет резко
+  // camera (только вверх)
+  const desiredCam = pl.y - TARGET_SCREEN_Y;
   game.cameraY = Math.min(game.cameraY, desiredCam);
 
   // despawn below camera
@@ -342,17 +486,34 @@ export function stepGame(game, dt = 1) {
     if (platforms[i].y > killLine) platforms.splice(i, 1);
   }
 
-  // spawn above camera
+  // spawn ahead (top)
   let topMostY = Infinity;
   for (const p of platforms) topMostY = Math.min(topMostY, p.y);
 
   const wantTop = game.cameraY - SPAWN_AHEAD;
+
   while (topMostY > wantTop) {
-    topMostY -= PLATFORM_GAP_Y;
-    platforms.push(createPlatform(topMostY));
+    topMostY -= diff.gapY;
+
+    // Генерация без тупиков:
+    // 1) почти всегда чередуем стороны
+    // 2) иногда вставляем “центр”, но рядом со стороной
+    game.nextSide *= -1;
+
+    const forceSafe = game.safetyCounter >= SAFETY_EVERY;
+    const mostlyLedge = Math.random() < 0.78; // как Wall Kickers
+
+    // ограничиваем типы платформ если сложность низкая
+    const p = mostlyLedge
+      ? createLedge(topMostY, game.nextSide, diff, forceSafe)
+      : createCenterishPlatform(topMostY, game.nextSide, diff, forceSafe);
+
+    platforms.push(p);
+
+    game.safetyCounter = forceSafe ? 0 : game.safetyCounter + 1;
   }
 
-  // death: fell below camera screen
+  // death if fell below screen
   if (pl.y > game.cameraY + GAME_HEIGHT + 140) {
     pl.alive = false;
   }
@@ -360,14 +521,16 @@ export function stepGame(game, dt = 1) {
   game._dirty = true;
 }
 
-/** DRAW */
+/* =========================
+   DRAW
+========================= */
 export function drawGame(ctx, game, highScore) {
-  // bg
-  const g = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  g.addColorStop(0, '#11162a');
-  g.addColorStop(0.5, '#101b35');
-  g.addColorStop(1, '#0b2a4b');
-  ctx.fillStyle = g;
+  // bg gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
+  bg.addColorStop(0, '#11162a');
+  bg.addColorStop(0.5, '#101b35');
+  bg.addColorStop(1, '#0b2a4b');
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
   // grid
@@ -382,7 +545,7 @@ export function drawGame(ctx, game, highScore) {
 
   const camY = game.cameraY;
 
-  // particles (screen space from world)
+  // particles
   for (const p of game.particles) {
     ctx.globalAlpha = p.life;
     ctx.fillStyle = p.color;
@@ -398,8 +561,6 @@ export function drawGame(ctx, game, highScore) {
 
     const sx = p.x;
     const sy = p.y - camY;
-
-    // skip offscreen
     if (sy > GAME_HEIGHT + 80 || sy < -80) continue;
 
     // shadow
@@ -459,6 +620,8 @@ export function drawGame(ctx, game, highScore) {
       ctx.fillText('START', sx + p.w / 2, sy + 10);
       ctx.textAlign = 'left';
     } else {
+      // normal/ledge
+      // чуть разный цвет, чтобы “ledge” читался визуально
       ctx.fillStyle = '#8e8e93';
       ctx.fillRect(sx, sy, p.w, p.h);
     }
@@ -510,7 +673,6 @@ export function drawGame(ctx, game, highScore) {
   if (!game.started) {
     overlay(ctx, highScore, 'WALL KICKERS', 'Tap to jump from walls', 'TAP TO START');
   }
-
   if (!pl.alive) {
     overlay(ctx, highScore, 'GAME OVER', `Score: ${pl.score}`, 'Press Restart');
   }

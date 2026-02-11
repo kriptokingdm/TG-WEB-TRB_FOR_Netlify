@@ -1,4 +1,4 @@
-// src/History.js (Telegram rich clean version)
+// src/History.js (Telegram rich clean version) - ИСПРАВЛЕННАЯ ВЕРСИЯ
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SupportChat from './SupportChat';
 import { API_BASE_URL } from './config';
@@ -96,7 +96,7 @@ function vibe(ms = 10) {
 
 export default function History({ navigateTo, showToast }) {
   const [orders, setOrders] = useState([]);
-  const [viewMode, setViewMode] = useState('active'); // active | all
+  const [viewMode, setViewMode] = useState('active');
   const [expandedId, setExpandedId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -162,13 +162,14 @@ export default function History({ navigateTo, showToast }) {
     const userId = getUserId();
 
     try {
-      // основной эндпоинт (как у тебя в логах)
       const url1 = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
-
-     
+      
+      const resp = await fetch(url1, {
+        method: 'GET',
+        headers: { Accept: 'application/json' }
+      });
 
       if (!resp.ok) {
-        // иногда полезно показать человеку, что это не “сервер умер”, а блок по доступу/проксированию
         throw new Error(`HTTP ${resp.status}`);
       }
 
@@ -197,7 +198,6 @@ export default function History({ navigateTo, showToast }) {
   };
 
   useEffect(() => {
-    // при первом заходе — сначала кэш (быстро), потом сеть
     const cached = loadCache();
     if (cached.length) setOrders(cached);
 
@@ -207,7 +207,6 @@ export default function History({ navigateTo, showToast }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats = useMemo(() => {
@@ -321,21 +320,21 @@ export default function History({ navigateTo, showToast }) {
               <div className="tg-skelCard" />
               <div className="tg-skelCard" />
             </div>
-          ) : {filtered.length === 0 ? (
-  <div className="tg-empty">
-    <div className="tg-empty__icon">{topActive ? '🫧' : '📚'}</div>
-    <h3 className="tg-empty__title">
-      {topActive ? 'Нет активных заявок' : 'История пуста'}
-    </h3>
-    <p className="tg-empty__text">
-      {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
-    </p>
-    <button className="tg-btn tg-btn--tg" onClick={onGoHome}>
-      <span>🚀</span>
-      <span>Начать обмен</span>
-    </button>
-  </div>
-) : ( ... )} : (
+          ) : filtered.length === 0 ? (
+            <div className="tg-empty">
+              <div className="tg-empty__icon">{topActive ? '🫧' : '📚'}</div>
+              <h3 className="tg-empty__title">
+                {topActive ? 'Нет активных заявок' : 'История пуста'}
+              </h3>
+              <p className="tg-empty__text">
+                {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
+              </p>
+              <button className="tg-btn tg-btn--tg" onClick={onGoHome}>
+                <span>🚀</span>
+                <span>Начать обмен</span>
+              </button>
+            </div>
+          ) : (
             filtered.map((o) => {
               const st = STATUS[o.status] || { text: o.status || 'Статус', tone: 'muted', emoji: '❓' };
               const isBuy = o.order_type === 'buy';

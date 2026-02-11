@@ -168,7 +168,7 @@ export default function History({ navigateTo, showToast }) {
       const resp = await fetch(url1, {
         method: 'GET',
         headers: { Accept: 'application/json' },
-        credentials: 'include',
+        
       });
 
       if (!resp.ok) {

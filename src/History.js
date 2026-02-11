@@ -321,20 +321,21 @@ export default function History({ navigateTo, showToast }) {
               <div className="tg-skelCard" />
               <div className="tg-skelCard" />
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="tg-empty">
-              <div className="tg-empty__icon">{topActive ? '🫧' : '📚'}</div>
-              <h3 className="tg-empty__title">
-                {topActive ? 'Нет активных заявок' : 'История пуста'}
-              </h3>
-              <p className="tg-empty__text">
-                {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
-              </p>
-              <button className="tg-btn tg-btn--primary tg-btn--wide" onClick={onGoHome}>
-                Начать обмен
-              </button>
-            </div>
-          ) : (
+          ) : {filtered.length === 0 ? (
+  <div className="tg-empty">
+    <div className="tg-empty__icon">{topActive ? '🫧' : '📚'}</div>
+    <h3 className="tg-empty__title">
+      {topActive ? 'Нет активных заявок' : 'История пуста'}
+    </h3>
+    <p className="tg-empty__text">
+      {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
+    </p>
+    <button className="tg-btn tg-btn--tg" onClick={onGoHome}>
+      <span>🚀</span>
+      <span>Начать обмен</span>
+    </button>
+  </div>
+) : ( ... )} : (
             filtered.map((o) => {
               const st = STATUS[o.status] || { text: o.status || 'Статус', tone: 'muted', emoji: '❓' };
               const isBuy = o.order_type === 'buy';

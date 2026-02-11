@@ -165,11 +165,7 @@ export default function History({ navigateTo, showToast }) {
       // основной эндпоинт (как у тебя в логах)
       const url1 = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
 
-      const resp = await fetch(url1, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-        
-      });
+     
 
       if (!resp.ok) {
         // иногда полезно показать человеку, что это не “сервер умер”, а блок по доступу/проксированию

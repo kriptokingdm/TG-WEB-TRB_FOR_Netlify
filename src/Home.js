@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './Home.css';
 import { API_BASE_URL } from './config';
 import { 
@@ -17,7 +17,7 @@ import {
 const simpleFetch = async (endpoint, data = null) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // Таймаут 5 секунд
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
   
   const options = {
     method: data ? 'POST' : 'GET',
@@ -82,23 +82,18 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   
-  // КУРСЫ - теперь объект с полным ответом от API
-  const [rateData, setRateData] = useState({
-    rate: 88.0,
-    min_amount: 1000,
-    max_amount: 1000000, // 👈 ИЗМЕНЕНО: макс 1 млн для покупки
-    type: 'buy',
-    level: 1,
-    levels: []
-  });
+  // КУРСЫ
+  const [currentRate, setCurrentRate] = useState(88.0);
+  const [minAmount, setMinAmount] = useState(1000);
+  const [maxAmount, setMaxAmount] = useState(1000000);
   
-  // ЛИМИТЫ - жестко задаем правильные значения
-  const [limits] = useState({
-    minBuy: 1000,      // 1000 RUB
-    maxBuy: 1000000,   // 1 000 000 RUB 👈 ИЗМЕНЕНО
-    minSell: 10,       // 10 USDT
-    maxSell: 10000     // 10 000 USDT
-  });
+  // ЛИМИТЫ - фиксированные
+  const limits = {
+    minBuy: 1000,
+    maxBuy: 1000000,
+    minSell: 10,
+    maxSell: 10000
+  };
   
   const [isLoading, setIsLoading] = useState(false);
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
@@ -120,7 +115,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [cryptoType, setCryptoType] = useState('address');
   const [selectedExchange, setSelectedExchange] = useState('Binance');
 
-  // ==================== REFS ДЛЯ ОТМЕНЫ ЗАПРОСОВ ====================
+  // ==================== REFS ====================
   const abortControllerRef = useRef(null);
 
   // ==================== КОНСТАНТЫ ====================
@@ -248,13 +243,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
     }
   };
 
-  // ==================== ОСНОВНАЯ ЛОГИКА КУРСОВ ====================
-  
-  /**
-   * ПОЛУЧЕНИЕ КУРСА - МГНОВЕННО!
-   * Отменяет предыдущий запрос, делает новый, обновляет UI
-   */
-  const fetchExchangeRate = useCallback(async (currentAmount, currentMode) => {
+  // ==================== ЗАПРОС КУРСА ====================
+  const fetchExchangeRate = (queryAmount, mode) => {
     // Отменяем предыдущий запрос
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -263,49 +253,53 @@ function Home({ navigateTo, telegramUser, showToast }) {
     // Создаем новый контроллер
     abortControllerRef.current = new AbortController();
 
-    try {
-      const queryAmount = currentAmount || (currentMode ? 1000 : 10);
-      const type = currentMode ? 'buy' : 'sell';
-      
-      console.log(`🔄 Запрос курса: ${type}, сумма: ${queryAmount}`);
-      
-      const result = await simpleFetch(`/api/exchange-rate?amount=${queryAmount}&type=${type}`);
-      
-      if (result.success) {
-        setRateData({
-          rate: result.rate,
-          min_amount: result.min_amount,
-          max_amount: currentMode ? 1000000 : 10000, // 👈 ФИКСИРОВАННЫЕ ЛИМИТЫ
-          type: result.type,
-          level: result.level || 1,
-          levels: result.levels || []
-        });
-        
-        // Очищаем ошибку, если курс успешно загружен
-        if (currentAmount) {
-          const numAmount = parseFloat(currentAmount.toString().replace(',', '.'));
-          if (!isNaN(numAmount)) {
-            if (numAmount < (currentMode ? limits.minBuy : limits.minSell)) {
-              setError(`Минимальная сумма: ${(currentMode ? limits.minBuy : limits.minSell).toLocaleString()} ${currentMode ? 'RUB' : 'USDT'}`);
-            } else if (numAmount > (currentMode ? 1000000 : 10000)) {
-              setError(`Максимальная сумма: ${(currentMode ? '1 000 000' : '10 000')} ${currentMode ? 'RUB' : 'USDT'}`);
-            } else {
-              setError('');
+    const type = mode ? 'buy' : 'sell';
+    const amount = queryAmount || (mode ? 1000 : 10);
+    
+    console.log(`🔄 Запрос курса: ${type}, сумма: ${amount}`);
+    
+    simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`)
+      .then(result => {
+        if (result.success) {
+          setCurrentRate(result.rate);
+          setMinAmount(result.min_amount);
+          setMaxAmount(mode ? 1000000 : 10000);
+          
+          // Проверяем лимиты
+          if (queryAmount) {
+            const numAmount = parseFloat(queryAmount.toString().replace(',', '.'));
+            if (!isNaN(numAmount)) {
+              if (mode) {
+                if (numAmount < limits.minBuy) {
+                  setError(`Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
+                } else if (numAmount > limits.maxBuy) {
+                  setError(`Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
+                } else {
+                  setError('');
+                }
+              } else {
+                if (numAmount < limits.minSell) {
+                  setError(`Минимальная сумма: ${limits.minSell} USDT`);
+                } else if (numAmount > limits.maxSell) {
+                  setError(`Максимальная сумма: ${limits.maxSell} USDT`);
+                } else {
+                  setError('');
+                }
+              }
             }
           }
         }
-      }
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('🔄 Предыдущий запрос курса отменен');
-      } else {
-        console.error('❌ Ошибка загрузки курса:', error);
-      }
-    }
-  }, [limits.minBuy, limits.minSell]);
+      })
+      .catch(error => {
+        if (error.name === 'AbortError') {
+          console.log('🔄 Предыдущий запрос курса отменен');
+        } else {
+          console.error('❌ Ошибка загрузки курса:', error);
+        }
+      });
+  };
 
   // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
-  
   const handleAmountChange = (e) => {
     const value = e.target.value;
     
@@ -319,7 +313,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
     
     setAmount(cleanedValue);
     
-    // 👇 МГНОВЕННЫЙ ЗАПРОС КУРСА ПРИ ИЗМЕНЕНИИ СУММЫ
     if (cleanedValue && cleanedValue.trim() !== '') {
       const numAmount = parseFloat(normalizedValue);
       if (!isNaN(numAmount)) {
@@ -327,7 +320,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
       }
     } else {
       setError('');
-      // Запрашиваем курс с дефолтной суммой
       fetchExchangeRate(isBuyMode ? 1000 : 10, isBuyMode);
     }
   };
@@ -347,14 +339,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
       setIsBuyMode(!isBuyMode);
       setAmount('');
       setError('');
-      
-      // 👇 МГНОВЕННЫЙ ЗАПРОС КУРСА ДЛЯ НОВОГО РЕЖИМА
       fetchExchangeRate(!isBuyMode ? 1000 : 10, !isBuyMode);
     });
   };
 
-  // ==================== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ (без изменений) ====================
-  
+  // ==================== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ ====================
   const handleAddPayment = () => {
     const isSBP = bankName === 'СБП (Система быстрых платежей)';
     if (isSBP) {
@@ -497,7 +486,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
       return;
     }
 
-    // 👇 НОВЫЕ ЛИМИТЫ
     if (isBuyMode) {
       if (numAmount < limits.minBuy) {
         showMessage('error', `❌ Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
@@ -637,8 +625,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   };
 
   // ==================== EFFECTS ====================
-  
-  // Инициализация при загрузке
   useEffect(() => {
     console.log('🏠 Home компонент загружен');
     
@@ -671,15 +657,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
     loadSavedData();
     setTimeout(() => checkActiveOrder(), 1000);
     
-    // Cleanup function
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Загружаем сохраненные данные
   const loadSavedData = () => {
     try {
       const savedPayments = localStorage.getItem('userPaymentMethods');
@@ -699,18 +683,15 @@ function Home({ navigateTo, telegramUser, showToast }) {
     }
   };
 
-  // Сохраняем данные при изменении
   useEffect(() => {
     localStorage.setItem('userPaymentMethods', JSON.stringify(paymentMethods));
     localStorage.setItem('userCryptoAddresses', JSON.stringify(cryptoAddresses));
   }, [paymentMethods, cryptoAddresses]);
 
-  // Обновляем курс при смене режима
   useEffect(() => {
     fetchExchangeRate(amount || (isBuyMode ? 1000 : 10), isBuyMode);
-  }, [isBuyMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isBuyMode]);
 
-  // Проверка активного ордера
   useEffect(() => {
     const interval = setInterval(() => {
       if (!hasActiveOrder) checkActiveOrder();
@@ -719,23 +700,20 @@ function Home({ navigateTo, telegramUser, showToast }) {
   }, [hasActiveOrder]);
 
   // ==================== ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ====================
-  
-  const currentRate = rateData.rate;
-  const convertedAmount = calculateConvertedAmount();
+  const convertedAmount = () => {
+    if (!amount) return '';
+    const numAmount = parseFloat(amount.replace(',', '.'));
+    if (isNaN(numAmount)) return '';
+    return isBuyMode 
+      ? (numAmount / currentRate).toFixed(2) 
+      : (numAmount * currentRate).toFixed(2);
+  };
+
   const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
-  const calculateConvertedAmount = () => {
-    if (!amount) return '';
-    const numAmount = parseFloat(amount.replace(',', '.'));
-    if (isNaN(numAmount)) return '';
-    const converted = isBuyMode ? (numAmount / currentRate).toFixed(2) : (numAmount * currentRate).toFixed(2);
-    return converted;
-  };
-
   // ==================== РЕНДЕР ====================
-  
   return (
     <div className="home-container">
       {hasActiveOrder ? (
@@ -899,7 +877,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   <input
                     type="text"
                     placeholder="0"
-                    value={convertedAmount}
+                    value={convertedAmount()}
                     readOnly
                     className="amount-input"
                   />

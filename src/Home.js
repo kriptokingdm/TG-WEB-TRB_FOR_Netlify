@@ -914,9 +914,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
             {/* Информационный блок */}
             <div className="tg-info-block">
               <div className="tg-info-icon">ℹ️</div>
-              <div className="tg-info-text">
+              {/* <div className="tg-info-text">
                 Статус заявки обновляется автоматически. Вы получите уведомление при изменении статуса.
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

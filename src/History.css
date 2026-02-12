@@ -1,6 +1,9 @@
 /* src/HistoryTG.css — Telegram premium dark UI (stable layout) */
 
 /* ===== Scope reset ONLY inside tg-history ===== */
+.tg-history { outline: 3px solid hotpink !important; }
+
+
 .tg-history, .tg-history * {
   box-sizing: border-box;
 }

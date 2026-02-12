@@ -445,7 +445,7 @@ export default function History({ navigateTo, showToast }) {
       </div>
 
       {/* DEV marker: чтобы ты 100% видел что CSS обновился */}
-      <div className="tgH__cssMark">History.css • premium v3</div>
+      {/* <div className="tgH__cssMark">History.css • premium v3</div> */}
 
       {activeChat ? (
         <div className="tgModal" onClick={() => setActiveChat(null)}>

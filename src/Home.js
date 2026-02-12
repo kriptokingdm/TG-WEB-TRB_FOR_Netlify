@@ -245,12 +245,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
   // ==================== ЗАПРОС КУРСА ====================
   const fetchExchangeRate = (queryAmount, mode) => {
-    // Отменяем предыдущий запрос
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
-    // Создаем новый контроллер
     abortControllerRef.current = new AbortController();
 
     const type = mode ? 'buy' : 'sell';
@@ -265,7 +263,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
           setMinAmount(result.min_amount);
           setMaxAmount(mode ? 1000000 : 10000);
           
-          // Проверяем лимиты
           if (queryAmount) {
             const numAmount = parseFloat(queryAmount.toString().replace(',', '.'));
             if (!isNaN(numAmount)) {
@@ -628,7 +625,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   useEffect(() => {
     console.log('🏠 Home компонент загружен');
     
-    // Загружаем курс при старте
     fetchExchangeRate(1000, true);
     
     const tgUser = getTelegramUser();
@@ -709,6 +705,30 @@ function Home({ navigateTo, telegramUser, showToast }) {
       : (numAmount * currentRate).toFixed(2);
   };
 
+  const getStatusText = (status) => {
+    const statuses = {
+      'pending': 'Ожидание',
+      'processing': 'В обработке',
+      'accepted': 'Принят',
+      'completed': 'Завершен',
+      'cancelled': 'Отменен',
+      'rejected': 'Отклонен'
+    };
+    return statuses[status] || status;
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'pending': '#ffd700',
+      'processing': '#ffa500',
+      'accepted': '#34c759',
+      'completed': '#3390ec',
+      'cancelled': '#ff3b30',
+      'rejected': '#ff3b30'
+    };
+    return colors[status] || '#8e8e93';
+  };
+
   const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
@@ -718,12 +738,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
     <div className="home-container">
       {hasActiveOrder ? (
         <div className="tg-home-container">
+          {/* Шапка с кнопкой назад */}
           <div className="tg-header">
             <div className="tg-header-content">
               <button 
                 className="tg-back-btn"
                 onClick={() => navigateTo('history')}
-                title="К истории операций"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -731,81 +751,177 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </button>
               <div className="tg-header-titles">
                 <h1 className="tg-header-title">Активная заявка</h1>
-                <p className="tg-header-subtitle">Ваш ордер в обработке</p>
+                <p className="tg-header-subtitle">ID: {activeOrderData?.public_id || activeOrderId}</p>
               </div>
-              <div className="tg-header-status">
-                ⏳ Обрабатывается
+              <div 
+                className="tg-header-status"
+                style={{ 
+                  background: `${getStatusColor(activeOrderData?.status)}20`,
+                  color: getStatusColor(activeOrderData?.status)
+                }}
+              >
+                {activeOrderData?.status === 'pending' && '🟡 Ожидание'}
+                {activeOrderData?.status === 'processing' && '🟠 В обработке'}
+                {activeOrderData?.status === 'accepted' && '✅ Принят'}
+                {activeOrderData?.status === 'completed' && '🏁 Завершен'}
+                {activeOrderData?.status === 'cancelled' && '🚫 Отменен'}
+                {activeOrderData?.status === 'rejected' && '❌ Отклонен'}
               </div>
             </div>
           </div>
 
+          {/* Основной контент */}
           <div className="tg-main-content">
             <div className="tg-order-card">
+              {/* Заголовок карточки с иконкой */}
               <div className="tg-card-header">
-                <div className="tg-order-icon">⏳</div>
+                <div 
+                  className="tg-order-icon"
+                  style={{ 
+                    background: `${getStatusColor(activeOrderData?.status)}15`,
+                    color: getStatusColor(activeOrderData?.status)
+                  }}
+                >
+                  {activeOrderData?.order_type === 'buy' ? '🛒' : '💰'}
+                </div>
                 <div className="tg-order-info">
                   <h2 className="tg-order-title">
-                    Заявка #{String(activeOrderId || '').substring(0, 8)}
+                    {activeOrderData?.order_type === 'buy' ? 'Покупка USDT' : 'Продажа USDT'}
                   </h2>
                   <p className="tg-order-subtitle">
-                    {activeOrderData?.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
+                    от {activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleDateString('ru-RU') : '-'}
                   </p>
                 </div>
               </div>
 
+              {/* Детали ордера */}
               <div className="tg-order-details">
-                {[
-                  { label: 'Сумма', value: `${activeOrderData?.amount} ${activeOrderData?.operation_type === 'buy' ? 'RUB' : 'USDT'}` },
-                  { label: 'Курс', value: `${activeOrderData?.rate} ₽/USDT` },
-                  { 
-                    label: 'К получению', 
-                    value: activeOrderData?.operation_type === 'buy' 
-                      ? `${(activeOrderData?.amount / activeOrderData?.rate).toFixed(2)} USDT`
-                      : `${(activeOrderData?.amount * activeOrderData?.rate).toFixed(2)} ₽`,
-                    highlight: true 
-                  },
-                  { label: 'Создано', value: activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleString('ru-RU') : '-' }
-                ].map((item, index) => (
-                  <div key={index} className="tg-detail-row">
-                    <span className="tg-detail-label">{item.label}</span>
-                    <span className={`tg-detail-value ${item.highlight ? 'highlight' : ''}`}>
-                      {item.highlight ? <strong>{item.value}</strong> : item.value}
-                    </span>
-                  </div>
-                ))}
+                {/* Вы отдаете */}
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Вы отдаете</span>
+                  <span className="tg-detail-value tg-detail-big">
+                    {activeOrderData?.amount} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
+                  </span>
+                </div>
 
-                {activeOrderData?.bank_details && (
-                  <div className="tg-detail-row">
-                    <span className="tg-detail-label">Реквизиты</span>
-                    <span className="tg-detail-value tg-detail-mono">
-                      {activeOrderData.bank_details}
-                    </span>
+                {/* Курс */}
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Курс</span>
+                  <span className="tg-detail-value">
+                    1 USDT = {activeOrderData?.rate} ₽
+                  </span>
+                </div>
+
+                {/* Вы получаете */}
+                <div className="tg-detail-row tg-detail-highlight">
+                  <span className="tg-detail-label">Вы получаете</span>
+                  <span className="tg-detail-value tg-detail-big tg-detail-accent">
+                    {activeOrderData?.order_type === 'buy' 
+                      ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
+                      : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
+                    }
+                  </span>
+                </div>
+
+                {/* Реквизиты/Адрес */}
+                {activeOrderData?.order_type === 'sell' && activeOrderData?.bank_details && (
+                  <div className="tg-detail-row tg-detail-full">
+                    <span className="tg-detail-label">Реквизиты получателя</span>
+                    <div className="tg-detail-value tg-detail-box">
+                      <span className="tg-detail-mono">{activeOrderData.bank_details}</span>
+                      <button 
+                        className="tg-copy-btn"
+                        onClick={() => copyToClipboard(activeOrderData.bank_details)}
+                      >
+                        📋
+                      </button>
+                    </div>
                   </div>
                 )}
-                
-                {activeOrderData?.crypto_address && (
-                  <div className="tg-detail-row">
-                    <span className="tg-detail-label">Адрес USDT</span>
-                    <span className="tg-detail-value tg-detail-mono">
-                      {activeOrderData.crypto_address}
-                    </span>
+
+                {activeOrderData?.order_type === 'buy' && activeOrderData?.crypto_address && (
+                  <div className="tg-detail-row tg-detail-full">
+                    <span className="tg-detail-label">Адрес для USDT</span>
+                    <div className="tg-detail-value tg-detail-box">
+                      <span className="tg-detail-mono">{activeOrderData.crypto_address}</span>
+                      <button 
+                        className="tg-copy-btn"
+                        onClick={() => copyToClipboard(activeOrderData.crypto_address)}
+                      >
+                        📋
+                      </button>
+                    </div>
+                    {activeOrderData?.crypto_network && (
+                      <span className="tg-detail-network">{activeOrderData.crypto_network}</span>
+                    )}
                   </div>
                 )}
+
+                {/* Дополнительная информация */}
+                <div className="tg-detail-row tg-detail-small">
+                  <span className="tg-detail-label">Создан</span>
+                  <span className="tg-detail-value">
+                    {activeOrderData?.created_at 
+                      ? new Date(activeOrderData.created_at).toLocaleString('ru-RU', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          day: '2-digit',
+                          month: '2-digit'
+                        })
+                      : '-'
+                    }
+                  </span>
+                </div>
+
+                <div className="tg-detail-row tg-detail-small">
+                  <span className="tg-detail-label">ID заявки</span>
+                  <span className="tg-detail-value tg-detail-mono">
+                    #{activeOrderData?.public_id || activeOrderId}
+                  </span>
+                </div>
               </div>
 
+              {/* Кнопки действий */}
               <div className="tg-actions">
                 <button 
-                  className="tg-action-btn"
+                  className="tg-action-btn tg-action-btn-primary"
                   onClick={() => navigateTo('history')}
                 >
                   <span className="tg-btn-icon">📋</span>
-                  Детали заявки
+                  История операций
                 </button>
+                
+                {activeOrderData?.status === 'pending' && (
+                  <button 
+                    className="tg-action-btn tg-action-btn-secondary"
+                    onClick={() => {
+                      showMessage('info', '⚡ Функция отмены появится в ближайшее время', 'info');
+                    }}
+                  >
+                    <span className="tg-btn-icon">🚫</span>
+                    Отменить заявку
+                  </button>
+                )}
+
+                {activeOrderData?.status === 'accepted' && (
+                  <div className="tg-action-info">
+                    ⏳ Ожидайте подтверждения от администратора
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Информационный блок */}
+            <div className="tg-info-block">
+              <div className="tg-info-icon">ℹ️</div>
+              <div className="tg-info-text">
+                Статус заявки обновляется автоматически. Вы получите уведомление при изменении статуса.
               </div>
             </div>
           </div>
         </div>
       ) : (
+        // ОСНОВНОЙ ИНТЕРФЕЙС ОБМЕНА
         <div className="home-content">
           <div className="currency-cards-section">
             <div className="currency-cards-horizontal">
@@ -826,7 +942,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 className={`swap-center-button ${isSwapped ? 'swapped' : ''}`}
                 onClick={handleSwap}
                 disabled={hasActiveOrder}
-                title={hasActiveOrder ? "Дождитесь завершения активного ордера" : "Поменять местами"}
               >
                 <SwapIcon isSwapped={isSwapped} />
               </button>
@@ -889,7 +1004,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
           </div>
 
-          {isBuyMode && (
+          {isBuyMode ? (
             <div className="payment-section-new">
               <div className="payment-header-new">
                 <h3 className="section-title">Адрес для получения USDT</h3>
@@ -1063,9 +1178,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 </div>
               )}
             </div>
-          )}
-
-          {!isBuyMode && (
+          ) : (
             <div className="payment-section-new">
               <div className="payment-header-new">
                 <h3 className="section-title">Реквизиты для получения RUB</h3>

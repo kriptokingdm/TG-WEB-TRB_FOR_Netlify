@@ -96,6 +96,7 @@ export default function Game() {
   };
 
   return (
+     <div className="wk-page">
     <div className="wk-container">
       <canvas
         ref={canvasRef}
@@ -113,6 +114,7 @@ export default function Game() {
       {!game.started && game.player.alive && (
         <div className="wk-start-hint">Tap anywhere to start</div>
       )}
+    </div>
     </div>
   );
 }

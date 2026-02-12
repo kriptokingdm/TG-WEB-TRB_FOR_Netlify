@@ -1,57 +1,44 @@
-/* src/History.css — Telegram premium dark UI
-   IMPORTANT: this file MUST be imported as "./History.css"
-*/
+/* src/History.css — Telegram WebApp native UI (NO gradients) */
 
-:root{
-  --bg: #0b0b0f;
-  --bg2: #0e0f18;
-  --panel: rgba(255,255,255,0.06);
-  --panel2: rgba(255,255,255,0.035);
-  --stroke: rgba(255,255,255,0.10);
-  --stroke2: rgba(255,255,255,0.06);
-  --text: #fff;
-  --muted: rgba(255,255,255,0.72);
+/* =========================================================
+   IMPORTANT:
+   If you have global: * { color: var(--tg-theme-text-color) !important; }
+   it breaks "hint" and status colors. We override safely here.
+========================================================= */
 
-  --blue: #3390ec;
-  --blue2: #58a6ff;
-
-  --ok: #2ecc71;
-  --warn: #f1c40f;
-  --bad: #ff3b30;
-
-  --shadow: 0 12px 28px rgba(0,0,0,0.45);
-  --shadow2: 0 8px 20px rgba(0,0,0,0.32);
+.tgH, .tgH * {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-* { box-sizing: border-box; }
-button { font-family: inherit; }
-html, body { background: var(--bg); }
-
-/* ===== Page ===== */
 .tgH{
   min-height: 100vh;
-  color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-
-  /* премиум фон */
-  background:
-    radial-gradient(1200px 520px at 20% -10%, rgba(51,144,236,0.20), transparent 60%),
-    radial-gradient(900px 420px at 95% 10%, rgba(255,59,48,0.14), transparent 58%),
-    radial-gradient(800px 420px at 50% 110%, rgba(46,204,113,0.12), transparent 62%),
-    linear-gradient(180deg, var(--bg2), var(--bg));
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
 }
 
-.tgH__wrap{ padding: 12px; }
+/* wrapper */
+.tgH__wrap{
+  padding: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
+}
 
-/* ===== Header ===== */
+/* =========================================================
+   Header (sticky, like Telegram)
+========================================================= */
 .tgH__header{
   position: sticky;
   top: 0;
-  z-index: 20;
-  padding: 10px 0 12px;
-  background: rgba(11,11,15,0.78);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  z-index: 50;
+  background: var(--tg-theme-bg-color, #ffffff);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  margin: -16px -16px 12px;
+  padding: 12px 16px 12px;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
 .tgH__titleRow{
@@ -64,432 +51,498 @@ html, body { background: var(--bg); }
 .tgH__title{
   margin: 0;
   font-size: 20px;
-  font-weight: 950;
-  letter-spacing: 0.2px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
 .tgH__subtitle{
-  margin: 3px 0 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ===== Buttons ===== */
-.tgBtn{
-  border: 1px solid var(--stroke);
-  background: var(--panel2);
-  color: var(--text);
-  border-radius: 14px;
-  padding: 10px 12px;
-  font-weight: 900;
+  margin: 2px 0 0;
   font-size: 13px;
+  font-weight: 400;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+}
+
+/* =========================================================
+   Buttons — Telegram-like
+========================================================= */
+.tgBtn{
+  border: none;
+  background: transparent;
+  color: var(--tg-theme-button-color, #3390ec) !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
-}
-
-.tgBtn:active{ transform: translateY(1px) scale(0.99); }
-.tgBtn:disabled{ opacity: .55; cursor: default; transform: none; }
-
-.tgBtn--ghost{ background: rgba(255,255,255,0.045); }
-.tgBtn--primary{
-  background: linear-gradient(135deg, rgba(51,144,236,0.40), rgba(88,166,255,0.16));
-  border-color: rgba(88,166,255,0.28);
-  color: #dbf0ff;
-  box-shadow: 0 12px 26px rgba(51,144,236,0.14);
-}
-.tgBtn--wide{ width: 100%; }
-
-.tgH__refresh{
   display:inline-flex;
   align-items:center;
+  justify-content:center;
   gap: 8px;
 }
 
-.tgH__refreshIcon{
-  width: 16px; height: 16px;
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
-  position: relative;
+.tgBtn:active{
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, transparent);
 }
-.tgH__refreshIcon::after{
-  content:"";
-  position:absolute;
-  inset: 3px;
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.18);
+
+.tgBtn:disabled{
+  opacity: .5;
+  cursor: default;
+}
+
+.tgBtn--ghost{
+  background: transparent;
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+
+.tgBtn--primary{
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
+  border: none;
+}
+
+.tgBtn--wide{
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+/* refresh */
+.tgH__refresh{
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  color: var(--tg-theme-text-color, #000000) !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.tgH__refreshIcon{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 55%, transparent);
+  border-top-color: var(--tg-theme-button-color, #3390ec);
+  display:inline-block;
 }
 
 .tgSpin{
-  width:16px;height:16px;
-  border-radius:999px;
-  border: 2px solid rgba(255,255,255,0.25);
-  border-top-color: rgba(255,255,255,0.90);
-  animation: tgspin .85s linear infinite;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 55%, transparent);
+  border-top-color: var(--tg-theme-button-color, #3390ec);
+  display:inline-block;
+  animation: tgspin .8s linear infinite;
 }
-@keyframes tgspin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes tgspin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
 
-/* ===== Stats ===== */
+/* =========================================================
+   Stats — Telegram cards
+========================================================= */
 .tgH__stats{
   display:flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .tgH__stat{
-  flex:1;
-  padding: 10px 12px;
-  border-radius: 18px;
-  border: 1px solid var(--stroke);
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  flex: 1;
+  padding: 14px 14px;
+  border-radius: 12px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display:flex;
   align-items:center;
   justify-content:space-between;
-  box-shadow: var(--shadow2);
-  position: relative;
-  overflow: hidden;
+  gap: 12px;
 }
 
-.tgH__stat::before{
-  content:"";
-  position:absolute;
-  inset:-40px -60px auto auto;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  filter: blur(1px);
-  opacity: .35;
+.tgH__statLabel{
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+}
+.tgH__statValue{
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+.tgH__statEmoji{
+  font-size: 20px;
+  opacity: .9;
 }
 
-.tgH__stat--ok{
-  border-color: rgba(46,204,113,0.22);
-}
-.tgH__stat--ok::before{
-  background: radial-gradient(circle at 30% 30%, rgba(46,204,113,0.55), transparent 60%);
-}
-.tgH__stat--bad{
-  border-color: rgba(255,59,48,0.26);
-}
-.tgH__stat--bad::before{
-  background: radial-gradient(circle at 30% 30%, rgba(255,59,48,0.50), transparent 60%);
-}
-
-.tgH__statLabel{ font-size: 12px; color: var(--muted); position:relative; z-index:1; }
-.tgH__statValue{ font-size: 20px; font-weight: 1000; margin-top: 2px; position:relative; z-index:1; }
-.tgH__statEmoji{ font-size: 20px; opacity: .95; position:relative; z-index:1; }
-
-/* ===== Tabs ===== */
+/* =========================================================
+   Tabs — like Telegram switcher blocks
+========================================================= */
 .tgH__tabs{
+  margin-top: 12px;
   display:flex;
   gap: 10px;
-  margin-top: 10px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  padding: 4px;
 }
 
 .tgH__tab{
-  flex:1;
+  flex: 1;
+  border: none;
+  background: transparent;
   padding: 10px 12px;
-  border-radius: 18px;
-  border: 1px solid var(--stroke);
-  background: rgba(255,255,255,0.045);
-  color: var(--text);
-  font-weight: 1000;
-  font-size: 13px;
-  cursor:pointer;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+  cursor: pointer;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  transition: background .12s ease, border-color .12s ease, transform .12s ease;
 }
-.tgH__tab:active{ transform: translateY(1px); }
 
 .tgH__tab.is-active{
-  background: linear-gradient(135deg, rgba(51,144,236,0.22), rgba(88,166,255,0.10));
-  border-color: rgba(88,166,255,0.26);
-  color: #c7e6ff;
-  box-shadow: 0 10px 22px rgba(51,144,236,0.10);
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
 .tgH__badge{
   font-size: 12px;
-  padding: 2px 8px;
+  font-weight: 700;
+  padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  font-weight: 1000;
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 15%, transparent);
+  color: var(--tg-theme-button-color, #3390ec) !important;
 }
 
-/* ===== Error ===== */
+.tgH__tab.is-active .tgH__badge{
+  background: rgba(255,255,255,0.18);
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
+}
+
+/* =========================================================
+   Error — Telegram red notice
+========================================================= */
 .tgH__error{
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 59, 48, 0.30);
-  background: rgba(255, 59, 48, 0.12);
-  color: #ffb9b3;
-  font-size: 13px;
-  font-weight: 900;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #ff3b30 12%, transparent);
+  border: 0.5px solid color-mix(in srgb, #ff3b30 35%, transparent);
+  color: #ff3b30 !important;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-/* ===== List ===== */
+/* =========================================================
+   List
+========================================================= */
 .tgH__list{
-  padding: 12px 0 90px;
-  display: grid;
+  display:grid;
   gap: 12px;
+  padding-bottom: 90px;
 }
 
-/* ===== Card ===== */
+/* =========================================================
+   Order card — Telegram "section card"
+========================================================= */
 .tgCard{
-  border-radius: 20px;
-  border: 1px solid var(--stroke);
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: var(--shadow);
-  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.tgCard::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  pointer-events:none;
-  background:
-    radial-gradient(900px 260px at 12% 0%, rgba(255,255,255,0.10), transparent 55%);
-  opacity: .95;
-}
-
-/* top accent line */
-.tgCard--buy::after,
-.tgCard--sell::after{
-  content:"";
-  position:absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 3px;
-  opacity: .95;
-}
-.tgCard--buy::after{
-  background: linear-gradient(90deg, rgba(88,166,255,0.0), rgba(88,166,255,0.98), rgba(88,166,255,0.0));
-}
-.tgCard--sell::after{
-  background: linear-gradient(90deg, rgba(255,59,48,0.0), rgba(255,59,48,0.95), rgba(255,59,48,0.0));
-}
-
+/* top row */
 .tgCard__top{
-  padding: 12px 12px 10px;
+  padding: 14px 14px 12px;
   display:flex;
+  align-items:flex-start;
   justify-content:space-between;
-  gap: 10px;
-  border-bottom: 1px solid var(--stroke2);
-  position: relative;
-  z-index: 1;
+  gap: 12px;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
-.tgCard__left{ min-width: 0; }
+.tgCard__left{
+  min-width: 0;
+}
 
 .tgCard__type{
-  font-size: 13px;
-  font-weight: 1000;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color, #000000) !important;
   display:flex;
   align-items:center;
   gap: 8px;
 }
 
 .tgCard__dot{
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(88,166,255,0.95), rgba(51,144,236,0.55));
-  box-shadow: 0 0 0 4px rgba(51,144,236,0.12);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color, #3390ec);
+  flex-shrink: 0;
 }
+
+/* sell accent dot */
 .tgCard--sell .tgCard__dot{
-  background: linear-gradient(180deg, rgba(255,120,110,0.95), rgba(255,59,48,0.55));
-  box-shadow: 0 0 0 4px rgba(255,59,48,0.12);
+  background: #34c759; /* Telegram green */
 }
 
 .tgCard__id{
   margin-top: 6px;
   padding: 0;
-  border: 0;
+  border: none;
   background: transparent;
-  color: #b7ddff;
-  font-size: 12px;
-  font-weight: 950;
   cursor: pointer;
   text-align: left;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tg-theme-button-color, #3390ec) !important;
+
   display:flex;
-  align-items: baseline;
+  align-items:baseline;
   gap: 8px;
-}
-.tgCard__hint{
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  font-weight: 800;
+  min-width: 0;
 }
 
-/* Status pill */
+.tgCard__hint{
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+}
+
+/* =========================================================
+   Status pill — Telegram-ish, minimal
+========================================================= */
 .tgStatus{
+  font-size: 13px;
+  font-weight: 700;
   padding: 6px 10px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 1000;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
   white-space: nowrap;
-  border: 1px solid rgba(255,255,255,0.12);
   display:flex;
   align-items:center;
   gap: 6px;
-  position: relative;
-  z-index: 1;
 }
-.tgStatus__emoji{ opacity: 0.95; }
 
+.tgStatus__emoji{ opacity: .9; }
+
+/* tone overrides */
 .tgStatus--ok{
-  background: linear-gradient(135deg, rgba(46,204,113,0.20), rgba(46,204,113,0.10));
-  color: #b8f5cf;
-  border-color: rgba(46,204,113,0.26);
+  background: color-mix(in srgb, #34c759 14%, transparent);
+  border-color: color-mix(in srgb, #34c759 35%, transparent);
+  color: #34c759 !important;
 }
 .tgStatus--warn{
-  background: linear-gradient(135deg, rgba(241,196,15,0.20), rgba(241,196,15,0.10));
-  color: #ffe9a6;
-  border-color: rgba(241,196,15,0.26);
+  background: color-mix(in srgb, #ff9500 14%, transparent);
+  border-color: color-mix(in srgb, #ff9500 35%, transparent);
+  color: #ff9500 !important;
 }
 .tgStatus--bad{
-  background: linear-gradient(135deg, rgba(255,59,48,0.20), rgba(255,59,48,0.10));
-  color: #ffb9b3;
-  border-color: rgba(255,59,48,0.28);
+  background: color-mix(in srgb, #ff3b30 12%, transparent);
+  border-color: color-mix(in srgb, #ff3b30 35%, transparent);
+  color: #ff3b30 !important;
 }
 .tgStatus--muted{
-  background: rgba(255,255,255,0.09);
-  color: #ededed;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
 
-/* Grid */
+/* =========================================================
+   Grid details — like Home rows
+========================================================= */
 .tgGrid{
-  padding: 12px;
+  padding: 12px 14px 14px;
   display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  position: relative;
-  z-index: 1;
+  gap: 12px;
 }
 
-.tgKV{ display:grid; gap: 4px; }
-.tgK{ font-size: 12px; color: var(--muted); }
-.tgV{ font-size: 13px; font-weight: 1000; }
-.tgV--soft{ opacity: .92; font-weight: 900; }
+.tgKV{
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.tgK{
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+  margin-bottom: 6px;
+}
+
+.tgV{
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+
+.tgV--soft{
+  font-weight: 600;
+  color: var(--tg-theme-text-color, #000000) !important;
+}
 
 .tgV--glow{
-  text-shadow: 0 0 18px rgba(88,166,255,0.22);
+  color: var(--tg-theme-button-color, #3390ec) !important;
 }
 
-/* Actions */
+/* =========================================================
+   Actions row
+========================================================= */
 .tgActions{
-  padding: 12px;
+  padding: 12px 14px 14px;
+  border-top: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   display:flex;
   gap: 10px;
-  border-top: 1px solid var(--stroke2);
-  position: relative;
-  z-index: 1;
 }
 
-/* Expanded */
+/* make buttons look like Home */
+.tgActions .tgBtn{
+  flex: 1;
+  justify-content: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.tgActions .tgBtn--ghost{
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+
+/* =========================================================
+   Expanded details
+========================================================= */
 .tgExpand{
-  padding: 12px;
-  border-top: 1px solid var(--stroke2);
-  background: rgba(0,0,0,0.18);
-  display:grid;
-  gap: 8px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.88);
-  position: relative;
-  z-index: 1;
+  padding: 12px 14px 14px;
+  border-top: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .tgRow{
   display:flex;
+  align-items:flex-start;
   justify-content:space-between;
-  gap: 10px;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
-.tgRow__k{ color: rgba(255,255,255,0.62); }
+.tgRow:last-child{ border-bottom: none; }
+
+.tgRow__k{
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+  flex: 0 0 auto;
+}
 
 .tgCode{
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  opacity: .96;
+  font-family: Menlo, Monaco, "Courier New", monospace;
+  font-size: 12.5px;
+  color: var(--tg-theme-text-color, #000000) !important;
+  text-align: right;
+  word-break: break-all;
 }
 
-/* Empty */
+/* =========================================================
+   Empty state — Telegram minimal
+========================================================= */
 .tgEmpty{
-  margin-top: 8px;
-  padding: 16px;
-  border-radius: 20px;
-  border: 1px dashed rgba(255,255,255,0.16);
-  background: rgba(255,255,255,0.03);
   text-align:center;
-  box-shadow: var(--shadow2);
+  padding: 28px 20px;
+  border-radius: 16px;
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-bg-color, #ffffff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-.tgEmpty__icon{ font-size: 28px; margin-bottom: 6px; opacity: .95; }
-.tgEmpty__title{ margin: 0 0 6px; font-size: 16px; font-weight: 1000; }
-.tgEmpty__text{ margin: 0; font-size: 13px; color: rgba(255,255,255,0.72); }
 
-/* Skeleton */
+.tgEmpty__icon{
+  font-size: 44px;
+  opacity: .5;
+  margin-bottom: 10px;
+}
+
+.tgEmpty__title{
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+
+.tgEmpty__text{
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
+}
+
+/* =========================================================
+   Skeleton — Telegram soft blocks
+========================================================= */
 .tgSkel{
   display:grid;
   gap: 12px;
 }
+
 .tgSkel__card{
-  height: 136px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.06);
+  height: 150px;
+  border-radius: 16px;
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   background:
-    linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.09), rgba(255,255,255,0.04));
-  background-size: 240% 100%;
-  animation: shimmer 1.15s ease-in-out infinite;
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f1f1f1) 80%, transparent),
+      color-mix(in srgb, var(--tg-theme-bg-color, #ffffff) 55%, transparent),
+      color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f1f1f1) 80%, transparent)
+    );
+  background-size: 220% 100%;
+  animation: shimmer 1.1s ease-in-out infinite;
 }
+
 @keyframes shimmer{
   0%{ background-position: 0% 0; }
   100%{ background-position: 100% 0; }
 }
 
-/* Modal */
+/* =========================================================
+   Modal
+========================================================= */
 .tgModal{
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.60);
+  background: rgba(0,0,0,0.45);
   display:flex;
   align-items:flex-end;
   justify-content:center;
-  z-index: 50;
+  z-index: 999;
 }
+
 .tgModal__sheet{
   width: 100%;
   max-width: 520px;
   height: 86vh;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  background: rgba(11,11,15,0.98);
-  border: 1px solid rgba(255,255,255,0.14);
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   overflow: hidden;
-  box-shadow: 0 -20px 44px rgba(0,0,0,0.60);
 }
 
-/* DEV marker bottom-right */
-.tgH__cssMark{
-  position: fixed;
-  right: 10px;
-  bottom: 10px;
-  z-index: 80;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.92);
-  background: rgba(51,144,236,0.22);
-  border: 1px solid rgba(88,166,255,0.22);
-  backdrop-filter: blur(10px);
-}
+/* Remove old dev marker if you had it */
+.tgH__cssMark{ display:none !important; }
 
-/* Small screens */
+/* Mobile small */
 @media (max-width: 380px){
-  .tgH__wrap{ padding: 10px; }
-  .tgH__stats, .tgH__tabs, .tgActions{ gap: 8px; }
-  .tgH__title{ font-size: 19px; }
+  .tgH__wrap{ padding: 12px; }
+  .tgH__header{ margin: -12px -12px 12px; padding: 12px; }
+  .tgGrid{ grid-template-columns: 1fr; }
 }

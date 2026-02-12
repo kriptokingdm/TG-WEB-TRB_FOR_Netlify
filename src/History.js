@@ -1,4 +1,4 @@
-// src/History.js (Telegram rich clean version)
+// src/History.js (Telegram premium version) — IMPORTS History.css
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SupportChat from './SupportChat';
 import { API_BASE_URL } from './config';
@@ -34,7 +34,7 @@ function getUserId() {
       const id = parsed?.telegram_id || parsed?.telegramId || parsed?.id || parsed?.userId;
       if (id) return String(id);
     }
-  } catch (e) {}
+  } catch {}
   return '7879866656';
 }
 
@@ -152,7 +152,7 @@ export default function History({ navigateTo, showToast }) {
 
   const fetchOrders = async (withSpinner = true) => {
     const now = Date.now();
-    if (now - lastFetchRef.current < 1500) return;
+    if (now - lastFetchRef.current < 1200) return;
     lastFetchRef.current = now;
 
     if (withSpinner) setLoading(true);
@@ -162,19 +162,14 @@ export default function History({ navigateTo, showToast }) {
     const userId = getUserId();
 
     try {
-      // основной эндпоинт (как у тебя в логах)
-      const url1 = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
-
-      const resp = await fetch(url1, {
+      const url = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
+      const resp = await fetch(url, {
         method: 'GET',
         headers: { Accept: 'application/json' },
         credentials: 'include',
       });
 
-      if (!resp.ok) {
-        // иногда полезно показать человеку, что это не “сервер умер”, а блок по доступу/проксированию
-        throw new Error(`HTTP ${resp.status}`);
-      }
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
       const data = await resp.json();
       if (!data?.success) throw new Error(data?.error || 'Ошибка сервера');
@@ -187,11 +182,11 @@ export default function History({ navigateTo, showToast }) {
       const cached = loadCache();
       if (cached.length) {
         setOrders(cached);
-        setError(`⚠️ Нет связи с сервером. Показан кэш.`);
+        setError('⚠️ Нет связи с сервером. Показан кэш.');
         toast('warning', 'Показаны сохранённые данные');
       } else {
         setOrders([]);
-        setError(`❌ Ошибка загрузки истории`);
+        setError('❌ Ошибка загрузки истории');
         toast('error', 'Не удалось загрузить историю');
       }
     } finally {
@@ -201,7 +196,6 @@ export default function History({ navigateTo, showToast }) {
   };
 
   useEffect(() => {
-    // при первом заходе — сначала кэш (быстро), потом сеть
     const cached = loadCache();
     if (cached.length) setOrders(cached);
 
@@ -216,9 +210,7 @@ export default function History({ navigateTo, showToast }) {
 
   const stats = useMemo(() => {
     const total = orders.length;
-    let active = 0,
-      completed = 0,
-      rejected = 0;
+    let active = 0, completed = 0, rejected = 0;
 
     for (const o of orders) {
       if (ACTIVE_SET.has(o.status)) active++;
@@ -259,82 +251,80 @@ export default function History({ navigateTo, showToast }) {
   const topActive = viewMode === 'active';
 
   return (
-    <div className="tg-history">
-      <div className="tg-history__wrap">
-        <header className="tg-history__header">
-          <div className="tg-history__titleRow">
+    <div className="tgH">
+      <div className="tgH__wrap">
+        <header className="tgH__header">
+          <div className="tgH__titleRow">
             <div>
-              <h1 className="tg-history__title">История</h1>
-              <p className="tg-history__subtitle">Ваши заявки и статусы</p>
+              <h1 className="tgH__title">История</h1>
+              <p className="tgH__subtitle">Ваши заявки и статусы</p>
             </div>
 
             <button
-              className="tg-btn tg-btn--ghost tg-refresh"
+              className="tgBtn tgBtn--ghost tgH__refresh"
               onClick={() => !refreshing && fetchOrders(true)}
               disabled={refreshing}
               aria-label="Обновить"
             >
-              <span className={refreshing ? 'tg-spinner' : 'tg-refreshIcon'} />
+              <span className={refreshing ? 'tgSpin' : 'tgH__refreshIcon'} />
               <span>{refreshing ? 'Обновляю…' : 'Обновить'}</span>
             </button>
           </div>
 
-          <div className="tg-stats">
-            <div className="tg-statCard tg-statCard--ok">
+          <div className="tgH__stats">
+            <div className="tgH__stat tgH__stat--ok">
               <div>
-                <div className="tg-statLabel">Завершено</div>
-                <div className="tg-statValue">{stats.completed}</div>
+                <div className="tgH__statLabel">Завершено</div>
+                <div className="tgH__statValue">{stats.completed}</div>
               </div>
-              <div className="tg-statEmoji">🏁</div>
+              <div className="tgH__statEmoji">🏁</div>
             </div>
 
-            <div className="tg-statCard tg-statCard--bad">
+            <div className="tgH__stat tgH__stat--bad">
               <div>
-                <div className="tg-statLabel">Отклонено</div>
-                <div className="tg-statValue">{stats.rejected}</div>
+                <div className="tgH__statLabel">Отклонено</div>
+                <div className="tgH__statValue">{stats.rejected}</div>
               </div>
-              <div className="tg-statEmoji">❌</div>
+              <div className="tgH__statEmoji">❌</div>
             </div>
           </div>
 
-          <div className="tg-tabs">
+          <div className="tgH__tabs">
             <button
-              className={`tg-tab ${topActive ? 'tg-tab--active' : ''}`}
+              className={`tgH__tab ${topActive ? 'is-active' : ''}`}
               onClick={() => setViewMode('active')}
             >
               <span>Активные</span>
-              <span className="tg-badge">{stats.active}</span>
+              <span className="tgH__badge">{stats.active}</span>
             </button>
 
             <button
-              className={`tg-tab ${!topActive ? 'tg-tab--active' : ''}`}
+              className={`tgH__tab ${!topActive ? 'is-active' : ''}`}
               onClick={() => setViewMode('all')}
             >
               <span>Все</span>
-              <span className="tg-badge">{stats.total}</span>
+              <span className="tgH__badge">{stats.total}</span>
             </button>
           </div>
 
-          {error ? <div className="tg-error">{error}</div> : null}
+          {error ? <div className="tgH__error">{error}</div> : null}
         </header>
 
-        <main className="tg-list">
+        <main className="tgH__list">
           {loading ? (
-            <div className="tg-skeleton">
-              <div className="tg-skelCard" />
-              <div className="tg-skelCard" />
-              <div className="tg-skelCard" />
+            <div className="tgSkel">
+              <div className="tgSkel__card" />
+              <div className="tgSkel__card" />
+              <div className="tgSkel__card" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="tg-empty">
-              <div className="tg-empty__icon">{topActive ? '🫧' : '📚'}</div>
-              <h3 className="tg-empty__title">
-                {topActive ? 'Нет активных заявок' : 'История пуста'}
-              </h3>
-              <p className="tg-empty__text">
+            <div className="tgEmpty">
+              <div className="tgEmpty__icon">{topActive ? '🫧' : '📚'}</div>
+              <h3 className="tgEmpty__title">{topActive ? 'Нет активных заявок' : 'История пуста'}</h3>
+              <p className="tgEmpty__text">
                 {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
               </p>
-              <button className="tg-btn tg-btn--primary tg-btn--wide" onClick={onGoHome}>
+              <button className="tgBtn tgBtn--primary tgBtn--wide" onClick={onGoHome}>
                 Начать обмен
               </button>
             </div>
@@ -345,104 +335,104 @@ export default function History({ navigateTo, showToast }) {
               const canChat = ACTIVE_SET.has(o.status);
               const isExpanded = expandedId === o.id;
 
-              const statusClass = `tg-status tg-status--${st.tone}`;
-              const cardAccentClass = isBuy ? 'tg-card--buy' : 'tg-card--sell';
+              const statusClass = `tgStatus tgStatus--${st.tone}`;
+              const cardAccentClass = isBuy ? 'tgCard--buy' : 'tgCard--sell';
 
               return (
-                <section key={o.id} className={`tg-card ${cardAccentClass}`}>
-                  <div className="tg-card__top">
-                    <div className="tg-card__left">
-                      <div className="tg-card__type">
-                        <span className="tg-card__typeDot" />
+                <section key={o.id} className={`tgCard ${cardAccentClass}`}>
+                  <div className="tgCard__top">
+                    <div className="tgCard__left">
+                      <div className="tgCard__type">
+                        <span className="tgCard__dot" />
                         {isBuy ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                       </div>
 
-                      <button className="tg-card__idBtn" onClick={() => onCopy(o)} title="Скопировать ID">
-                        {orderDisplayId(o)} <span className="tg-card__idHint">tap to copy</span>
+                      <button className="tgCard__id" onClick={() => onCopy(o)} title="Скопировать ID">
+                        {orderDisplayId(o)} <span className="tgCard__hint">tap</span>
                       </button>
                     </div>
 
                     <div className={statusClass}>
-                      <span className="tg-status__emoji">{st.emoji}</span>
+                      <span className="tgStatus__emoji">{st.emoji}</span>
                       <span>{st.text}</span>
                     </div>
                   </div>
 
-                  <div className="tg-grid">
-                    <div className="tg-kv">
-                      <div className="tg-k">Сумма</div>
-                      <div className="tg-v">
+                  <div className="tgGrid">
+                    <div className="tgKV">
+                      <div className="tgK">Сумма</div>
+                      <div className="tgV">
                         {Number.isFinite(o.amount) ? o.amount.toFixed(2) : '—'} {isBuy ? 'RUB' : 'USDT'}
                       </div>
                     </div>
 
-                    <div className="tg-kv">
-                      <div className="tg-k">Курс</div>
-                      <div className="tg-vsoft">
+                    <div className="tgKV">
+                      <div className="tgK">Курс</div>
+                      <div className="tgV tgV--soft">
                         {Number.isFinite(o.rate) ? o.rate.toFixed(2) : '—'} ₽
                       </div>
                     </div>
 
-                    <div className="tg-kv">
-                      <div className="tg-k">Итого</div>
-                      <div className="tg-v tg-v--glow">{calcTotal(o)}</div>
+                    <div className="tgKV">
+                      <div className="tgK">Итого</div>
+                      <div className="tgV tgV--glow">{calcTotal(o)}</div>
                     </div>
 
-                    <div className="tg-kv">
-                      <div className="tg-k">Время</div>
-                      <div className="tg-vsoft">{formatTime(o.created_at)}</div>
+                    <div className="tgKV">
+                      <div className="tgK">Время</div>
+                      <div className="tgV tgV--soft">{formatTime(o.created_at)}</div>
                     </div>
                   </div>
 
-                  <div className="tg-actions">
-                    <button className="tg-btn tg-btn--ghost" onClick={() => onCopy(o)}>
+                  <div className="tgActions">
+                    <button className="tgBtn tgBtn--ghost" onClick={() => onCopy(o)}>
                       📋 Копировать
                     </button>
 
                     {canChat ? (
-                      <button className="tg-btn tg-btn--primary" onClick={() => onOpenChat(o)}>
+                      <button className="tgBtn tgBtn--primary" onClick={() => onOpenChat(o)}>
                         💬 Чат
                       </button>
                     ) : (
-                      <button className="tg-btn tg-btn--ghost" onClick={() => onToggleDetails(o)}>
+                      <button className="tgBtn tgBtn--ghost" onClick={() => onToggleDetails(o)}>
                         {isExpanded ? 'Скрыть' : 'Детали'}
                       </button>
                     )}
                   </div>
 
                   {isExpanded ? (
-                    <div className="tg-expand">
-                      <div className="tg-row">
-                        <span className="tg-row__k">Public ID</span>
-                        <span className="tg-code">{o.public_id || '—'}</span>
+                    <div className="tgExpand">
+                      <div className="tgRow">
+                        <span className="tgRow__k">Public ID</span>
+                        <span className="tgCode">{o.public_id || '—'}</span>
                       </div>
 
-                      <div className="tg-row">
-                        <span className="tg-row__k">Internal ID</span>
-                        <span className="tg-code">#{o.id}</span>
+                      <div className="tgRow">
+                        <span className="tgRow__k">Internal ID</span>
+                        <span className="tgCode">#{o.id}</span>
                       </div>
 
-                      <div className="tg-row">
-                        <span className="tg-row__k">Создан</span>
+                      <div className="tgRow">
+                        <span className="tgRow__k">Создан</span>
                         <span>{formatDateTime(o.created_at)}</span>
                       </div>
 
-                      <div className="tg-row">
-                        <span className="tg-row__k">Обновлён</span>
+                      <div className="tgRow">
+                        <span className="tgRow__k">Обновлён</span>
                         <span>{formatDateTime(o.updated_at)}</span>
                       </div>
 
                       {o.bank_details ? (
-                        <div className="tg-row">
-                          <span className="tg-row__k">Банк</span>
-                          <span className="tg-code">{o.bank_details}</span>
+                        <div className="tgRow">
+                          <span className="tgRow__k">Банк</span>
+                          <span className="tgCode">{o.bank_details}</span>
                         </div>
                       ) : null}
 
                       {o.crypto_address ? (
-                        <div className="tg-row">
-                          <span className="tg-row__k">Адрес USDT</span>
-                          <span className="tg-code">{o.crypto_address}</span>
+                        <div className="tgRow">
+                          <span className="tgRow__k">Адрес USDT</span>
+                          <span className="tgCode">{o.crypto_address}</span>
                         </div>
                       ) : null}
                     </div>
@@ -454,9 +444,12 @@ export default function History({ navigateTo, showToast }) {
         </main>
       </div>
 
+      {/* DEV marker: чтобы ты 100% видел что CSS обновился */}
+      <div className="tgH__cssMark">History.css • premium v3</div>
+
       {activeChat ? (
-        <div className="tg-modal" onClick={() => setActiveChat(null)}>
-          <div className="tg-modal__sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="tgModal" onClick={() => setActiveChat(null)}>
+          <div className="tgModal__sheet" onClick={(e) => e.stopPropagation()}>
             <SupportChat orderId={activeChat.orderId} onClose={() => setActiveChat(null)} />
           </div>
         </div>

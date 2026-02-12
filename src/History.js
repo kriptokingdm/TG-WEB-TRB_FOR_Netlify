@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SupportChat from './SupportChat';
 import { API_BASE_URL } from './config';
-import './HistoryTG.css';
+import './History.css';
 
 const STATUS = {
   pending:    { text: 'Ожидание',     tone: 'muted',  emoji: '🟡' },

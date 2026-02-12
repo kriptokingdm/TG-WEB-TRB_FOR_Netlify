@@ -1110,3 +1110,89 @@ input, textarea, select,
 [style*="color"]:not([style*="var("]) {
   color: var(--tg-theme-text-color) !important;
 }
+
+
+/* Статусы ордеров */
+.tg-status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tg-status-pending {
+  background: rgba(255, 200, 0, 0.15);
+  color: #ffd700;
+}
+
+.tg-status-processing {
+  background: rgba(255, 165, 0, 0.15);
+  color: #ffa500;
+}
+
+.tg-status-accepted {
+  background: rgba(0, 200, 0, 0.15);
+  color: #00ff00;
+}
+
+.tg-status-completed {
+  background: rgba(0, 150, 255, 0.15);
+  color: #0099ff;
+}
+
+.tg-status-cancelled, .tg-status-rejected {
+  background: rgba(255, 0, 0, 0.15);
+  color: #ff4444;
+}
+
+/* Детали ордера */
+.tg-detail-big {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tg-detail-full {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 8px !important;
+}
+
+.tg-detail-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px !important;
+  border-radius: 12px;
+  width: 100%;
+  word-break: break-all;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: monospace;
+}
+
+.tg-copy-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.tg-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопки действий */
+.tg-action-btn-primary {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: white;
+  border: none;
+}
+
+.tg-action-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

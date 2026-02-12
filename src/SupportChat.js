@@ -330,7 +330,7 @@ function SupportChat({ orderId, onClose }) {
             <div className="chat-title-icon">💬</div>
             <div className="chat-title-texts">
               <h3 className="chat-title-new">Чат с оператором</h3>
-              <p className="chat-order-id">Ордер #{String(orderId ?? '').substring(0, 16)}...</p>
+              {/* <p className="chat-order-id">Ордер #{String(orderId ?? '').substring(0, 16)}...</p> */}
 
             </div>
           </div>

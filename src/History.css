@@ -1,297 +1,309 @@
-/* History.css — Telegram WebApp style like your USDTWallet (clean, native) */
+/* src/History.css — Telegram WebApp native UI (NO gradients) */
 
-/* --- Theme tokens (fallbacks) --- */
-:root{
-  --tg-bg: var(--tg-theme-bg-color, #ffffff);
-  --tg-secondary: var(--tg-theme-secondary-bg-color, #f1f1f1);
-  --tg-text: var(--tg-theme-text-color, #000000);
-  --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-  --tg-link: var(--tg-theme-link-color, #3390ec);
-  --tg-button: var(--tg-theme-button-color, #3390ec);
-  --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+/* =========================================================
+   IMPORTANT:
+   If you have global: * { color: var(--tg-theme-text-color) !important; }
+   it breaks "hint" and status colors. We override safely here.
+========================================================= */
 
-  --tg-border: var(--tg-theme-section-bg-color, #e7e8ec); /* ты так же используешь в Home */
-  --tg-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-/* --- Scope reset (because you have global "* { color: ... !important }") --- */
-.tg-history, .tg-history *{
+.tgH, .tgH * {
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
-.tg-history{
+.tgH{
   min-height: 100vh;
-  background: var(--tg-bg) !important;
-  color: var(--tg-text) !important;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
 }
 
-.tg-history__wrap{
+/* wrapper */
+.tgH__wrap{
   padding: 16px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 92px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
 }
 
-/* --- Sticky header like Telegram screens --- */
-.tg-history__header{
+/* =========================================================
+   Header (sticky, like Telegram)
+========================================================= */
+.tgH__header{
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: var(--tg-bg) !important;
+  z-index: 50;
+  background: var(--tg-theme-bg-color, #ffffff);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-
   margin: -16px -16px 12px;
   padding: 12px 16px 12px;
-
-  border-bottom: 0.5px solid var(--tg-border);
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
-.tg-history__titleRow{
+.tgH__titleRow{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap: 12px;
 }
 
-.tg-history__title{
+.tgH__title{
   margin: 0;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
-.tg-history__subtitle{
+.tgH__subtitle{
   margin: 2px 0 0;
   font-size: 13px;
   font-weight: 400;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
 
-/* --- Buttons (Wallet-like) --- */
-.tg-btn{
-  border: 0.5px solid var(--tg-border);
-  background: var(--tg-secondary);
-  color: var(--tg-text) !important;
-
-  border-radius: 12px;
-  padding: 10px 12px;
-
-  font-size: 14px;
+/* =========================================================
+   Buttons — Telegram-like
+========================================================= */
+.tgBtn{
+  border: none;
+  background: transparent;
+  color: var(--tg-theme-button-color, #3390ec) !important;
   font-weight: 600;
+  font-size: 14px;
+  padding: 10px 10px;
+  border-radius: 10px;
   cursor: pointer;
-
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap: 8px;
-
-  transition: opacity .15s ease, transform .08s ease;
 }
 
-.tg-btn:active{ transform: scale(0.98); }
-.tg-btn:disabled{ opacity: .55; cursor: default; transform: none; }
-
-.tg-btn--ghost{
-  background: var(--tg-secondary);
-  border: 0.5px solid var(--tg-border);
-  color: var(--tg-text) !important;
+.tgBtn:active{
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, transparent);
 }
 
-.tg-btn--primary{
-  background: var(--tg-button) !important;
-  color: var(--tg-button-text) !important;
+.tgBtn:disabled{
+  opacity: .5;
+  cursor: default;
+}
+
+.tgBtn--ghost{
+  background: transparent;
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+
+.tgBtn--primary{
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
   border: none;
 }
 
-.tg-btn--wide{ width: 100%; padding: 14px 16px; border-radius: 12px; }
-
-/* refresh icon / spinner */
-.tg-refresh{ display:inline-flex; align-items:center; gap: 8px; }
-.tg-refreshIcon{
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--tg-hint) 60%, transparent);
-  border-top-color: var(--tg-link);
+.tgBtn--wide{
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 16px;
 }
-.tg-spinner{
-  width: 16px; height: 16px;
+
+/* refresh */
+.tgH__refresh{
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  color: var(--tg-theme-text-color, #000000) !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.tgH__refreshIcon{
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--tg-hint) 60%, transparent);
-  border-top-color: var(--tg-link);
+  border: 2px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 55%, transparent);
+  border-top-color: var(--tg-theme-button-color, #3390ec);
+  display:inline-block;
+}
+
+.tgSpin{
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--tg-theme-hint-color, #8e8e93) 55%, transparent);
+  border-top-color: var(--tg-theme-button-color, #3390ec);
+  display:inline-block;
   animation: tgspin .8s linear infinite;
 }
 @keyframes tgspin{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
 
-/* --- Stats (same feel as Wallet card blocks) --- */
-.tg-stats{
+/* =========================================================
+   Stats — Telegram cards
+========================================================= */
+.tgH__stats{
   display:flex;
   gap: 12px;
   margin-top: 12px;
 }
 
-.tg-statCard{
+.tgH__stat{
   flex: 1;
   padding: 14px 14px;
-
-  background: var(--tg-bg);
-  border: 0.5px solid var(--tg-border);
   border-radius: 12px;
-  box-shadow: var(--tg-shadow);
-
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap: 12px;
 }
 
-.tg-statLabel{
+.tgH__statLabel{
   font-size: 13px;
   font-weight: 500;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
-
-.tg-statValue{
+.tgH__statValue{
   margin-top: 2px;
   font-size: 20px;
   font-weight: 800;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
+}
+.tgH__statEmoji{
+  font-size: 20px;
+  opacity: .9;
 }
 
-.tg-statEmoji{ font-size: 20px; opacity: .9; }
-
-/* --- Tabs like Wallet tabs strip --- */
-.tg-tabs{
-  display:flex;
-  gap: 8px;
-
+/* =========================================================
+   Tabs — like Telegram switcher blocks
+========================================================= */
+.tgH__tabs{
   margin-top: 12px;
-  padding: 4px;
-
-  background: var(--tg-secondary);
-  border: 0.5px solid var(--tg-border);
+  display:flex;
+  gap: 10px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
+  padding: 4px;
 }
 
-.tg-tab{
+.tgH__tab{
   flex: 1;
   border: none;
   background: transparent;
-
   padding: 10px 12px;
   border-radius: 10px;
-
   font-size: 14px;
   font-weight: 600;
-
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
   cursor: pointer;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap: 8px;
 }
 
-.tg-tab--active{
-  background: var(--tg-button);
-  color: var(--tg-button-text) !important;
+.tgH__tab.is-active{
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
-.tg-badge{
+.tgH__badge{
   font-size: 12px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 999px;
-
-  background: color-mix(in srgb, var(--tg-button) 15%, transparent);
-  color: var(--tg-button) !important;
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 15%, transparent);
+  color: var(--tg-theme-button-color, #3390ec) !important;
 }
 
-.tg-tab--active .tg-badge{
+.tgH__tab.is-active .tgH__badge{
   background: rgba(255,255,255,0.18);
-  color: var(--tg-button-text) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
 }
 
-/* --- Error block --- */
-.tg-error{
+/* =========================================================
+   Error — Telegram red notice
+========================================================= */
+.tgH__error{
   margin-top: 12px;
   padding: 12px 14px;
   border-radius: 12px;
-
   background: color-mix(in srgb, #ff3b30 12%, transparent);
   border: 0.5px solid color-mix(in srgb, #ff3b30 35%, transparent);
   color: #ff3b30 !important;
-
   font-size: 14px;
   font-weight: 600;
 }
 
-/* --- List --- */
-.tg-list{
+/* =========================================================
+   List
+========================================================= */
+.tgH__list{
   display:grid;
   gap: 12px;
-  padding-bottom: 92px;
+  padding-bottom: 90px;
 }
 
-/* --- Card like Wallet cards --- */
-.tg-card{
-  background: var(--tg-bg);
-  border: 0.5px solid var(--tg-border);
+/* =========================================================
+   Order card — Telegram "section card"
+========================================================= */
+.tgCard{
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: var(--tg-shadow);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* card top */
-.tg-card__top{
-  padding: 14px;
+/* top row */
+.tgCard__top{
+  padding: 14px 14px 12px;
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap: 12px;
-  border-bottom: 0.5px solid var(--tg-border);
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
 
-.tg-card__left{ min-width: 0; }
+.tgCard__left{
+  min-width: 0;
+}
 
-.tg-card__type{
+.tgCard__type{
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color, #000000) !important;
   display:flex;
   align-items:center;
   gap: 8px;
-
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--tg-text) !important;
 }
 
-.tg-card__typeDot{
+.tgCard__dot{
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--tg-button);
+  background: var(--tg-theme-button-color, #3390ec);
   flex-shrink: 0;
 }
 
-/* buy/sell accent */
-.tg-card--buy .tg-card__typeDot{ background: var(--tg-button); }
-.tg-card--sell .tg-card__typeDot{ background: #34c759; }
+/* sell accent dot */
+.tgCard--sell .tgCard__dot{
+  background: #34c759; /* Telegram green */
+}
 
-.tg-card__idBtn{
+.tgCard__id{
   margin-top: 6px;
   padding: 0;
   border: none;
   background: transparent;
-
   cursor: pointer;
   text-align: left;
 
   font-size: 13px;
   font-weight: 600;
-  color: var(--tg-link) !important;
+  color: var(--tg-theme-button-color, #3390ec) !important;
 
   display:flex;
   align-items:baseline;
@@ -299,187 +311,198 @@
   min-width: 0;
 }
 
-.tg-card__idHint{
+.tgCard__hint{
   font-size: 12px;
   font-weight: 500;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
 
-/* --- Status pill (native, not neon) --- */
-.tg-status{
+/* =========================================================
+   Status pill — Telegram-ish, minimal
+========================================================= */
+.tgStatus{
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
+  white-space: nowrap;
   display:flex;
   align-items:center;
   gap: 6px;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  padding: 6px 10px;
-  border-radius: 999px;
-
-  background: var(--tg-secondary);
-  border: 0.5px solid var(--tg-border);
-
-  color: var(--tg-text) !important;
-  white-space: nowrap;
 }
 
-.tg-status__emoji{ opacity: .9; }
+.tgStatus__emoji{ opacity: .9; }
 
-/* tones */
-.tg-status--ok{
+/* tone overrides */
+.tgStatus--ok{
   background: color-mix(in srgb, #34c759 14%, transparent);
   border-color: color-mix(in srgb, #34c759 35%, transparent);
   color: #34c759 !important;
 }
-.tg-status--warn{
+.tgStatus--warn{
   background: color-mix(in srgb, #ff9500 14%, transparent);
   border-color: color-mix(in srgb, #ff9500 35%, transparent);
   color: #ff9500 !important;
 }
-.tg-status--bad{
+.tgStatus--bad{
   background: color-mix(in srgb, #ff3b30 12%, transparent);
   border-color: color-mix(in srgb, #ff3b30 35%, transparent);
   color: #ff3b30 !important;
 }
-.tg-status--muted{
-  color: var(--tg-hint) !important;
+.tgStatus--muted{
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
 
-/* --- Grid details like Home rows --- */
-.tg-grid{
-  padding: 14px;
+/* =========================================================
+   Grid details — like Home rows
+========================================================= */
+.tgGrid{
+  padding: 12px 14px 14px;
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.tg-kv{
-  background: var(--tg-secondary);
-  border: 0.5px solid var(--tg-border);
+.tgKV{
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   border-radius: 12px;
   padding: 12px;
 }
 
-.tg-k{
+.tgK{
   font-size: 13px;
   font-weight: 500;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
   margin-bottom: 6px;
 }
 
-.tg-v{
+.tgV{
   font-size: 15px;
   font-weight: 700;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
-.tg-vsoft{
-  font-size: 15px;
+.tgV--soft{
   font-weight: 600;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
-.tg-v--glow{
-  color: var(--tg-link) !important;
-  font-weight: 800;
+.tgV--glow{
+  color: var(--tg-theme-button-color, #3390ec) !important;
 }
 
-/* --- Actions --- */
-.tg-actions{
-  padding: 14px;
-  border-top: 0.5px solid var(--tg-border);
+/* =========================================================
+   Actions row
+========================================================= */
+.tgActions{
+  padding: 12px 14px 14px;
+  border-top: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   display:flex;
   gap: 10px;
 }
 
-.tg-actions .tg-btn{
+/* make buttons look like Home */
+.tgActions .tgBtn{
   flex: 1;
   justify-content: center;
   padding: 12px 14px;
+  border-radius: 12px;
 }
 
-/* --- Expanded details --- */
-.tg-expand{
-  padding: 14px;
-  border-top: 0.5px solid var(--tg-border);
-  background: var(--tg-bg);
+.tgActions .tgBtn--ghost{
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
-.tg-row{
+/* =========================================================
+   Expanded details
+========================================================= */
+.tgExpand{
+  padding: 12px 14px 14px;
+  border-top: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-bg-color, #ffffff);
+}
+
+.tgRow{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap: 12px;
-
   padding: 10px 0;
-  border-bottom: 0.5px solid var(--tg-border);
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
 }
+.tgRow:last-child{ border-bottom: none; }
 
-.tg-row:last-child{ border-bottom: none; }
-
-.tg-row__k{
+.tgRow__k{
   font-size: 13px;
   font-weight: 500;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
   flex: 0 0 auto;
 }
 
-.tg-code{
+.tgCode{
   font-family: Menlo, Monaco, "Courier New", monospace;
   font-size: 12.5px;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
   text-align: right;
   word-break: break-all;
 }
 
-/* --- Empty --- */
-.tg-empty{
+/* =========================================================
+   Empty state — Telegram minimal
+========================================================= */
+.tgEmpty{
   text-align:center;
   padding: 28px 20px;
-
   border-radius: 16px;
-  border: 0.5px solid var(--tg-border);
-  background: var(--tg-bg);
-  box-shadow: var(--tg-shadow);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  background: var(--tg-theme-bg-color, #ffffff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.tg-empty__icon{
+.tgEmpty__icon{
   font-size: 44px;
   opacity: .5;
   margin-bottom: 10px;
 }
 
-.tg-empty__title{
+.tgEmpty__title{
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 700;
-  color: var(--tg-text) !important;
+  color: var(--tg-theme-text-color, #000000) !important;
 }
 
-.tg-empty__text{
+.tgEmpty__text{
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: var(--tg-hint) !important;
+  color: var(--tg-theme-hint-color, #8e8e93) !important;
 }
 
-/* --- Skeleton --- */
-.tg-skeleton{
+/* =========================================================
+   Skeleton — Telegram soft blocks
+========================================================= */
+.tgSkel{
   display:grid;
   gap: 12px;
 }
 
-.tg-skelCard{
+.tgSkel__card{
   height: 150px;
   border-radius: 16px;
-  border: 0.5px solid var(--tg-border);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   background:
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--tg-secondary) 80%, transparent),
-      color-mix(in srgb, var(--tg-bg) 55%, transparent),
-      color-mix(in srgb, var(--tg-secondary) 80%, transparent)
+      color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f1f1f1) 80%, transparent),
+      color-mix(in srgb, var(--tg-theme-bg-color, #ffffff) 55%, transparent),
+      color-mix(in srgb, var(--tg-theme-secondary-bg-color, #f1f1f1) 80%, transparent)
     );
   background-size: 220% 100%;
   animation: shimmer 1.1s ease-in-out infinite;
@@ -490,8 +513,10 @@
   100%{ background-position: 100% 0; }
 }
 
-/* --- Modal --- */
-.tg-modal{
+/* =========================================================
+   Modal
+========================================================= */
+.tgModal{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.45);
@@ -501,20 +526,23 @@
   z-index: 999;
 }
 
-.tg-modal__sheet{
+.tgModal__sheet{
   width: 100%;
   max-width: 520px;
   height: 86vh;
-  background: var(--tg-bg);
+  background: var(--tg-theme-bg-color, #ffffff);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  border: 0.5px solid var(--tg-border);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
   overflow: hidden;
 }
 
-/* --- Responsive --- */
+/* Remove old dev marker if you had it */
+.tgH__cssMark{ display:none !important; }
+
+/* Mobile small */
 @media (max-width: 380px){
-  .tg-history__wrap{ padding: 12px; }
-  .tg-history__header{ margin: -12px -12px 12px; padding: 12px; }
-  .tg-grid{ grid-template-columns: 1fr; }
+  .tgH__wrap{ padding: 12px; }
+  .tgH__header{ margin: -12px -12px 12px; padding: 12px; }
+  .tgGrid{ grid-template-columns: 1fr; }
 }

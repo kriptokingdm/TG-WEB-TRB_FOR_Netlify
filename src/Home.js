@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import './Home.css';
 import { API_BASE_URL } from './config';
 import { 
@@ -13,14 +13,19 @@ import {
   BitGetIcon 
 } from './CryptoIcons';
 
+// ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
 const simpleFetch = async (endpoint, data = null) => {
   const url = `${API_BASE_URL}${endpoint}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // Таймаут 5 секунд
+  
   const options = {
     method: data ? 'POST' : 'GET',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
-    }
+    },
+    signal: controller.signal
   };
   
   if (data) {
@@ -29,6 +34,7 @@ const simpleFetch = async (endpoint, data = null) => {
   
   try {
     const response = await fetch(url, options);
+    clearTimeout(timeoutId);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -39,7 +45,7 @@ const simpleFetch = async (endpoint, data = null) => {
   }
 };
 
-// Компонент SVG для swap-кнопки - ФИКСИРОВАННАЯ ВЕРСИЯ
+// Компонент SVG для swap-кнопки
 const SwapIcon = ({ isSwapped }) => {
   return (
     <svg 
@@ -70,22 +76,37 @@ const SwapIcon = ({ isSwapped }) => {
 function Home({ navigateTo, telegramUser, showToast }) {
   console.log('🏠 Home загружен');
 
+  // ==================== СОСТОЯНИЯ ====================
   const [isBuyMode, setIsBuyMode] = useState(true);
   const [isSwapped, setIsSwapped] = useState(false);
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
-  const [rates, setRates] = useState({ buy: 88.0, sell: 84.0 });
+  
+  // КУРСЫ - теперь объект с полным ответом от API
+  const [rateData, setRateData] = useState({
+    rate: 88.0,
+    min_amount: 1000,
+    max_amount: 1000000, // 👈 ИЗМЕНЕНО: макс 1 млн для покупки
+    type: 'buy',
+    level: 1,
+    levels: []
+  });
+  
+  // ЛИМИТЫ - жестко задаем правильные значения
+  const [limits] = useState({
+    minBuy: 1000,      // 1000 RUB
+    maxBuy: 1000000,   // 1 000 000 RUB 👈 ИЗМЕНЕНО
+    minSell: 10,       // 10 USDT
+    maxSell: 10000     // 10 000 USDT
+  });
+  
   const [isLoading, setIsLoading] = useState(false);
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
   const [activeOrderId, setActiveOrderId] = useState(null);
   const [activeOrderStatus, setActiveOrderStatus] = useState('');
-  const [limits, setLimits] = useState({
-    minBuy: 1000,
-    maxBuy: 100000,
-    minSell: 10,
-    maxSell: 10000
-  });
+  const [activeOrderData, setActiveOrderData] = useState(null);
   
+  // Крипто и платежи
   const [cryptoAddress, setCryptoAddress] = useState('');
   const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
   const [cryptoUID, setCryptoUID] = useState('');
@@ -98,8 +119,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [cryptoType, setCryptoType] = useState('address');
   const [selectedExchange, setSelectedExchange] = useState('Binance');
-  const [activeOrderData, setActiveOrderData] = useState(null);
 
+  // ==================== REFS ДЛЯ ОТМЕНЫ ЗАПРОСОВ ====================
+  const abortControllerRef = useRef(null);
+
+  // ==================== КОНСТАНТЫ ====================
   const availableBanks = [
     'СБП (Система быстрых платежей)',
     'Сбербанк',
@@ -130,69 +154,24 @@ function Home({ navigateTo, telegramUser, showToast }) {
   ];
 
   const availableNetworks = [
-    { 
-      value: 'TRC20', 
-      name: 'TRC20', 
-      icon: <TRC20Icon size={20} />, 
-      popular: true 
-    },
-    { 
-      value: 'ERC20', 
-      name: 'ERC20', 
-      icon: <ERCIcon size={20} />, 
-      popular: true 
-    },
-    { 
-      value: 'BEP20', 
-      name: 'BEP20', 
-      icon: <BinanceIcon size={20} />, 
-      popular: true 
-    },
-    { 
-      value: 'SOLANA', 
-      name: 'Solana', 
-      icon: <SolanaIcon size={20} />, 
-      popular: true 
-    },
-    { 
-      value: 'POLYGON', 
-      name: 'Polygon', 
-      icon: <div className="polygon-icon">P</div>, 
-      popular: false 
-    },
+    { value: 'TRC20', name: 'TRC20', icon: <TRC20Icon size={20} />, popular: true },
+    { value: 'ERC20', name: 'ERC20', icon: <ERCIcon size={20} />, popular: true },
+    { value: 'BEP20', name: 'BEP20', icon: <BinanceIcon size={20} />, popular: true },
+    { value: 'SOLANA', name: 'Solana', icon: <SolanaIcon size={20} />, popular: true },
+    { value: 'POLYGON', name: 'Polygon', icon: <div className="polygon-icon">P</div>, popular: false },
   ];
 
   const availableExchanges = [
-    { 
-      value: 'Binance', 
-      name: 'Binance', 
-      icon: <BinanceIcon size={20} /> 
-    },
-    { 
-      value: 'Bybit', 
-      name: 'Bybit', 
-      icon: <BybitIcon size={20} /> 
-    },
-    { 
-      value: 'OKX', 
-      name: 'OKX', 
-      icon: <OKXIcon size={20} /> 
-    },
-    { 
-      value: 'MEX', 
-      name: 'MEX', 
-      icon: <MEXIcon size={20} /> 
-    },
-    { 
-      value: 'BitGet', 
-      name: 'BitGet', 
-      icon: <BitGetIcon size={20} /> 
-    }
+    { value: 'Binance', name: 'Binance', icon: <BinanceIcon size={20} /> },
+    { value: 'Bybit', name: 'Bybit', icon: <BybitIcon size={20} /> },
+    { value: 'OKX', name: 'OKX', icon: <OKXIcon size={20} /> },
+    { value: 'MEX', name: 'MEX', icon: <MEXIcon size={20} /> },
+    { value: 'BitGet', name: 'BitGet', icon: <BitGetIcon size={20} /> }
   ];
 
   const popularNetworks = availableNetworks.filter(n => n.popular);
 
-  // Функции
+  // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
   const getTelegramUser = () => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -245,12 +224,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
       console.log('🔍 Ответ активного ордера:', response);
       
       if (response.success && response.hasActiveOrder && response.order) {
-  setHasActiveOrder(true);
-  setActiveOrderId(String(response.order.id || response.order.order_id));
-  setActiveOrderStatus(response.order.status);
-  setActiveOrderData(response.order);
-  return true;
-} else {
+        setHasActiveOrder(true);
+        setActiveOrderId(String(response.order.id || response.order.order_id));
+        setActiveOrderStatus(response.order.status);
+        setActiveOrderData(response.order);
+        return true;
+      } else {
         setHasActiveOrder(false);
         setActiveOrderId(null);
         setActiveOrderStatus('');
@@ -263,104 +242,70 @@ function Home({ navigateTo, telegramUser, showToast }) {
     }
   };
 
-  // Показать сообщение
   const showMessage = (type, text) => {
     if (showToast) {
       showToast(text, type);
     }
   };
 
-  // Инициализация
-  useEffect(() => {
-    console.log('🏠 Home компонент загружен');
-    fetchExchangeRates();
-
-    const tgUser = getTelegramUser();
-    if (tgUser) {
-      const userData = {
-        id: tgUser.id.toString(),
-        telegramId: tgUser.id,
-        username: tgUser.username || `user_${tgUser.id}`,
-        firstName: tgUser.first_name || 'Пользователь',
-        lastName: tgUser.last_name || '',
-        photoUrl: tgUser.photo_url
-      };
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem('telegramUser', JSON.stringify(tgUser));
-    } else if (telegramUser) {
-      const userData = {
-        id: `user_${telegramUser.id}`,
-        telegramId: telegramUser.id,
-        username: telegramUser.username || `user_${telegramUser.id}`,
-        firstName: telegramUser.first_name || 'Пользователь'
-      };
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
+  // ==================== ОСНОВНАЯ ЛОГИКА КУРСОВ ====================
+  
+  /**
+   * ПОЛУЧЕНИЕ КУРСА - МГНОВЕННО!
+   * Отменяет предыдущий запрос, делает новый, обновляет UI
+   */
+  const fetchExchangeRate = useCallback(async (currentAmount, currentMode) => {
+    // Отменяем предыдущий запрос
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
 
-    loadSavedData();
-    setTimeout(() => checkActiveOrder(), 1000);
-  }, [telegramUser]);
+    // Создаем новый контроллер
+    abortControllerRef.current = new AbortController();
 
-  const loadSavedData = () => {
     try {
-      const savedPayments = localStorage.getItem('userPaymentMethods');
-      if (savedPayments) {
-        const payments = JSON.parse(savedPayments);
-        setPaymentMethods(payments);
-        if (payments.length > 0) setSelectedPayment(payments[0]);
-      }
-      const savedCrypto = localStorage.getItem('userCryptoAddresses');
-      if (savedCrypto) {
-        const crypto = JSON.parse(savedCrypto);
-        setCryptoAddresses(crypto);
-        if (crypto.length > 0) setSelectedCrypto(crypto[0]);
-      }
-    } catch (error) {
-      console.error('❌ Ошибка загрузки данных:', error);
-    }
-  };
-
-  useEffect(() => {
-    localStorage.setItem('userPaymentMethods', JSON.stringify(paymentMethods));
-    localStorage.setItem('userCryptoAddresses', JSON.stringify(cryptoAddresses));
-  }, [paymentMethods, cryptoAddresses]);
-
-  const calculateConvertedAmount = () => {
-    if (!amount) return '';
-    const numAmount = parseFloat(amount.replace(',', '.'));
-    if (isNaN(numAmount)) return '';
-    const rate = isBuyMode ? rates.buy : rates.sell;
-    const converted = isBuyMode ? (numAmount / rate).toFixed(2) : (numAmount * rate).toFixed(2);
-    return converted;
-  };
-
-  const fetchExchangeRates = async () => {
-    try {
-      const queryAmount = amount || (isBuyMode ? 1000 : 10);
-      const type = isBuyMode ? 'buy' : 'sell';
+      const queryAmount = currentAmount || (currentMode ? 1000 : 10);
+      const type = currentMode ? 'buy' : 'sell';
+      
+      console.log(`🔄 Запрос курса: ${type}, сумма: ${queryAmount}`);
+      
       const result = await simpleFetch(`/api/exchange-rate?amount=${queryAmount}&type=${type}`);
-      console.log('📊 Получены курсы и лимиты:', result);
       
       if (result.success) {
-        setRates(prev => ({
-          ...prev,
-          [isBuyMode ? 'buy' : 'sell']: result.rate || (isBuyMode ? 88.0 : 84.0)
-        }));
-        if (result.min_amount && result.max_amount) {
-          setLimits(prev => ({
-            minBuy: isBuyMode ? result.min_amount : prev.minBuy,
-            maxBuy: result.max_amount,
-            minSell: !isBuyMode ? result.min_amount : prev.minSell,
-            maxSell: result.max_amount
-          }));
+        setRateData({
+          rate: result.rate,
+          min_amount: result.min_amount,
+          max_amount: currentMode ? 1000000 : 10000, // 👈 ФИКСИРОВАННЫЕ ЛИМИТЫ
+          type: result.type,
+          level: result.level || 1,
+          levels: result.levels || []
+        });
+        
+        // Очищаем ошибку, если курс успешно загружен
+        if (currentAmount) {
+          const numAmount = parseFloat(currentAmount.toString().replace(',', '.'));
+          if (!isNaN(numAmount)) {
+            if (numAmount < (currentMode ? limits.minBuy : limits.minSell)) {
+              setError(`Минимальная сумма: ${(currentMode ? limits.minBuy : limits.minSell).toLocaleString()} ${currentMode ? 'RUB' : 'USDT'}`);
+            } else if (numAmount > (currentMode ? 1000000 : 10000)) {
+              setError(`Максимальная сумма: ${(currentMode ? '1 000 000' : '10 000')} ${currentMode ? 'RUB' : 'USDT'}`);
+            } else {
+              setError('');
+            }
+          }
         }
       }
     } catch (error) {
-      console.error('Ошибка курсов:', error);
+      if (error.name === 'AbortError') {
+        console.log('🔄 Предыдущий запрос курса отменен');
+      } else {
+        console.error('❌ Ошибка загрузки курса:', error);
+      }
     }
-  };
+  }, [limits.minBuy, limits.minSell]);
 
+  // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+  
   const handleAmountChange = (e) => {
     const value = e.target.value;
     
@@ -374,55 +319,42 @@ function Home({ navigateTo, telegramUser, showToast }) {
     
     setAmount(cleanedValue);
     
+    // 👇 МГНОВЕННЫЙ ЗАПРОС КУРСА ПРИ ИЗМЕНЕНИИ СУММЫ
     if (cleanedValue && cleanedValue.trim() !== '') {
       const numAmount = parseFloat(normalizedValue);
       if (!isNaN(numAmount)) {
-        if (isBuyMode) {
-          if (numAmount < limits.minBuy) {
-            setError(`Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
-          } else if (numAmount > limits.maxBuy) {
-            setError(`Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
-          } else {
-            setError('');
-            fetchExchangeRates();
-          }
-        } else {
-          if (numAmount < limits.minSell) {
-            setError(`Минимальная сумма: ${limits.minSell} USDT`);
-          } else if (numAmount > limits.maxSell) {
-            setError(`Максимальная сумма: ${limits.maxSell} USDT`);
-          } else {
-            setError('');
-            fetchExchangeRates();
-          }
-        }
+        fetchExchangeRate(numAmount, isBuyMode);
       }
     } else {
       setError('');
+      // Запрашиваем курс с дефолтной суммой
+      fetchExchangeRate(isBuyMode ? 1000 : 10, isBuyMode);
     }
   };
 
   const handleSwap = () => {
     if (hasActiveOrder) {
-      showMessage('warning', `⚠️ У вас активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+      showMessage('warning', `⚠️ У вас активный ордер ${activeOrderId}. Дождитесь завершения.`);
       return;
     }
     
-    // ПРОСТАЯ ВИБРАЦИЯ
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
     
-    // ФИКС: используем requestAnimationFrame для плавности
     requestAnimationFrame(() => {
       setIsSwapped(!isSwapped);
       setIsBuyMode(!isBuyMode);
       setAmount('');
       setError('');
-      fetchExchangeRates();
+      
+      // 👇 МГНОВЕННЫЙ ЗАПРОС КУРСА ДЛЯ НОВОГО РЕЖИМА
+      fetchExchangeRate(!isBuyMode ? 1000 : 10, !isBuyMode);
     });
   };
 
+  // ==================== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ (без изменений) ====================
+  
   const handleAddPayment = () => {
     const isSBP = bankName === 'СБП (Система быстрых платежей)';
     if (isSBP) {
@@ -547,7 +479,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const handleExchange = async () => {
     console.log('🎯 Создание ордера');
     if (hasActiveOrder) {
-      showMessage('warning', `⚠️ У вас уже есть активный ордер ${activeOrderId}. Дождитесь его завершения.`);
+      showMessage('warning', `⚠️ У вас уже есть активный ордер ${activeOrderId}. Дождитесь завершения.`);
       navigateTo('history');
       return;
     }
@@ -565,6 +497,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
       return;
     }
 
+    // 👇 НОВЫЕ ЛИМИТЫ
     if (isBuyMode) {
       if (numAmount < limits.minBuy) {
         showMessage('error', `❌ Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
@@ -703,10 +636,81 @@ function Home({ navigateTo, telegramUser, showToast }) {
     return true;
   };
 
+  // ==================== EFFECTS ====================
+  
+  // Инициализация при загрузке
   useEffect(() => {
-    fetchExchangeRates();
-  }, [isBuyMode]);
+    console.log('🏠 Home компонент загружен');
+    
+    // Загружаем курс при старте
+    fetchExchangeRate(1000, true);
+    
+    const tgUser = getTelegramUser();
+    if (tgUser) {
+      const userData = {
+        id: tgUser.id.toString(),
+        telegramId: tgUser.id,
+        username: tgUser.username || `user_${tgUser.id}`,
+        firstName: tgUser.first_name || 'Пользователь',
+        lastName: tgUser.last_name || '',
+        photoUrl: tgUser.photo_url
+      };
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('telegramUser', JSON.stringify(tgUser));
+    } else if (telegramUser) {
+      const userData = {
+        id: `user_${telegramUser.id}`,
+        telegramId: telegramUser.id,
+        username: telegramUser.username || `user_${telegramUser.id}`,
+        firstName: telegramUser.first_name || 'Пользователь'
+      };
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('telegramUser', JSON.stringify(telegramUser));
+    }
 
+    loadSavedData();
+    setTimeout(() => checkActiveOrder(), 1000);
+    
+    // Cleanup function
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Загружаем сохраненные данные
+  const loadSavedData = () => {
+    try {
+      const savedPayments = localStorage.getItem('userPaymentMethods');
+      if (savedPayments) {
+        const payments = JSON.parse(savedPayments);
+        setPaymentMethods(payments);
+        if (payments.length > 0) setSelectedPayment(payments[0]);
+      }
+      const savedCrypto = localStorage.getItem('userCryptoAddresses');
+      if (savedCrypto) {
+        const crypto = JSON.parse(savedCrypto);
+        setCryptoAddresses(crypto);
+        if (crypto.length > 0) setSelectedCrypto(crypto[0]);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки данных:', error);
+    }
+  };
+
+  // Сохраняем данные при изменении
+  useEffect(() => {
+    localStorage.setItem('userPaymentMethods', JSON.stringify(paymentMethods));
+    localStorage.setItem('userCryptoAddresses', JSON.stringify(cryptoAddresses));
+  }, [paymentMethods, cryptoAddresses]);
+
+  // Обновляем курс при смене режима
+  useEffect(() => {
+    fetchExchangeRate(amount || (isBuyMode ? 1000 : 10), isBuyMode);
+  }, [isBuyMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Проверка активного ордера
   useEffect(() => {
     const interval = setInterval(() => {
       if (!hasActiveOrder) checkActiveOrder();
@@ -714,12 +718,24 @@ function Home({ navigateTo, telegramUser, showToast }) {
     return () => clearInterval(interval);
   }, [hasActiveOrder]);
 
-  const currentRate = isBuyMode ? rates.buy : rates.sell;
+  // ==================== ВЫЧИСЛЯЕМЫЕ ЗНАЧЕНИЯ ====================
+  
+  const currentRate = rateData.rate;
   const convertedAmount = calculateConvertedAmount();
   const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
   const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
+  const calculateConvertedAmount = () => {
+    if (!amount) return '';
+    const numAmount = parseFloat(amount.replace(',', '.'));
+    if (isNaN(numAmount)) return '';
+    const converted = isBuyMode ? (numAmount / currentRate).toFixed(2) : (numAmount * currentRate).toFixed(2);
+    return converted;
+  };
+
+  // ==================== РЕНДЕР ====================
+  
   return (
     <div className="home-container">
       {hasActiveOrder ? (
@@ -748,13 +764,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
           <div className="tg-main-content">
             <div className="tg-order-card">
               <div className="tg-card-header">
-                <div className="tg-order-icon">
-                  ⏳
-                </div>
+                <div className="tg-order-icon">⏳</div>
                 <div className="tg-order-info">
                   <h2 className="tg-order-title">
-  Заявка #{String(activeOrderId || '').substring(0, 8)}
-</h2>
+                    Заявка #{String(activeOrderId || '').substring(0, 8)}
+                  </h2>
                   <p className="tg-order-subtitle">
                     {activeOrderData?.operation_type === 'buy' ? '🛒 Покупка USDT' : '💰 Продажа USDT'}
                   </p>
@@ -774,13 +788,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   },
                   { label: 'Создано', value: activeOrderData?.created_at ? new Date(activeOrderData.created_at).toLocaleString('ru-RU') : '-' }
                 ].map((item, index) => (
-                  <div 
-                    key={index} 
-                    className="tg-detail-row"
-                  >
-                    <span className="tg-detail-label">
-                      {item.label}
-                    </span>
+                  <div key={index} className="tg-detail-row">
+                    <span className="tg-detail-label">{item.label}</span>
                     <span className={`tg-detail-value ${item.highlight ? 'highlight' : ''}`}>
                       {item.highlight ? <strong>{item.value}</strong> : item.value}
                     </span>
@@ -992,7 +1001,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={handleAddCryptoAddress}
                   className="add-button"
                 >
-                  +{cryptoType === 'address' ? '' : ''}
+                  +
                 </button>
               </div>
 

@@ -1,8 +1,8 @@
-// src/History.js (Telegram rich clean version) - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// src/History.js (Telegram rich clean version)
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SupportChat from './SupportChat';
 import { API_BASE_URL } from './config';
-import './History.css';
+import './HistoryTG.css';
 
 const STATUS = {
   pending:    { text: 'Ожидание',     tone: 'muted',  emoji: '🟡' },
@@ -96,7 +96,7 @@ function vibe(ms = 10) {
 
 export default function History({ navigateTo, showToast }) {
   const [orders, setOrders] = useState([]);
-  const [viewMode, setViewMode] = useState('active');
+  const [viewMode, setViewMode] = useState('active'); // active | all
   const [expandedId, setExpandedId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -162,14 +162,17 @@ export default function History({ navigateTo, showToast }) {
     const userId = getUserId();
 
     try {
+      // основной эндпоинт (как у тебя в логах)
       const url1 = `${API_BASE_URL}/api/public/user-orders/${encodeURIComponent(userId)}`;
-      
+
       const resp = await fetch(url1, {
         method: 'GET',
-        headers: { Accept: 'application/json' }
+        headers: { Accept: 'application/json' },
+        credentials: 'include',
       });
 
       if (!resp.ok) {
+        // иногда полезно показать человеку, что это не “сервер умер”, а блок по доступу/проксированию
         throw new Error(`HTTP ${resp.status}`);
       }
 
@@ -198,6 +201,7 @@ export default function History({ navigateTo, showToast }) {
   };
 
   useEffect(() => {
+    // при первом заходе — сначала кэш (быстро), потом сеть
     const cached = loadCache();
     if (cached.length) setOrders(cached);
 
@@ -207,6 +211,7 @@ export default function History({ navigateTo, showToast }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats = useMemo(() => {
@@ -329,9 +334,8 @@ export default function History({ navigateTo, showToast }) {
               <p className="tg-empty__text">
                 {topActive ? 'Все заявки завершены или отменены' : 'Создайте первую заявку на обмен'}
               </p>
-              <button className="tg-btn tg-btn--tg" onClick={onGoHome}>
-                <span>🚀</span>
-                <span>Начать обмен</span>
+              <button className="tg-btn tg-btn--primary tg-btn--wide" onClick={onGoHome}>
+                Начать обмен
               </button>
             </div>
           ) : (

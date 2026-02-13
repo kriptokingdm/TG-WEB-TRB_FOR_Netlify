@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect, useRef } from 'react';
 import './Home.css';
 import { API_BASE_URL } from './config';
+import AddAddressModal from './AddAddressModal';
 
 // ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
 const simpleFetch = async (endpoint, data = null) => {
@@ -132,6 +133,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
 
+  // Модалка
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const abortControllerRef = useRef(null);
 
   // ==================== КОНСТАНТЫ ====================
@@ -162,13 +166,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
     'Бинбанк',
     'ЮМани (Яндекс Деньги)',
     'Т-Банк'
-  ];
-
-  const availableNetworks = [
-    { value: 'TRC20', name: 'TRC20', icon: '🔷' },
-    { value: 'ERC20', name: 'ERC20', icon: '💠' },
-    { value: 'BEP20', name: 'BEP20', icon: '🔶' },
-    { value: 'SOLANA', name: 'Solana', icon: '🟣' },
   ];
 
   // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
@@ -491,6 +488,15 @@ function Home({ navigateTo, telegramUser, showToast }) {
   // ==================== РЕНДЕР ====================
   return (
     <div className="home-container">
+      <AddAddressModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={(newAddress) => {
+          setCryptoAddresses([...cryptoAddresses, newAddress]);
+          setSelectedCrypto(newAddress);
+        }}
+      />
+
       {hasActiveOrder && activeOrderData ? (
         <div className="tg-home-container">
           <div className="tg-header">
@@ -558,7 +564,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
               <div className="currency-card-side left-card">
                 <div className="currency-content">
                   <span className="currency-name">{isBuyMode ? "RUB" : "USDT"}</span>
-                  {/* КУРС ТОЛЬКО У ПЕРВОЙ КАРТОЧКИ, КОГДА ОНА RUB */}
                   {isBuyMode && (
                     <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
                   )}
@@ -572,7 +577,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
               <div className="currency-card-side right-card">
                 <div className="currency-content">
                   <span className="currency-name">{isBuyMode ? "USDT" : "RUB"}</span>
-                  {/* КУРС ТОЛЬКО КОГДА ПРАВАЯ КАРТОЧКА RUB */}
                   {!isBuyMode && (
                     <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
                   )}
@@ -580,19 +584,21 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
-            {/* ПОЛЯ ВВОДА */}
+            {/* ПОЛЯ ВВОДА - ЛЕЙБЛЫ ВНУТРИ */}
             <div className="amount-input-section">
               <div className="amount-input-group">
-                <label className="amount-label">Вы отдаете</label>
                 <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    className="amount-input"
-                    placeholder="0"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
+                  <span className="amount-label">Вы отдаете</span>
+                  <div className="amount-input-container">
+                    <input
+                      type="text"
+                      value={amount}
+                      onChange={handleAmountChange}
+                      className="amount-input"
+                      placeholder="0"
+                    />
+                    <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
+                  </div>
                 </div>
                 <div className="min-limit-hint">
                   {isBuyMode
@@ -604,55 +610,39 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
 
               <div className="amount-input-group">
-                <label className="amount-label">Вы получаете</label>
                 <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={convertedAmount()}
-                    readOnly
-                    className="amount-input"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
+                  <span className="amount-label">Вы получаете</span>
+                  <div className="amount-input-container">
+                    <input
+                      type="text"
+                      value={convertedAmount()}
+                      readOnly
+                      className="amount-input"
+                    />
+                    <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ВКЛАДКИ - ТОЛЬКО ДЛЯ USDT (ПОКУПКА) */}
-          {isBuyMode && (
-            <div className="tabs-section">
-              <div className="tabs-header">
-                <button 
-                  className={`tab-btn ${cryptoType === 'address' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('address')}
-                >
-                  📫 Адрес кошелька
-                </button>
-                <button 
-                  className={`tab-btn ${cryptoType === 'uid' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('uid')}
-                >
-                  🆔 Перевод по UID
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* АДРЕС USDT */}
+          {/* БЛОК АДРЕСА ДЛЯ ПОЛУЧЕНИЯ USDT */}
           {isBuyMode ? (
             <div className="payment-section-new">
               <h3 className="section-title">Адрес для получения USDT</h3>
               
-              <select
-                value={cryptoNetwork}
-                onChange={(e) => setCryptoNetwork(e.target.value)}
-                className="network-select"
-              >
-                {availableNetworks.map(n => (
-                  <option key={n.value} value={n.value}>{n.icon} {n.name}</option>
-                ))}
-              </select>
+              {/* КЛИКАБЕЛЬНЫЙ СЕЛЕКТОР */}
+              <div className="network-selector" onClick={() => setIsModalOpen(true)}>
+                <span className="selector-label">Выберите сеть</span>
+                <span className="selector-arrow">▼</span>
+                {selectedCrypto && (
+                  <div className="selected-network">
+                    {selectedCrypto.network}
+                  </div>
+                )}
+              </div>
 
+              {/* ПОЛЕ ВВОДА АДРЕСА */}
               <input
                 type="text"
                 placeholder="Введите адрес кошелька"
@@ -661,16 +651,20 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 className="address-input"
               />
 
+              {/* НОВОЕ ПОЛЕ - название кошелька */}
               <input
                 type="text"
                 placeholder="Введите название кошелька (опционально)"
                 className="address-input"
+                value={cryptoAddress}
+                onChange={(e) => setCryptoAddress(e.target.value)}
               />
 
               <button onClick={handleAddCrypto} className="add-button">
                 + Добавить адрес для получения USDT
               </button>
 
+              {/* СОХРАНЕННЫЕ АДРЕСА */}
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
                   <h4>Сохраненные адреса:</h4>
@@ -678,16 +672,28 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     <div key={c.id} className={`crypto-item ${selectedCrypto?.id === c.id ? 'selected' : ''}`}
                          onClick={() => setSelectedCrypto(c)}>
                       <div className="crypto-info">
-                        <span className="crypto-name">{c.name}</span>
-                        <span className="crypto-address">
-                          {c.address.slice(0, 8)}...{c.address.slice(-4)}
-                        </span>
+                        <div className="crypto-header">
+                          <span className="crypto-name">{c.name}</span>
+                          <span className="crypto-network-badge">{c.network}</span>
+                        </div>
+                        <div className="crypto-address">
+                          {c.address.length > 20 
+                            ? `${c.address.slice(0, 12)}...${c.address.slice(-8)}`
+                            : c.address
+                          }
+                        </div>
                       </div>
                       <div className="crypto-actions">
-                        <button onClick={(e) => { e.stopPropagation(); copyToClipboard(c.address); }}>
+                        <button 
+                          className="action-btn copy-btn"
+                          onClick={(e) => { e.stopPropagation(); copyToClipboard(c.address); }}
+                        >
                           <CopyIcon />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeleteCrypto(c.id); }}>
+                        <button 
+                          className="action-btn delete-btn"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteCrypto(c.id); }}
+                        >
                           <DeleteIcon />
                         </button>
                       </div>
@@ -736,7 +742,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         <span className="bank-name">{p.bankName}</span>
                         <span className="payment-number">{p.formattedNumber}</span>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}>
+                      <button 
+                        className="action-btn delete-btn"
+                        onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}
+                      >
                         <DeleteIcon />
                       </button>
                     </div>

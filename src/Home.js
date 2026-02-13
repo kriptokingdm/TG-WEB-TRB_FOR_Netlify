@@ -558,7 +558,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
               <div className="currency-card-side left-card">
                 <div className="currency-content">
                   <span className="currency-name">{isBuyMode ? "RUB" : "USDT"}</span>
-                  <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
+                  {/* КУРС ТОЛЬКО У ПЕРВОЙ КАРТОЧКИ, КОГДА ОНА RUB */}
+                  {isBuyMode && (
+                    <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
+                  )}
                 </div>
               </div>
 
@@ -569,7 +572,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
               <div className="currency-card-side right-card">
                 <div className="currency-content">
                   <span className="currency-name">{isBuyMode ? "USDT" : "RUB"}</span>
-                  <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
+                  {/* КУРС ТОЛЬКО КОГДА ПРАВАЯ КАРТОЧКА RUB */}
+                  {!isBuyMode && (
+                    <span className="currency-rate">{currentRate.toFixed(2)} ₽</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -612,6 +618,26 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
           </div>
 
+          {/* ВКЛАДКИ - ТОЛЬКО ДЛЯ USDT (ПОКУПКА) */}
+          {isBuyMode && (
+            <div className="tabs-section">
+              <div className="tabs-header">
+                <button 
+                  className={`tab-btn ${cryptoType === 'address' ? 'active' : ''}`}
+                  onClick={() => setCryptoType('address')}
+                >
+                  📫 Адрес кошелька
+                </button>
+                <button 
+                  className={`tab-btn ${cryptoType === 'uid' ? 'active' : ''}`}
+                  onClick={() => setCryptoType('uid')}
+                >
+                  🆔 Перевод по UID
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* АДРЕС USDT */}
           {isBuyMode ? (
             <div className="payment-section-new">
@@ -629,19 +655,25 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               <input
                 type="text"
-                placeholder="Адрес кошелька"
+                placeholder="Введите адрес кошелька"
                 value={cryptoAddress}
                 onChange={(e) => setCryptoAddress(e.target.value)}
                 className="address-input"
               />
 
+              <input
+                type="text"
+                placeholder="Введите название кошелька (опционально)"
+                className="address-input"
+              />
+
               <button onClick={handleAddCrypto} className="add-button">
-                + Добавить адрес
+                + Добавить адрес для получения USDT
               </button>
 
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
-                  <h4>Сохраненные:</h4>
+                  <h4>Сохраненные адреса:</h4>
                   {cryptoAddresses.map(c => (
                     <div key={c.id} className={`crypto-item ${selectedCrypto?.id === c.id ? 'selected' : ''}`}
                          onClick={() => setSelectedCrypto(c)}>
@@ -666,7 +698,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
           ) : (
             <div className="payment-section-new">
-              <h3 className="section-title">Реквизиты для RUB</h3>
+              <h3 className="section-title">Реквизиты для получения RUB</h3>
               
               <select value={bankName} onChange={(e) => setBankName(e.target.value)} className="bank-select">
                 {availableBanks.map(b => <option key={b}>{b}</option>)}
@@ -696,7 +728,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               {paymentMethods.length > 0 && (
                 <div className="payments-list">
-                  <h4>Сохраненные:</h4>
+                  <h4>Ваши реквизиты:</h4>
                   {paymentMethods.map(p => (
                     <div key={p.id} className={`payment-item ${selectedPayment?.id === p.id ? 'selected' : ''}`}
                          onClick={() => setSelectedPayment(p)}>

@@ -736,7 +736,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   // ==================== РЕНДЕР ====================
   return (
     <div className="home-container">
-      {hasActiveOrder ? (
+      {hasActiveOrder && activeOrderData ? (
         <div className="tg-home-container">
           {/* Шапка с кнопкой назад */}
           <div className="tg-header">

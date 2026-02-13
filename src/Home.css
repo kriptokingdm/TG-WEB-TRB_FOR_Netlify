@@ -1241,3 +1241,358 @@ input, textarea, select,
   border-radius: 6px;
   display: inline-block;
 }
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Свитчер в модалке */
+.network-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.network-switcher-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: var(--tg-theme-hint-color, #8e8e93);
+}
+
+.network-switcher-btn.active {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+/* Селектор сети */
+.network-selector {
+  margin-bottom: 20px;
+}
+
+.network-selector label {
+  display: block;
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  margin-bottom: 8px;
+}
+
+.network-select {
+  width: 100%;
+  padding: 14px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--tg-theme-text-color, #000000);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Сохраненные адреса в модалке */
+.saved-addresses {
+  margin-top: 20px;
+}
+
+.saved-addresses h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+.address-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.address-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.address-network {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tg-theme-button-color, #3390ec);
+  margin-right: 8px;
+}
+
+.address-name {
+  font-size: 13px;
+  color: var(--tg-theme-text-color, #000000);
+  font-style: italic;
+}
+
+.address-hash {
+  display: block;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  margin-top: 4px;
+}
+
+.address-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Информация о выбранной сети */
+.network-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.selected-network-icon {
+  font-size: 24px;
+}
+
+.selected-network-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+/* Поля ввода в модалке */
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  margin-bottom: 6px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 14px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--tg-theme-text-color, #000000);
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.modal-input:focus {
+  border-color: var(--tg-theme-button-color, #3390ec);
+}
+
+/* Кнопки в модалке */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.modal-btn.cancel {
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  color: var(--tg-theme-text-color, #000000);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+}
+
+.modal-btn.save {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.modal-btn:hover {
+  opacity: 0.9;
+}
+
+/* Селектор адреса на главном экране */
+.address-selector {
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.address-selector:hover {
+  border-color: var(--tg-theme-button-color, #3390ec);
+}
+
+.selector-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 14px;
+}
+
+.selector-arrow {
+  font-size: 12px;
+}
+
+.selected-address-preview {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--tg-theme-text-color, #000000);
+  font-weight: 500;
+}
+
+/* Кнопка добавления адреса */
+.add-address-button {
+  width: 100%;
+  padding: 14px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-theme-text-color, #000000);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+}
+
+.add-address-button:hover {
+  border-color: var(--tg-theme-button-color, #3390ec);
+  background: color-mix(in srgb, var(--tg-theme-button-color) 5%, transparent);
+}
+
+/* Кнопки копирования и удаления */
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn.copy-btn {
+  color: var(--tg-theme-button-color, #3390ec);
+}
+
+.action-btn.delete-btn {
+  color: #ff3b30;
+}
+
+.action-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.action-btn.copy-btn svg path {
+  fill: currentColor;
+}
+
+.action-btn.delete-btn svg path {
+  fill: currentColor;
+}
+
+.action-btn:hover {
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.05);
+}

@@ -13,6 +13,20 @@ import {
   BitGetIcon 
 } from './CryptoIcons';
 
+// ==================== НОВЫЙ SVG ДЛЯ БЕЗОПАСНОЙ СДЕЛКИ ====================
+const SecurityIcon = () => (
+  <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_2133_749)">
+      <path d="M45 20H42.5V15C42.5 8.1 36.9 2.5 30 2.5C23.1 2.5 17.5 8.1 17.5 15V20H15C12.25 20 10 22.25 10 25V50C10 52.75 12.25 55 15 55H45C47.75 55 50 52.75 50 50V25C50 22.25 47.75 20 45 20ZM30 42.5C27.25 42.5 25 40.25 25 37.5C25 34.75 27.25 32.5 30 32.5C32.75 32.5 35 34.75 35 37.5C35 40.25 32.75 42.5 30 42.5ZM37.75 20H22.25V15C22.25 10.725 25.725 7.25 30 7.25C34.275 7.25 37.75 10.725 37.75 15V20Z" fill="white"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_2133_749">
+        <rect width="60" height="60" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
 // ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
 const simpleFetch = async (endpoint, data = null) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -914,15 +928,22 @@ function Home({ navigateTo, telegramUser, showToast }) {
             {/* Информационный блок */}
             <div className="tg-info-block">
               <div className="tg-info-icon">ℹ️</div>
-              {/* <div className="tg-info-text">
+              <div className="tg-info-text">
                 Статус заявки обновляется автоматически. Вы получите уведомление при изменении статуса.
-              </div> */}
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        // ОСНОВНОЙ ИНТЕРФЕЙС ОБМЕНА
+        // ==================== НОВЫЙ ДИЗАЙН ОСНОВНОГО ИНТЕРФЕЙСА ====================
         <div className="home-content">
+          {/* Заголовок */}
+          <div className="home-header">
+            <h1 className="home-title">Обмен RUB - USDT</h1>
+            <span className="home-subtitle">по лучшему курсу</span>
+          </div>
+
+          {/* Валютные карточки */}
           <div className="currency-cards-section">
             <div className="currency-cards-horizontal">
               <div className="currency-card-side left-card">
@@ -930,11 +951,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   <span className="currency-name">
                     {isBuyMode ? "RUB" : "USDT"}
                   </span>
-                  {isBuyMode && (
-                    <span className="currency-rate light">
-                      {currentRate.toFixed(2)} ₽
-                    </span>
-                  )}
+                  <span className="currency-rate">
+                    {currentRate.toFixed(2)} ₽
+                  </span>
                 </div>
               </div>
 
@@ -951,59 +970,59 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   <span className="currency-name">
                     {isBuyMode ? "USDT" : "RUB"}
                   </span>
-                  {!isBuyMode && (
-                    <span className="currency-rate light">
-                      {currentRate.toFixed(2)} ₽
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="amount-input-section">
-              <div className="amount-input-group">
-                <label className="amount-label">Вы отдаете</label>
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    className="amount-input"
-                    disabled={isLoading}
-                  />
-                  <span className="amount-currency">
-                    {isBuyMode ? "RUB" : "USDT"}
-                  </span>
-                </div>
-                <div className="min-limit-hint">
-                  {isBuyMode
-                    ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} RUB`
-                    : `${limits.minSell} - ${limits.maxSell} USDT`
-                  }
-                </div>
-                {error && <div className="error-message">{error}</div>}
-              </div>
-
-              <div className="amount-input-group">
-                <label className="amount-label">Вы получаете</label>
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    placeholder="0"
-                    value={convertedAmount()}
-                    readOnly
-                    className="amount-input"
-                  />
-                  <span className="amount-currency">
-                    {isBuyMode ? "USDT" : "RUB"}
+                  <span className="currency-rate">
+                    {currentRate.toFixed(2)} ₽
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Поля ввода */}
+          <div className="amount-input-section">
+            <div className="amount-input-group">
+              <label className="amount-label">Вы отдаете</label>
+              <div className="amount-input-wrapper">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0"
+                  value={amount}
+                  onChange={handleAmountChange}
+                  className="amount-input"
+                  disabled={isLoading}
+                />
+                <span className="amount-currency">
+                  {isBuyMode ? "RUB" : "USDT"}
+                </span>
+              </div>
+              <div className="min-limit-hint">
+                {isBuyMode
+                  ? `${limits.minBuy.toLocaleString()} - ${limits.maxBuy.toLocaleString()} ₽`
+                  : `${limits.minSell} - ${limits.maxSell} USDT`
+                }
+              </div>
+              {error && <div className="error-message">{error}</div>}
+            </div>
+
+            <div className="amount-input-group">
+              <label className="amount-label">Вы получаете</label>
+              <div className="amount-input-wrapper">
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={convertedAmount()}
+                  readOnly
+                  className="amount-input"
+                />
+                <span className="amount-currency">
+                  {isBuyMode ? "USDT" : "RUB"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Секция адреса для получения USDT */}
           {isBuyMode ? (
             <div className="payment-section-new">
               <div className="payment-header-new">
@@ -1023,7 +1042,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={() => setCryptoType('uid')}
                 >
                   <span className="crypto-type-icon">🆔</span>
-                  <span className="crypto-type-text">UID перевод</span>
+                  <span className="crypto-type-text">Перевод по UID</span>
                 </button>
               </div>
 
@@ -1057,6 +1076,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
                       onChange={(e) => setCryptoAddress(e.target.value)}
                       className="address-input"
                     />
+                    
+                    <input
+                      type="text"
+                      placeholder="Введите название кошелька (опционально)"
+                      className="address-input"
+                    />
                   </>
                 ) : (
                   <>
@@ -1087,6 +1112,12 @@ function Home({ navigateTo, telegramUser, showToast }) {
                       onChange={(e) => setCryptoUID(e.target.value)}
                       className="uid-input"
                     />
+                    
+                    <input
+                      type="text"
+                      placeholder="Введите название кошелька (опционально)"
+                      className="address-input"
+                    />
                   </>
                 )}
 
@@ -1094,13 +1125,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={handleAddCryptoAddress}
                   className="add-button"
                 >
-                  +
+                  + Добавить адрес для получения USDT
                 </button>
               </div>
 
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
-                  <h4>Ваши адреса:</h4>
+                  <h4>Сохраненные адреса:</h4>
                   {cryptoAddresses.map((crypto) => {
                     const network = crypto.type === 'address' 
                       ? availableNetworks.find(n => n.value === crypto.network)
@@ -1165,18 +1196,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   })}
                 </div>
               )}
-
-              {cryptoAddresses.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-icon">🏦</div>
-                  <p className="empty-text">
-                    {cryptoType === 'address' 
-                      ? 'Добавьте адрес для получения USDT'
-                      : 'Добавьте UID биржи для получения USDT'
-                    }
-                  </p>
-                </div>
-              )}
             </div>
           ) : (
             <div className="payment-section-new">
@@ -1220,7 +1239,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   onClick={handleAddPayment}
                   className="add-button"
                 >
-                  +
+                  + Добавить реквизиты
                 </button>
               </div>
 
@@ -1260,18 +1279,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   ))}
                 </div>
               )}
-
-              {paymentMethods.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-icon">💳</div>
-                  <p className="empty-text">
-                    Добавьте реквизиты для получения RUB
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
+          {/* Кнопка обмена */}
           <button
             className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
             disabled={!isExchangeReady() || isLoading}
@@ -1285,8 +1296,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </span>
           </button>
 
+          {/* Блок безопасности с новым SVG */}
           <div className="security-info">
-            <div className="security-icon">🔒</div>
+            <div className="security-icon">
+              <SecurityIcon />
+            </div>
             <div className="security-text">
               <strong>Безопасная сделка:</strong> Средства резервируются у Операторов до подтверждения сделки системой TetherRabbit
             </div>

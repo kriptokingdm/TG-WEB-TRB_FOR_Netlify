@@ -105,7 +105,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [isSwapped, setIsSwapped] = useState(false);
   const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
-  const [showLimitHint, setShowLimitHint] = useState(false);
   
   const [currentRate, setCurrentRate] = useState(88.0);
   
@@ -122,11 +121,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [activeOrderData, setActiveOrderData] = useState(null);
   
   // Крипто
-  const [cryptoAddress, setCryptoAddress] = useState('');
   const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
   const [cryptoAddresses, setCryptoAddresses] = useState([]);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
-  const [walletName, setWalletName] = useState('');
   
   // Банки
   const [bankName, setBankName] = useState('СБП (Система быстрых платежей)');
@@ -233,25 +230,20 @@ function Home({ navigateTo, telegramUser, showToast }) {
         if (isBuyMode) {
           if (num < limits.minBuy || num > limits.maxBuy) {
             setError(`Минимальная сумма: ${limits.minBuy} RUB`);
-            setShowLimitHint(true);
           } else {
             setError('');
-            setShowLimitHint(false);
           }
         } else {
           if (num < limits.minSell || num > limits.maxSell) {
             setError(`Минимальная сумма: ${limits.minSell} USDT`);
-            setShowLimitHint(true);
           } else {
             setError('');
-            setShowLimitHint(false);
           }
         }
         fetchExchangeRate(num, isBuyMode);
       }
     } else {
       setError('');
-      setShowLimitHint(false);
     }
   };
 
@@ -265,28 +257,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
     setIsBuyMode(!isBuyMode);
     setAmount('');
     setError('');
-    setShowLimitHint(false);
     fetchExchangeRate(1000, !isBuyMode);
   };
 
   const handleAddCrypto = () => {
-    if (!cryptoAddress || cryptoAddress.length < 10) {
-      showMessage('error', '❌ Введите корректный адрес');
-      return;
-    }
-
-    const newCrypto = {
-      id: Date.now().toString(),
-      address: cryptoAddress,
-      network: cryptoNetwork,
-      name: walletName || `${cryptoNetwork} кошелек`
-    };
-
-    setCryptoAddresses([...cryptoAddresses, newCrypto]);
-    setSelectedCrypto(newCrypto);
-    setCryptoAddress('');
-    setWalletName('');
-    showMessage('success', '✅ Адрес добавлен');
+    setIsModalOpen(true);
   };
 
   const handleAddPayment = () => {
@@ -597,45 +572,32 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
-            {/* ПОЛЯ ВВОДА - СТРОКИ ВНУТРИ */}
+            {/* ПОЛЯ ВВОДА - ПРОСТО ЦИФРЫ */}
             <div className="amount-input-section">
               <div className="amount-input-group">
                 <div className="amount-input-wrapper">
-                  <div className="amount-label">Вы отдаете</div>
-                  <div className="amount-input-container">
-                    <input
-                      type="text"
-                      value={amount}
-                      onChange={handleAmountChange}
-                      className="amount-input"
-                      placeholder="0"
-                    />
-                    <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
-                  </div>
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    className="amount-input"
+                    placeholder="0"
+                  />
+                  <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
                 </div>
-                {showLimitHint && (
-                  <div className="min-limit-hint">
-                    {isBuyMode
-                      ? `${limits.minBuy} - ${limits.maxBuy} RUB`
-                      : `${limits.minSell} - ${limits.maxSell} USDT`
-                    }
-                  </div>
-                )}
                 {error && <div className="error-message">{error}</div>}
               </div>
 
               <div className="amount-input-group">
                 <div className="amount-input-wrapper">
-                  <div className="amount-label">Вы получаете</div>
-                  <div className="amount-input-container">
-                    <input
-                      type="text"
-                      value={convertedAmount()}
-                      readOnly
-                      className="amount-input"
-                    />
-                    <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
-                  </div>
+                  <input
+                    type="text"
+                    value={convertedAmount()}
+                    readOnly
+                    className="amount-input"
+                    placeholder="0"
+                  />
+                  <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
                 </div>
               </div>
             </div>
@@ -648,32 +610,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
               
               {/* КЛИКАБЕЛЬНЫЙ СЕЛЕКТОР */}
               <div className="network-selector" onClick={() => setIsModalOpen(true)}>
-                <span className="selector-label">Выберите сеть</span>
+                <span className="selector-label">Адрес для получения USDT</span>
                 <span className="selector-arrow">▼</span>
-                {selectedCrypto && (
-                  <div className="selected-network">
-                    {selectedCrypto.network}
-                  </div>
-                )}
               </div>
-
-              {/* ПОЛЕ ВВОДА АДРЕСА */}
-              <input
-                type="text"
-                placeholder="Введите адрес кошелька"
-                value={cryptoAddress}
-                onChange={(e) => setCryptoAddress(e.target.value)}
-                className="address-input"
-              />
-
-              {/* ПОЛЕ НАЗВАНИЯ КОШЕЛЬКА - С ОТСТУПОМ */}
-              <input
-                type="text"
-                placeholder="Введите название кошелька (опционально)"
-                value={walletName}
-                onChange={(e) => setWalletName(e.target.value)}
-                className="address-input wallet-name-input"
-              />
 
               <button onClick={handleAddCrypto} className="add-button">
                 + Добавить адрес для получения USDT

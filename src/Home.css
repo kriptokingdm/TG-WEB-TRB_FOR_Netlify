@@ -1,31 +1,13 @@
-/* Home.css - Telegram WebApp стили */
+/* Home.css - Telegram WebApp стили (минималистичные) */
 
-/* ==================== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==================== */
 :root {
   --tg-bg: var(--tg-theme-bg-color, #ffffff);
   --tg-text: var(--tg-theme-text-color, #000000);
   --tg-hint: var(--tg-theme-hint-color, #8e8e93);
-  --tg-link: var(--tg-theme-link-color, #3390ec);
   --tg-button: var(--tg-theme-button-color, #3390ec);
   --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
   --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
-  --tg-section-bg: var(--tg-theme-section-bg-color, #e7e8ec);
   --tg-border: var(--tg-theme-section-bg-color, #e7e8ec);
-  --tg-card-bg: var(--tg-theme-bg-color, #ffffff);
-  --tg-input-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
-}
-
-/* ==================== ГЛОБАЛЬНЫЕ СТИЛИ ==================== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--tg-bg);
-  color: var(--tg-text);
 }
 
 /* ==================== КОНТЕЙНЕРЫ ==================== */
@@ -35,7 +17,6 @@ body {
   color: var(--tg-text);
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
-  animation: fadeIn 0.3s ease;
 }
 
 .home-content {
@@ -43,22 +24,14 @@ body {
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ==================== КАРТОЧКИ ==================== */
-.currency-cards-section,
-.payment-section-new {
-  background: var(--tg-card-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: 12px;
+/* ==================== ВАЛЮТНЫЕ КАРТОЧКИ ==================== */
+.currency-cards-section {
+  background: var(--tg-secondary-bg);
+  border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
 }
 
-/* Валютные карточки */
 .currency-cards-horizontal {
   display: flex;
   align-items: center;
@@ -70,19 +43,13 @@ body {
 
 .currency-card-side {
   flex: 1;
-  background: color-mix(in srgb, var(--tg-button) 10%, transparent);
-  border: 0.5px solid var(--tg-border);
+  background: var(--tg-bg);
   border-radius: 12px;
   padding: 20px;
   min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
-}
-
-.currency-card-side:hover {
-  transform: translateY(-2px);
 }
 
 .currency-content {
@@ -120,10 +87,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   transition: transform 0.2s;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .swap-center-button:hover:not(:disabled) {
@@ -139,53 +103,30 @@ body {
   cursor: not-allowed;
 }
 
-.swap-center-button svg {
-  width: 52px;
-  height: 52px;
-}
-
-/* ==================== ПОЛЯ ВВОДА СУММЫ ==================== */
+/* ==================== ПОЛЯ ВВОДА - МИНИМАЛИСТИЧНЫЕ ==================== */
 .amount-input-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.amount-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 12px;
 }
 
 .amount-input-wrapper {
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
+  background: var(--tg-bg);
   border-radius: 12px;
-  padding: 12px;
-}
-
-.amount-label {
-  font-size: 13px;
-  color: var(--tg-hint);
-  margin-bottom: 4px;
-}
-
-.amount-input-container {
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .amount-input {
-  flex: 1;
   background: none;
   border: none;
   font-size: 18px;
   font-weight: 600;
   color: var(--tg-text);
   outline: none;
-  padding: 0;
+  width: 70%;
 }
 
 .amount-input::placeholder {
@@ -199,12 +140,6 @@ body {
   color: var(--tg-hint);
 }
 
-.min-limit-hint {
-  font-size: 12px;
-  color: #ff3b30;
-  margin-top: 4px;
-}
-
 .error-message {
   font-size: 12px;
   color: #ff3b30;
@@ -213,89 +148,47 @@ body {
 
 /* ==================== ЗАГОЛОВКИ ==================== */
 .section-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   margin: 0 0 16px 0;
-  color: var(--tg-text);
+  color: var(--tg-hint);
 }
 
-/* ==================== ФОРМЫ ==================== */
+/* ==================== СЕЛЕКТОР СЕТИ ==================== */
 .network-selector {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  padding: 14px;
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--tg-secondary-bg);
   border-radius: 12px;
   margin-bottom: 12px;
   cursor: pointer;
-  position: relative;
 }
 
 .selector-label {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--tg-hint);
-  margin-right: 8px;
 }
 
 .selector-arrow {
   font-size: 12px;
   color: var(--tg-hint);
-  margin-left: auto;
 }
 
-.selected-network {
-  width: 100%;
-  margin-top: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-text);
-}
-
-.address-input,
-.phone-input,
-.card-input,
-.bank-select {
-  width: 100%;
-  padding: 14px;
-  background: var(--tg-input-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: 12px;
-  font-size: 15px;
-  color: var(--tg-text);
-  outline: none;
-  margin-bottom: 12px;
-  font-family: inherit;
-}
-
-.address-input:focus,
-.phone-input:focus,
-.card-input:focus,
-.bank-select:focus {
-  border-color: var(--tg-button);
-}
-
-.wallet-name-input {
-  margin-bottom: 20px;
-}
-
+/* ==================== КНОПКА ДОБАВЛЕНИЯ ==================== */
 .add-button {
   width: 100%;
-  padding: 14px;
-  background: var(--tg-button);
-  color: var(--tg-button-text);
+  padding: 16px;
+  background: var(--tg-secondary-bg);
   border: none;
   border-radius: 12px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--tg-text);
   cursor: pointer;
-  transition: opacity 0.2s;
   margin-bottom: 16px;
-}
-
-.add-button:hover {
-  opacity: 0.9;
+  text-align: left;
 }
 
 /* ==================== КНОПКА ОБМЕНА ==================== */
@@ -303,7 +196,7 @@ body {
   width: 100%;
   padding: 18px;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 17px;
   font-weight: 700;
   cursor: pointer;
@@ -312,19 +205,7 @@ body {
   justify-content: center;
   gap: 12px;
   margin: 16px 0;
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.exchange-button-new:hover:not(.disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.exchange-button-new.disabled {
-  background: var(--tg-hint);
-  color: var(--tg-button-text);
-  cursor: not-allowed;
-  opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
 .exchange-button-new.buy {
@@ -337,6 +218,12 @@ body {
   color: var(--tg-button-text);
 }
 
+.exchange-button-new.disabled {
+  background: var(--tg-hint);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .exchange-icon {
   font-size: 20px;
 }
@@ -346,13 +233,12 @@ body {
   font-weight: 700;
 }
 
-/* ==================== БЛОК БЕЗОПАСНОСТИ ==================== */
+/* ==================== БЕЗОПАСНОСТЬ ==================== */
 .security-info {
   display: flex;
   gap: 12px;
   padding: 16px;
   background: var(--tg-secondary-bg);
-  border: 0.5px solid var(--tg-border);
   border-radius: 12px;
   margin: 16px 0;
 }
@@ -363,7 +249,7 @@ body {
 }
 
 .security-text {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--tg-hint);
 }
@@ -383,7 +269,7 @@ body {
 
 .crypto-list h4,
 .payments-list h4 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
   color: var(--tg-hint);
@@ -396,28 +282,18 @@ body {
   align-items: center;
   padding: 12px;
   background: var(--tg-secondary-bg);
-  border: 0.5px solid var(--tg-border);
   border-radius: 12px;
   margin-bottom: 8px;
   cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.crypto-item:hover,
-.payment-item:hover {
-  border-color: var(--tg-button);
 }
 
 .crypto-item.selected,
 .payment-item.selected {
-  background: color-mix(in srgb, var(--tg-button) 10%, transparent);
-  border-color: var(--tg-button);
+  border: 1px solid var(--tg-button);
 }
 
-.crypto-info,
-.payment-info {
+.crypto-info {
   flex: 1;
-  min-width: 0;
 }
 
 .crypto-header {
@@ -439,26 +315,24 @@ body {
   background: color-mix(in srgb, var(--tg-button) 15%, transparent);
   color: var(--tg-button);
   border-radius: 4px;
-  font-weight: 600;
 }
 
 .crypto-address {
   font-size: 12px;
   font-family: monospace;
   color: var(--tg-hint);
-  word-break: break-all;
 }
 
 .payment-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex: 1;
 }
 
 .bank-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--tg-text);
+  display: block;
+  margin-bottom: 4px;
 }
 
 .payment-number {
@@ -470,8 +344,7 @@ body {
 /* ==================== КНОПКИ ДЕЙСТВИЙ ==================== */
 .crypto-actions {
   display: flex;
-  gap: 16px;
-  margin-left: 12px;
+  gap: 12px;
 }
 
 .action-btn {
@@ -480,9 +353,6 @@ body {
   cursor: pointer;
   padding: 4px;
   transition: opacity 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .action-btn.copy-btn {
@@ -497,12 +367,7 @@ body {
   opacity: 0.8;
 }
 
-.action-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
+/* ==================== МОДАЛЬНОЕ ОКНО - ПО ЦЕНТРУ ==================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -511,26 +376,25 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
 }
 
 .modal-content {
   background: var(--tg-bg);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-radius: 20px;
   padding: 20px;
-  width: 100%;
+  width: 90%;
   max-width: 400px;
   max-height: 80vh;
   overflow-y: auto;
-  animation: slideUp 0.3s ease;
+  animation: fadeIn 0.2s ease;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .modal-header {
@@ -539,7 +403,7 @@ body {
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--tg-border);
+  border-bottom: 1px solid var(--tg-border);
 }
 
 .modal-header h2 {
@@ -554,20 +418,12 @@ body {
   font-size: 24px;
   cursor: pointer;
   color: var(--tg-hint);
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Список сетей в модалке */
 .network-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 20px;
 }
 
 .network-item {
@@ -577,11 +433,6 @@ body {
   background: var(--tg-secondary-bg);
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
-}
-
-.network-item:hover {
-  background: color-mix(in srgb, var(--tg-button) 10%, transparent);
 }
 
 .network-icon {
@@ -592,7 +443,6 @@ body {
 .network-name {
   flex: 1;
   font-size: 16px;
-  font-weight: 500;
   color: var(--tg-text);
 }
 
@@ -601,28 +451,6 @@ body {
   color: var(--tg-hint);
 }
 
-/* Выбранная сеть */
-.selected-network-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.selected-network-icon {
-  font-size: 24px;
-}
-
-.selected-network-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--tg-text);
-}
-
-/* Поля ввода в модалке */
 .input-group {
   margin-bottom: 16px;
 }
@@ -638,18 +466,12 @@ body {
   width: 100%;
   padding: 14px;
   background: var(--tg-secondary-bg);
-  border: 0.5px solid var(--tg-border);
+  border: none;
   border-radius: 12px;
   font-size: 15px;
   color: var(--tg-text);
-  outline: none;
 }
 
-.modal-input:focus {
-  border-color: var(--tg-button);
-}
-
-/* Кнопки модалки */
 .modal-actions {
   display: flex;
   gap: 12px;
@@ -664,7 +486,6 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
 }
 
 .modal-btn.cancel {
@@ -677,253 +498,10 @@ body {
   color: var(--tg-button-text);
 }
 
-.modal-btn:hover {
-  opacity: 0.9;
-}
-
-/* Сохраненные адреса в модалке */
-.saved-addresses {
-  margin-top: 20px;
-  border-top: 0.5px solid var(--tg-border);
-  padding-top: 20px;
-}
-
-.saved-addresses h3 {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--tg-text);
-}
-
-.saved-address-item {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-
-.saved-address-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.saved-network {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tg-button);
-  margin-right: 8px;
-}
-
-.saved-name {
-  font-size: 13px;
-  color: var(--tg-text);
-  font-style: italic;
-}
-
-.saved-hash {
-  display: block;
-  font-size: 12px;
-  font-family: monospace;
-  color: var(--tg-hint);
-  margin-top: 4px;
-}
-
-.saved-copy {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: var(--tg-button);
-}
-
-/* ==================== АКТИВНЫЙ ОРДЕР ==================== */
-.tg-home-container {
-  min-height: 100vh;
-}
-
-.tg-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  background: var(--tg-bg);
-  border-bottom: 0.5px solid var(--tg-border);
-  padding-top: env(safe-area-inset-top);
-}
-
-.tg-header-content {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  gap: 16px;
-}
-
-.tg-back-btn {
-  background: none;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--tg-button);
-}
-
-.tg-header-titles {
-  flex: 1;
-}
-
-.tg-header-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--tg-text);
-  margin: 0;
-}
-
-.tg-header-subtitle {
-  font-size: 13px;
-  color: var(--tg-hint);
-  margin: 2px 0 0 0;
-}
-
-.tg-main-content {
-  padding: 16px;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
-}
-
-.tg-order-card {
-  background: var(--tg-card-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
-
-.tg-card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 0.5px solid var(--tg-border);
-}
-
-.tg-order-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tg-button) 15%, transparent);
-  color: var(--tg-button);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  flex-shrink: 0;
-}
-
-.tg-order-info {
-  flex: 1;
-}
-
-.tg-order-title {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--tg-text);
-  margin: 0 0 4px 0;
-}
-
-.tg-order-subtitle {
-  font-size: 15px;
-  color: var(--tg-hint);
-  margin: 0;
-}
-
-.tg-order-details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.tg-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--tg-secondary-bg);
-  border: 0.5px solid var(--tg-border);
-  border-radius: 12px;
-}
-
-.tg-detail-label {
-  font-size: 14px;
-  color: var(--tg-hint);
-}
-
-.tg-detail-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--tg-text);
-  text-align: right;
-}
-
-.tg-detail-mono {
-  font-family: monospace;
-  font-size: 13px;
-  word-break: break-all;
-}
-
-.tg-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tg-action-btn {
-  padding: 16px;
-  background: var(--tg-button);
-  color: var(--tg-button-text);
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.tg-action-btn:hover {
-  opacity: 0.9;
-}
-
 /* ==================== АДАПТИВНОСТЬ ==================== */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .amount-input-section {
     grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  
-  .tg-order-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-content,
-  .tg-main-content {
-    padding: 12px;
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
-  }
-  
-  .currency-card-side {
-    padding: 16px;
-    min-height: 80px;
   }
   
   .currency-name {
@@ -933,56 +511,5 @@ body {
   .swap-center-button {
     width: 48px;
     height: 48px;
-  }
-  
-  .swap-center-button svg {
-    width: 44px;
-    height: 44px;
-  }
-  
-  .tg-order-card {
-    padding: 16px;
-  }
-  
-  .tg-order-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 320px) {
-  .currency-cards-horizontal {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .swap-center-button {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none !important;
-    margin: 0 auto;
-  }
-}
-
-/* Safe Area для iOS */
-@supports (padding: max(0px)) {
-  .home-container,
-  .tg-home-container {
-    padding-bottom: calc(max(0px, env(safe-area-inset-bottom)) + 80px);
-  }
-  
-  .home-content,
-  .tg-main-content {
-    padding-bottom: calc(max(0px, env(safe-area-inset-bottom)) + 80px);
-  }
-}
-
-/* Safari fix */
-@supports (-webkit-touch-callout: none) {
-  .home-container,
-  .tg-home-container {
-    height: -webkit-fill-available;
   }
 }

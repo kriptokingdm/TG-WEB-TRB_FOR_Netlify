@@ -1,4 +1,4 @@
-// AddAddressModal.js
+// AddAddressModal.js - исправленная версия
 import React, { useState } from 'react';
 
 const CopyIcon = () => (

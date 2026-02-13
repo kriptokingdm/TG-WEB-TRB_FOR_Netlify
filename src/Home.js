@@ -14,6 +14,39 @@ import {
   BitGetIcon 
 } from './CryptoIcons';
 
+// ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
+// ВАЖНО: ЭТА ФУНКЦИЯ ДОЛЖНА БЫТЬ СНАРУЖИ КОМПОНЕНТА!
+const simpleFetch = async (endpoint, data = null) => {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  
+  const options = {
+    method: data ? 'POST' : 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    signal: controller.signal
+  };
+  
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+  
+  try {
+    const response = await fetch(url, options);
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`❌ Ошибка fetch ${endpoint}:`, error);
+    throw error;
+  }
+};
+
 // ==================== НОВЫЙ SVG ДЛЯ БЕЗОПАСНОЙ СДЕЛКИ ====================
 const SecurityIcon = () => (
   <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,6 +56,33 @@ const SecurityIcon = () => (
     <defs>
       <clipPath id="clip0_2133_749">
         <rect width="60" height="60" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+// ==================== ИКОНКИ КОПИРОВАНИЯ И УДАЛЕНИЯ ====================
+const CopyIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_2140_242)">
+      <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" fill="white"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_2140_242">
+        <rect width="24" height="24" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clipPath="url(#clip0_2140_242)">
+      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="white"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_2140_242">
+        <rect width="24" height="24" fill="white"/>
       </clipPath>
     </defs>
   </svg>
@@ -327,37 +387,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   };
 
   // ==================== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ ====================
-  const simpleFetch = async (endpoint, data = null) => {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const options = {
-      method: data ? 'POST' : 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal
-    };
-    
-    if (data) {
-      options.body = JSON.stringify(data);
-    }
-    
-    try {
-      const response = await fetch(url, options);
-      clearTimeout(timeoutId);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`❌ Ошибка fetch ${endpoint}:`, error);
-      throw error;
-    }
-  };
-
   const handleAddPayment = () => {
     const isSBP = bankName === 'СБП (Система быстрых платежей)';
     if (isSBP) {
@@ -803,7 +832,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <div className="tg-detail-row">
                   <span className="tg-detail-label">Вы отдаете</span>
                   <span className="tg-detail-value tg-detail-big">
-                    {activeOrderData?.amount} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
+                    {activeOrderData?.amount || 0} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
                   </span>
                 </div>
 
@@ -811,7 +840,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <div className="tg-detail-row">
                   <span className="tg-detail-label">Курс</span>
                   <span className="tg-detail-value">
-                    1 USDT = {activeOrderData?.rate} ₽
+                    1 USDT = {activeOrderData?.rate || 0} ₽
                   </span>
                 </div>
 
@@ -820,8 +849,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   <span className="tg-detail-label">Вы получаете</span>
                   <span className="tg-detail-value tg-detail-big tg-detail-accent">
                     {activeOrderData?.order_type === 'buy' 
-                      ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
-                      : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
+                      ? `${((activeOrderData?.amount || 0) / (activeOrderData?.rate || 1)).toFixed(2)} USDT`
+                      : `${((activeOrderData?.amount || 0) * (activeOrderData?.rate || 1)).toFixed(2)} ₽`
                     }
                   </span>
                 </div>
@@ -925,7 +954,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
         </div>
       ) : (
         <div className="home-content">
-          {/* ВЕРНУЛ СТАРЫЙ ХЕДЕР КАК БЫЛО */}
+          {/* ВАЛЮТНЫЕ КАРТОЧКИ */}
           <div className="currency-cards-section">
             <div className="currency-cards-horizontal">
               <div className="currency-card-side left-card">
@@ -963,6 +992,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
+            {/* ПОЛЯ ВВОДА */}
             <div className="amount-input-section">
               <div className="amount-input-group">
                 <label className="amount-label">Вы отдаете</label>
@@ -1036,9 +1066,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
                   <span>Выберите сеть</span>
                   <span className="selector-arrow">▼</span>
                 </div>
-                {cryptoAddresses.length > 0 && (
+                {selectedCrypto && (
                   <div className="selected-address-preview">
-                    {cryptoAddresses[cryptoAddresses.length - 1]?.network}
+                    {selectedCrypto.network}: {selectedCrypto.name}
                   </div>
                 )}
               </div>
@@ -1204,6 +1234,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
           )}
 
+          {/* КНОПКА ОБМЕНА */}
           <button
             className={`exchange-button-new ${isBuyMode ? 'buy' : 'sell'} ${!isExchangeReady() ? 'disabled' : ''}`}
             disabled={!isExchangeReady() || isLoading}
@@ -1217,6 +1248,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </span>
           </button>
 
+          {/* БЛОК БЕЗОПАСНОСТИ */}
           <div className="security-info">
             <div className="security-icon">
               <SecurityIcon />

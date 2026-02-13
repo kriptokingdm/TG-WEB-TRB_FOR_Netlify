@@ -2,20 +2,8 @@ import React from "react";
 import { useState, useEffect, useRef } from 'react';
 import './Home.css';
 import { API_BASE_URL } from './config';
-import AddAddressModal from './AddAddressModal';
-import { 
-  BinanceIcon, 
-  TRC20Icon, 
-  ERCIcon, 
-  SolanaIcon,
-  BybitIcon,
-  OKXIcon,
-  MEXIcon,
-  BitGetIcon 
-} from './CryptoIcons';
 
 // ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
-// ВАЖНО: ЭТА ФУНКЦИЯ ДОЛЖНА БЫТЬ СНАРУЖИ КОМПОНЕНТА!
 const simpleFetch = async (endpoint, data = null) => {
   const url = `${API_BASE_URL}${endpoint}`;
   const controller = new AbortController();
@@ -144,27 +132,22 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [activeOrderStatus, setActiveOrderStatus] = useState('');
   const [activeOrderData, setActiveOrderData] = useState(null);
   
-  // Крипто и платежи
+  // Крипто и платежи - упрощаем
   const [cryptoAddress, setCryptoAddress] = useState('');
   const [cryptoNetwork, setCryptoNetwork] = useState('TRC20');
-  const [cryptoUID, setCryptoUID] = useState('');
   const [cryptoAddresses, setCryptoAddresses] = useState([]);
+  const [selectedCrypto, setSelectedCrypto] = useState(null);
+  
   const [bankName, setBankName] = useState('СБП (Система быстрых платежей)');
   const [cardNumber, setCardNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  const [selectedCrypto, setSelectedCrypto] = useState(null);
-  const [cryptoType, setCryptoType] = useState('address');
-  const [selectedExchange, setSelectedExchange] = useState('Binance');
-
-  // Модальное окно
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ==================== REFS ====================
   const abortControllerRef = useRef(null);
 
-  // ==================== КОНСТАНТЫ ====================
+  // ==================== КОНСТАНТЫ (ПРОСТЫЕ, БЕЗ ИКОНОК) ====================
   const availableBanks = [
     'СБП (Система быстрых платежей)',
     'Сбербанк',
@@ -195,19 +178,11 @@ function Home({ navigateTo, telegramUser, showToast }) {
   ];
 
   const availableNetworks = [
-    { value: 'TRC20', name: 'TRC20', icon: <TRC20Icon size={20} />, popular: true },
-    { value: 'ERC20', name: 'ERC20', icon: <ERCIcon size={20} />, popular: true },
-    { value: 'BEP20', name: 'BEP20', icon: <BinanceIcon size={20} />, popular: true },
-    { value: 'SOLANA', name: 'Solana', icon: <SolanaIcon size={20} />, popular: true },
-    { value: 'POLYGON', name: 'Polygon', icon: <div className="polygon-icon">P</div>, popular: false },
-  ];
-
-  const availableExchanges = [
-    { value: 'Binance', name: 'Binance', icon: <BinanceIcon size={20} /> },
-    { value: 'Bybit', name: 'Bybit', icon: <BybitIcon size={20} /> },
-    { value: 'OKX', name: 'OKX', icon: <OKXIcon size={20} /> },
-    { value: 'MEX', name: 'MEX', icon: <MEXIcon size={20} /> },
-    { value: 'BitGet', name: 'BitGet', icon: <BitGetIcon size={20} /> }
+    { value: 'TRC20', name: 'TRC20', icon: '🔷', popular: true },
+    { value: 'ERC20', name: 'ERC20', icon: '💠', popular: true },
+    { value: 'BEP20', name: 'BEP20', icon: '🔶', popular: true },
+    { value: 'SOLANA', name: 'Solana', icon: '🟣', popular: true },
+    { value: 'POLYGON', name: 'Polygon', icon: '💜', popular: false },
   ];
 
   const popularNetworks = availableNetworks.filter(n => n.popular);
@@ -460,12 +435,22 @@ function Home({ navigateTo, telegramUser, showToast }) {
   };
 
   const handleAddCryptoAddress = () => {
-    setIsModalOpen(true);
-  };
+    if (!cryptoAddress || cryptoAddress.length < 10) {
+      showMessage('error', '❌ Введите корректный адрес');
+      return;
+    }
 
-  const handleSaveAddress = (newAddress) => {
-    setCryptoAddresses([...cryptoAddresses, newAddress]);
-    setSelectedCrypto(newAddress);
+    const newCrypto = {
+      id: Date.now().toString(),
+      address: cryptoAddress,
+      network: cryptoNetwork,
+      name: `${availableNetworks.find(n => n.value === cryptoNetwork)?.name} кошелек`
+    };
+
+    setCryptoAddresses([...cryptoAddresses, newCrypto]);
+    setSelectedCrypto(newCrypto);
+    setCryptoAddress('');
+    showMessage('success', '✅ Адрес добавлен');
   };
 
   const handleDeletePayment = (id) => {
@@ -584,9 +569,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
       firstName: userData.firstName,
       lastName: userData.lastName || '',
       cryptoAddress: isBuyMode ? selectedCrypto?.address : null,
-      cryptoUID: isBuyMode && selectedCrypto?.type === 'uid' ? selectedCrypto.address : null,
       cryptoNetwork: isBuyMode ? selectedCrypto?.network : null,
-      cryptoExchange: isBuyMode && selectedCrypto?.type === 'uid' ? selectedCrypto.exchange : null,
       bankDetails: !isBuyMode ? `${selectedPayment?.bankName}: ${selectedPayment?.formattedNumber}` : null
     };
 
@@ -755,19 +738,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
   const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
   const selectedNetwork = availableNetworks.find(n => n.value === cryptoNetwork);
-  const selectedExchangeData = availableExchanges.find(e => e.value === selectedExchange);
 
   // ==================== РЕНДЕР ====================
   return (
     <div className="home-container">
-      {/* Модальное окно для добавления адреса */}
-      <AddAddressModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveAddress}
-        networks={availableNetworks}
-      />
-
       {hasActiveOrder && activeOrderData ? (
         <div className="tg-home-container">
           {/* Шапка с кнопкой назад */}
@@ -1046,106 +1020,88 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
               <div className="crypto-type-switcher">
                 <button 
-                  className={`crypto-type-btn ${cryptoType === 'address' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('address')}
+                  className="crypto-type-btn active"
                 >
                   <span className="crypto-type-icon">📫</span>
                   <span className="crypto-type-text">Адрес кошелька</span>
                 </button>
-                <button 
-                  className={`crypto-type-btn ${cryptoType === 'uid' ? 'active' : ''}`}
-                  onClick={() => setCryptoType('uid')}
+              </div>
+
+              <div className="add-form">
+                <select
+                  value={cryptoNetwork}
+                  onChange={(e) => setCryptoNetwork(e.target.value)}
+                  className="network-select"
                 >
-                  <span className="crypto-type-icon">🆔</span>
-                  <span className="crypto-type-text">Перевод по UID</span>
+                  {popularNetworks.map(network => (
+                    <option key={network.value} value={network.value}>
+                      {network.icon} {network.name}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  placeholder="Введите адрес кошелька"
+                  value={cryptoAddress}
+                  onChange={(e) => setCryptoAddress(e.target.value)}
+                  className="address-input"
+                />
+
+                <button
+                  onClick={handleAddCryptoAddress}
+                  className="add-button"
+                >
+                  + Добавить адрес для получения USDT
                 </button>
               </div>
-
-              <div className="address-selector" onClick={() => setIsModalOpen(true)}>
-                <div className="selector-label">
-                  <span>Выберите сеть</span>
-                  <span className="selector-arrow">▼</span>
-                </div>
-                {selectedCrypto && (
-                  <div className="selected-address-preview">
-                    {selectedCrypto.network}: {selectedCrypto.name}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={handleAddCryptoAddress}
-                className="add-address-button"
-              >
-                + Добавить адрес для получения USDT
-              </button>
 
               {/* Сохраненные адреса */}
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
                   <h4>Сохраненные адреса:</h4>
-                  {cryptoAddresses.map((crypto) => {
-                    const network = crypto.type === 'address' 
-                      ? availableNetworks.find(n => n.value === crypto.network)
-                      : null;
-                    const exchange = crypto.type === 'uid'
-                      ? availableExchanges.find(e => e.value === crypto.exchange)
-                      : null;
-                    
-                    return (
-                      <div
-                        key={crypto.id}
-                        className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedCrypto(crypto)}
-                      >
-                        <div className="crypto-info">
-                          <div className="crypto-header">
-                            <span className="crypto-name">
-                              {crypto.name}
-                            </span>
-                            <span className="crypto-network-badge">
-                              {crypto.type === 'address' 
-                                ? (network?.icon || crypto.network)
-                                : (exchange?.icon || crypto.exchange)
-                              }
-                              <span className="crypto-network-text">
-                                {crypto.type === 'address' ? crypto.network : crypto.exchange}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="crypto-address">
-                            {crypto.address.length > 20 
-                              ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
-                              : crypto.address
-                            }
-                            {crypto.type === 'uid' && <span className="uid-label"> (UID)</span>}
-                          </div>
+                  {cryptoAddresses.map((crypto) => (
+                    <div
+                      key={crypto.id}
+                      className={`crypto-item ${selectedCrypto?.id === crypto.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedCrypto(crypto)}
+                    >
+                      <div className="crypto-info">
+                        <div className="crypto-header">
+                          <span className="crypto-name">{crypto.name}</span>
+                          <span className="crypto-network-badge">
+                            {crypto.network}
+                          </span>
                         </div>
-                        <div className="crypto-actions">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyToClipboard(crypto.address);
-                            }}
-                            className="action-btn copy-btn"
-                            title="Копировать"
-                          >
-                            <CopyIcon />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCrypto(crypto.id);
-                            }}
-                            className="action-btn delete-btn"
-                            title="Удалить"
-                          >
-                            <DeleteIcon />
-                          </button>
+                        <div className="crypto-address">
+                          {crypto.address.length > 20 
+                            ? `${crypto.address.slice(0, 12)}...${crypto.address.slice(-8)}`
+                            : crypto.address
+                          }
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="crypto-actions">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(crypto.address);
+                          }}
+                          className="action-btn copy-btn"
+                        >
+                          <CopyIcon />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCrypto(crypto.id);
+                          }}
+                          className="action-btn delete-btn"
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -1163,7 +1119,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 >
                   {availableBanks.map(bank => (
                     <option key={bank} value={bank}>
-                      {bank === 'СБП (Система быстрых платежей)' ? '📱 ' + bank : '💳 ' + bank}
+                      {bank}
                     </option>
                   ))}
                 </select>
@@ -1206,16 +1162,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     >
                       <div className="payment-info">
                         <div className="payment-header">
-                          <span className="bank-name">
-                            {payment.bankName}
-                          </span>
-                          {payment.type === 'sbp' && (
-                            <span className="sbp-badge">СБП</span>
-                          )}
+                          <span className="bank-name">{payment.bankName}</span>
+                          {payment.type === 'sbp' && <span className="sbp-badge">СБП</span>}
                         </div>
-                        <div className="payment-number">
-                          {payment.formattedNumber}
-                        </div>
+                        <div className="payment-number">{payment.formattedNumber}</div>
                       </div>
                       <button
                         onClick={(e) => {
@@ -1223,7 +1173,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                           handleDeletePayment(payment.id);
                         }}
                         className="action-btn delete-btn"
-                        title="Удалить"
                       >
                         <DeleteIcon />
                       </button>

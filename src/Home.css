@@ -117,12 +117,14 @@
   flex-direction: column;
 }
 
-/* ЭТИ СТИЛИ СОЗДАЮТ БЕЛЫЙ ФОН - УДАЛИ ИХ ПОЛНОСТЬЮ! */
 .amount-input-wrapper {
-  background: var(--tg-secondary-bg, #f1f1f1);  /* ← ЭТО УБРАТЬ */
-  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec); /* ← ЭТО УБРАТЬ */
-  border-radius: 12px; /* ← ЭТО УБРАТЬ */
-  padding: 16px; /* ← ЭТО УБРАТЬ */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  background: transparent !important;  /* УБИРАЕМ ФОН */
+  border: none !important;              /* УБИРАЕМ ГРАНИЦЫ */
+  box-shadow: none !important;          /* УБИРАЕМ ТЕНИ */
 }
 
 .amount-input {

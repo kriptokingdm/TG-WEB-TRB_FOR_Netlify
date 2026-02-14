@@ -486,65 +486,142 @@ function Home({ navigateTo, telegramUser, showToast }) {
       />
 
       {hasActiveOrder && activeOrderData ? (
-        <div className="tg-home-container">
-          <div className="tg-header">
-            <div className="tg-header-content">
-              <button className="tg-back-btn" onClick={() => navigateTo?.('history')}>
-                ←
-              </button>
-              <div className="tg-header-titles">
-                <h1 className="tg-header-title">Активная заявка</h1>
-                <p className="tg-header-subtitle">ID: {activeOrderData?.public_id || activeOrderId}</p>
-              </div>
-            </div>
+  <div className="tg-home-container">
+    {/* Шапка */}
+    <div className="tg-header">
+      <div className="tg-header-content">
+        <button className="tg-back-btn" onClick={() => navigateTo?.('history')}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor"/>
+          </svg>
+        </button>
+        <div className="tg-header-titles">
+          <h1 className="tg-header-title">Активная заявка</h1>
+          <p className="tg-header-subtitle">ID: {activeOrderData?.public_id || activeOrderId}</p>
+        </div>
+        <div className={`tg-status-badge tg-status-${activeOrderData?.status || 'pending'}`}>
+          {activeOrderData?.status === 'pending' && '🟡 Ожидание'}
+          {activeOrderData?.status === 'processing' && '🟠 В обработке'}
+          {activeOrderData?.status === 'accepted' && '✅ Принят'}
+          {activeOrderData?.status === 'completed' && '🏁 Завершен'}
+          {activeOrderData?.status === 'cancelled' && '🚫 Отменен'}
+          {activeOrderData?.status === 'rejected' && '❌ Отклонен'}
+        </div>
+      </div>
+    </div>
+
+    {/* Основной контент */}
+    <div className="tg-main-content">
+      <div className="tg-order-card">
+        {/* Заголовок */}
+        <div className="tg-card-header">
+          <div className="tg-order-icon">
+            {activeOrderData?.order_type === 'buy' ? '🛒' : '💰'}
+          </div>
+          <div className="tg-order-info">
+            <h2 className="tg-order-title">
+              {activeOrderData?.order_type === 'buy' ? 'Покупка USDT' : 'Продажа USDT'}
+            </h2>
+            <p className="tg-order-subtitle">
+              от {activeOrderData?.created_at 
+                ? new Date(activeOrderData.created_at).toLocaleString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                : '-'
+              }
+            </p>
+          </div>
+        </div>
+
+        {/* Детали */}
+        <div className="tg-order-details">
+          <div className="tg-detail-row">
+            <span className="tg-detail-label">Вы отдаете</span>
+            <span className="tg-detail-value tg-detail-amount">
+              {activeOrderData?.amount || 0} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
+            </span>
           </div>
 
-          <div className="tg-main-content">
-            <div className="tg-order-card">
-              <div className="tg-card-header">
-                <div className="tg-order-icon">
-                  {activeOrderData?.order_type === 'buy' ? '🛒' : '💰'}
-                </div>
-                <div className="tg-order-info">
-                  <h2 className="tg-order-title">
-                    {activeOrderData?.order_type === 'buy' ? 'Покупка USDT' : 'Продажа USDT'}
-                  </h2>
-                </div>
-              </div>
+          <div className="tg-detail-row">
+            <span className="tg-detail-label">Курс</span>
+            <span className="tg-detail-value">
+              1 USDT = {activeOrderData?.rate || 0} ₽
+            </span>
+          </div>
 
-              <div className="tg-order-details">
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">Сумма</span>
-                  <span className="tg-detail-value">
-                    {activeOrderData?.amount || 0} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
-                  </span>
-                </div>
+          <div className="tg-detail-row tg-detail-highlight">
+            <span className="tg-detail-label">Вы получаете</span>
+            <span className="tg-detail-value tg-detail-amount tg-detail-accent">
+              {activeOrderData?.order_type === 'buy' 
+                ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
+                : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
+              }
+            </span>
+          </div>
 
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">Курс</span>
-                  <span className="tg-detail-value">{activeOrderData?.rate || 0} ₽</span>
-                </div>
-
-                <div className="tg-detail-row">
-                  <span className="tg-detail-label">К получению</span>
-                  <span className="tg-detail-value">
-                    {activeOrderData?.order_type === 'buy' 
-                      ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
-                      : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
-                    }
-                  </span>
-                </div>
-              </div>
-
-              <div className="tg-actions">
-                <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
-                  📋 История
+          {/* Реквизиты */}
+          {activeOrderData?.order_type === 'sell' && activeOrderData?.bank_details && (
+            <div className="tg-detail-row tg-detail-full">
+              <span className="tg-detail-label">Реквизиты получателя</span>
+              <div className="tg-detail-value tg-detail-box">
+                <span className="tg-detail-mono">{activeOrderData.bank_details}</span>
+                <button 
+                  className="tg-copy-btn"
+                  onClick={() => copyToClipboard(activeOrderData.bank_details)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
+                  </svg>
                 </button>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeOrderData?.order_type === 'buy' && activeOrderData?.crypto_address && (
+            <div className="tg-detail-row tg-detail-full">
+              <span className="tg-detail-label">Адрес для USDT</span>
+              <div className="tg-detail-value tg-detail-box">
+                <span className="tg-detail-mono">{activeOrderData.crypto_address}</span>
+                <button 
+                  className="tg-copy-btn"
+                  onClick={() => copyToClipboard(activeOrderData.crypto_address)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      ) : (
+
+        {/* Кнопки */}
+        <div className="tg-actions">
+          <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
+            📋 История операций
+          </button>
+          
+          {activeOrderData?.status === 'pending' && (
+            <button className="tg-action-btn tg-action-btn-secondary">
+              🚫 Отменить заявку
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Предупреждение об ответственности */}
+      <div className="tg-warning">
+        <span className="tg-warning-icon">⚠️</span>
+        <span className="tg-warning-text">
+          Пользователь самостоятельно несет ответственность за правильность введенных реквизитов. Ошибки в адресе могут привести к безвозвратной потере средств.
+        </span>
+      </div>
+    </div>
+  </div>
+) : (
         <div className="home-content">
           {/* ВАЛЮТНЫЕ КАРТОЧКИ */}
           <div className="currency-cards-section">

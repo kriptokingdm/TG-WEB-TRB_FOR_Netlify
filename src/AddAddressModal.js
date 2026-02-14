@@ -1,31 +1,38 @@
-// AddAddressModal.js - исправленная версия
+// AddAddressModal.js
 import React, { useState } from 'react';
+import { 
+  TRC20Icon, ERC20Icon, BEP20Icon, SolanaIcon,
+  BinanceIcon, BybitIcon, MEXCIcon, OKXIcon, BitGetIcon 
+} from './CryptoIcons';
 
 const CopyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clipPath="url(#clip0_2140_242)">
-      <path d="M14 2H6C4.9 2 4.01 2.9 4.01 4L4 20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" fill="white"/>
-    </g>
-    <defs>
-      <clipPath id="clip0_2140_242">
-        <rect width="24" height="24" fill="white"/>
-      </clipPath>
-    </defs>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
   </svg>
 );
 
 const AddAddressModal = ({ isOpen, onClose, onSave }) => {
+  const [tab, setTab] = useState('wallet'); // 'wallet' или 'uid'
   const [step, setStep] = useState(1);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
+  const [selectedExchange, setSelectedExchange] = useState(null);
   const [address, setAddress] = useState('');
   const [walletName, setWalletName] = useState('');
   const [addresses, setAddresses] = useState([]);
 
   const networks = [
-    { value: 'TRC20', name: 'TRC20', icon: '🔷' },
-    { value: 'ERC20', name: 'ERC20', icon: '💠' },
-    { value: 'BEP20', name: 'BEP20', icon: '🔶' },
-    { value: 'SOLANA', name: 'Solana', icon: '🟣' },
+    { value: 'TRC20', name: 'TRC20', icon: <TRC20Icon /> },
+    { value: 'ERC20', name: 'ERC20', icon: <ERC20Icon /> },
+    { value: 'BEP20', name: 'BEP20', icon: <BEP20Icon /> },
+    { value: 'SOLANA', name: 'Solana', icon: <SolanaIcon /> },
+  ];
+
+  const exchanges = [
+    { value: 'Binance', name: 'Binance', icon: <BinanceIcon />, badge: 'БИНАНСЕ' },
+    { value: 'Bybit', name: 'Bybit', icon: <BybitIcon />, badge: 'BYBIT' },
+    { value: 'MEXC', name: 'MEXC', icon: <MEXCIcon />, badge: 'МЕХС' },
+    { value: 'OKX', name: 'OKX', icon: <OKXIcon />, badge: 'OKX' },
+    { value: 'BitGet', name: 'BitGet', icon: <BitGetIcon />, badge: 'BITGET' },
   ];
 
   const handleNetworkSelect = (network) => {
@@ -33,18 +40,27 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
     setStep(2);
   };
 
+  const handleExchangeSelect = (exchange) => {
+    setSelectedExchange(exchange);
+    setStep(2);
+  };
+
   const handleAddAddress = () => {
-    if (!address || address.length < 10) {
-      alert('Введите корректный адрес');
+    if (!address || address.length < (tab === 'wallet' ? 10 : 5)) {
+      alert('Введите корректные данные');
       return;
     }
 
     const newAddress = {
       id: Date.now(),
-      network: selectedNetwork,
+      type: tab,
+      network: tab === 'wallet' ? selectedNetwork : null,
+      exchange: tab === 'uid' ? selectedExchange : null,
       address: address,
-      name: walletName || `${selectedNetwork} кошелек`,
-      icon: networks.find(n => n.value === selectedNetwork)?.icon || '🔷'
+      name: walletName || (tab === 'wallet' ? `${selectedNetwork} кошелек` : `${selectedExchange} UID`),
+      icon: tab === 'wallet' 
+        ? networks.find(n => n.value === selectedNetwork)?.icon 
+        : exchanges.find(e => e.value === selectedExchange)?.icon
     };
 
     setAddresses([...addresses, newAddress]);
@@ -53,6 +69,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
     setWalletName('');
     setStep(1);
     setSelectedNetwork(null);
+    setSelectedExchange(null);
     onClose();
   };
 
@@ -66,17 +83,48 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
+        {/* Вкладки */}
+        <div className="modal-tabs">
+          <button 
+            className={`modal-tab ${tab === 'wallet' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('wallet');
+              setStep(1);
+              setSelectedNetwork(null);
+            }}
+          >
+            📫 Адрес кошелька
+          </button>
+          <button 
+            className={`modal-tab ${tab === 'uid' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('uid');
+              setStep(1);
+              setSelectedExchange(null);
+            }}
+          >
+            🆔 UID перевод
+          </button>
+        </div>
+
         {step === 1 ? (
-          // ШАГ 1: ВЫБОР СЕТИ
+          // ШАГ 1: ВЫБОР
           <div className="network-list">
-            {networks.map(network => (
+            <div className="selector-label">
+              {tab === 'wallet' ? 'Выберите сеть' : 'Выберите биржу'}
+            </div>
+            {(tab === 'wallet' ? networks : exchanges).map(item => (
               <div 
-                key={network.value}
+                key={item.value}
                 className="network-item"
-                onClick={() => handleNetworkSelect(network.value)}
+                onClick={() => tab === 'wallet' 
+                  ? handleNetworkSelect(item.value) 
+                  : handleExchangeSelect(item.value)
+                }
               >
-                <span className="network-icon">{network.icon}</span>
-                <span className="network-name">{network.name}</span>
+                <span className="network-icon">{item.icon}</span>
+                <span className="network-name">{item.name}</span>
+                {item.badge && <span className="network-badge">{item.badge}</span>}
                 <span className="network-arrow">›</span>
               </div>
             ))}
@@ -84,18 +132,28 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
         ) : (
           // ШАГ 2: ВВОД ДАННЫХ
           <>
-            <div className="selected-network-info">
-              <span className="selected-network-icon">
-                {networks.find(n => n.value === selectedNetwork)?.icon}
+            <div className="selected-info">
+              <span className="selected-icon">
+                {tab === 'wallet' 
+                  ? networks.find(n => n.value === selectedNetwork)?.icon
+                  : exchanges.find(e => e.value === selectedExchange)?.icon
+                }
               </span>
-              <span className="selected-network-name">{selectedNetwork}</span>
+              <span className="selected-name">
+                {tab === 'wallet' ? selectedNetwork : selectedExchange}
+              </span>
             </div>
 
             <div className="input-group">
-              <label>Введите адрес кошелька</label>
+              <label>
+                {tab === 'wallet' ? 'Введите адрес кошелька' : 'Введите UID биржи'}
+              </label>
               <input
                 type="text"
-                placeholder="Введите адрес кошелька"
+                placeholder={tab === 'wallet' 
+                  ? "Введите адрес кошелька" 
+                  : "Введите UID биржи"
+                }
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="modal-input"
@@ -103,10 +161,13 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
             </div>
 
             <div className="input-group">
-              <label>Введите название кошелька (опционально)</label>
+              <label>Введите название (опционально)</label>
               <input
                 type="text"
-                placeholder="Например: Основной кошелек"
+                placeholder={tab === 'wallet' 
+                  ? "Например: Основной кошелек" 
+                  : "Например: Основной UID"
+                }
                 value={walletName}
                 onChange={(e) => setWalletName(e.target.value)}
                 className="modal-input"
@@ -127,15 +188,20 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
         {/* Сохраненные адреса */}
         {addresses.length > 0 && step === 1 && (
           <div className="saved-addresses">
-            <h3>Сохраненные адреса</h3>
+            <h3>Сохраненные адреса:</h3>
             {addresses.map(addr => (
               <div key={addr.id} className="saved-address-item">
                 <div className="saved-address-info">
-                  <span className="saved-network">{addr.icon} {addr.network}</span>
-                  <span className="saved-name">"{addr.name}"</span>
-                  <span className="saved-hash">
-                    {addr.address.slice(0, 6)}...{addr.address.slice(-4)}
-                  </span>
+                  <span className="saved-icon">{addr.icon}</span>
+                  <div className="saved-details">
+                    <span className="saved-name">"{addr.name}"</span>
+                    <span className="saved-hash">
+                      {addr.address.length > 20 
+                        ? `${addr.address.slice(0, 8)}...${addr.address.slice(-8)}`
+                        : addr.address
+                      }
+                    </span>
+                  </div>
                 </div>
                 <button className="saved-copy" onClick={() => navigator.clipboard.writeText(addr.address)}>
                   <CopyIcon />

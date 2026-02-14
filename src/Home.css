@@ -104,46 +104,40 @@
 }
 
 /* ==================== ПОЛЯ ВВОДА - МИНИМАЛИСТИЧНЫЕ ==================== */
-.amount-input-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.amount-input-wrapper {
-  background: var(--tg-bg);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
+/* Убираем белый фон/рамку у инпута суммы */
 .amount-input {
-  background: none;
-  border: none;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--tg-text);
-  outline: none;
-  width: 70%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.amount-input::placeholder {
-  color: var(--tg-hint);
-  opacity: 0.5;
+/* Иногда белое появляется именно на readonly */
+.amount-input[readonly] {
+  background: transparent !important;
+  -webkit-text-fill-color: var(--tg-text); /* чтобы не "серело" на iOS */
 }
 
-.amount-currency {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--tg-hint);
+/* Убираем системный подсвет при фокусе (если прямоугольник оттуда) */
+.amount-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.error-message {
-  font-size: 12px;
-  color: #ff3b30;
-  margin-top: 4px;
+/* Если белое — это рамка/тень у wrapper при focus-within */
+.amount-input-wrapper:focus-within {
+  box-shadow: none !important;
+}
+
+/* Если внезапно срабатывает автозаполнение и красит белым */
+.amount-input:-webkit-autofill,
+.amount-input:-webkit-autofill:hover,
+.amount-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
 }
 
 /* ==================== ЗАГОЛОВКИ ==================== */

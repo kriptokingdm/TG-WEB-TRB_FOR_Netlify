@@ -650,34 +650,35 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* ПОЛЯ ВВОДА - ПРОСТО ЦИФРЫ */}
-            <div className="amount-input-section">
-              <div className="amount-input-group">
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    className="amount-input"
-                    placeholder="0"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
-                </div>
-                {error && <div className="error-message">{error}</div>}
-              </div>
+            {/* ПОЛЯ ВВОДА - ПРОЗРАЧНЫЕ */}
+<div className="amount-input-section">
+  <div className="amount-input-group">
+    <div className="amount-input-wrapper">
+      <input
+        type="text"
+        value={amount}
+        onChange={handleAmountChange}
+        className="amount-input"
+        placeholder="0"
+      />
+      <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
+    </div>
+    {error && <div className="error-message">{error}</div>}
+  </div>
 
-              <div className="amount-input-group">
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={convertedAmount()}
-                    readOnly
-                    className="amount-input"
-                    placeholder="0"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
-                </div>
-              </div>
-            </div>
+  <div className="amount-input-group">
+    <div className="amount-input-wrapper">
+      <input
+        type="text"
+        value={convertedAmount()}
+        readOnly
+        className="amount-input"
+        placeholder="0"
+      />
+      <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
+    </div>
+  </div>
+</div>
           </div>
 
           {/* БЛОК АДРЕСА ДЛЯ ПОЛУЧЕНИЯ USDT */}

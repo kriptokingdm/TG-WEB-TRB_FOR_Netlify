@@ -28,7 +28,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
   ];
 
   const exchanges = [
-    { value: 'Binance', name: 'Binance', icon: <BinanceIcon />, badge: 'БИНАНСЕ' },
+    { value: 'Binance', name: 'Binance', icon: <BinanceIcon />, badge: 'Binance' },
     { value: 'Bybit', name: 'Bybit', icon: <BybitIcon />, badge: 'BYBIT' },
     { value: 'MEXC', name: 'MEXC', icon: <MEXCIcon />, badge: 'МЕХС' },
     { value: 'OKX', name: 'OKX', icon: <OKXIcon />, badge: 'OKX' },

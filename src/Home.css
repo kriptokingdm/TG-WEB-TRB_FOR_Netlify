@@ -1066,3 +1066,46 @@
   box-shadow: 0 0 0 1000px transparent inset !important;
   -webkit-text-fill-color: var(--tg-text) !important;
 }
+
+/* ===== FIX: нормальная ширина + убрать "серый/белый прямоугольник" инпута ===== */
+.amount-input-wrapper{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  overflow:hidden;              /* чтобы ничего не вылазило */
+}
+
+.amount-input{
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100% !important;       /* ПЕРЕБИВАЕМ твоё width:70% */
+  padding: 0 !important;
+  margin: 0 !important;
+
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+
+  color: var(--tg-text) !important;
+  caret-color: var(--tg-text);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* На всякий: если браузер добавляет рамку/фон на readonly */
+.amount-input[readonly]{
+  background-color: transparent !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+}
+
+/* Если внезапно автозаполнение красит фон */
+.amount-input:-webkit-autofill,
+.amount-input:-webkit-autofill:hover,
+.amount-input:-webkit-autofill:focus{
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+}

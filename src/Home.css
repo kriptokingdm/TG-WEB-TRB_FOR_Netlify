@@ -104,40 +104,57 @@
 }
 
 /* ==================== ПОЛЯ ВВОДА - МИНИМАЛИСТИЧНЫЕ ==================== */
+/* ==================== ПОЛЯ ВВОДА - ПОЛНОСТЬЮ ПРОЗРАЧНЫЕ ==================== */
 .amount-input-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  margin: 16px 0;
 }
 
-.amount-input-wrapper {
-  background: var(--tg-bg);
-  border-radius: 12px;
-  padding: 16px;
+.amount-input-group {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+}
+
+/* ЭТИ СТИЛИ СОЗДАЮТ БЕЛЫЙ ФОН - УДАЛИ ИХ ПОЛНОСТЬЮ! */
+.amount-input-wrapper {
+  background: var(--tg-secondary-bg, #f1f1f1);  /* ← ЭТО УБРАТЬ */
+  border: 0.5px solid var(--tg-theme-section-bg-color, #e7e8ec); /* ← ЭТО УБРАТЬ */
+  border-radius: 12px; /* ← ЭТО УБРАТЬ */
+  padding: 16px; /* ← ЭТО УБРАТЬ */
 }
 
 .amount-input {
-  background: none;
-  border: none;
-  font-size: 18px;
+  background: transparent !important;
+  border: none !important;
+  font-size: 32px;
   font-weight: 600;
   color: var(--tg-text);
   outline: none;
   width: 70%;
+  padding: 0;
+  margin: 0;
+  line-height: 1.2;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .amount-input::placeholder {
   color: var(--tg-hint);
-  opacity: 0.5;
+  opacity: 0.3;
+  font-weight: 400;
+}
+
+.amount-input:read-only {
+  color: var(--tg-hint);
 }
 
 .amount-currency {
-  font-size: 16px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--tg-hint);
+  opacity: 0.5;
 }
 
 .error-message {

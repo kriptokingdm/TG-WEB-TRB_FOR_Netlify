@@ -1036,3 +1036,33 @@
 .saved-copy:hover {
   opacity: 1;
 }
+
+/* FIX: убираем белый фон у input и не даём ему схлопываться */
+.amount-input-wrapper {
+  display: flex;              /* на всякий */
+  align-items: center;
+  gap: 12px;                  /* чтобы валюта не прилипала */
+}
+
+.amount-input {
+  flex: 1 1 auto;             /* ВОТ ЭТО главное — растягивает */
+  min-width: 0;               /* чтобы не ломал сетку */
+  width: auto !important;
+
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* если белое вылазит при автозаполнении (iOS/Chrome) */
+.amount-input:-webkit-autofill,
+.amount-input:-webkit-autofill:hover,
+.amount-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+}

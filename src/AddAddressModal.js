@@ -93,7 +93,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
               setSelectedNetwork(null);
             }}
           >
-            📫 Адрес кошелька
+             Адрес кошелька
           </button>
           <button 
             className={`modal-tab ${tab === 'uid' ? 'active' : ''}`}
@@ -103,7 +103,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
               setSelectedExchange(null);
             }}
           >
-            🆔 UID перевод
+             UID перевод
           </button>
         </div>
 
@@ -166,7 +166,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
                 type="text"
                 placeholder={tab === 'wallet' 
                   ? "Например: Основной кошелек" 
-                  : "Например: Основной UID"
+                  : "Например: Основной кошелек"
                 }
                 value={walletName}
                 onChange={(e) => setWalletName(e.target.value)}

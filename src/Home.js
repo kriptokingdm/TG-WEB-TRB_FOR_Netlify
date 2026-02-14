@@ -601,14 +601,14 @@ function Home({ navigateTo, telegramUser, showToast }) {
         {/* Кнопки */}
         <div className="tg-actions">
           <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
-            📋 История операций
+             История операций
           </button>
           
-          {activeOrderData?.status === 'pending' && (
+          {/* {activeOrderData?.status === 'pending' && (
             <button className="tg-action-btn tg-action-btn-secondary">
               🚫 Отменить заявку
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -802,7 +802,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
           <div className="security-info">
             <SecurityIcon />
             <div className="security-text">
-              <strong>Безопасная сделка:</strong> Средства резервируются у Операторов
+              <strong>Безопасная сделка:</strong> Средства резервируются у операторов до подтверждения сделки системой TetherRabbit
             </div>
           </div>
         </div>

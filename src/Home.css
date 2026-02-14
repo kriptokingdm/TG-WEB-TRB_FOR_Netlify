@@ -104,48 +104,40 @@
 }
 
 /* ==================== ПОЛЯ ВВОДА - МИНИМАЛИСТИЧНЫЕ ==================== */
-/* ==================== ПОЛЯ ВВОДА - ПРОЗРАЧНЫЕ ==================== */
 .amount-input-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 16px 0;
 }
 
-.amount-input-group {
+.amount-input-wrapper {
+  background: var(--tg-bg);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
-
 
 .amount-input {
-  background: transparent !important;
-  border: none !important;
-  font-size: 32px;
+  background: none;
+  border: none;
+  font-size: 18px;
   font-weight: 600;
   color: var(--tg-text);
   outline: none;
   width: 70%;
-  padding: 0;
-  margin: 0;
-  line-height: 1.2;
 }
 
 .amount-input::placeholder {
   color: var(--tg-hint);
-  opacity: 0.3;
-  font-weight: 400;
-}
-
-.amount-input:read-only {
-  color: var(--tg-hint);
+  opacity: 0.5;
 }
 
 .amount-currency {
-  font-size: 28px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--tg-hint);
-  opacity: 0.5;
 }
 
 .error-message {

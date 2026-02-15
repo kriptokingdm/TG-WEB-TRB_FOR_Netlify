@@ -1,4 +1,4 @@
-/* App.css - Исправленная версия */
+/* App.css - Telegram iOS-like bottom bar (full file) */
 
 :root {
   /* Дефолтные значения (темная тема) */
@@ -9,7 +9,7 @@
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #212428;
   --tg-theme-section-bg-color: #3a3d42;
-  
+
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
@@ -18,7 +18,9 @@
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
-  --tg-nav-bg: rgba(33, 36, 40, 0.85);
+
+  /* фон навигации */
+  --tg-nav-bg: rgba(33, 36, 40, 0.55);
 }
 
 /* Светлая тема */
@@ -30,7 +32,7 @@
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #f8f9fa;
   --tg-theme-section-bg-color: #e0e0e0;
-  
+
   --tg-success-color: #28a745;
   --tg-error-color: #dc3545;
   --tg-warning-color: #ffc107;
@@ -39,7 +41,8 @@
   --tg-input-bg: #ffffff;
   --tg-border-color: #e0e0e0;
   --tg-hover-color: #e9ecef;
-  --tg-nav-bg: rgba(248, 249, 250, 0.9);
+
+  --tg-nav-bg: rgba(248, 249, 250, 0.70);
 }
 
 /* Сброс и базовые стили */
@@ -102,95 +105,116 @@ html, body, #root {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* НАВИГАЦИЯ - ФИКСИРОВАННАЯ БЕЗ ПРЫЖКОВ */
+/* ============================================================
+   TELEGRAM iOS STYLE FLOATING TAB BAR (точ-в-точ как на фотке)
+   ============================================================ */
+
 .floating-nav {
   position: fixed;
-  bottom: max(16px, env(safe-area-inset-bottom, 16px));
   left: 50%;
   transform: translateX(-50%);
-  width: 92%;
-  min-width: 280px;
-  max-width: 360px;
+  bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  width: min(430px, calc(100% - 24px));
   height: 64px;
-  border-radius: 18px;
+  border-radius: 22px;
+
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  z-index: 10000; /* Высокий z-index чтобы всегда сверху */
-  padding: 0 12px;
-  
-  /* Эффект стекла */
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  
-  /* Фиксированное поведение при клавиатуре */
-  transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
+  justify-content: space-between;
+
+  padding: 8px 10px;
+  z-index: 10000;
+
+  /* “плавающее стекло” как iOS Telegram */
+  background: var(--tg-nav-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.28),
+    0 1px 0 rgba(255,255,255,0.06) inset;
+
+  transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease;
   will-change: transform, opacity, bottom;
+
+  /* чтобы можно было “scrub/drag” */
+  touch-action: pan-x;
+  user-select: none;
 }
 
-/* Для светлой темы */
 :root:not([data-theme]) .floating-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.12),
+    0 1px 0 rgba(255,255,255,0.65) inset;
 }
 
-/* Кнопки навигации */
-.nav-item-floating {
+/* Общая геометрия кнопок */
+.nav-item-floating,
+.nav-center-floating {
   flex: 1;
+  height: 100%;
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Кнопки слева/справа */
+.nav-item-floating {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px 0 6px;
-  position: relative;
+
   gap: 4px;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  color: inherit;
+  border-radius: 16px;
+  color: var(--tg-theme-hint-color);
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  user-select: none;
   touch-action: manipulation;
 }
 
-.nav-item-floating:focus {
-  outline: none;
+.nav-item-floating:focus { outline: none; }
+
+/* Активная вкладка — белая капсула */
+.nav-item-floating.active::before {
+  content: '';
+  position: absolute;
+  inset: 4px 10px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.92);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,0.16),
+    0 1px 0 rgba(255,255,255,0.55) inset;
 }
 
-/* Активное состояние */
+:root:not([data-theme]) .nav-item-floating.active::before {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+}
+
+/* Внутренности поверх капсулы */
+.nav-item-floating > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Активный цвет текста/иконки как в TG */
 .nav-item-floating.active {
   color: var(--tg-theme-button-color) !important;
 }
 
-.nav-item-floating.active::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  width: 20px;
-  height: 2px;
-  background: var(--tg-theme-button-color);
-  border-radius: 2px;
-}
-
-/* Активация при касании */
+/* Нажатие как iOS */
 .nav-item-floating:active {
-  transform: scale(0.95);
-  transition: transform 0.1s ease;
-}
-
-/* Неактивное состояние */
-.nav-item-floating:not(.active) {
-  color: var(--tg-theme-hint-color) !important;
+  transform: scale(0.98);
 }
 
 /* Иконки */
@@ -200,90 +224,119 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
-  transition: transform 0.3s ease;
-}
-
-.nav-item-floating.active .nav-icon-floating {
-  transform: translateY(-2px);
 }
 
 /* Текст */
 .nav-label-floating {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.2px;
+  line-height: 1;
 }
 
 /* Бейдж */
 .nav-badge-floating {
   position: absolute;
   top: 6px;
-  right: calc(50% - 12px);
-  background: var(--tg-error-color);
-  color: white;
-  font-size: 8px;
-  font-weight: 700;
-  padding: 2px 4px;
-  border-radius: 6px;
-  min-width: 14px;
-  height: 14px;
+  right: 22px;
+
+  background: #ff3b30;
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  padding: 2px 6px;
+  border-radius: 999px;
+
+  min-width: 18px;
+  height: 18px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--tg-theme-bg-color);
-  z-index: 2;
+
+  border: 2px solid rgba(255,255,255,0.92);
+  z-index: 5;
 }
 
-/* Центральная кнопка */
+:root:not([data-theme]) .nav-badge-floating {
+  border-color: rgba(255,255,255,0.95);
+}
+
+/* Центр (у тебя отдельная разметка) — делаем как обычную вкладку */
 .nav-center-floating {
-  position: relative;
-  margin: 0 -4px;
-  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+
+  /* всегда “активная капсула” для вкладки Обмен как на твоём UI */
 }
 
+.nav-center-floating::before {
+  content: '';
+  position: absolute;
+  inset: 4px 10px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.92);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,0.16),
+    0 1px 0 rgba(255,255,255,0.55) inset;
+}
+
+:root:not([data-theme]) .nav-center-floating::before {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+}
+
+/* Кнопка в центре — убираем квадрат/градиенты и делаем как обычную иконку */
 .nav-center-circle-floating {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--tg-theme-button-color);
-  background: linear-gradient(135deg, var(--tg-theme-button-color), #5e5ce6);
+  width: 22px;
+  height: 22px;
+  border-radius: 0;
   border: none;
+  background: transparent;
+  box-shadow: none;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
+  -webkit-tap-highlight-color: transparent;
+
+  position: relative;
+  z-index: 2;
+
+  color: var(--tg-theme-button-color);
 }
 
 .nav-center-circle-floating:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
+  opacity: 0.9;
 }
 
+/* Подпись центра — внутри капсулы */
 .nav-center-label-floating {
-  position: absolute;
-  bottom: -16px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
+  position: relative;
+  z-index: 2;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.2px;
   color: var(--tg-theme-button-color);
   white-space: nowrap;
 }
 
-/* ==================== */
-/* ФИКС ДЛЯ КЛАВИАТУРЫ */
-/* ==================== */
-
-/* Когда клавиатура открыта - плавно скрываем навигацию */
+/* ========= keyboard hide/show (твоя логика) ========= */
 .floating-nav.keyboard-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translateX(-50%) translateY(20px) !important;
+  transform: translateX(-50%) translateY(18px) !important;
 }
 
-/* Когда клавиатура закрыта - плавно показываем */
 .floating-nav.keyboard-visible {
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -292,10 +345,7 @@ html, body, #root {
 
 /* Медиа-запрос для очень маленьких высот (клавиатура открыта) */
 @media (max-height: 500px) {
-  .floating-nav {
-    display: none !important;
-  }
-  
+  .floating-nav { display: none !important; }
   .app-content {
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
@@ -304,39 +354,14 @@ html, body, #root {
 /* Адаптивность */
 @media (max-width: 375px) {
   .floating-nav {
-    width: 94%;
-    height: 60px;
-    border-radius: 16px;
-  }
-  
-  .nav-center-circle-floating {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-  }
-  
-  .nav-icon-floating {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .nav-label-floating {
-    font-size: 8px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .floating-nav {
-    width: 80%;
-    max-width: 420px;
-    height: 68px;
+    width: calc(100% - 18px);
+    height: 62px;
     border-radius: 20px;
   }
-  
-  .nav-center-circle-floating {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
+
+  .nav-label-floating,
+  .nav-center-label-floating {
+    font-size: 9px;
   }
 }
 
@@ -352,9 +377,9 @@ html, body, #root {
     height: 90vh;
     top: 5vh;
   }
-  
+
   .floating-nav {
-    max-width: 380px;
+    max-width: 400px;
   }
 }
 
@@ -363,9 +388,8 @@ html, body, #root {
   .app-content {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px));
   }
-  
   .floating-nav {
-    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    bottom: max(10px, env(safe-area-inset-bottom, 10px));
   }
 }
 
@@ -374,17 +398,16 @@ html, body, #root {
   .app-content {
     padding-bottom: calc(64px + constant(safe-area-inset-bottom));
   }
-  
   .floating-nav {
-    bottom: max(16px, constant(safe-area-inset-bottom));
+    bottom: max(10px, constant(safe-area-inset-bottom));
   }
 }
 
 /* Исправление для iOS Safari */
 @supports (-webkit-touch-callout: none) {
   .floating-nav {
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
 }
 
@@ -435,7 +458,7 @@ html, body, #root {
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 10001; /* Выше навигации */
+  z-index: 10001;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
   max-width: 90%;
@@ -510,133 +533,132 @@ html, body, #root {
 
 /* Плавные переходы */
 * {
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
               border-color 0.3s ease,
               box-shadow 0.3s ease;
 }
 
-/* SettingsApp.css (добавь в конце) */
+/* SettingsApp.css (как у тебя было — оставляю тут же) */
 .settings-container {
-    min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+  min-height: 100vh;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .settings-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
 }
 
 .settings-header h1 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    text-align: center;
-    color: var(--tg-theme-text-color, #000000);
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .settings-content {
-    padding: 20px 16px;
+  padding: 20px 16px;
 }
 
 .settings-section {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .settings-list {
-    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border-radius: 16px;
-    overflow: hidden;
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .settings-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
-    transition: background-color 0.2s;
-    color: var(--tg-theme-text-color, #000000);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
+  transition: background-color 0.2s;
+  color: var(--tg-theme-text-color, #000000);
 }
 
 .settings-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .settings-item:hover {
-    background-color: var(--tg-hover-color, rgba(0,0,0,0.05));
+  background-color: var(--tg-hover-color, rgba(0,0,0,0.05));
 }
 
 .settings-item.danger {
-    color: #ff3b30;
+  color: #ff3b30;
 }
 
 .settings-item-text {
-    flex: 1;
+  flex: 1;
 }
 
 .settings-item-text .title {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 2px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 2px;
 }
 
 .settings-item-text .desc {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #8e8e93);
 }
 
 .switch {
-    width: 50px;
-    height: 28px;
-    background: var(--tg-theme-secondary-bg-color, #e5e5e7);
-    border-radius: 14px;
-    position: relative;
-    transition: background-color 0.3s;
-    flex-shrink: 0;
+  width: 50px;
+  height: 28px;
+  background: var(--tg-theme-secondary-bg-color, #e5e5e7);
+  border-radius: 14px;
+  position: relative;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
 }
 
 .switch.on {
-    background: var(--tg-theme-button-color, #3390ec);
+  background: var(--tg-theme-button-color, #3390ec);
 }
 
 .switch span {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .switch.on span {
-    transform: translateX(22px);
+  transform: translateX(22px);
 }
 
 .settings-footer {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    font-size: 14px;
+  margin-top: 40px;
+  text-align: center;
+  padding: 20px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  font-size: 14px;
 }
 
 .settings-footer div:first-child {
-    margin-bottom: 8px;
-    font-size: 16px;
-    font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .settings-footer div:last-child {
-    font-size: 12px;
+  font-size: 12px;
 }
-

@@ -25,7 +25,7 @@ function App() {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
-
+  
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
@@ -235,6 +235,81 @@ function App() {
       }
     }
   }, [currentPage]);
+  
+  // ===== DRAG TO SWITCH TABS (Telegram-like scrub) =====
+useEffect(() => {
+  const nav = document.querySelector('.floating-nav');
+  if (!nav) return;
+
+  let isDown = false;
+  let startX = 0;
+  let lastX = 0;
+  let moved = false;
+
+  const THRESHOLD = 28; // чувствительность
+  const MAX = 80;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  const onDown = (e) => {
+    isDown = true;
+    moved = false;
+    startX = e.clientX ?? (e.touches?.[0]?.clientX || 0);
+    lastX = startX;
+    nav.style.transition = 'none';
+  };
+
+  const onMove = (e) => {
+    if (!isDown) return;
+    const x = e.clientX ?? (e.touches?.[0]?.clientX || 0);
+    const dx = x - startX;
+    lastX = x;
+
+    if (Math.abs(dx) > 6) moved = true;
+
+    // легкий "drag" визуально
+    const t = clamp(dx, -MAX, MAX);
+    nav.style.transform = `translateX(-50%) translateY(0) translateX(${t}px)`;
+  };
+
+  const onUp = () => {
+    if (!isDown) return;
+    isDown = false;
+
+    nav.style.transition = 'opacity .25s ease, transform .25s ease, bottom .25s ease';
+    nav.style.transform = 'translateX(-50%)';
+
+    if (!moved) return;
+
+    const dx = lastX - startX;
+
+    // свайп вправо/влево: profile <-> home <-> history
+    // логика под твою тройку вкладок:
+    if (dx > THRESHOLD) {
+      // вправо
+      if (window.location.hash.replace('#','') === 'home') navigateTo('profile');
+      else if (window.location.hash.replace('#','') === 'history') navigateTo('home');
+    } else if (dx < -THRESHOLD) {
+      // влево
+      if (window.location.hash.replace('#','') === 'home') navigateTo('history');
+      else if (window.location.hash.replace('#','') === 'profile') navigateTo('home');
+    }
+  };
+
+  // Pointer events
+  nav.addEventListener('pointerdown', onDown, { passive: true });
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('pointerup', onUp, { passive: true });
+  window.addEventListener('pointercancel', onUp, { passive: true });
+
+  return () => {
+    nav.removeEventListener('pointerdown', onDown);
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+  };
+}, [navigateTo]);
+
 
   // Управление клавиатурой - скрытие навигации
   useEffect(() => {

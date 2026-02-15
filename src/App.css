@@ -368,3 +368,32 @@ html, body, #root {
     bottom: max(10px, env(safe-area-inset-bottom, 10px));
   }
 }
+
+/* Эффект лупы при перетаскивании */
+.nav-item-floating.drag-active .nav-icon-floating {
+  transform: scale(1.1) !important;
+}
+
+.nav-icon-floating {
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.2, 1) !important;
+  will-change: transform;
+}
+
+/* Улучшенная анимация индикатора */
+.nav-indicator {
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.2, 1), 
+              width 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) !important;
+}
+
+.floating-nav.dragging .nav-indicator {
+  transition: none !important;
+}
+
+/* Эффект нажатия */
+.nav-item-floating:active:not(.drag-active) {
+  transform: scale(0.96);
+}
+
+.nav-item-floating:active .nav-icon-floating {
+  transform: scale(0.96);
+}

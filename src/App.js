@@ -8,7 +8,6 @@ import SettingsApp from './SettingsApp';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 
-// URL API
 const API_BASE_URL = 'https://tethrab.shop';
 
 function App() {
@@ -20,59 +19,41 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [hideHints, setHideHints] = useState(false);
 
-  // Загружаем настройки при инициализации
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
 
-  // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
-
-    if (typeof color === 'string') {
-      return color.startsWith('#') ? color : `#${color}`;
-    } else if (typeof color === 'number') {
-      const hex = color.toString(16).padStart(6, '0');
-      return `#${hex}`;
-    }
+    if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
+    if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
     return null;
   }, []);
 
-  // Определяем темную тему
   const detectDarkMode = useCallback(() => {
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
-
       if (params?.bg_color) {
         try {
           let bgColor;
-          if (typeof params.bg_color === 'string') {
-            bgColor = parseInt(params.bg_color.replace('#', ''), 16);
-          } else {
-            bgColor = params.bg_color;
-          }
+          if (typeof params.bg_color === 'string') bgColor = parseInt(params.bg_color.replace('#', ''), 16);
+          else bgColor = params.bg_color;
 
           const r = (bgColor >> 16) & 0xff;
           const g = (bgColor >> 8) & 0xff;
           const b = bgColor & 0xff;
           const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-
           return brightness < 180;
         } catch (error) {
           console.error('Ошибка определения цвета Telegram:', error);
         }
       }
     }
-
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
-
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
     return true;
   }, []);
 
-  // Применяем правильную тему
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
     const darkMode = detectDarkMode();
@@ -82,7 +63,6 @@ function App() {
 
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
-
       const buttonColor = telegramColorToHex(params.button_color);
       if (buttonColor) tgButtonColor = buttonColor;
     }
@@ -140,21 +120,17 @@ function App() {
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
-  // Показ уведомлений
   const showToast = useCallback((message, type = 'info') => {
     if (hideHints && type === 'info') return;
-
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, [hideHints]);
 
-  // Функция для обновления настроек
   const updateHideHints = useCallback((value) => {
     setHideHints(value);
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
-  // Переключение темы
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -163,11 +139,9 @@ function App() {
     const darkMode = newTheme === 'dark';
     setIsDarkMode(darkMode);
     applyTheme();
-
     showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
-  // Получение ID пользователя
   const getUserId = () => {
     try {
       if (window.Telegram?.WebApp) {
@@ -189,7 +163,6 @@ function App() {
     }
   };
 
-  // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -203,7 +176,6 @@ function App() {
     }
   }, []);
 
-  // Навигация
   const navigateTo = useCallback((page) => {
     setCurrentPage((prev) => {
       if (page === prev) return prev;
@@ -217,23 +189,20 @@ function App() {
           try { tg.BackButton.show(); } catch (e) {}
         }
       }
-
       return page;
     });
   }, []);
 
-  // Управление клавиатурой - скрытие навигации (без конфликтов с drag)
+  // ===== keyboard hide/show (без конфликтов) =====
   useEffect(() => {
     const setNavVisible = (visible) => {
       const nav = document.querySelector('.floating-nav');
       if (!nav) return;
-
       nav.classList.remove('keyboard-hidden', 'keyboard-visible');
       nav.classList.add(visible ? 'keyboard-visible' : 'keyboard-hidden');
     };
 
     const handleResize = () => {
-      // грубый эвристический детект клавиатуры
       if (window.innerHeight < 500) setNavVisible(false);
       else setNavVisible(true);
     };
@@ -253,9 +222,7 @@ function App() {
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('focusout', handleBlur);
 
-    // initial
     handleResize();
-
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
@@ -264,86 +231,151 @@ function App() {
     };
   }, []);
 
-  // ===== DRAG TO SWITCH TABS (Telegram-like scrub) =====
+  // ===== INDICATOR позиционирование + drag (1:1 как TG) =====
   useEffect(() => {
     const nav = document.querySelector('.floating-nav');
     if (!nav) return;
 
+    const tabs = ['profile', 'home', 'history'];
+    const buttons = tabs
+      .map((t) => nav.querySelector(`[data-tab="${t}"]`))
+      .filter(Boolean);
+
+    if (buttons.length !== 3) return;
+
+    const measure = () => {
+      const navRect = nav.getBoundingClientRect();
+      const rects = buttons.map((b) => b.getBoundingClientRect());
+      return { navRect, rects };
+    };
+
+    const setIndicatorToIndex = (idx, animate = true) => {
+      const { navRect, rects } = measure();
+      const r = rects[idx];
+
+      const left = (r.left - navRect.left);
+      const width = r.width;
+
+      if (!animate) {
+        nav.style.setProperty('--indicator-left', `${left}px`);
+        nav.style.setProperty('--indicator-width', `${width}px`);
+        const ind = nav.querySelector('.nav-indicator');
+        if (ind) ind.style.transition = 'none';
+        requestAnimationFrame(() => {
+          if (ind) ind.style.transition = '';
+        });
+      } else {
+        nav.style.setProperty('--indicator-left', `${left}px`);
+        nav.style.setProperty('--indicator-width', `${width}px`);
+      }
+    };
+
+    // initial / on page change
+    const idx = Math.max(0, tabs.indexOf(currentPage));
+    setIndicatorToIndex(idx);
+
+    // drag behavior
     let isDown = false;
     let startX = 0;
-    let lastX = 0;
+    let startLeft = 0;
     let moved = false;
 
-    const THRESHOLD = 28;
-    const MAX = 80;
-
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-    const tabs = ['profile', 'home', 'history'];
-
+    const THRESHOLD = 18; // чуть чувствительнее, как TG
     const onDown = (e) => {
-      // если нав скрыт клавой — не скрабим
       if (nav.classList.contains('keyboard-hidden')) return;
 
       isDown = true;
       moved = false;
       startX = e.clientX ?? 0;
-      lastX = startX;
 
-      nav.style.setProperty('--nav-drag-x', '0px');
+      const curLeft = parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0;
+      startLeft = curLeft;
+
+      const ind = nav.querySelector('.nav-indicator');
+      if (ind) ind.style.transition = 'none';
     };
 
     const onMove = (e) => {
       if (!isDown) return;
       const x = e.clientX ?? 0;
       const dx = x - startX;
-      lastX = x;
+      if (Math.abs(dx) > 4) moved = true;
 
-      if (Math.abs(dx) > 6) moved = true;
+      const { navRect, rects } = measure();
+      const minLeft = rects[0].left - navRect.left;
+      const maxLeft = rects[2].left - navRect.left;
 
-      const t = clamp(dx, -MAX, MAX);
-      nav.style.setProperty('--nav-drag-x', `${t}px`);
+      const nextLeft = Math.max(minLeft, Math.min(maxLeft, startLeft + dx));
+      nav.style.setProperty('--indicator-left', `${nextLeft}px`);
+    };
+
+    const nearestIndexFromIndicator = () => {
+      const { navRect, rects } = measure();
+      const curLeft = parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0;
+      const curCenter = curLeft + (parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-width')) || rects[1].width) / 2;
+
+      let best = 0;
+      let bestDist = Infinity;
+      rects.forEach((r, i) => {
+        const center = (r.left - navRect.left) + r.width / 2;
+        const d = Math.abs(center - curCenter);
+        if (d < bestDist) { bestDist = d; best = i; }
+      });
+      return best;
     };
 
     const onUp = () => {
       if (!isDown) return;
       isDown = false;
 
-      nav.style.setProperty('--nav-drag-x', '0px');
+      const ind = nav.querySelector('.nav-indicator');
+      if (ind) ind.style.transition = '';
 
-      if (!moved) return;
+      if (!moved) {
+        // просто тап — вернём точно на активную
+        setIndicatorToIndex(Math.max(0, tabs.indexOf(currentPage)));
+        return;
+      }
 
-      const dx = lastX - startX;
-      if (Math.abs(dx) < THRESHOLD) return;
+      // если реально тянули — снапаем
+      const best = nearestIndexFromIndicator();
+      setIndicatorToIndex(best);
 
-      const idx = tabs.indexOf(currentPage);
-      if (idx === -1) return;
-
-      // вправо -> шаг влево по массиву (profile <- home <- history)
-      if (dx > 0) {
-        const next = tabs[Math.max(0, idx - 1)];
-        navigateTo(next);
-      } else {
-        const next = tabs[Math.min(tabs.length - 1, idx + 1)];
-        navigateTo(next);
+      // если сдвиг заметный — переключаем вкладку
+      // (чтобы микро-движения не переключали)
+      const curIdx = Math.max(0, tabs.indexOf(currentPage));
+      if (Math.abs(best - curIdx) >= 1) {
+        // небольшой порог по расстоянию
+        const dx = (parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0) - startLeft;
+        if (Math.abs(dx) >= THRESHOLD) {
+          navigateTo(tabs[best]);
+        } else {
+          // если мало — вернём
+          setIndicatorToIndex(curIdx);
+        }
       }
     };
 
-    // Pointer events only (в телеге это webview — pointer есть)
     nav.addEventListener('pointerdown', onDown, { passive: true });
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerup', onUp, { passive: true });
     window.addEventListener('pointercancel', onUp, { passive: true });
+
+    // пересчёт при ресайзе/ориентации
+    const onResize = () => setIndicatorToIndex(Math.max(0, tabs.indexOf(currentPage)), false);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
 
     return () => {
       nav.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
     };
   }, [currentPage, navigateTo]);
 
-  // Инициализация Telegram WebApp
   const initTelegramWebApp = useCallback(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -351,7 +383,6 @@ function App() {
       tg.ready();
       tg.expand();
 
-      // Настраиваем кнопку "Назад"
       try {
         if (tg.BackButton) {
           tg.BackButton.onClick(() => navigateTo('home'));
@@ -361,7 +392,6 @@ function App() {
         }
       } catch (error) {}
 
-      // Настраиваем кнопку настроек
       try {
         if (tg.SettingsButton && typeof tg.SettingsButton.show === 'function') {
           tg.SettingsButton.show();
@@ -369,15 +399,12 @@ function App() {
         }
       } catch (error) {}
 
-      // Применяем тему
       applyTheme();
 
-      // Слушаем события изменения темы
       tg.onEvent('themeChanged', () => {
         setTimeout(() => applyTheme(), 100);
       });
 
-      // Инициализация пользователя
       if (tg.initDataUnsafe?.user) {
         const tgUser = tg.initDataUnsafe.user;
         const userData = {
@@ -401,7 +428,6 @@ function App() {
         }
       }
     } else {
-      // Режим разработки
       const devUser = {
         id: '7879866656',
         telegramId: '7879866656',
@@ -415,7 +441,6 @@ function App() {
     }
   }, [applyTheme, showToast, navigateTo, currentPage, hideHints]);
 
-  // Инициализация приложения
   useEffect(() => {
     const debugUser = {
       id: '7879866656',
@@ -451,7 +476,6 @@ function App() {
     };
   }, [initTelegramWebApp, loadReferralData, currentPage]);
 
-  // Рендер страниц
   const renderPage = () => {
     const commonProps = {
       telegramUser,
@@ -480,14 +504,17 @@ function App() {
     }
   };
 
-  // Плавающая навигация
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
 
     return (
-      <div className="floating-nav" style={{ '--nav-drag-x': '0px' }}>
+      <div className="floating-nav">
+        {/* ОДНА капсула */}
+        <div className="nav-indicator" />
+
         <button
+          data-tab="profile"
           className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
           onClick={() => navigateTo('profile')}
           aria-label="Профиль"
@@ -504,8 +531,9 @@ function App() {
           )}
         </button>
 
-        <div className="nav-center-floating">
+        <div className="nav-center-floating" data-tab="home">
           <button
+            data-tab="home"
             className="nav-center-circle-floating"
             onClick={() => navigateTo('home')}
             aria-label="Обмен"
@@ -517,6 +545,7 @@ function App() {
         </div>
 
         <button
+          data-tab="history"
           className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
           onClick={() => navigateTo('history')}
           aria-label="История"
@@ -531,7 +560,6 @@ function App() {
     );
   };
 
-  // Лоадер
   if (isLoading) {
     return (
       <div className="app-loading">

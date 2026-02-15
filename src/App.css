@@ -1,4 +1,4 @@
-/* App.css - Telegram iOS-like bottom bar (full file) */
+/* App.css - FULL FILE (Telegram-like floating nav + original base styles) */
 
 :root {
   /* Дефолтные значения (темная тема) */
@@ -18,9 +18,7 @@
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
-
-  /* фон навигации */
-  --tg-nav-bg: rgba(33, 36, 40, 0.55);
+  --tg-nav-bg: rgba(33, 36, 40, 0.85);
 }
 
 /* Светлая тема */
@@ -41,8 +39,7 @@
   --tg-input-bg: #ffffff;
   --tg-border-color: #e0e0e0;
   --tg-hover-color: #e9ecef;
-
-  --tg-nav-bg: rgba(248, 249, 250, 0.70);
+  --tg-nav-bg: rgba(248, 249, 250, 0.9);
 }
 
 /* Сброс и базовые стили */
@@ -105,52 +102,82 @@ html, body, #root {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* ============================================================
-   TELEGRAM iOS STYLE FLOATING TAB BAR (точ-в-точ как на фотке)
-   ============================================================ */
+/* =========================================================
+   TELEGRAM-LIKE FLOATING NAV (ONE MOVING INDICATOR "PILL")
+   ========================================================= */
 
+/* NAV WRAPPER */
 .floating-nav {
   position: fixed;
   left: 50%;
-  transform: translateX(-50%);
   bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  transform: translateX(-50%);
   width: min(430px, calc(100% - 24px));
   height: 64px;
   border-radius: 22px;
+  padding: 8px 10px;
+  z-index: 10000;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 8px 10px;
-  z-index: 10000;
-
-  /* “плавающее стекло” как iOS Telegram */
-  background: var(--tg-nav-bg);
+  /* glass */
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-
-  border: 1px solid rgba(255,255,255,0.10);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.28),
-    0 1px 0 rgba(255,255,255,0.06) inset;
+    0 10px 30px rgba(0, 0, 0, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
 
   transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease;
   will-change: transform, opacity, bottom;
 
-  /* чтобы можно было “scrub/drag” */
+  /* drag */
   touch-action: pan-x;
   user-select: none;
+
+  /* indicator controlled by JS */
+  --indicator-left: 0px;
+  --indicator-width: 0px;
 }
 
+/* light theme nav glass */
 :root:not([data-theme]) .floating-nav {
+  background: rgba(255, 255, 255, 0.70);
   border: 1px solid rgba(0,0,0,0.08);
   box-shadow:
     0 10px 22px rgba(0,0,0,0.12),
     0 1px 0 rgba(255,255,255,0.65) inset;
 }
 
-/* Общая геометрия кнопок */
+/* ONE INDICATOR PILL */
+.nav-indicator {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  height: calc(100% - 12px);
+  width: var(--indicator-width);
+  transform: translateX(var(--indicator-left));
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 8px 18px rgba(0,0,0,0.16),
+    0 1px 0 rgba(255,255,255,0.55) inset;
+
+  transition: transform 180ms ease, width 180ms ease;
+  will-change: transform, width;
+  pointer-events: none;
+}
+
+:root:not([data-theme]) .nav-indicator {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+}
+
+/* Slot wrappers */
 .nav-item-floating,
 .nav-center-floating {
   flex: 1;
@@ -162,7 +189,7 @@ html, body, #root {
   justify-content: center;
 }
 
-/* Кнопки слева/справа */
+/* Side buttons */
 .nav-item-floating {
   border: none;
   background: transparent;
@@ -176,57 +203,78 @@ html, body, #root {
   gap: 4px;
   border-radius: 16px;
   color: var(--tg-theme-hint-color);
-  -webkit-tap-highlight-color: transparent;
+
   outline: none;
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-.nav-item-floating:focus { outline: none; }
-
-/* Активная вкладка — белая капсула */
-.nav-item-floating.active::before {
-  content: '';
-  position: absolute;
-  inset: 4px 10px;
-  border-radius: 18px;
-
-  background: rgba(255,255,255,0.92);
-  box-shadow:
-    0 8px 18px rgba(0,0,0,0.16),
-    0 1px 0 rgba(255,255,255,0.55) inset;
-}
-
-:root:not([data-theme]) .nav-item-floating.active::before {
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
-}
-
-/* Внутренности поверх капсулы */
-.nav-item-floating > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Активный цвет текста/иконки как в TG */
-.nav-item-floating.active {
-  color: var(--tg-theme-button-color) !important;
-}
-
-/* Нажатие как iOS */
 .nav-item-floating:active {
   transform: scale(0.98);
 }
 
-/* Иконки */
+/* Active tab = only text/icon color, pill is separate */
+.nav-item-floating.active {
+  color: var(--tg-theme-button-color) !important;
+}
+
+/* Center tab */
+.nav-center-floating {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Center button must look like TG (no gradient square) */
+.nav-center-circle-floating {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--tg-theme-button-color);
+}
+
+.nav-center-circle-floating:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.nav-center-label-floating {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  color: var(--tg-theme-button-color);
+}
+
+/* Icons 1:1 sizes */
 .nav-icon-floating {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Текст */
+.nav-icon-floating svg,
+.nav-center-circle-floating svg {
+  width: 24px !important;
+  height: 24px !important;
+  display: block;
+}
+
+/* Labels */
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
@@ -234,7 +282,7 @@ html, body, #root {
   line-height: 1;
 }
 
-/* Бейдж */
+/* Badge */
 .nav-badge-floating {
   position: absolute;
   top: 6px;
@@ -264,73 +312,7 @@ html, body, #root {
   border-color: rgba(255,255,255,0.95);
 }
 
-/* Центр (у тебя отдельная разметка) — делаем как обычную вкладку */
-.nav-center-floating {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-
-  /* всегда “активная капсула” для вкладки Обмен как на твоём UI */
-}
-
-.nav-center-floating::before {
-  content: '';
-  position: absolute;
-  inset: 4px 10px;
-  border-radius: 18px;
-
-  background: rgba(255,255,255,0.92);
-  box-shadow:
-    0 8px 18px rgba(0,0,0,0.16),
-    0 1px 0 rgba(255,255,255,0.55) inset;
-}
-
-:root:not([data-theme]) .nav-center-floating::before {
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
-}
-
-/* Кнопка в центре — убираем квадрат/градиенты и делаем как обычную иконку */
-.nav-center-circle-floating {
-  width: 22px;
-  height: 22px;
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-
-  position: relative;
-  z-index: 2;
-
-  color: var(--tg-theme-button-color);
-}
-
-.nav-center-circle-floating:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-/* Подпись центра — внутри капсулы */
-.nav-center-label-floating {
-  position: relative;
-  z-index: 2;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  color: var(--tg-theme-button-color);
-  white-space: nowrap;
-}
-
-/* ========= keyboard hide/show (твоя логика) ========= */
+/* Keyboard hide/show classes */
 .floating-nav.keyboard-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -343,29 +325,17 @@ html, body, #root {
   transform: translateX(-50%) translateY(0) !important;
 }
 
-/* Медиа-запрос для очень маленьких высот (клавиатура открыта) */
+/* When height is tiny (keyboard opened) */
 @media (max-height: 500px) {
-  .floating-nav { display: none !important; }
+  .floating-nav {
+    display: none !important;
+  }
   .app-content {
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
 }
 
-/* Адаптивность */
-@media (max-width: 375px) {
-  .floating-nav {
-    width: calc(100% - 18px);
-    height: 62px;
-    border-radius: 20px;
-  }
-
-  .nav-label-floating,
-  .nav-center-label-floating {
-    font-size: 9px;
-  }
-}
-
-/* Десктоп */
+/* Desktop container */
 @media (min-width: 1025px) {
   .app {
     max-width: 420px;
@@ -377,13 +347,9 @@ html, body, #root {
     height: 90vh;
     top: 5vh;
   }
-
-  .floating-nav {
-    max-width: 400px;
-  }
 }
 
-/* iOS безопасная область */
+/* iOS safe area support */
 @supports (padding: max(0px)) {
   .app-content {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px));
@@ -393,7 +359,7 @@ html, body, #root {
   }
 }
 
-/* Android Chrome */
+/* Android Chrome old constant */
 @supports (padding: constant(safe-area-inset-bottom)) {
   .app-content {
     padding-bottom: calc(64px + constant(safe-area-inset-bottom));
@@ -403,15 +369,18 @@ html, body, #root {
   }
 }
 
-/* Исправление для iOS Safari */
+/* iOS Safari blur fix */
 @supports (-webkit-touch-callout: none) {
   .floating-nav {
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
   }
 }
 
-/* Лоадер */
+/* =========================================================
+   Loader
+   ========================================================= */
+
 .app-loading {
   position: fixed;
   top: 0;
@@ -445,7 +414,10 @@ html, body, #root {
   color: var(--tg-theme-hint-color);
 }
 
-/* Toast */
+/* =========================================================
+   Toast
+   ========================================================= */
+
 .telegram-toast {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 20px);
@@ -458,7 +430,7 @@ html, body, #root {
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 10001;
+  z-index: 10001; /* Выше навигации */
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
   max-width: 90%;
@@ -506,7 +478,10 @@ html, body, #root {
   border-left: 4px solid var(--tg-info-color);
 }
 
-/* Скроллбары */
+/* =========================================================
+   Scrollbars
+   ========================================================= */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -533,13 +508,17 @@ html, body, #root {
 
 /* Плавные переходы */
 * {
-  transition: background-color 0.3s ease,
-              color 0.3s ease,
-              border-color 0.3s ease,
-              box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-/* SettingsApp.css (как у тебя было — оставляю тут же) */
+/* =========================================================
+   SettingsApp.css (как было у тебя в конце)
+   ========================================================= */
+
 .settings-container {
   min-height: 100vh;
   background: var(--tg-theme-bg-color, #ffffff);

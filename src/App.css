@@ -1,6 +1,23 @@
-/* App.css - FULL (Telegram-like floating nav + smooth indicator + no white tap highlight) */
-
+/* ==================== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==================== */
 :root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #8e8e93;
+  --tg-theme-button-color: #3390ec;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f8f9fa;
+  --tg-theme-section-bg-color: #e0e0e0;
+  --tg-success-color: #34c759;
+  --tg-error-color: #ff3b30;
+  --tg-warning-color: #ff9500;
+  --tg-info-color: #5e5ce6;
+  --tg-card-bg: #f8f9fa;
+  --tg-input-bg: #ffffff;
+  --tg-border-color: #e0e0e0;
+  --tg-hover-color: #e9ecef;
+}
+
+[data-theme="dark"] {
   --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
@@ -8,7 +25,6 @@
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #212428;
   --tg-theme-section-bg-color: #3a3d42;
-
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
@@ -19,26 +35,7 @@
   --tg-hover-color: #2c2f34;
 }
 
-:root:not([data-theme]) {
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-text-color: #000000;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f8f9fa;
-  --tg-theme-section-bg-color: #e0e0e0;
-
-  --tg-success-color: #28a745;
-  --tg-error-color: #dc3545;
-  --tg-warning-color: #ffc107;
-  --tg-info-color: #17a2b8;
-  --tg-card-bg: #f8f9fa;
-  --tg-input-bg: #ffffff;
-  --tg-border-color: #e0e0e0;
-  --tg-hover-color: #e9ecef;
-}
-
-/* Reset */
+/* ==================== RESET ==================== */
 * {
   margin: 0;
   padding: 0;
@@ -53,18 +50,10 @@ html, body, #root {
   overscroll-behavior: none;
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Disable ugly tap flashes */
-button, a, .nav-item-floating {
-  -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
-}
-button:focus, a:focus { outline: none !important; }
-button::-moz-focus-inner { border: 0; }
-
-/* App layout */
+/* ==================== APP LAYOUT ==================== */
 .app {
   position: fixed;
   inset: 0;
@@ -102,9 +91,7 @@ button::-moz-focus-inner { border: 0; }
   background: var(--tg-theme-bg-color);
 }
 
-/* ===========================
-   TELEGRAM-LIKE FLOATING NAV
-   =========================== */
+/* ==================== FLOATING NAVIGATION ==================== */
 .floating-nav {
   position: fixed;
   left: 50%;
@@ -115,121 +102,100 @@ button::-moz-focus-inner { border: 0; }
   border-radius: 22px;
   padding: 8px 10px;
   z-index: 10000;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  /* "glass" + fallback for WebView w/o backdrop-filter */
+  
+  /* Стеклянный эффект */
   background: rgba(255, 255, 255, 0.08);
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.28),
-    0 1px 0 rgba(255, 255, 255, 0.06) inset;
-
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
-
-  transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease;
-  will-change: transform, opacity, bottom;
-
-  /* indicator controlled by JS */
-  --indicator-left: 0px;
-  --indicator-width: 0px;
-
-  /* allow horizontal drag */
-  touch-action: pan-x;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  
+  transition: opacity 0.25s ease, transform 0.25s ease;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x;
 }
 
-:root:not([data-theme]) .floating-nav {
-  background: rgba(255, 255, 255, 0.70);
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.55));
-  border: 1px solid rgba(0,0,0,0.08);
-  box-shadow:
-    0 10px 22px rgba(0,0,0,0.12),
-    0 1px 0 rgba(255,255,255,0.65) inset;
+[data-theme="dark"] .floating-nav {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Indicator (selected pill) */
+.floating-nav:not([data-theme]) {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.floating-nav.dragging {
+  transition: none;
+}
+
+.floating-nav.dragging .nav-indicator {
+  transition: none;
+}
+
+/* Индикатор */
 .nav-indicator {
   position: absolute;
   top: 6px;
   left: 0;
   height: calc(100% - 12px);
-  width: var(--indicator-width);
-  transform: translateX(var(--indicator-left));
+  width: 0;
   border-radius: 18px;
-
-  background: rgba(255,255,255,0.22);
-  border: 1px solid rgba(255,255,255,0.20);
-  box-shadow:
-    0 10px 24px rgba(0,0,0,0.18),
-    0 1px 0 rgba(255,255,255,0.10) inset;
-
-  transition: transform 260ms cubic-bezier(.2,.9,.2,1),
-              width 260ms cubic-bezier(.2,.9,.2,1),
-              opacity 160ms ease;
-  will-change: transform, width;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.2, 1), width 0.3s cubic-bezier(0.2, 0.9, 0.2, 1);
   pointer-events: none;
-
-  opacity: 0; /* no jerk before first calc */
+  z-index: 1;
+  will-change: transform, width;
 }
 
-.floating-nav.ready .nav-indicator {
-  opacity: 1;
+[data-theme="dark"] .nav-indicator {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-:root:not([data-theme]) .nav-indicator {
-  background: rgba(255,255,255,0.65);
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.10);
+.floating-nav:not([data-theme]) .nav-indicator {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Remove animation during drag if needed */
-.floating-nav.dragging .nav-indicator {
-  transition: none !important;
-}
-.floating-nav.no-anim .nav-indicator {
-  transition: none !important;
-}
-
-/* Tab buttons */
+/* Кнопки навигации */
 .nav-item-floating {
   flex: 1;
   height: 100%;
   border: none;
-  background: transparent !important;
+  background: transparent;
   cursor: pointer;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   gap: 4px;
   border-radius: 16px;
-
-  color: var(--tg-theme-hint-color);
-  user-select: none;
-  touch-action: manipulation;
-
+  color: var(--tg-theme-hint-color, #8e8e93);
   position: relative;
-  z-index: 2; /* above indicator */
+  z-index: 2;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nav-item-floating.active {
+  color: var(--tg-theme-button-color, #3390ec) !important;
 }
 
 .nav-item-floating:active {
-  background: transparent !important;
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
-/* Active color like Telegram */
-.nav-item-floating.active {
-  color: var(--tg-theme-button-color) !important;
-}
-
-/* Icons size like TG */
+/* Иконки */
 .nav-icon-floating {
   width: 26px;
   height: 26px;
@@ -239,12 +205,12 @@ button::-moz-focus-inner { border: 0; }
 }
 
 .nav-icon-floating svg {
-  width: 24px !important;
-  height: 24px !important;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 
-/* Labels */
+/* Лейблы */
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
@@ -252,79 +218,41 @@ button::-moz-focus-inner { border: 0; }
   line-height: 1;
 }
 
-/* Badge */
+/* Бейдж */
 .nav-badge-floating {
   position: absolute;
-  top: 6px;
-  right: 22px;
-
+  top: 2px;
+  right: 16px;
   background: #ff3b30;
   color: #fff;
-
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 999px;
-
-  min-width: 18px;
-  height: 18px;
-
+  min-width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border: 2px solid rgba(255,255,255,0.20);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   z-index: 3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-:root:not([data-theme]) .nav-badge-floating {
-  border-color: rgba(255,255,255,0.80);
-}
-
-/* Keyboard hide/show */
+/* Скрытие навигации при клавиатуре */
 .floating-nav.keyboard-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateX(-50%) translateY(18px) !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(20px);
 }
+
 .floating-nav.keyboard-visible {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translateX(-50%) translateY(0) !important;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
 }
 
-/* hide nav when tiny height */
-@media (max-height: 500px) {
-  .floating-nav { display: none !important; }
-  .app-content { padding-bottom: env(safe-area-inset-bottom, 0px) !important; }
-}
-
-/* Desktop container */
-@media (min-width: 1025px) {
-  .app {
-    max-width: 420px;
-    margin: 0 auto;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 90vh;
-    top: 5vh;
-    box-shadow: 0 0 40px rgba(0,0,0,0.2);
-  }
-}
-
-/* Safe areas */
-@supports (padding: max(0px)) {
-  .app-content {
-    padding-bottom: calc(92px + env(safe-area-inset-bottom, 10px));
-  }
-  .floating-nav {
-    bottom: max(10px, env(safe-area-inset-bottom, 10px));
-  }
-}
-
-/* ===========================
-   Loader
-   =========================== */
+/* ==================== LOADER ==================== */
 .app-loading {
   position: fixed;
   inset: 0;
@@ -353,9 +281,7 @@ button::-moz-focus-inner { border: 0; }
   color: var(--tg-theme-hint-color);
 }
 
-/* ===========================
-   Toast
-   =========================== */
+/* ==================== TOAST ==================== */
 .telegram-toast {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 20px);
@@ -376,17 +302,11 @@ button::-moz-focus-inner { border: 0; }
   -webkit-backdrop-filter: blur(20px);
 }
 
-.telegram-toast-icon { font-size: 18px; }
-.telegram-toast-text {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color);
-}
-
 @keyframes slideDownToast {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+
 @keyframes fadeOut {
   to { opacity: 0; visibility: hidden; }
 }
@@ -395,9 +315,14 @@ button::-moz-focus-inner { border: 0; }
 .telegram-toast.error   { border-left: 4px solid var(--tg-error-color); }
 .telegram-toast.info    { border-left: 4px solid var(--tg-info-color); }
 
-/* ===========================
-   Scrollbars
-   =========================== */
+.telegram-toast-icon { font-size: 18px; }
+.telegram-toast-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tg-theme-text-color);
+}
+
+/* ==================== SCROLLBARS ==================== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track {
   background: var(--tg-theme-secondary-bg-color);
@@ -414,93 +339,32 @@ button::-moz-focus-inner { border: 0; }
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
 }
 
-/* ===========================
-   SettingsApp.css chunk (как у тебя)
-   =========================== */
-.settings-container {
-  min-height: 100vh;
-  background: var(--tg-theme-bg-color, #ffffff);
-  color: var(--tg-theme-text-color, #000000);
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-height: 500px) {
+  .floating-nav { display: none; }
+  .app-content { padding-bottom: env(safe-area-inset-bottom, 0px) !important; }
 }
 
-.settings-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
+@media (min-width: 1025px) {
+  .app {
+    max-width: 420px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 90vh;
+    top: 5vh;
+    box-shadow: 0 0 40px rgba(0,0,0,0.2);
+    border-radius: 24px;
+    overflow: hidden;
+  }
 }
 
-.settings-header h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--tg-theme-text-color, #000000);
+/* Safe areas */
+@supports (padding: max(0px)) {
+  .app-content {
+    padding-bottom: calc(92px + max(0px, env(safe-area-inset-bottom, 10px)));
+  }
+  .floating-nav {
+    bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  }
 }
-
-.settings-content { padding: 20px 16px; }
-.settings-section { margin-bottom: 24px; }
-
-.settings-list {
-  background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.settings-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
-  transition: background-color 0.2s;
-  color: var(--tg-theme-text-color, #000000);
-}
-
-.settings-item:last-child { border-bottom: none; }
-.settings-item:hover { background-color: var(--tg-hover-color, rgba(0,0,0,0.05)); }
-.settings-item.danger { color: #ff3b30; }
-
-.settings-item-text { flex: 1; }
-.settings-item-text .title { font-size: 16px; font-weight: 500; margin-bottom: 2px; }
-.settings-item-text .desc  { font-size: 14px; color: var(--tg-theme-hint-color, #8e8e93); }
-
-.switch {
-  width: 50px;
-  height: 28px;
-  background: var(--tg-theme-secondary-bg-color, #e5e5e7);
-  border-radius: 14px;
-  position: relative;
-  transition: background-color 0.3s;
-  flex-shrink: 0;
-}
-.switch.on { background: var(--tg-theme-button-color, #3390ec); }
-.switch span {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 24px;
-  height: 24px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.switch.on span { transform: translateX(22px); }
-
-.settings-footer {
-  margin-top: 40px;
-  text-align: center;
-  padding: 20px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-  font-size: 14px;
-}
-.settings-footer div:first-child {
-  margin-bottom: 8px;
-  font-size: 16px;
-  font-weight: 500;
-}
-.settings-footer div:last-child { font-size: 12px; }

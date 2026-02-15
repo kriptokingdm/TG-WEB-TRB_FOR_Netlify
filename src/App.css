@@ -1,7 +1,6 @@
-/* App.css - FULL FILE (Telegram-like floating nav + original base styles) */
+/* App.css - FULL (Telegram-like floating nav + smooth indicator + no white tap highlight) */
 
 :root {
-  /* Дефолтные значения (темная тема) */
   --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
@@ -18,10 +17,8 @@
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
-  --tg-nav-bg: rgba(33, 36, 40, 0.85);
 }
 
-/* Светлая тема */
 :root:not([data-theme]) {
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
@@ -39,10 +36,9 @@
   --tg-input-bg: #ffffff;
   --tg-border-color: #e0e0e0;
   --tg-hover-color: #e9ecef;
-  --tg-nav-bg: rgba(248, 249, 250, 0.9);
 }
 
-/* Сброс и базовые стили */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
@@ -57,15 +53,21 @@ html, body, #root {
   overscroll-behavior: none;
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Основной контейнер */
+/* Disable ugly tap flashes */
+button, a, .nav-item-floating {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+button:focus, a:focus { outline: none !important; }
+button::-moz-focus-inner { border: 0; }
+
+/* App layout */
 .app {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
@@ -74,7 +76,6 @@ html, body, #root {
   color: var(--tg-theme-text-color);
   display: flex;
   flex-direction: column;
-  max-width: 100vw;
   overflow: hidden;
   touch-action: pan-y;
 }
@@ -88,7 +89,6 @@ html, body, #root {
   overflow: hidden;
 }
 
-/* Контент */
 .app-content {
   flex: 1;
   width: 100%;
@@ -97,16 +97,14 @@ html, body, #root {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  padding-bottom: calc(94px + env(safe-area-inset-bottom, 0px));
-  background: var(--tg-theme-bg-color);
   padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  background: var(--tg-theme-bg-color);
 }
 
-/* =========================================================
-   TELEGRAM-LIKE FLOATING NAV (ONE MOVING INDICATOR "PILL")
-   ========================================================= */
-
-/* NAV WRAPPER */
+/* ===========================
+   TELEGRAM-LIKE FLOATING NAV
+   =========================== */
 .floating-nav {
   position: fixed;
   left: 50%;
@@ -122,37 +120,39 @@ html, body, #root {
   align-items: center;
   justify-content: space-between;
 
-  /* glass */
+  /* "glass" + fallback for WebView w/o backdrop-filter */
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.28),
     0 1px 0 rgba(255, 255, 255, 0.06) inset;
 
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
   transition: opacity 0.25s ease, transform 0.25s ease, bottom 0.25s ease;
   will-change: transform, opacity, bottom;
-
-  /* drag */
-  touch-action: pan-x;
-  user-select: none;
 
   /* indicator controlled by JS */
   --indicator-left: 0px;
   --indicator-width: 0px;
+
+  /* allow horizontal drag */
+  touch-action: pan-x;
+  user-select: none;
 }
 
-/* light theme nav glass */
 :root:not([data-theme]) .floating-nav {
   background: rgba(255, 255, 255, 0.70);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.85), rgba(255,255,255,0.55));
   border: 1px solid rgba(0,0,0,0.08);
   box-shadow:
     0 10px 22px rgba(0,0,0,0.12),
     0 1px 0 rgba(255,255,255,0.65) inset;
 }
 
-/* ONE INDICATOR PILL */
+/* Indicator (selected pill) */
 .nav-indicator {
   position: absolute;
   top: 6px;
@@ -162,37 +162,45 @@ html, body, #root {
   transform: translateX(var(--indicator-left));
   border-radius: 18px;
 
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.20);
   box-shadow:
-    0 8px 18px rgba(0,0,0,0.16),
-    0 1px 0 rgba(255,255,255,0.55) inset;
+    0 10px 24px rgba(0,0,0,0.18),
+    0 1px 0 rgba(255,255,255,0.10) inset;
 
-  transition: transform 180ms ease, width 180ms ease;
+  transition: transform 260ms cubic-bezier(.2,.9,.2,1),
+              width 260ms cubic-bezier(.2,.9,.2,1),
+              opacity 160ms ease;
   will-change: transform, width;
   pointer-events: none;
+
+  opacity: 0; /* no jerk before first calc */
+}
+
+.floating-nav.ready .nav-indicator {
+  opacity: 1;
 }
 
 :root:not([data-theme]) .nav-indicator {
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.65);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.10);
 }
 
-/* Slot wrappers */
-.nav-item-floating,
-.nav-center-floating {
+/* Remove animation during drag if needed */
+.floating-nav.dragging .nav-indicator {
+  transition: none !important;
+}
+.floating-nav.no-anim .nav-indicator {
+  transition: none !important;
+}
+
+/* Tab buttons */
+.nav-item-floating {
   flex: 1;
   height: 100%;
-  position: relative;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Side buttons */
-.nav-item-floating {
   border: none;
-  background: transparent;
+  background: transparent !important;
   cursor: pointer;
 
   display: flex;
@@ -202,63 +210,26 @@ html, body, #root {
 
   gap: 4px;
   border-radius: 16px;
-  color: var(--tg-theme-hint-color);
 
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
+  color: var(--tg-theme-hint-color);
+  user-select: none;
   touch-action: manipulation;
+
+  position: relative;
+  z-index: 2; /* above indicator */
 }
 
 .nav-item-floating:active {
+  background: transparent !important;
   transform: scale(0.98);
 }
 
-/* Active tab = only text/icon color, pill is separate */
+/* Active color like Telegram */
 .nav-item-floating.active {
   color: var(--tg-theme-button-color) !important;
 }
 
-/* Center tab */
-.nav-center-floating {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Center button must look like TG (no gradient square) */
-.nav-center-circle-floating {
-  width: 26px;
-  height: 26px;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  color: var(--tg-theme-button-color);
-}
-
-.nav-center-circle-floating:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-.nav-center-label-floating {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  line-height: 1;
-  color: var(--tg-theme-button-color);
-}
-
-/* Icons 1:1 sizes */
+/* Icons size like TG */
 .nav-icon-floating {
   width: 26px;
   height: 26px;
@@ -267,8 +238,7 @@ html, body, #root {
   justify-content: center;
 }
 
-.nav-icon-floating svg,
-.nav-center-circle-floating svg {
+.nav-icon-floating svg {
   width: 24px !important;
   height: 24px !important;
   display: block;
@@ -293,7 +263,6 @@ html, body, #root {
 
   font-size: 10px;
   font-weight: 800;
-
   padding: 2px 6px;
   border-radius: 999px;
 
@@ -304,35 +273,30 @@ html, body, #root {
   align-items: center;
   justify-content: center;
 
-  border: 2px solid rgba(255,255,255,0.92);
-  z-index: 5;
+  border: 2px solid rgba(255,255,255,0.20);
+  z-index: 3;
 }
 
 :root:not([data-theme]) .nav-badge-floating {
-  border-color: rgba(255,255,255,0.95);
+  border-color: rgba(255,255,255,0.80);
 }
 
-/* Keyboard hide/show classes */
+/* Keyboard hide/show */
 .floating-nav.keyboard-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translateX(-50%) translateY(18px) !important;
 }
-
 .floating-nav.keyboard-visible {
   opacity: 1 !important;
   pointer-events: auto !important;
   transform: translateX(-50%) translateY(0) !important;
 }
 
-/* When height is tiny (keyboard opened) */
+/* hide nav when tiny height */
 @media (max-height: 500px) {
-  .floating-nav {
-    display: none !important;
-  }
-  .app-content {
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-  }
+  .floating-nav { display: none !important; }
+  .app-content { padding-bottom: env(safe-area-inset-bottom, 0px) !important; }
 }
 
 /* Desktop container */
@@ -342,51 +306,28 @@ html, body, #root {
     margin: 0 auto;
     left: 50%;
     transform: translateX(-50%);
-    border-radius: 0;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
     height: 90vh;
     top: 5vh;
+    box-shadow: 0 0 40px rgba(0,0,0,0.2);
   }
 }
 
-/* iOS safe area support */
+/* Safe areas */
 @supports (padding: max(0px)) {
   .app-content {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px));
+    padding-bottom: calc(92px + env(safe-area-inset-bottom, 10px));
   }
   .floating-nav {
     bottom: max(10px, env(safe-area-inset-bottom, 10px));
   }
 }
 
-/* Android Chrome old constant */
-@supports (padding: constant(safe-area-inset-bottom)) {
-  .app-content {
-    padding-bottom: calc(64px + constant(safe-area-inset-bottom));
-  }
-  .floating-nav {
-    bottom: max(10px, constant(safe-area-inset-bottom));
-  }
-}
-
-/* iOS Safari blur fix */
-@supports (-webkit-touch-callout: none) {
-  .floating-nav {
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-  }
-}
-
-/* =========================================================
+/* ===========================
    Loader
-   ========================================================= */
-
+   =========================== */
 .app-loading {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: var(--tg-theme-bg-color);
   display: flex;
   flex-direction: column;
@@ -398,26 +339,23 @@ html, body, #root {
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 2.5px solid rgba(51, 144, 236, 0.1);
+  border: 2.5px solid rgba(51, 144, 236, 0.12);
   border-top-color: var(--tg-theme-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .app-loading p {
   font-size: 15px;
   color: var(--tg-theme-hint-color);
 }
 
-/* =========================================================
+/* ===========================
    Toast
-   ========================================================= */
-
+   =========================== */
 .telegram-toast {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 20px);
@@ -430,7 +368,7 @@ html, body, #root {
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 10001; /* Выше навигации */
+  z-index: 10001;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
   max-width: 90%;
@@ -438,10 +376,7 @@ html, body, #root {
   -webkit-backdrop-filter: blur(20px);
 }
 
-.telegram-toast-icon {
-  font-size: 18px;
-}
-
+.telegram-toast-icon { font-size: 18px; }
 .telegram-toast-text {
   font-size: 15px;
   font-weight: 500;
@@ -449,76 +384,39 @@ html, body, #root {
 }
 
 @keyframes slideDownToast {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
-
 @keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
+  to { opacity: 0; visibility: hidden; }
 }
 
-.telegram-toast.success {
-  border-left: 4px solid var(--tg-success-color);
-}
+.telegram-toast.success { border-left: 4px solid var(--tg-success-color); }
+.telegram-toast.error   { border-left: 4px solid var(--tg-error-color); }
+.telegram-toast.info    { border-left: 4px solid var(--tg-info-color); }
 
-.telegram-toast.error {
-  border-left: 4px solid var(--tg-error-color);
-}
-
-.telegram-toast.info {
-  border-left: 4px solid var(--tg-info-color);
-}
-
-/* =========================================================
+/* ===========================
    Scrollbars
-   ========================================================= */
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
+   =========================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track {
   background: var(--tg-theme-secondary-bg-color);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--tg-theme-hint-color);
   border-radius: 3px;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--tg-theme-button-color);
-}
+::-webkit-scrollbar-thumb:hover { background: var(--tg-theme-button-color); }
 
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
 }
 
-/* Плавные переходы */
-* {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-/* =========================================================
-   SettingsApp.css (как было у тебя в конце)
-   ========================================================= */
-
+/* ===========================
+   SettingsApp.css chunk (как у тебя)
+   =========================== */
 .settings-container {
   min-height: 100vh;
   background: var(--tg-theme-bg-color, #ffffff);
@@ -538,13 +436,8 @@ html, body, #root {
   color: var(--tg-theme-text-color, #000000);
 }
 
-.settings-content {
-  padding: 20px 16px;
-}
-
-.settings-section {
-  margin-bottom: 24px;
-}
+.settings-content { padding: 20px 16px; }
+.settings-section { margin-bottom: 24px; }
 
 .settings-list {
   background: var(--tg-theme-secondary-bg-color, #f8f9fa);
@@ -567,32 +460,13 @@ html, body, #root {
   color: var(--tg-theme-text-color, #000000);
 }
 
-.settings-item:last-child {
-  border-bottom: none;
-}
+.settings-item:last-child { border-bottom: none; }
+.settings-item:hover { background-color: var(--tg-hover-color, rgba(0,0,0,0.05)); }
+.settings-item.danger { color: #ff3b30; }
 
-.settings-item:hover {
-  background-color: var(--tg-hover-color, rgba(0,0,0,0.05));
-}
-
-.settings-item.danger {
-  color: #ff3b30;
-}
-
-.settings-item-text {
-  flex: 1;
-}
-
-.settings-item-text .title {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.settings-item-text .desc {
-  font-size: 14px;
-  color: var(--tg-theme-hint-color, #8e8e93);
-}
+.settings-item-text { flex: 1; }
+.settings-item-text .title { font-size: 16px; font-weight: 500; margin-bottom: 2px; }
+.settings-item-text .desc  { font-size: 14px; color: var(--tg-theme-hint-color, #8e8e93); }
 
 .switch {
   width: 50px;
@@ -603,11 +477,7 @@ html, body, #root {
   transition: background-color 0.3s;
   flex-shrink: 0;
 }
-
-.switch.on {
-  background: var(--tg-theme-button-color, #3390ec);
-}
-
+.switch.on { background: var(--tg-theme-button-color, #3390ec); }
 .switch span {
   position: absolute;
   top: 2px;
@@ -619,10 +489,7 @@ html, body, #root {
   transition: transform 0.3s;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-.switch.on span {
-  transform: translateX(22px);
-}
+.switch.on span { transform: translateX(22px); }
 
 .settings-footer {
   margin-top: 40px;
@@ -631,13 +498,9 @@ html, body, #root {
   color: var(--tg-theme-hint-color, #8e8e93);
   font-size: 14px;
 }
-
 .settings-footer div:first-child {
   margin-bottom: 8px;
   font-size: 16px;
   font-weight: 500;
 }
-
-.settings-footer div:last-child {
-  font-size: 12px;
-}
+.settings-footer div:last-child { font-size: 12px; }

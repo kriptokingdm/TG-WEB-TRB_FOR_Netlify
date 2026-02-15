@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import './App.css';
 import Home from './Home';
 import History from './History';
@@ -8,6 +8,7 @@ import SettingsApp from './SettingsApp';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 
+// URL API
 const API_BASE_URL = 'https://tethrab.shop';
 
 function App() {
@@ -19,26 +20,50 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [hideHints, setHideHints] = useState(false);
 
+  // refs for nav
+  const navRef = useRef(null);
+  const dragStateRef = useRef({
+    isDown: false,
+    startX: 0,
+    lastX: 0,
+    moved: false,
+    startIndex: 1, // profile=0 home=1 history=2
+    activeIndex: 1,
+    rects: null, // {navRect, tabs:[{left,width,center}]}
+    pointerId: null
+  });
+
+  // Загружаем настройки при инициализации
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
 
+  // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
-    if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
-    if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
+
+    if (typeof color === 'string') {
+      return color.startsWith('#') ? color : `#${color}`;
+    } else if (typeof color === 'number') {
+      const hex = color.toString(16).padStart(6, '0');
+      return `#${hex}`;
+    }
     return null;
   }, []);
 
+  // Определяем темную тему
   const detectDarkMode = useCallback(() => {
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       if (params?.bg_color) {
         try {
           let bgColor;
-          if (typeof params.bg_color === 'string') bgColor = parseInt(params.bg_color.replace('#', ''), 16);
-          else bgColor = params.bg_color;
+          if (typeof params.bg_color === 'string') {
+            bgColor = parseInt(params.bg_color.replace('#', ''), 16);
+          } else {
+            bgColor = params.bg_color;
+          }
 
           const r = (bgColor >> 16) & 0xff;
           const g = (bgColor >> 8) & 0xff;
@@ -50,10 +75,14 @@ function App() {
         }
       }
     }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
+
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return true;
+    }
     return true;
   }, []);
 
+  // Применяем правильную тему
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
     const darkMode = detectDarkMode();
@@ -63,6 +92,7 @@ function App() {
 
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
+
       const buttonColor = telegramColorToHex(params.button_color);
       if (buttonColor) tgButtonColor = buttonColor;
     }
@@ -120,17 +150,20 @@ function App() {
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
+  // Показ уведомлений
   const showToast = useCallback((message, type = 'info') => {
     if (hideHints && type === 'info') return;
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, [hideHints]);
 
+  // Функция для обновления настроек
   const updateHideHints = useCallback((value) => {
     setHideHints(value);
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
+  // Переключение темы
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -139,9 +172,11 @@ function App() {
     const darkMode = newTheme === 'dark';
     setIsDarkMode(darkMode);
     applyTheme();
+
     showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
+  // Получение ID пользователя
   const getUserId = () => {
     try {
       if (window.Telegram?.WebApp) {
@@ -163,6 +198,7 @@ function App() {
     }
   };
 
+  // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -176,206 +212,26 @@ function App() {
     }
   }, []);
 
+  // Навигация
   const navigateTo = useCallback((page) => {
-    setCurrentPage((prev) => {
-      if (page === prev) return prev;
-      window.location.hash = page;
+    if (page === currentPage) return;
 
-      if (window.Telegram?.WebApp?.BackButton) {
-        const tg = window.Telegram.WebApp;
-        if (page === 'home') {
-          try { tg.BackButton.hide(); } catch (e) {}
-        } else {
-          try { tg.BackButton.show(); } catch (e) {}
-        }
-      }
-      return page;
-    });
-  }, []);
+    window.location.hash = page;
+    setCurrentPage(page);
 
-  // ===== keyboard hide/show (без конфликтов) =====
-  useEffect(() => {
-    const setNavVisible = (visible) => {
-      const nav = document.querySelector('.floating-nav');
-      if (!nav) return;
-      nav.classList.remove('keyboard-hidden', 'keyboard-visible');
-      nav.classList.add(visible ? 'keyboard-visible' : 'keyboard-hidden');
-    };
-
-    const handleResize = () => {
-      if (window.innerHeight < 500) setNavVisible(false);
-      else setNavVisible(true);
-    };
-
-    const handleFocus = (e) => {
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
-        setNavVisible(false);
-      }
-    };
-
-    const handleBlur = () => {
-      setTimeout(() => setNavVisible(true), 250);
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    document.addEventListener('focusin', handleFocus);
-    document.addEventListener('focusout', handleBlur);
-
-    handleResize();
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      document.removeEventListener('focusin', handleFocus);
-      document.removeEventListener('focusout', handleBlur);
-    };
-  }, []);
-
-  // ===== INDICATOR позиционирование + drag (1:1 как TG) =====
-  useEffect(() => {
-    const nav = document.querySelector('.floating-nav');
-    if (!nav) return;
-
-    const tabs = ['profile', 'home', 'history'];
-    const buttons = tabs
-      .map((t) => nav.querySelector(`[data-tab="${t}"]`))
-      .filter(Boolean);
-
-    if (buttons.length !== 3) return;
-
-    const measure = () => {
-      const navRect = nav.getBoundingClientRect();
-      const rects = buttons.map((b) => b.getBoundingClientRect());
-      return { navRect, rects };
-    };
-
-    const setIndicatorToIndex = (idx, animate = true) => {
-      const { navRect, rects } = measure();
-      const r = rects[idx];
-
-      const left = (r.left - navRect.left);
-      const width = r.width;
-
-      if (!animate) {
-        nav.style.setProperty('--indicator-left', `${left}px`);
-        nav.style.setProperty('--indicator-width', `${width}px`);
-        const ind = nav.querySelector('.nav-indicator');
-        if (ind) ind.style.transition = 'none';
-        requestAnimationFrame(() => {
-          if (ind) ind.style.transition = '';
-        });
+    if (window.Telegram?.WebApp?.BackButton) {
+      const tg = window.Telegram.WebApp;
+      if (page === 'home') {
+        try { tg.BackButton.hide(); } catch {}
       } else {
-        nav.style.setProperty('--indicator-left', `${left}px`);
-        nav.style.setProperty('--indicator-width', `${width}px`);
+        try { tg.BackButton.show(); } catch {}
       }
-    };
+    }
+  }, [currentPage]);
 
-    // initial / on page change
-    const idx = Math.max(0, tabs.indexOf(currentPage));
-    setIndicatorToIndex(idx);
-
-    // drag behavior
-    let isDown = false;
-    let startX = 0;
-    let startLeft = 0;
-    let moved = false;
-
-    const THRESHOLD = 18; // чуть чувствительнее, как TG
-    const onDown = (e) => {
-      if (nav.classList.contains('keyboard-hidden')) return;
-
-      isDown = true;
-      moved = false;
-      startX = e.clientX ?? 0;
-
-      const curLeft = parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0;
-      startLeft = curLeft;
-
-      const ind = nav.querySelector('.nav-indicator');
-      if (ind) ind.style.transition = 'none';
-    };
-
-    const onMove = (e) => {
-      if (!isDown) return;
-      const x = e.clientX ?? 0;
-      const dx = x - startX;
-      if (Math.abs(dx) > 4) moved = true;
-
-      const { navRect, rects } = measure();
-      const minLeft = rects[0].left - navRect.left;
-      const maxLeft = rects[2].left - navRect.left;
-
-      const nextLeft = Math.max(minLeft, Math.min(maxLeft, startLeft + dx));
-      nav.style.setProperty('--indicator-left', `${nextLeft}px`);
-    };
-
-    const nearestIndexFromIndicator = () => {
-      const { navRect, rects } = measure();
-      const curLeft = parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0;
-      const curCenter = curLeft + (parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-width')) || rects[1].width) / 2;
-
-      let best = 0;
-      let bestDist = Infinity;
-      rects.forEach((r, i) => {
-        const center = (r.left - navRect.left) + r.width / 2;
-        const d = Math.abs(center - curCenter);
-        if (d < bestDist) { bestDist = d; best = i; }
-      });
-      return best;
-    };
-
-    const onUp = () => {
-      if (!isDown) return;
-      isDown = false;
-
-      const ind = nav.querySelector('.nav-indicator');
-      if (ind) ind.style.transition = '';
-
-      if (!moved) {
-        // просто тап — вернём точно на активную
-        setIndicatorToIndex(Math.max(0, tabs.indexOf(currentPage)));
-        return;
-      }
-
-      // если реально тянули — снапаем
-      const best = nearestIndexFromIndicator();
-      setIndicatorToIndex(best);
-
-      // если сдвиг заметный — переключаем вкладку
-      // (чтобы микро-движения не переключали)
-      const curIdx = Math.max(0, tabs.indexOf(currentPage));
-      if (Math.abs(best - curIdx) >= 1) {
-        // небольшой порог по расстоянию
-        const dx = (parseFloat(getComputedStyle(nav).getPropertyValue('--indicator-left')) || 0) - startLeft;
-        if (Math.abs(dx) >= THRESHOLD) {
-          navigateTo(tabs[best]);
-        } else {
-          // если мало — вернём
-          setIndicatorToIndex(curIdx);
-        }
-      }
-    };
-
-    nav.addEventListener('pointerdown', onDown, { passive: true });
-    window.addEventListener('pointermove', onMove, { passive: true });
-    window.addEventListener('pointerup', onUp, { passive: true });
-    window.addEventListener('pointercancel', onUp, { passive: true });
-
-    // пересчёт при ресайзе/ориентации
-    const onResize = () => setIndicatorToIndex(Math.max(0, tabs.indexOf(currentPage)), false);
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
-
-    return () => {
-      nav.removeEventListener('pointerdown', onDown);
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('orientationchange', onResize);
-    };
-  }, [currentPage, navigateTo]);
-
+  // ==========================
+  // Telegram WebApp init
+  // ==========================
   const initTelegramWebApp = useCallback(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -383,28 +239,29 @@ function App() {
       tg.ready();
       tg.expand();
 
+      // Back button
       try {
         if (tg.BackButton) {
           tg.BackButton.onClick(() => navigateTo('home'));
           if (currentPage === 'home') {
-            try { tg.BackButton.hide(); } catch (e) {}
+            try { tg.BackButton.hide(); } catch {}
           }
         }
-      } catch (error) {}
+      } catch {}
 
+      // Settings button
       try {
         if (tg.SettingsButton && typeof tg.SettingsButton.show === 'function') {
           tg.SettingsButton.show();
           tg.SettingsButton.onClick(() => navigateTo('settings'));
         }
-      } catch (error) {}
+      } catch {}
 
+      // Theme
       applyTheme();
+      tg.onEvent('themeChanged', () => setTimeout(applyTheme, 100));
 
-      tg.onEvent('themeChanged', () => {
-        setTimeout(() => applyTheme(), 100);
-      });
-
+      // User
       if (tg.initDataUnsafe?.user) {
         const tgUser = tg.initDataUnsafe.user;
         const userData = {
@@ -422,25 +279,23 @@ function App() {
         localStorage.setItem('currentUser', JSON.stringify(userData));
 
         if (!hideHints) {
-          setTimeout(() => {
-            showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success');
-          }, 1000);
+          setTimeout(() => showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success'), 1000);
         }
       }
     } else {
-      const devUser = {
+      // Dev mode
+      setTelegramUser({
         id: '7879866656',
         telegramId: '7879866656',
         username: 'test_user',
         firstName: 'Тестовый',
         photoUrl: null
-      };
-      setTelegramUser(devUser);
-      localStorage.setItem('currentUser', JSON.stringify(devUser));
+      });
       applyTheme();
     }
   }, [applyTheme, showToast, navigateTo, currentPage, hideHints]);
 
+  // Init app
   useEffect(() => {
     const debugUser = {
       id: '7879866656',
@@ -459,7 +314,7 @@ function App() {
 
     loadReferralData();
 
-    const t = setTimeout(() => setIsLoading(false), 1000);
+    setTimeout(() => setIsLoading(false), 1000);
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
@@ -467,15 +322,258 @@ function App() {
         setCurrentPage(h);
       }
     };
-
     window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [initTelegramWebApp, loadReferralData]);
+
+  // ==========================
+  // Keyboard hide nav
+  // ==========================
+  useEffect(() => {
+    const handleResize = () => {
+      const nav = navRef.current;
+      if (!nav) return;
+
+      // hide if keyboard (very small height)
+      if (window.innerHeight < 500) {
+        nav.classList.add('keyboard-hidden');
+        nav.classList.remove('keyboard-visible');
+      } else {
+        nav.classList.add('keyboard-visible');
+        nav.classList.remove('keyboard-hidden');
+      }
+    };
+
+    const handleFocus = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        const nav = navRef.current;
+        if (nav) {
+          nav.classList.add('keyboard-hidden');
+          nav.classList.remove('keyboard-visible');
+        }
+      }
+    };
+
+    const handleBlur = () => {
+      const nav = navRef.current;
+      if (!nav) return;
+      setTimeout(() => {
+        nav.classList.add('keyboard-visible');
+        nav.classList.remove('keyboard-hidden');
+      }, 250);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    document.addEventListener('focusin', handleFocus);
+    document.addEventListener('focusout', handleBlur);
+
+    handleResize();
 
     return () => {
-      clearTimeout(t);
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      document.removeEventListener('focusin', handleFocus);
+      document.removeEventListener('focusout', handleBlur);
     };
-  }, [initTelegramWebApp, loadReferralData, currentPage]);
+  }, []);
 
+  // ==========================
+  // Tab -> index helpers
+  // ==========================
+  const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
+  const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
+
+  // ==========================
+  // Indicator positioning (NO JERK)
+  // ==========================
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const tabs = [
+      nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="home"]'),
+      nav.querySelector('[data-tab="history"]')
+    ].filter(Boolean);
+
+    if (tabs.length !== 3) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const rects = tabs.map((el) => {
+      const r = el.getBoundingClientRect();
+      const left = r.left - navRect.left;
+      const width = r.width;
+      const center = left + width / 2;
+      return { left, width, center };
+    });
+
+    dragStateRef.current.rects = { navRect, tabs: rects };
+
+    const activeIndex = pageToIndex(currentPage);
+    dragStateRef.current.activeIndex = activeIndex;
+
+    nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
+    nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
+
+    // show indicator only after set
+    nav.classList.add('ready');
+  }, [currentPage]);
+
+  // ==========================
+  // Drag to switch tabs (Telegram-like scrub)
+  // ==========================
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const getRects = () => {
+      const tabs = [
+        nav.querySelector('[data-tab="profile"]'),
+        nav.querySelector('[data-tab="home"]'),
+        nav.querySelector('[data-tab="history"]')
+      ].filter(Boolean);
+
+      if (tabs.length !== 3) return null;
+
+      const navRect = nav.getBoundingClientRect();
+      const rects = tabs.map((el) => {
+        const r = el.getBoundingClientRect();
+        const left = r.left - navRect.left;
+        const width = r.width;
+        const center = left + width / 2;
+        return { left, width, center };
+      });
+
+      return { navRect, tabs: rects };
+    };
+
+    const setIndicatorByIndex = (idx, animate = true) => {
+      const rectsPack = dragStateRef.current.rects || getRects();
+      if (!rectsPack) return;
+      const { tabs } = rectsPack;
+
+      if (!animate) nav.classList.add('no-anim');
+      nav.style.setProperty('--indicator-left', `${tabs[idx].left}px`);
+      nav.style.setProperty('--indicator-width', `${tabs[idx].width}px`);
+      if (!animate) {
+        // next frame restore
+        requestAnimationFrame(() => nav.classList.remove('no-anim'));
+      }
+    };
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+    const onPointerDown = (e) => {
+      // only left click / touch
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+      const st = dragStateRef.current;
+      st.isDown = true;
+      st.moved = false;
+      st.pointerId = e.pointerId;
+      st.startX = e.clientX;
+      st.lastX = e.clientX;
+      st.startIndex = pageToIndex(currentPage);
+      st.activeIndex = st.startIndex;
+
+      st.rects = getRects() || st.rects;
+
+      // lock transition while dragging
+      nav.classList.add('dragging');
+
+      try {
+        nav.setPointerCapture(e.pointerId);
+      } catch {}
+
+      // prevent scroll while dragging horizontally
+      // (still passive friendly: we don't call preventDefault here for iOS)
+    };
+
+    const onPointerMove = (e) => {
+      const st = dragStateRef.current;
+      if (!st.isDown) return;
+      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+
+      st.lastX = e.clientX;
+      const dx = st.lastX - st.startX;
+
+      if (Math.abs(dx) > 6) st.moved = true;
+
+      const rectsPack = st.rects;
+      if (!rectsPack) return;
+      const tabs = rectsPack.tabs;
+
+      // dragging between neighbor tabs only
+      const from = st.startIndex;
+      const dir = dx > 0 ? -1 : 1; // dragging right moves indicator to left tab
+      const to = clamp(from + dir, 0, 2);
+
+      if (to === from) {
+        setIndicatorByIndex(from, false);
+        return;
+      }
+
+      // progress based on distance between centers
+      const dist = Math.abs(tabs[to].center - tabs[from].center) || 1;
+      const t = clamp(Math.abs(dx) / dist, 0, 1);
+
+      const left = lerp(tabs[from].left, tabs[to].left, t);
+      const width = lerp(tabs[from].width, tabs[to].width, t);
+
+      nav.style.setProperty('--indicator-left', `${left}px`);
+      nav.style.setProperty('--indicator-width', `${width}px`);
+    };
+
+    const onPointerUp = (e) => {
+      const st = dragStateRef.current;
+      if (!st.isDown) return;
+      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+
+      st.isDown = false;
+      nav.classList.remove('dragging');
+
+      const dx = st.lastX - st.startX;
+
+      // if no move -> do nothing (click will handle)
+      if (!st.moved) {
+        setIndicatorByIndex(pageToIndex(currentPage), true);
+        st.pointerId = null;
+        return;
+      }
+
+      const THRESHOLD = 24;
+
+      let targetIndex = st.startIndex;
+      if (dx > THRESHOLD) {
+        // dragged right => go to LEFT tab
+        targetIndex = clamp(st.startIndex - 1, 0, 2);
+      } else if (dx < -THRESHOLD) {
+        // dragged left => go to RIGHT tab
+        targetIndex = clamp(st.startIndex + 1, 0, 2);
+      }
+
+      setIndicatorByIndex(targetIndex, true);
+      navigateTo(indexToPage(targetIndex));
+
+      st.pointerId = null;
+    };
+
+    nav.addEventListener('pointerdown', onPointerDown, { passive: true });
+    nav.addEventListener('pointermove', onPointerMove, { passive: true });
+    nav.addEventListener('pointerup', onPointerUp, { passive: true });
+    nav.addEventListener('pointercancel', onPointerUp, { passive: true });
+
+    return () => {
+      nav.removeEventListener('pointerdown', onPointerDown);
+      nav.removeEventListener('pointermove', onPointerMove);
+      nav.removeEventListener('pointerup', onPointerUp);
+      nav.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [currentPage, navigateTo]);
+
+  // Рендер страниц
   const renderPage = () => {
     const commonProps = {
       telegramUser,
@@ -504,13 +602,14 @@ function App() {
     }
   };
 
+  // Плавающая навигация
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
 
     return (
-      <div className="floating-nav">
-        {/* ОДНА капсула */}
+      <div className="floating-nav" ref={navRef}>
+        {/* IMPORTANT: indicator */}
         <div className="nav-indicator" />
 
         <button
@@ -524,6 +623,7 @@ function App() {
             <ProfileIcon active={currentPage === 'profile'} />
           </div>
           <span className="nav-label-floating">Профиль</span>
+
           {showBadge && (
             <span className="nav-badge-floating">
               ${availableEarnings.toFixed(0)}
@@ -531,18 +631,18 @@ function App() {
           )}
         </button>
 
-        <div className="nav-center-floating" data-tab="home">
-          <button
-            data-tab="home"
-            className="nav-center-circle-floating"
-            onClick={() => navigateTo('home')}
-            aria-label="Обмен"
-            type="button"
-          >
+        <button
+          data-tab="home"
+          className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
+          onClick={() => navigateTo('home')}
+          aria-label="Обмен"
+          type="button"
+        >
+          <div className="nav-icon-floating">
             <ExchangeIcon active={true} />
-          </button>
-          <span className="nav-center-label-floating">Обмен</span>
-        </div>
+          </div>
+          <span className="nav-label-floating">Обмен</span>
+        </button>
 
         <button
           data-tab="history"
@@ -560,6 +660,7 @@ function App() {
     );
   };
 
+  // Лоадер
   if (isLoading) {
     return (
       <div className="app-loading">

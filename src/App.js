@@ -27,9 +27,9 @@ function App() {
     startX: 0,
     lastX: 0,
     moved: false,
-    startIndex: 1, // profile=0 home=1 history=2
+    startIndex: 1,
     activeIndex: 1,
-    rects: null, // {navRect, tabs:[{left,width,center}]}
+    rects: null,
     pointerId: null
   });
 
@@ -42,7 +42,6 @@ function App() {
   // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
-
     if (typeof color === 'string') {
       return color.startsWith('#') ? color : `#${color}`;
     } else if (typeof color === 'number') {
@@ -64,7 +63,6 @@ function App() {
           } else {
             bgColor = params.bg_color;
           }
-
           const r = (bgColor >> 16) & 0xff;
           const g = (bgColor >> 8) & 0xff;
           const b = bgColor & 0xff;
@@ -75,7 +73,6 @@ function App() {
         }
       }
     }
-
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return true;
     }
@@ -92,61 +89,45 @@ function App() {
 
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
-
       const buttonColor = telegramColorToHex(params.button_color);
       if (buttonColor) tgButtonColor = buttonColor;
     }
 
     if (darkMode) {
-      const darkBgColor = '#1a1d21';
-      const darkCardBg = '#212428';
-      const darkInputBg = '#2a2d32';
-      const darkBorderColor = '#3a3d42';
-
-      root.style.setProperty('--tg-theme-bg-color', darkBgColor);
+      root.style.setProperty('--tg-theme-bg-color', '#1a1d21');
       root.style.setProperty('--tg-theme-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
       root.style.setProperty('--tg-theme-button-color', tgButtonColor);
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
-      root.style.setProperty('--tg-theme-secondary-bg-color', darkCardBg);
-      root.style.setProperty('--tg-theme-section-bg-color', darkBorderColor);
-
+      root.style.setProperty('--tg-theme-secondary-bg-color', '#212428');
+      root.style.setProperty('--tg-theme-section-bg-color', '#3a3d42');
       root.style.setProperty('--tg-success-color', '#34c759');
       root.style.setProperty('--tg-error-color', '#ff3b30');
       root.style.setProperty('--tg-warning-color', '#ff9500');
       root.style.setProperty('--tg-info-color', '#5e5ce6');
-      root.style.setProperty('--tg-card-bg', darkCardBg);
-      root.style.setProperty('--tg-input-bg', darkInputBg);
-      root.style.setProperty('--tg-border-color', darkBorderColor);
+      root.style.setProperty('--tg-card-bg', '#212428');
+      root.style.setProperty('--tg-input-bg', '#2a2d32');
+      root.style.setProperty('--tg-border-color', '#3a3d42');
       root.style.setProperty('--tg-hover-color', '#2c2f34');
-
       root.setAttribute('data-theme', 'dark');
     } else {
-      const lightBgColor = '#ffffff';
-      const lightCardBg = '#f8f9fa';
-      const lightInputBg = '#ffffff';
-      const lightBorderColor = '#e0e0e0';
-
-      root.style.setProperty('--tg-theme-bg-color', lightBgColor);
+      root.style.setProperty('--tg-theme-bg-color', '#ffffff');
       root.style.setProperty('--tg-theme-text-color', '#000000');
       root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
       root.style.setProperty('--tg-theme-button-color', tgButtonColor);
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
-      root.style.setProperty('--tg-theme-secondary-bg-color', lightCardBg);
-      root.style.setProperty('--tg-theme-section-bg-color', lightBorderColor);
-
+      root.style.setProperty('--tg-theme-secondary-bg-color', '#f8f9fa');
+      root.style.setProperty('--tg-theme-section-bg-color', '#e0e0e0');
       root.style.setProperty('--tg-success-color', '#28a745');
       root.style.setProperty('--tg-error-color', '#dc3545');
       root.style.setProperty('--tg-warning-color', '#ffc107');
       root.style.setProperty('--tg-info-color', '#17a2b8');
-      root.style.setProperty('--tg-card-bg', lightCardBg);
-      root.style.setProperty('--tg-input-bg', lightInputBg);
-      root.style.setProperty('--tg-border-color', lightBorderColor);
+      root.style.setProperty('--tg-card-bg', '#f8f9fa');
+      root.style.setProperty('--tg-input-bg', '#ffffff');
+      root.style.setProperty('--tg-border-color', '#e0e0e0');
       root.style.setProperty('--tg-hover-color', '#e9ecef');
-
       root.removeAttribute('data-theme');
     }
-
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
@@ -167,12 +148,10 @@ function App() {
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
     localStorage.setItem('theme', newTheme);
     const darkMode = newTheme === 'dark';
     setIsDarkMode(darkMode);
     applyTheme();
-
     showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
@@ -184,13 +163,11 @@ function App() {
         const tgUser = tg.initDataUnsafe?.user;
         if (tgUser?.id) return tgUser.id.toString();
       }
-
       const savedUser = localStorage.getItem('currentUser');
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
         return parsed.telegramId?.toString() || parsed.id?.toString();
       }
-
       return '7879866656';
     } catch (error) {
       console.error('❌ Ошибка получения ID:', error);
@@ -215,10 +192,8 @@ function App() {
   // Навигация
   const navigateTo = useCallback((page) => {
     if (page === currentPage) return;
-
     window.location.hash = page;
     setCurrentPage(page);
-
     if (window.Telegram?.WebApp?.BackButton) {
       const tg = window.Telegram.WebApp;
       if (page === 'home') {
@@ -232,70 +207,6 @@ function App() {
   // ==========================
   // Telegram WebApp init
   // ==========================
-  const initTelegramWebApp = useCallback(() => {
-    if (window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-
-      tg.ready();
-      tg.expand();
-
-      // Back button
-      try {
-        if (tg.BackButton) {
-          tg.BackButton.onClick(() => navigateTo('home'));
-          if (currentPage === 'home') {
-            try { tg.BackButton.hide(); } catch {}
-          }
-        }
-      } catch {}
-
-      // Settings button
-      try {
-        if (tg.SettingsButton && typeof tg.SettingsButton.show === 'function') {
-          tg.SettingsButton.show();
-          tg.SettingsButton.onClick(() => navigateTo('settings'));
-        }
-      } catch {}
-
-      // Theme
-      applyTheme();
-      tg.onEvent('themeChanged', () => setTimeout(applyTheme, 100));
-
-      // User
-      if (tg.initDataUnsafe?.user) {
-        const tgUser = tg.initDataUnsafe.user;
-        const userData = {
-          id: tgUser.id.toString(),
-          telegramId: tgUser.id,
-          username: tgUser.username || `user_${tgUser.id}`,
-          firstName: tgUser.first_name || 'Пользователь',
-          lastName: tgUser.last_name || '',
-          photoUrl: tgUser.photo_url || null,
-          languageCode: tgUser.language_code || 'ru'
-        };
-
-        setTelegramUser(userData);
-        localStorage.setItem('telegramUser', JSON.stringify(userData));
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-
-        if (!hideHints) {
-          setTimeout(() => showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success'), 1000);
-        }
-      }
-    } else {
-      // Dev mode
-      setTelegramUser({
-        id: '7879866656',
-        telegramId: '7879866656',
-        username: 'test_user',
-        firstName: 'Тестовый',
-        photoUrl: null
-      });
-      applyTheme();
-    }
-  }, [applyTheme, showToast, navigateTo, currentPage, hideHints]);
-
-  // Init app
   useEffect(() => {
     const debugUser = {
       id: '7879866656',
@@ -305,6 +216,61 @@ function App() {
     };
     localStorage.setItem('currentUser', JSON.stringify(debugUser));
 
+    const initTelegramWebApp = () => {
+      if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        try {
+          if (tg.BackButton) {
+            tg.BackButton.onClick(() => navigateTo('home'));
+            if (currentPage === 'home') {
+              try { tg.BackButton.hide(); } catch {}
+            }
+          }
+        } catch {}
+
+        try {
+          if (tg.SettingsButton && typeof tg.SettingsButton.show === 'function') {
+            tg.SettingsButton.show();
+            tg.SettingsButton.onClick(() => navigateTo('settings'));
+          }
+        } catch {}
+
+        applyTheme();
+        tg.onEvent('themeChanged', () => setTimeout(applyTheme, 100));
+
+        if (tg.initDataUnsafe?.user) {
+          const tgUser = tg.initDataUnsafe.user;
+          const userData = {
+            id: tgUser.id.toString(),
+            telegramId: tgUser.id,
+            username: tgUser.username || `user_${tgUser.id}`,
+            firstName: tgUser.first_name || 'Пользователь',
+            lastName: tgUser.last_name || '',
+            photoUrl: tgUser.photo_url || null,
+            languageCode: tgUser.language_code || 'ru'
+          };
+          setTelegramUser(userData);
+          localStorage.setItem('telegramUser', JSON.stringify(userData));
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          if (!hideHints) {
+            setTimeout(() => showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success'), 1000);
+          }
+        }
+      } else {
+        setTelegramUser({
+          id: '7879866656',
+          telegramId: '7879866656',
+          username: 'test_user',
+          firstName: 'Тестовый',
+          photoUrl: null
+        });
+        applyTheme();
+      }
+    };
+
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
@@ -313,7 +279,6 @@ function App() {
     }
 
     loadReferralData();
-
     setTimeout(() => setIsLoading(false), 1000);
 
     const handleHashChange = () => {
@@ -324,7 +289,7 @@ function App() {
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [initTelegramWebApp, loadReferralData]);
+  }, []);
 
   // ==========================
   // Keyboard hide nav
@@ -333,8 +298,6 @@ function App() {
     const handleResize = () => {
       const nav = navRef.current;
       if (!nav) return;
-
-      // hide if keyboard (very small height)
       if (window.innerHeight < 500) {
         nav.classList.add('keyboard-hidden');
         nav.classList.remove('keyboard-visible');
@@ -367,7 +330,6 @@ function App() {
     window.addEventListener('orientationchange', handleResize);
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('focusout', handleBlur);
-
     handleResize();
 
     return () => {
@@ -385,39 +347,42 @@ function App() {
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
   // ==========================
-  // Indicator positioning (NO JERK)
+  // Indicator positioning
   // ==========================
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const tabs = [
-      nav.querySelector('[data-tab="profile"]'),
-      nav.querySelector('[data-tab="home"]'),
-      nav.querySelector('[data-tab="history"]')
-    ].filter(Boolean);
+    const updateIndicator = () => {
+      const tabs = [
+        nav.querySelector('[data-tab="profile"]'),
+        nav.querySelector('[data-tab="home"]'),
+        nav.querySelector('[data-tab="history"]')
+      ].filter(Boolean);
 
-    if (tabs.length !== 3) return;
+      if (tabs.length !== 3) return;
 
-    const navRect = nav.getBoundingClientRect();
-    const rects = tabs.map((el) => {
-      const r = el.getBoundingClientRect();
-      const left = r.left - navRect.left;
-      const width = r.width;
-      const center = left + width / 2;
-      return { left, width, center };
-    });
+      const navRect = nav.getBoundingClientRect();
+      const rects = tabs.map((el) => {
+        const r = el.getBoundingClientRect();
+        const left = r.left - navRect.left;
+        const width = r.width;
+        return { left, width };
+      });
 
-    dragStateRef.current.rects = { navRect, tabs: rects };
+      dragStateRef.current.rects = rects;
 
-    const activeIndex = pageToIndex(currentPage);
-    dragStateRef.current.activeIndex = activeIndex;
+      const activeIndex = pageToIndex(currentPage);
+      dragStateRef.current.activeIndex = activeIndex;
 
-    nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
-    nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
+      nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
+      nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
+      nav.classList.add('ready');
+    };
 
-    // show indicator only after set
-    nav.classList.add('ready');
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
   }, [currentPage]);
 
   // ==========================
@@ -436,28 +401,24 @@ function App() {
 
       if (tabs.length !== 3) return null;
 
-      const navRect = nav.getBoundingClientRect();
-      const rects = tabs.map((el) => {
+      return tabs.map((el) => {
         const r = el.getBoundingClientRect();
+        const navRect = nav.getBoundingClientRect();
         const left = r.left - navRect.left;
         const width = r.width;
         const center = left + width / 2;
         return { left, width, center };
       });
-
-      return { navRect, tabs: rects };
     };
 
     const setIndicatorByIndex = (idx, animate = true) => {
-      const rectsPack = dragStateRef.current.rects || getRects();
-      if (!rectsPack) return;
-      const { tabs } = rectsPack;
-
+      const rects = dragStateRef.current.rects || getRects();
+      if (!rects) return;
+      
       if (!animate) nav.classList.add('no-anim');
-      nav.style.setProperty('--indicator-left', `${tabs[idx].left}px`);
-      nav.style.setProperty('--indicator-width', `${tabs[idx].width}px`);
+      nav.style.setProperty('--indicator-left', `${rects[idx].left}px`);
+      nav.style.setProperty('--indicator-width', `${rects[idx].width}px`);
       if (!animate) {
-        // next frame restore
         requestAnimationFrame(() => nav.classList.remove('no-anim'));
       }
     };
@@ -466,7 +427,6 @@ function App() {
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
     const onPointerDown = (e) => {
-      // only left click / touch
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
       const st = dragStateRef.current;
@@ -477,18 +437,10 @@ function App() {
       st.lastX = e.clientX;
       st.startIndex = pageToIndex(currentPage);
       st.activeIndex = st.startIndex;
+      st.rects = getRects();
 
-      st.rects = getRects() || st.rects;
-
-      // lock transition while dragging
       nav.classList.add('dragging');
-
-      try {
-        nav.setPointerCapture(e.pointerId);
-      } catch {}
-
-      // prevent scroll while dragging horizontally
-      // (still passive friendly: we don't call preventDefault here for iOS)
+      try { nav.setPointerCapture(e.pointerId); } catch {}
     };
 
     const onPointerMove = (e) => {
@@ -498,16 +450,13 @@ function App() {
 
       st.lastX = e.clientX;
       const dx = st.lastX - st.startX;
-
       if (Math.abs(dx) > 6) st.moved = true;
 
-      const rectsPack = st.rects;
-      if (!rectsPack) return;
-      const tabs = rectsPack.tabs;
+      const rects = st.rects;
+      if (!rects) return;
 
-      // dragging between neighbor tabs only
       const from = st.startIndex;
-      const dir = dx > 0 ? -1 : 1; // dragging right moves indicator to left tab
+      const dir = dx > 0 ? -1 : 1;
       const to = clamp(from + dir, 0, 2);
 
       if (to === from) {
@@ -515,12 +464,11 @@ function App() {
         return;
       }
 
-      // progress based on distance between centers
-      const dist = Math.abs(tabs[to].center - tabs[from].center) || 1;
+      const dist = Math.abs(rects[to].center - rects[from].center) || 1;
       const t = clamp(Math.abs(dx) / dist, 0, 1);
 
-      const left = lerp(tabs[from].left, tabs[to].left, t);
-      const width = lerp(tabs[from].width, tabs[to].width, t);
+      const left = lerp(rects[from].left, rects[to].left, t);
+      const width = lerp(rects[from].width, rects[to].width, t);
 
       nav.style.setProperty('--indicator-left', `${left}px`);
       nav.style.setProperty('--indicator-width', `${width}px`);
@@ -536,7 +484,6 @@ function App() {
 
       const dx = st.lastX - st.startX;
 
-      // if no move -> do nothing (click will handle)
       if (!st.moved) {
         setIndicatorByIndex(pageToIndex(currentPage), true);
         st.pointerId = null;
@@ -544,19 +491,16 @@ function App() {
       }
 
       const THRESHOLD = 24;
-
       let targetIndex = st.startIndex;
+      
       if (dx > THRESHOLD) {
-        // dragged right => go to LEFT tab
         targetIndex = clamp(st.startIndex - 1, 0, 2);
       } else if (dx < -THRESHOLD) {
-        // dragged left => go to RIGHT tab
         targetIndex = clamp(st.startIndex + 1, 0, 2);
       }
 
       setIndicatorByIndex(targetIndex, true);
       navigateTo(indexToPage(targetIndex));
-
       st.pointerId = null;
     };
 
@@ -587,18 +531,12 @@ function App() {
     };
 
     switch (currentPage) {
-      case 'history':
-        return <History key="history" {...commonProps} />;
-      case 'profile':
-        return <Profile key="profile" {...commonProps} />;
-      case 'help':
-        return <Help key="help" {...commonProps} />;
-      case 'settings':
-        return <SettingsApp key="settings" {...commonProps} />;
-      case 'game':
-        return <Game key="game" {...commonProps} />;
-      default:
-        return <Home key="home" {...commonProps} />;
+      case 'history': return <History key="history" {...commonProps} />;
+      case 'profile': return <Profile key="profile" {...commonProps} />;
+      case 'help': return <Help key="help" {...commonProps} />;
+      case 'settings': return <SettingsApp key="settings" {...commonProps} />;
+      case 'game': return <Game key="game" {...commonProps} />;
+      default: return <Home key="home" {...commonProps} />;
     }
   };
 
@@ -609,21 +547,18 @@ function App() {
 
     return (
       <div className="floating-nav" ref={navRef}>
-        {/* IMPORTANT: indicator */}
         <div className="nav-indicator" />
-
+        
         <button
           data-tab="profile"
           className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
           onClick={() => navigateTo('profile')}
-          aria-label="Профиль"
           type="button"
         >
           <div className="nav-icon-floating">
             <ProfileIcon active={currentPage === 'profile'} />
           </div>
           <span className="nav-label-floating">Профиль</span>
-
           {showBadge && (
             <span className="nav-badge-floating">
               ${availableEarnings.toFixed(0)}
@@ -635,11 +570,10 @@ function App() {
           data-tab="home"
           className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
           onClick={() => navigateTo('home')}
-          aria-label="Обмен"
           type="button"
         >
           <div className="nav-icon-floating">
-            <ExchangeIcon active={true} />
+            <ExchangeIcon active={currentPage === 'home'} />
           </div>
           <span className="nav-label-floating">Обмен</span>
         </button>
@@ -648,7 +582,6 @@ function App() {
           data-tab="history"
           className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
           onClick={() => navigateTo('history')}
-          aria-label="История"
           type="button"
         >
           <div className="nav-icon-floating">
@@ -660,7 +593,6 @@ function App() {
     );
   };
 
-  // Лоадер
   if (isLoading) {
     return (
       <div className="app-loading">
@@ -676,7 +608,6 @@ function App() {
         <div className="app-content">
           {renderPage()}
           {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
-
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
               <span className="telegram-toast-icon">

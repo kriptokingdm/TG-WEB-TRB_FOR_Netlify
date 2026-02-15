@@ -107,6 +107,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [error, setError] = useState('');
   
   const [currentRate, setCurrentRate] = useState(88.0);
+  const [rateLevels, setRateLevels] = useState([]);
   
   const limits = {
     minBuy: 1000,
@@ -183,10 +184,14 @@ function Home({ navigateTo, telegramUser, showToast }) {
     try {
       const userId = getUserId();
       const response = await simpleFetch(`/api/user/active-order/${userId}`);
+      console.log('📦 Активный ордер:', response);
       if (response.success && response.hasActiveOrder) {
         setHasActiveOrder(true);
         setActiveOrderId(String(response.order.id));
         setActiveOrderData(response.order);
+      } else {
+        setHasActiveOrder(false);
+        setActiveOrderData(null);
       }
     } catch (error) {
       console.error('❌ Ошибка проверки ордера:', error);
@@ -207,7 +212,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
     
     simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`)
       .then(result => {
-        if (result.success) setCurrentRate(result.rate);
+        if (result.success) {
+          setCurrentRate(result.rate);
+          setRateLevels(result.levels || []);
+        }
       })
       .catch(error => {
         if (error.name !== 'AbortError') {
@@ -348,6 +356,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const handleExchange = async () => {
     if (hasActiveOrder) {
       showMessage('warning', '⚠️ У вас активный ордер');
+      navigateTo('history');
       return;
     }
 
@@ -389,9 +398,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
       amount: num,
       userId: userId,
       telegramId: userId,
-      username: 'user',
-      firstName: 'Клиент',
-      lastName: '',
+      username: telegramUser?.username || 'user',
+      firstName: telegramUser?.firstName || 'Клиент',
+      lastName: telegramUser?.lastName || '',
       cryptoAddress: isBuyMode ? selectedCrypto?.address : null,
       cryptoNetwork: isBuyMode ? selectedCrypto?.network : null,
       bankDetails: !isBuyMode ? `${selectedPayment?.bankName}: ${selectedPayment?.formattedNumber}` : null
@@ -405,11 +414,16 @@ function Home({ navigateTo, telegramUser, showToast }) {
       if (result.success) {
         showMessage('success', `✅ Ордер #${result.order?.id}`);
         setAmount('');
-        setHasActiveOrder(true);
-        setActiveOrderId(result.order?.id);
-        setTimeout(() => navigateTo?.('history'), 2000);
+        
+        // Обновляем активный ордер
+        await checkActiveOrder();
+        
+        setTimeout(() => navigateTo?.('history'), 1500);
+      } else {
+        showMessage('error', `❌ Ошибка: ${result.error}`);
       }
     } catch (error) {
+      console.error('❌ Ошибка сети:', error);
       showMessage('error', '❌ Ошибка сети');
     } finally {
       setIsLoading(false);
@@ -455,7 +469,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
       } catch (e) {}
     }
 
-    setTimeout(checkActiveOrder, 1000);
+    checkActiveOrder();
   }, []);
 
   useEffect(() => {
@@ -486,142 +500,138 @@ function Home({ navigateTo, telegramUser, showToast }) {
       />
 
       {hasActiveOrder && activeOrderData ? (
-  <div className="tg-home-container">
-    {/* Шапка */}
-    <div className="tg-header">
-      <div className="tg-header-content">
-        <button className="tg-back-btn" onClick={() => navigateTo?.('history')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor"/>
-          </svg>
-        </button>
-        <div className="tg-header-titles">
-          <h1 className="tg-header-title">Активная заявка</h1>
-          <p className="tg-header-subtitle">ID: {activeOrderData?.public_id || activeOrderId}</p>
-        </div>
-        <div className={`tg-status-badge tg-status-${activeOrderData?.status || 'pending'}`}>
-          {activeOrderData?.status === 'pending' && '🟡 Ожидание'}
-          {activeOrderData?.status === 'processing' && '🟠 В обработке'}
-          {activeOrderData?.status === 'accepted' && '✅ Принят'}
-          {activeOrderData?.status === 'completed' && '🏁 Завершен'}
-          {activeOrderData?.status === 'cancelled' && '🚫 Отменен'}
-          {activeOrderData?.status === 'rejected' && '❌ Отклонен'}
-        </div>
-      </div>
-    </div>
-
-    {/* Основной контент */}
-    <div className="tg-main-content">
-      <div className="tg-order-card">
-        {/* Заголовок */}
-        <div className="tg-card-header">
-          <div className="tg-order-icon">
-            {activeOrderData?.order_type === 'buy' ? '🛒' : '💰'}
-          </div>
-          <div className="tg-order-info">
-            <h2 className="tg-order-title">
-              {activeOrderData?.order_type === 'buy' ? 'Покупка USDT' : 'Продажа USDT'}
-            </h2>
-            <p className="tg-order-subtitle">
-              от {activeOrderData?.created_at 
-                ? new Date(activeOrderData.created_at).toLocaleString('ru-RU', {
-                    day: 'numeric',
-                    month: 'long',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
-                : '-'
-              }
-            </p>
-          </div>
-        </div>
-
-        {/* Детали */}
-        <div className="tg-order-details">
-          <div className="tg-detail-row">
-            <span className="tg-detail-label">Вы отдаете</span>
-            <span className="tg-detail-value tg-detail-amount">
-              {activeOrderData?.amount || 0} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
-            </span>
-          </div>
-
-          <div className="tg-detail-row">
-            <span className="tg-detail-label">Курс</span>
-            <span className="tg-detail-value">
-              1 USDT = {activeOrderData?.rate || 0} ₽
-            </span>
-          </div>
-
-          <div className="tg-detail-row tg-detail-highlight">
-            <span className="tg-detail-label">Вы получаете</span>
-            <span className="tg-detail-value tg-detail-amount tg-detail-accent">
-              {activeOrderData?.order_type === 'buy' 
-                ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
-                : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
-              }
-            </span>
-          </div>
-
-          {/* Реквизиты */}
-          {activeOrderData?.order_type === 'sell' && activeOrderData?.bank_details && (
-            <div className="tg-detail-row tg-detail-full">
-              <span className="tg-detail-label">Реквизиты получателя</span>
-              <div className="tg-detail-value tg-detail-box">
-                <span className="tg-detail-mono">{activeOrderData.bank_details}</span>
-                <button 
-                  className="tg-copy-btn"
-                  onClick={() => copyToClipboard(activeOrderData.bank_details)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
-                  </svg>
-                </button>
+        <div className="tg-home-container">
+          {/* Шапка */}
+          <div className="tg-header">
+            <div className="tg-header-content">
+              <button className="tg-back-btn" onClick={() => navigateTo?.('history')}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor"/>
+                </svg>
+              </button>
+              <div className="tg-header-titles">
+                <h1 className="tg-header-title">Активная заявка</h1>
+                <p className="tg-header-subtitle">ID: {activeOrderData?.public_id || activeOrderId}</p>
+              </div>
+              <div className={`tg-status-badge tg-status-${activeOrderData?.status || 'pending'}`}>
+                {activeOrderData?.status === 'pending' && '🟡 Ожидание'}
+                {activeOrderData?.status === 'processing' && '🟠 В обработке'}
+                {activeOrderData?.status === 'accepted' && '✅ Принят'}
+                {activeOrderData?.status === 'completed' && '🏁 Завершен'}
+                {activeOrderData?.status === 'cancelled' && '🚫 Отменен'}
+                {activeOrderData?.status === 'rejected' && '❌ Отклонен'}
               </div>
             </div>
-          )}
+          </div>
 
-          {activeOrderData?.order_type === 'buy' && activeOrderData?.crypto_address && (
-            <div className="tg-detail-row tg-detail-full">
-              <span className="tg-detail-label">Адрес для USDT</span>
-              <div className="tg-detail-value tg-detail-box">
-                <span className="tg-detail-mono">{activeOrderData.crypto_address}</span>
-                <button 
-                  className="tg-copy-btn"
-                  onClick={() => copyToClipboard(activeOrderData.crypto_address)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>
-                  </svg>
+          {/* Основной контент */}
+          <div className="tg-main-content">
+            <div className="tg-order-card">
+              {/* Заголовок */}
+              <div className="tg-card-header">
+                <div className="tg-order-icon">
+                  {activeOrderData?.order_type === 'buy' ? '🛒' : '💰'}
+                </div>
+                <div className="tg-order-info">
+                  <h2 className="tg-order-title">
+                    {activeOrderData?.order_type === 'buy' ? 'Покупка USDT' : 'Продажа USDT'}
+                  </h2>
+                  <p className="tg-order-subtitle">
+                    {activeOrderData?.created_at 
+                      ? new Date(activeOrderData.created_at).toLocaleString('ru-RU', {
+                          day: 'numeric',
+                          month: 'long',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                      : '-'
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Детали */}
+              <div className="tg-order-details">
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Вы отдаете</span>
+                  <span className="tg-detail-value tg-detail-amount">
+                    {activeOrderData?.amount || 0} {activeOrderData?.order_type === 'buy' ? 'RUB' : 'USDT'}
+                  </span>
+                </div>
+
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Курс</span>
+                  <span className="tg-detail-value">
+                    {activeOrderData?.rate || 0} ₽ за 1 USDT
+                  </span>
+                </div>
+
+                <div className="tg-detail-row tg-detail-highlight">
+                  <span className="tg-detail-label">Вы получаете</span>
+                  <span className="tg-detail-value tg-detail-amount tg-detail-accent">
+                    {activeOrderData?.order_type === 'buy' 
+                      ? `${(activeOrderData.amount / activeOrderData.rate).toFixed(2)} USDT`
+                      : `${(activeOrderData.amount * activeOrderData.rate).toFixed(2)} ₽`
+                    }
+                  </span>
+                </div>
+
+                {/* Реквизиты */}
+                {activeOrderData?.order_type === 'sell' && activeOrderData?.bank_details && (
+                  <div className="tg-detail-row tg-detail-full">
+                    <span className="tg-detail-label">Реквизиты</span>
+                    <div className="tg-detail-value tg-detail-box">
+                      <span className="tg-detail-mono">{activeOrderData.bank_details}</span>
+                      <button 
+                        className="tg-copy-btn"
+                        onClick={() => copyToClipboard(activeOrderData.bank_details)}
+                      >
+                        <CopyIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {activeOrderData?.order_type === 'buy' && activeOrderData?.crypto_address && (
+                  <div className="tg-detail-row tg-detail-full">
+                    <span className="tg-detail-label">Адрес USDT</span>
+                    <div className="tg-detail-value tg-detail-box">
+                      <span className="tg-detail-mono">{activeOrderData.crypto_address}</span>
+                      <button 
+                        className="tg-copy-btn"
+                        onClick={() => copyToClipboard(activeOrderData.crypto_address)}
+                      >
+                        <CopyIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Кнопки */}
+              <div className="tg-actions">
+                <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
+                  📋 История операций
                 </button>
+                
+                {activeOrderData?.status === 'pending' && (
+                  <button className="tg-action-btn tg-action-btn-secondary">
+                    🚫 Отменить заявку
+                  </button>
+                )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Кнопки */}
-        <div className="tg-actions">
-          <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
-             История операций
-          </button>
-          
-          {/* {activeOrderData?.status === 'pending' && (
-            <button className="tg-action-btn tg-action-btn-secondary">
-              🚫 Отменить заявку
-            </button>
-          )} */}
+            {/* Предупреждение */}
+            <div className="tg-warning">
+              <span className="tg-warning-icon">⚠️</span>
+              <span className="tg-warning-text">
+                Пользователь самостоятельно несет ответственность за правильность введенных реквизитов.
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Предупреждение об ответственности */}
-      <div className="tg-warning">
-        <span className="tg-warning-icon">⚠️</span>
-        <span className="tg-warning-text">
-          Пользователь самостоятельно несет ответственность за правильность введенных реквизитов. Ошибки в адресе могут привести к безвозвратной потере средств.
-        </span>
-      </div>
-    </div>
-  </div>
-) : (
+      ) : (
         <div className="home-content">
           {/* ВАЛЮТНЫЕ КАРТОЧКИ */}
           <div className="currency-cards-section">
@@ -649,54 +659,54 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
-            {/* ПОЛЯ ВВОДА - ПРОСТО ЦИФРЫ */}
-            {/* ПОЛЯ ВВОДА - ПРОЗРАЧНЫЕ */}
-<div className="amount-input-section">
-  <div className="amount-input-group">
-    <div className="amount-input-wrapper">
-      <input
-        type="text"
-        value={amount}
-        onChange={handleAmountChange}
-        className="amount-input"
-        placeholder="0"
-      />
-      <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
-    </div>
-    {error && <div className="error-message">{error}</div>}
-  </div>
+            {/* ПОЛЯ ВВОДА */}
+            <div className="amount-input-section">
+              <div className="amount-input-group">
+                <div className="amount-input-wrapper">
+                  <input
+                    type="text"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    className="amount-input"
+                    placeholder="0"
+                  />
+                  <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
+                </div>
+                {error && <div className="error-message">{error}</div>}
+              </div>
 
-  <div className="amount-input-group">
-    <div className="amount-input-wrapper">
-      <input
-        type="text"
-        value={convertedAmount()}
-        readOnly
-        className="amount-input"
-        placeholder="0"
-      />
-      <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
-    </div>
-  </div>
-</div>
+              <div className="amount-input-group">
+                <div className="amount-input-wrapper">
+                  <input
+                    type="text"
+                    value={convertedAmount()}
+                    readOnly
+                    className="amount-input"
+                    placeholder="0"
+                  />
+                  <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* БЛОК АДРЕСА ДЛЯ ПОЛУЧЕНИЯ USDT */}
+          {/* БЛОК АДРЕСА ДЛЯ USDT */}
           {isBuyMode ? (
             <div className="payment-section-new">
               <h3 className="section-title">Адрес для получения USDT</h3>
               
-              {/* КЛИКАБЕЛЬНЫЙ СЕЛЕКТОР */}
               <div className="network-selector" onClick={() => setIsModalOpen(true)}>
-                <span className="selector-label">Адрес для получения USDT</span>
+                <span className="selector-label">Выберите сеть</span>
                 <span className="selector-arrow">▼</span>
+                {selectedCrypto && (
+                  <span className="selected-network">{selectedCrypto.network}</span>
+                )}
               </div>
 
               <button onClick={handleAddCrypto} className="add-button">
-                + Добавить адрес для получения USDT
+                + Добавить адрес
               </button>
 
-              {/* СОХРАНЕННЫЕ АДРЕСА */}
               {cryptoAddresses.length > 0 && (
                 <div className="crypto-list">
                   <h4>Сохраненные адреса:</h4>
@@ -716,16 +726,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         </div>
                       </div>
                       <div className="crypto-actions">
-                        <button 
-                          className="action-btn copy-btn"
-                          onClick={(e) => { e.stopPropagation(); copyToClipboard(c.address); }}
-                        >
+                        <button className="action-btn copy-btn" onClick={(e) => { e.stopPropagation(); copyToClipboard(c.address); }}>
                           <CopyIcon />
                         </button>
-                        <button 
-                          className="action-btn delete-btn"
-                          onClick={(e) => { e.stopPropagation(); handleDeleteCrypto(c.id); }}
-                        >
+                        <button className="action-btn delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteCrypto(c.id); }}>
                           <DeleteIcon />
                         </button>
                       </div>
@@ -736,7 +740,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
           ) : (
             <div className="payment-section-new">
-              <h3 className="section-title">Реквизиты для получения RUB</h3>
+              <h3 className="section-title">Реквизиты для RUB</h3>
               
               <select value={bankName} onChange={(e) => setBankName(e.target.value)} className="bank-select">
                 {availableBanks.map(b => <option key={b}>{b}</option>)}
@@ -774,10 +778,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                         <span className="bank-name">{p.bankName}</span>
                         <span className="payment-number">{p.formattedNumber}</span>
                       </div>
-                      <button 
-                        className="action-btn delete-btn"
-                        onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}
-                      >
+                      <button className="action-btn delete-btn" onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}>
                         <DeleteIcon />
                       </button>
                     </div>
@@ -793,7 +794,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             disabled={!isExchangeReady() || isLoading}
             onClick={handleExchange}
           >
-            <span className="exchange-icon">{isBuyMode ? '' : ''}</span>
+            <span className="exchange-icon">{isBuyMode ? '🛒' : '💰'}</span>
             <span className="exchange-text">
               {isLoading ? 'Обработка...' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
             </span>
@@ -803,7 +804,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
           <div className="security-info">
             <SecurityIcon />
             <div className="security-text">
-              <strong>Безопасная сделка:</strong> Средства резервируются у операторов до подтверждения сделки системой TetherRabbit
+              <strong>Безопасная сделка:</strong> Средства резервируются у операторов
             </div>
           </div>
         </div>

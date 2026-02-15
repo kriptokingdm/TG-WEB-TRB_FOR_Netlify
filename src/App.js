@@ -52,6 +52,69 @@ function App() {
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
+  // Определение темы Telegram
+  const detectTelegramTheme = useCallback(() => {
+    if (window.Telegram?.WebApp?.themeParams) {
+      const params = window.Telegram.WebApp.themeParams;
+      
+      // Принудительно устанавливаем темную тему если bg_color темный
+      if (params.bg_color) {
+        let bgColor = params.bg_color;
+        if (typeof bgColor === 'string' && bgColor.startsWith('#')) {
+          bgColor = bgColor.slice(1);
+        }
+        const bgColorNum = parseInt(bgColor, 16);
+        const r = (bgColorNum >> 16) & 0xff;
+        const g = (bgColorNum >> 8) & 0xff;
+        const b = bgColorNum & 0xff;
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        
+        // Возвращаем true для темной темы (brightness < 128)
+        return brightness < 128;
+      }
+    }
+    // По умолчанию темная тема
+    return true;
+  }, []);
+
+  // Применение темы Telegram
+  const applyTelegramTheme = useCallback(() => {
+    const root = document.documentElement;
+    const isDark = detectTelegramTheme();
+    
+    setIsDarkMode(isDark);
+    
+    if (window.Telegram?.WebApp?.themeParams) {
+      const params = window.Telegram.WebApp.themeParams;
+      
+      // Применяем цвета из Telegram
+      root.style.setProperty('--tg-theme-bg-color', params.bg_color || (isDark ? '#1a1d21' : '#ffffff'));
+      root.style.setProperty('--tg-theme-text-color', params.text_color || (isDark ? '#ffffff' : '#000000'));
+      root.style.setProperty('--tg-theme-hint-color', params.hint_color || '#8e8e93');
+      root.style.setProperty('--tg-theme-button-color', params.button_color || '#3390ec');
+      root.style.setProperty('--tg-theme-button-text-color', params.button_text_color || '#ffffff');
+      root.style.setProperty('--tg-theme-secondary-bg-color', params.secondary_bg_color || (isDark ? '#212428' : '#f8f9fa'));
+      root.style.setProperty('--tg-theme-section-bg-color', params.section_bg_color || (isDark ? '#3a3d42' : '#e0e0e0'));
+      
+      // Дополнительные цвета
+      root.style.setProperty('--tg-success-color', '#34c759');
+      root.style.setProperty('--tg-error-color', '#ff3b30');
+      root.style.setProperty('--tg-warning-color', '#ff9500');
+      root.style.setProperty('--tg-info-color', '#5e5ce6');
+      root.style.setProperty('--tg-card-bg', isDark ? '#212428' : '#f8f9fa');
+      root.style.setProperty('--tg-input-bg', isDark ? '#2a2d32' : '#ffffff');
+      root.style.setProperty('--tg-border-color', isDark ? '#3a3d42' : '#e0e0e0');
+      root.style.setProperty('--tg-hover-color', isDark ? '#2c2f34' : '#e9ecef');
+      
+      root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      
+      console.log('🎨 Тема Telegram применена:', isDark ? 'темная' : 'светлая');
+    } else {
+      // Fallback темы
+      toggleTheme();
+    }
+  }, [detectTelegramTheme]);
+
   // Переключение темы
   const toggleTheme = useCallback(() => {
     const root = document.documentElement;
@@ -66,6 +129,10 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#212428');
       root.style.setProperty('--tg-theme-section-bg-color', '#3a3d42');
+      root.style.setProperty('--tg-card-bg', '#212428');
+      root.style.setProperty('--tg-input-bg', '#2a2d32');
+      root.style.setProperty('--tg-border-color', '#3a3d42');
+      root.style.setProperty('--tg-hover-color', '#2c2f34');
       root.setAttribute('data-theme', 'dark');
     } else {
       root.style.setProperty('--tg-theme-bg-color', '#ffffff');
@@ -75,6 +142,10 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#f8f9fa');
       root.style.setProperty('--tg-theme-section-bg-color', '#e0e0e0');
+      root.style.setProperty('--tg-card-bg', '#f8f9fa');
+      root.style.setProperty('--tg-input-bg', '#ffffff');
+      root.style.setProperty('--tg-border-color', '#e0e0e0');
+      root.style.setProperty('--tg-hover-color', '#e9ecef');
       root.removeAttribute('data-theme');
     }
     
@@ -156,11 +227,11 @@ function App() {
     setDragProgress(0);
   }, [currentPage, updateIndicator]);
 
-  // Обработчики drag
+  // Обработчики drag - БЕЗ preventDefault на пассивных событиях
   const handleDragStart = useCallback((e) => {
-    // Предотвращаем стандартное поведение только для тач-событий
+    // Только для тач-событий
     if (e.type === 'touchstart') {
-      e.preventDefault();
+      // Не вызываем preventDefault на пассивном событии
     }
     
     const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
@@ -190,21 +261,15 @@ function App() {
     };
     
     nav.classList.add('dragging');
-    
-    // Блокируем скролл страницы при драге
-    document.body.style.overflow = 'hidden';
   }, [currentPage]);
 
   const handleDragMove = useCallback((e) => {
     if (!dragStateRef.current.isDragging) return;
     
-    // Предотвращаем стандартное поведение
-    e.preventDefault();
-    
     const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
     const { startX, startLeft, startWidth, startIndex } = dragStateRef.current;
     
-    // ВЫЧИСЛЯЕМ НАПРАВЛЕНИЕ: тащишь вправо - deltaX положительная, индикатор двигается вправо
+    // Вычисляем направление: тащишь вправо - deltaX положительная
     const deltaX = clientX - startX;
     
     const nav = navRef.current;
@@ -212,14 +277,13 @@ function App() {
     if (!nav || !indicator) return;
     
     const navRect = nav.getBoundingClientRect();
-    const tabWidth = navRect.width / 3;
     
     // Вычисляем прогресс драга (от -1 до 1)
-    const progress = Math.max(-1, Math.min(1, deltaX / 100));
+    const progress = Math.max(-1, Math.min(1, deltaX / 80));
     setDragProgress(Math.abs(progress));
     
     // Вычисляем новую позицию индикатора
-    let newLeft = startLeft + deltaX * 0.5; // Умножаем на 0.5 для плавности
+    let newLeft = startLeft + deltaX * 0.4;
     
     // Ограничиваем позицию в пределах навигации
     const minLeft = 0;
@@ -254,8 +318,6 @@ function App() {
   const handleDragEnd = useCallback((e) => {
     if (!dragStateRef.current.isDragging) return;
     
-    e.preventDefault();
-    
     const { startX, currentX, startIndex } = dragStateRef.current;
     
     // Снимаем классы драга
@@ -271,9 +333,6 @@ function App() {
       nav.classList.remove('dragging');
     }
     
-    // Разблокируем скролл
-    document.body.style.overflow = '';
-    
     const deltaX = currentX - startX;
     const threshold = dragStateRef.current.threshold;
     
@@ -281,13 +340,13 @@ function App() {
     let targetIndex = startIndex;
     
     if (Math.abs(deltaX) > threshold) {
-      // ТАЩИШЬ ВПРАВО (deltaX > 0) - ИНДИКАТОР ДВИГАЕТСЯ ВПРАВО
+      // ТАЩИШЬ ВПРАВО (deltaX > 0) - ПЕРЕКЛЮЧАЕМСЯ НА ПРАВУЮ ВКЛАДКУ
       if (deltaX > threshold && startIndex < 2) {
-        targetIndex = startIndex + 1; // Вправо
+        targetIndex = startIndex + 1;
       }
-      // ТАЩИШЬ ВЛЕВО (deltaX < 0) - ИНДИКАТОР ДВИГАЕТСЯ ВЛЕВО
+      // ТАЩИШЬ ВЛЕВО (deltaX < 0) - ПЕРЕКЛЮЧАЕМСЯ НА ЛЕВУЮ ВКЛАДКУ
       else if (deltaX < -threshold && startIndex > 0) {
-        targetIndex = startIndex - 1; // Влево
+        targetIndex = startIndex - 1;
       }
     }
     
@@ -322,8 +381,18 @@ function App() {
     updateIndicator();
   }, [currentPage, updateIndicator]);
 
-  // Инициализация
+  // Инициализация Telegram WebApp
   useEffect(() => {
+    // Применяем тему Telegram
+    applyTelegramTheme();
+    
+    // Подписываемся на изменение темы
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.onEvent('themeChanged', () => {
+        applyTelegramTheme();
+      });
+    }
+    
     const debugUser = {
       id: '7879866656',
       telegramId: '7879866656',
@@ -383,7 +452,7 @@ function App() {
     const showBadge = availableEarnings >= 10;
     
     // Вычисляем масштаб для эффекта лупы (от 1 до 1.2)
-    const scale = 1 + dragProgress * 0.2;
+    const scale = 1 + dragProgress * 0.15;
 
     return (
       <div 
@@ -406,7 +475,7 @@ function App() {
           className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
           onClick={() => navigateTo('profile')}
         >
-          <div className="nav-icon-floating" style={{ transform: `scale(${scale})`, transition: 'transform 0.1s ease' }}>
+          <div className="nav-icon-floating" style={{ transform: `scale(${scale})` }}>
             <ProfileIcon active={currentPage === 'profile'} />
           </div>
           <span className="nav-label-floating">Профиль</span>
@@ -423,7 +492,7 @@ function App() {
           className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
           onClick={() => navigateTo('home')}
         >
-          <div className="nav-icon-floating" style={{ transform: `scale(${scale})`, transition: 'transform 0.1s ease' }}>
+          <div className="nav-icon-floating" style={{ transform: `scale(${scale})` }}>
             <ExchangeIcon active={currentPage === 'home'} />
           </div>
           <span className="nav-label-floating">Обмен</span>
@@ -435,7 +504,7 @@ function App() {
           className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
           onClick={() => navigateTo('history')}
         >
-          <div className="nav-icon-floating" style={{ transform: `scale(${scale})`, transition: 'transform 0.1s ease' }}>
+          <div className="nav-icon-floating" style={{ transform: `scale(${scale})` }}>
             <HistoryIcon active={currentPage === 'history'} />
           </div>
           <span className="nav-label-floating">История</span>

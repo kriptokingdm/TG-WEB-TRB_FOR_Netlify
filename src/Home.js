@@ -704,9 +704,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
       <span className="tg-amount-suffix">{isBuyMode ? 'USDT' : '₽'}</span>
     </div>
 
-    <div className="tg-amount-hint">
+    {/* <div className="tg-amount-hint">
       Курс: <span className="tg-amount-hint-strong">{currentRate.toFixed(2)} ₽</span>
-    </div>
+    </div> */}
   </div>
 </div>
 

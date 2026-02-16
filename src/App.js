@@ -21,55 +21,56 @@ function App() {
   const [hideHints, setHideHints] = useState(false);
 
   const navRef = useRef(null);
+  const indicatorRef = useRef(null);
 
-  const dragRef = useRef({
+  const dragStateRef = useRef({
     isDown: false,
-    pointerId: null,
     startX: 0,
     lastX: 0,
     moved: false,
     startIndex: 1,
-    rects: null, // [{left,width,center}]
+    rects: null,
+    pointerId: null
   });
 
-  // settings
+  // Загружаем настройки
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
 
-  // color converter
+  // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
+
     if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
     if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
+
     return null;
   }, []);
 
-  // dark detect
+  // Определяем темную тему
   const detectDarkMode = useCallback(() => {
-    if (window.Telegram?.WebApp?.themeParams) {
-      const params = window.Telegram.WebApp.themeParams;
-      if (params?.bg_color) {
-        try {
-          const bgColor =
-            typeof params.bg_color === 'string'
-              ? parseInt(params.bg_color.replace('#', ''), 16)
-              : params.bg_color;
+    if (window.Telegram?.WebApp?.themeParams?.bg_color) {
+      try {
+        const params = window.Telegram.WebApp.themeParams;
+        const bgColor = typeof params.bg_color === 'string'
+          ? parseInt(params.bg_color.replace('#', ''), 16)
+          : params.bg_color;
 
-          const r = (bgColor >> 16) & 0xff;
-          const g = (bgColor >> 8) & 0xff;
-          const b = bgColor & 0xff;
-          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-          return brightness < 180;
-        } catch (e) {}
-      }
+        const r = (bgColor >> 16) & 0xff;
+        const g = (bgColor >> 8) & 0xff;
+        const b = bgColor & 0xff;
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 180;
+      } catch (e) {}
     }
+
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
     return true;
   }, []);
 
-  // apply theme
+  // Применяем тему
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
     const darkMode = detectDarkMode();
@@ -90,14 +91,17 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#212428');
       root.style.setProperty('--tg-theme-section-bg-color', '#3a3d42');
+
       root.style.setProperty('--tg-success-color', '#34c759');
       root.style.setProperty('--tg-error-color', '#ff3b30');
       root.style.setProperty('--tg-warning-color', '#ff9500');
       root.style.setProperty('--tg-info-color', '#5e5ce6');
+
       root.style.setProperty('--tg-card-bg', '#212428');
       root.style.setProperty('--tg-input-bg', '#2a2d32');
       root.style.setProperty('--tg-border-color', '#3a3d42');
       root.style.setProperty('--tg-hover-color', '#2c2f34');
+
       root.setAttribute('data-theme', 'dark');
     } else {
       root.style.setProperty('--tg-theme-bg-color', '#ffffff');
@@ -107,49 +111,51 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#f8f9fa');
       root.style.setProperty('--tg-theme-section-bg-color', '#e0e0e0');
+
       root.style.setProperty('--tg-success-color', '#28a745');
       root.style.setProperty('--tg-error-color', '#dc3545');
       root.style.setProperty('--tg-warning-color', '#ffc107');
       root.style.setProperty('--tg-info-color', '#17a2b8');
+
       root.style.setProperty('--tg-card-bg', '#f8f9fa');
       root.style.setProperty('--tg-input-bg', '#ffffff');
       root.style.setProperty('--tg-border-color', '#e0e0e0');
       root.style.setProperty('--tg-hover-color', '#e9ecef');
+
       root.removeAttribute('data-theme');
     }
+
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
-  // toast
-  const showToast = useCallback(
-    (message, type = 'info') => {
-      if (hideHints && type === 'info') return;
-      setToast({ message, type });
-      setTimeout(() => setToast(null), 3000);
-    },
-    [hideHints]
-  );
+  // Toast
+  const showToast = useCallback((message, type = 'info') => {
+    if (hideHints && type === 'info') return;
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, [hideHints]);
 
+  // update hints
   const updateHideHints = useCallback((value) => {
     setHideHints(value);
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
+  // toggle theme
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
-    const darkMode = newTheme === 'dark';
-    setIsDarkMode(darkMode);
+    setIsDarkMode(newTheme === 'dark');
     applyTheme();
-    showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
+    showToast(`Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
+  // user id
   const getUserId = () => {
     try {
-      if (window.Telegram?.WebApp) {
-        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (tgUser?.id) return tgUser.id.toString();
+      if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+        return window.Telegram.WebApp.initDataUnsafe.user.id.toString();
       }
       const savedUser = localStorage.getItem('currentUser');
       if (savedUser) {
@@ -162,6 +168,7 @@ function App() {
     }
   };
 
+  // referrals
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -173,37 +180,27 @@ function App() {
     } catch (e) {}
   }, []);
 
-  const navigateTo = useCallback(
-    (page) => {
-      if (page === currentPage) return;
-
+  // navigation
+  const navigateTo = useCallback((page) => {
+    setCurrentPage((prev) => {
+      if (prev === page) return prev;
       window.location.hash = page;
-      setCurrentPage(page);
 
       if (window.Telegram?.WebApp?.BackButton) {
         const tg = window.Telegram.WebApp;
         if (page === 'home') {
-          try {
-            tg.BackButton.hide();
-          } catch {}
+          try { tg.BackButton.hide(); } catch {}
         } else {
-          try {
-            tg.BackButton.show();
-          } catch {}
+          try { tg.BackButton.show(); } catch {}
         }
       }
-    },
-    [currentPage]
-  );
+      return page;
+    });
+  }, []);
 
-  // init
+  // init tg + app
   useEffect(() => {
-    const debugUser = {
-      id: '7879866656',
-      telegramId: '7879866656',
-      username: 'TERBCEO',
-      firstName: 'G',
-    };
+    const debugUser = { id: '7879866656', telegramId: '7879866656', username: 'TERBCEO', firstName: 'G' };
     localStorage.setItem('currentUser', JSON.stringify(debugUser));
 
     const initTelegramWebApp = () => {
@@ -213,13 +210,9 @@ function App() {
         tg.expand();
 
         try {
-          if (tg.BackButton) {
-            tg.BackButton.onClick(() => navigateTo('home'));
-            if (currentPage === 'home') {
-              try {
-                tg.BackButton.hide();
-              } catch {}
-            }
+          tg.BackButton?.onClick(() => navigateTo('home'));
+          if (currentPage === 'home') {
+            try { tg.BackButton.hide(); } catch {}
           }
         } catch {}
 
@@ -233,18 +226,17 @@ function App() {
         applyTheme();
         tg.onEvent('themeChanged', () => setTimeout(applyTheme, 100));
 
-        if (tg.initDataUnsafe?.user) {
-          const u = tg.initDataUnsafe.user;
+        const tgUser = tg.initDataUnsafe?.user;
+        if (tgUser) {
           const userData = {
-            id: u.id.toString(),
-            telegramId: u.id,
-            username: u.username || `user_${u.id}`,
-            firstName: u.first_name || 'Пользователь',
-            lastName: u.last_name || '',
-            photoUrl: u.photo_url || null,
-            languageCode: u.language_code || 'ru',
+            id: tgUser.id.toString(),
+            telegramId: tgUser.id,
+            username: tgUser.username || `user_${tgUser.id}`,
+            firstName: tgUser.first_name || 'Пользователь',
+            lastName: tgUser.last_name || '',
+            photoUrl: tgUser.photo_url || null,
+            languageCode: tgUser.language_code || 'ru'
           };
-
           setTelegramUser(userData);
           localStorage.setItem('telegramUser', JSON.stringify(userData));
           localStorage.setItem('currentUser', JSON.stringify(userData));
@@ -259,7 +251,7 @@ function App() {
           telegramId: '7879866656',
           username: 'test_user',
           firstName: 'Тестовый',
-          photoUrl: null,
+          photoUrl: null
         });
         applyTheme();
       }
@@ -277,7 +269,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && h !== currentPage && ['home', 'profile', 'history', 'help', 'settings', 'game'].includes(h)) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game'].includes(h)) {
         setCurrentPage(h);
       }
     };
@@ -292,7 +284,6 @@ function App() {
     const handleResize = () => {
       const nav = navRef.current;
       if (!nav) return;
-
       if (window.innerHeight < 500) {
         nav.classList.add('keyboard-hidden');
         nav.classList.remove('keyboard-visible');
@@ -305,10 +296,9 @@ function App() {
     const handleFocus = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         const nav = navRef.current;
-        if (nav) {
-          nav.classList.add('keyboard-hidden');
-          nav.classList.remove('keyboard-visible');
-        }
+        if (!nav) return;
+        nav.classList.add('keyboard-hidden');
+        nav.classList.remove('keyboard-visible');
       }
     };
 
@@ -318,7 +308,7 @@ function App() {
       setTimeout(() => {
         nav.classList.add('keyboard-visible');
         nav.classList.remove('keyboard-hidden');
-      }, 250);
+      }, 200);
     };
 
     window.addEventListener('resize', handleResize);
@@ -336,87 +326,87 @@ function App() {
     };
   }, []);
 
-  // index helpers
+  // page/index helpers
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // measure & set indicator (NO JERK)
+  // indicator positioning
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const tabs = [
-      nav.querySelector('[data-tab="profile"]'),
-      nav.querySelector('[data-tab="home"]'),
-      nav.querySelector('[data-tab="history"]'),
-    ].filter(Boolean);
-
-    if (tabs.length !== 3) return;
-
-    const navRect = nav.getBoundingClientRect();
-    const rects = tabs.map((el) => {
-      const r = el.getBoundingClientRect();
-      const left = r.left - navRect.left;
-      const width = r.width;
-      const center = left + width / 2;
-      return { left, width, center };
-    });
-
-    dragRef.current.rects = rects;
-
-    const idx = pageToIndex(currentPage);
-    nav.style.setProperty('--indicator-left', `${rects[idx].left}px`);
-    nav.style.setProperty('--indicator-width', `${rects[idx].width}px`);
-    nav.classList.add('ready');
-  }, [currentPage]);
-
-  // drag-to-switch (Telegram scrub)
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const lerp = (a, b, t) => a + (b - a) * t;
-
-    const readRects = () => {
+    const updateIndicator = () => {
       const tabs = [
         nav.querySelector('[data-tab="profile"]'),
         nav.querySelector('[data-tab="home"]'),
-        nav.querySelector('[data-tab="history"]'),
+        nav.querySelector('[data-tab="history"]')
       ].filter(Boolean);
 
-      if (tabs.length !== 3) return null;
+      if (tabs.length !== 3) return;
 
       const navRect = nav.getBoundingClientRect();
-      return tabs.map((el) => {
+      const rects = tabs.map((el) => {
         const r = el.getBoundingClientRect();
         const left = r.left - navRect.left;
         const width = r.width;
         const center = left + width / 2;
         return { left, width, center };
       });
+
+      dragStateRef.current.rects = rects;
+
+      const activeIndex = pageToIndex(currentPage);
+      nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
+      nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
+      nav.classList.add('ready');
     };
 
-    const onDown = (e) => {
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [currentPage]);
+
+  // ✅ drag ONLY on the pill (indicator) + correct direction
+  useEffect(() => {
+    const nav = navRef.current;
+    const pill = indicatorRef.current;
+    if (!nav || !pill) return;
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const setIndicator = (left, width, animate = true) => {
+      if (!animate) nav.classList.add('no-anim');
+      nav.style.setProperty('--indicator-left', `${left}px`);
+      nav.style.setProperty('--indicator-width', `${width}px`);
+      if (!animate) requestAnimationFrame(() => nav.classList.remove('no-anim'));
+    };
+
+    const setIndicatorByIndex = (idx, animate = true) => {
+      const rects = dragStateRef.current.rects;
+      if (!rects) return;
+      setIndicator(rects[idx].left, rects[idx].width, animate);
+    };
+
+    const onPointerDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-      const st = dragRef.current;
+      const st = dragStateRef.current;
       st.isDown = true;
+      st.moved = false;
       st.pointerId = e.pointerId;
       st.startX = e.clientX;
       st.lastX = e.clientX;
-      st.moved = false;
       st.startIndex = pageToIndex(currentPage);
-      st.rects = readRects() || st.rects;
 
       nav.classList.add('dragging');
-      try { nav.setPointerCapture(e.pointerId); } catch {}
+      try { pill.setPointerCapture(e.pointerId); } catch {}
     };
 
-    const onMove = (e) => {
-      const st = dragRef.current;
+    const onPointerMove = (e) => {
+      const st = dragStateRef.current;
       if (!st.isDown) return;
-      if (st.pointerId != null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
 
       st.lastX = e.clientX;
       const dx = st.lastX - st.startX;
@@ -426,61 +416,62 @@ function App() {
       if (!rects) return;
 
       const from = st.startIndex;
-      // TG-like: drag left => go right tab, drag right => go left tab
-      const dir = dx > 0 ? -1 : 1;
+
+      // ✅ ПРАВИЛЬНО: вправо -> вправо, влево -> влево
+      const dir = dx > 0 ? +1 : -1;
       const to = clamp(from + dir, 0, 2);
 
-      if (to === from) return;
+      if (to === from) {
+        setIndicatorByIndex(from, false);
+        return;
+      }
 
       const dist = Math.abs(rects[to].center - rects[from].center) || 1;
       const t = clamp(Math.abs(dx) / dist, 0, 1);
 
       const left = lerp(rects[from].left, rects[to].left, t);
       const width = lerp(rects[from].width, rects[to].width, t);
-
-      nav.style.setProperty('--indicator-left', `${left}px`);
-      nav.style.setProperty('--indicator-width', `${width}px`);
+      setIndicator(left, width, false);
     };
 
-    const onUp = (e) => {
-      const st = dragRef.current;
+    const onPointerUp = (e) => {
+      const st = dragStateRef.current;
       if (!st.isDown) return;
-      if (st.pointerId != null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
 
       st.isDown = false;
       nav.classList.remove('dragging');
 
       const dx = st.lastX - st.startX;
 
-      // если не двигали — клики сами отработают
-      if (!st.moved) return;
-
-      const THRESHOLD = 22;
-      let target = st.startIndex;
-
-      if (dx > THRESHOLD) target = clamp(st.startIndex - 1, 0, 2);
-      else if (dx < -THRESHOLD) target = clamp(st.startIndex + 1, 0, 2);
-
-      const rects = st.rects || readRects();
-      if (rects) {
-        nav.style.setProperty('--indicator-left', `${rects[target].left}px`);
-        nav.style.setProperty('--indicator-width', `${rects[target].width}px`);
+      // если не двигали — просто вернемся на активную
+      if (!st.moved) {
+        setIndicatorByIndex(pageToIndex(currentPage), true);
+        st.pointerId = null;
+        return;
       }
 
-      navigateTo(indexToPage(target));
+      const THRESHOLD = 24;
+      let targetIndex = st.startIndex;
+
+      if (dx > THRESHOLD) targetIndex = clamp(st.startIndex + 1, 0, 2);      // ✅ вправо -> следующая
+      else if (dx < -THRESHOLD) targetIndex = clamp(st.startIndex - 1, 0, 2); // ✅ влево -> предыдущая
+
+      setIndicatorByIndex(targetIndex, true);
+      navigateTo(indexToPage(targetIndex));
       st.pointerId = null;
     };
 
-    nav.addEventListener('pointerdown', onDown, { passive: true });
-    nav.addEventListener('pointermove', onMove, { passive: true });
-    nav.addEventListener('pointerup', onUp, { passive: true });
-    nav.addEventListener('pointercancel', onUp, { passive: true });
+    pill.addEventListener('pointerdown', onPointerDown, { passive: true });
+    pill.addEventListener('pointermove', onPointerMove, { passive: true });
+    pill.addEventListener('pointerup', onPointerUp, { passive: true });
+    pill.addEventListener('pointercancel', onPointerUp, { passive: true });
 
     return () => {
-      nav.removeEventListener('pointerdown', onDown);
-      nav.removeEventListener('pointermove', onMove);
-      nav.removeEventListener('pointerup', onUp);
-      nav.removeEventListener('pointercancel', onUp);
+      pill.removeEventListener('pointerdown', onPointerDown);
+      pill.removeEventListener('pointermove', onPointerMove);
+      pill.removeEventListener('pointerup', onPointerUp);
+      pill.removeEventListener('pointercancel', onPointerUp);
     };
   }, [currentPage, navigateTo]);
 
@@ -494,7 +485,7 @@ function App() {
       toggleTheme,
       isDarkMode,
       hideHints,
-      updateHideHints,
+      updateHideHints
     };
 
     switch (currentPage) {
@@ -507,13 +498,15 @@ function App() {
     }
   };
 
+  // floating nav
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
 
     return (
-      <div className="floating-nav" ref={navRef}>
-        <div className="nav-indicator" />
+      <div className="floating-nav keyboard-visible" ref={navRef}>
+        {/* pill */}
+        <div className="nav-indicator" ref={indicatorRef} />
 
         <button
           data-tab="profile"
@@ -525,7 +518,11 @@ function App() {
             <ProfileIcon active={currentPage === 'profile'} />
           </div>
           <span className="nav-label-floating">Профиль</span>
-          {showBadge && <span className="nav-badge-floating">${availableEarnings.toFixed(0)}</span>}
+          {showBadge && (
+            <span className="nav-badge-floating">
+              ${availableEarnings.toFixed(0)}
+            </span>
+          )}
         </button>
 
         <button
@@ -534,7 +531,7 @@ function App() {
           onClick={() => navigateTo('home')}
           type="button"
         >
-          <div className="nav-icon-floating">
+          <div className="nav-icon-floating nav-icon-exchange">
             <ExchangeIcon active={currentPage === 'home'} />
           </div>
           <span className="nav-label-floating">Обмен</span>

@@ -1,3 +1,5 @@
+/* App.css */
+
 :root {
   --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
@@ -11,12 +13,14 @@
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
   --tg-info-color: #5e5ce6;
+
   --tg-card-bg: #212428;
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
 }
 
+/* light */
 :root:not([data-theme]) {
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
@@ -26,62 +30,43 @@
   --tg-theme-secondary-bg-color: #f8f9fa;
   --tg-theme-section-bg-color: #e0e0e0;
 
-  --tg-success-color: #28a745;
-  --tg-error-color: #dc3545;
-  --tg-warning-color: #ffc107;
-  --tg-info-color: #17a2b8;
   --tg-card-bg: #f8f9fa;
   --tg-input-bg: #ffffff;
   --tg-border-color: #e0e0e0;
   --tg-hover-color: #e9ecef;
 }
 
+/* reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body, #root {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  overscroll-behavior: none;
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* убираем белый flash / фокус */
-button, a, .nav-item-floating {
-  -webkit-tap-highlight-color: transparent !important;
-  outline: none !important;
-}
-button:focus, a:focus { outline: none !important; }
-button::-moz-focus-inner { border: 0; }
-button { background: none; border: none; color: inherit; }
-
-/* Основной контейнер */
+/* app */
 .app {
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
   height: 100dvh;
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
-  touch-action: pan-y;
 }
 
 .app-wrapper {
-  flex: 1;
+  height: 100%;
   width: 100%;
-  position: relative;
   overflow: hidden;
 }
 
@@ -92,193 +77,180 @@ button { background: none; border: none; color: inherit; }
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
 }
 
-/* =========================================
-   TELEGRAM-LIKE FLOATING NAV (ONE IN ONE)
-   ========================================= */
+/* =========================
+   FLOATING NAV (Telegram-like)
+   ========================= */
+
+/* container */
 .floating-nav {
-  position: fixed;
-  left: 50%;
-  bottom: max(10px, env(safe-area-inset-bottom, 10px));
-  transform: translateX(-50%);
-  width: min(430px, calc(100% - 24px));
-  height: 66px;
-  padding: 8px;
-  border-radius: 28px;
-  z-index: 10000;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  /* TG glass */
-  background: rgba(255, 255, 255, 0.08);
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow:
-    0 14px 34px rgba(0,0,0,0.32),
-    0 1px 0 rgba(255,255,255,0.08) inset;
-
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-
-  transition: opacity .22s ease, transform .22s ease, bottom .22s ease;
-
-  /* indicator driven by JS */
   --indicator-left: 0px;
   --indicator-width: 0px;
 
-  /* allow horizontal drag */
-  touch-action: pan-x;
-  user-select: none;
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+
+  width: min(92vw, 380px);
+  height: 58px;
+  padding: 6px;
+  border-radius: 18px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+
+  z-index: 10000;
+
+  background: rgba(25, 27, 31, 0.55);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  will-change: transform, opacity;
+  transition: opacity .25s ease, transform .25s ease;
 }
 
+/* light nav */
 :root:not([data-theme]) .floating-nav {
   background: rgba(255, 255, 255, 0.72);
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.90), rgba(255,255,255,0.60));
   border: 1px solid rgba(0,0,0,0.08);
-  box-shadow:
-    0 14px 28px rgba(0,0,0,0.14),
-    0 1px 0 rgba(255,255,255,0.70) inset;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
-/* selected pill */
+/* indicator (pill) */
 .nav-indicator {
   position: absolute;
-  top: 7px;
-  left: 0;
-  height: calc(100% - 14px);
+  top: 6px;
+  left: var(--indicator-left);
   width: var(--indicator-width);
-  transform: translateX(var(--indicator-left));
-  border-radius: 22px;
+  height: calc(58px - 12px);
+  border-radius: 14px;
 
-  background: rgba(255,255,255,0.22);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow:
-    0 10px 24px rgba(0,0,0,0.18),
-    0 1px 0 rgba(255,255,255,0.10) inset;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
 
-  transition:
-    transform 280ms cubic-bezier(.2,.9,.2,1),
-    width 280ms cubic-bezier(.2,.9,.2,1),
-    opacity 140ms ease;
+  transition: left .22s ease, width .22s ease, background .22s ease;
+  will-change: left, width;
 
-  pointer-events: none;
-  opacity: 0; /* пока не ready */
+  /* ✅ drag handle */
+  cursor: grab;
+  touch-action: pan-x;
+
+  z-index: 3; /* выше кнопок, чтобы тащить пилюлю */
 }
 
 :root:not([data-theme]) .nav-indicator {
-  background: rgba(255,255,255,0.62);
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 10px 18px rgba(0,0,0,0.10);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
-/* чтобы не дергалось при первом рендере */
-.floating-nav.ready .nav-indicator { opacity: 1; }
+.floating-nav.dragging .nav-indicator {
+  cursor: grabbing;
+  transition: none !important;
+}
 
-/* during drag => no transitions */
-.floating-nav.dragging .nav-indicator { transition: none !important; }
+.floating-nav.no-anim .nav-indicator {
+  transition: none !important;
+}
 
-/* nav buttons */
+/* buttons */
 .nav-item-floating {
-  flex: 1;
-  height: 100%;
-  border-radius: 22px;
   position: relative;
-  z-index: 2;
+  z-index: 2; /* под индикатором, но клики работают, потому что индикатор только для drag */
+  height: 100%;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
 
-  background: transparent !important;
-  border: none !important;
-  cursor: pointer;
-
+  border: 0;
+  background: transparent;
   color: var(--tg-theme-hint-color);
+
+  font-size: 11px;
+  font-weight: 600;
+
   user-select: none;
-  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.nav-item-floating:focus,
+.nav-item-floating:focus-visible {
+  outline: none;
 }
 
 .nav-item-floating:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
 }
 
-/* active color */
+/* active state */
 .nav-item-floating.active {
-  color: var(--tg-theme-button-color) !important;
+  color: var(--tg-theme-button-color);
 }
 
-/* icons (FIX: always 24x24) */
+/* icon wrapper */
 .nav-icon-floating {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .nav-icon-floating svg {
-  width: 24px !important;
-  height: 24px !important;
+  width: 22px;
+  height: 22px;
   display: block;
+}
+
+/* exchange icon fix (у тебя он огромный svg 101x53) */
+.nav-icon-exchange svg {
+  width: 26px !important;
+  height: 26px !important;
 }
 
 /* label */
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.2px;
   line-height: 1;
 }
 
 /* badge */
 .nav-badge-floating {
   position: absolute;
-  top: 7px;
-  right: 22px;
-  z-index: 3;
-
+  top: 6px;
+  right: 18px;
+  z-index: 5;
   background: var(--tg-error-color);
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 999px;
-  height: 18px;
-  min-width: 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 2px solid rgba(255,255,255,0.18);
+  border: 2px solid var(--tg-theme-bg-color);
 }
 
-:root:not([data-theme]) .nav-badge-floating {
-  border-color: rgba(255,255,255,0.75);
-}
-
-/* keyboard hide/show */
+/* keyboard hide */
 .floating-nav.keyboard-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transform: translateX(-50%) translateY(18px) !important;
-}
-.floating-nav.keyboard-visible {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  transform: translateX(-50%) translateY(0) !important;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(16px);
 }
 
-@media (max-height: 500px) {
-  .floating-nav { display: none !important; }
-  .app-content { padding-bottom: env(safe-area-inset-bottom, 0px) !important; }
+.floating-nav.keyboard-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* loader */
@@ -296,61 +268,70 @@ button { background: none; border: none; color: inherit; }
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 2.5px solid rgba(51, 144, 236, 0.12);
+  border: 2.5px solid rgba(51, 144, 236, 0.15);
   border-top-color: var(--tg-theme-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 .app-loading p {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--tg-theme-hint-color);
 }
 
 /* toast */
 .telegram-toast {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 20px);
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--tg-card-bg);
   border-radius: 14px;
-  padding: 14px 20px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  gap: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.22);
   z-index: 10001;
-  animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
-  max-width: 90%;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  max-width: 92%;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
-.telegram-toast-icon { font-size: 18px; }
-.telegram-toast-text { font-size: 15px; font-weight: 500; color: var(--tg-theme-text-color); }
-
-@keyframes slideDownToast {
-  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+.telegram-toast-icon {
+  font-size: 16px;
 }
-@keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+.telegram-toast-text {
+  font-size: 14px;
+  font-weight: 600;
+}
 
-.telegram-toast.success { border-left: 4px solid var(--tg-success-color); }
-.telegram-toast.error { border-left: 4px solid var(--tg-error-color); }
-.telegram-toast.info { border-left: 4px solid var(--tg-info-color); }
+/* remove ugly white selection */
+button, a, div {
+  -webkit-tap-highlight-color: transparent;
+}
 
-/* scrollbars */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--tg-theme-secondary-bg-color); border-radius: 3px; }
-::-webkit-scrollbar-thumb { background: var(--tg-theme-hint-color); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--tg-theme-button-color); }
+/* prevent indicator snap before ready */
+.floating-nav:not(.ready) .nav-indicator {
+  opacity: 0;
+}
+.floating-nav.ready .nav-indicator {
+  opacity: 1;
+}
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
+/* small screens */
+@media (max-width: 360px) {
+  .floating-nav {
+    height: 56px;
+    border-radius: 16px;
+  }
+  .nav-indicator {
+    border-radius: 13px;
+  }
 }

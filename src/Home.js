@@ -660,34 +660,56 @@ function Home({ navigateTo, telegramUser, showToast }) {
             </div>
 
             {/* ПОЛЯ ВВОДА */}
-            <div className="amount-input-section">
-              <div className="amount-input-group">
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={handleAmountChange}
-                    className="amount-input"
-                    placeholder="0"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "RUB" : "USDT"}</span>
-                </div>
-                {error && <div className="error-message">{error}</div>}
-              </div>
+            {/* ПОЛЯ ВВОДА (Telegram style) */}
+<div className={`amount-input-section tg-amount ${error ? 'has-error' : ''}`}>
+  {/* Отдаёшь */}
+  <div className={`tg-amount-card ${error ? 'error' : ''}`}>
+    <div className="tg-amount-top">
+      <span className="tg-amount-label">{isBuyMode ? 'Вы отдаёте' : 'Вы отдаёте'}</span>
+      <span className="tg-amount-chip">{isBuyMode ? 'RUB' : 'USDT'}</span>
+    </div>
 
-              <div className="amount-input-group">
-                <div className="amount-input-wrapper">
-                  <input
-                    type="text"
-                    value={convertedAmount()}
-                    readOnly
-                    className="amount-input"
-                    placeholder="0"
-                  />
-                  <span className="amount-currency">{isBuyMode ? "USDT" : "RUB"}</span>
-                </div>
-              </div>
-            </div>
+    <div className="tg-amount-row">
+      <input
+        type="text"
+        inputMode="decimal"
+        value={amount}
+        onChange={handleAmountChange}
+        className="tg-amount-input"
+        placeholder="0"
+        aria-label="Сумма"
+      />
+      <span className="tg-amount-suffix">{isBuyMode ? '₽' : 'USDT'}</span>
+    </div>
+
+    {error && <div className="tg-amount-error">{error}</div>}
+  </div>
+
+  {/* Получаешь */}
+  <div className="tg-amount-card readonly">
+    <div className="tg-amount-top">
+      <span className="tg-amount-label">Вы получаете</span>
+      <span className="tg-amount-chip">{isBuyMode ? 'USDT' : 'RUB'}</span>
+    </div>
+
+    <div className="tg-amount-row">
+      <input
+        type="text"
+        value={convertedAmount()}
+        readOnly
+        className="tg-amount-input"
+        placeholder="0"
+        aria-label="Получаемая сумма"
+      />
+      <span className="tg-amount-suffix">{isBuyMode ? 'USDT' : '₽'}</span>
+    </div>
+
+    <div className="tg-amount-hint">
+      Курс: <span className="tg-amount-hint-strong">{currentRate.toFixed(2)} ₽</span>
+    </div>
+  </div>
+</div>
+
           </div>
 
           {/* БЛОК АДРЕСА ДЛЯ USDT */}

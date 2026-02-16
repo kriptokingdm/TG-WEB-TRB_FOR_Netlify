@@ -20,73 +20,62 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [hideHints, setHideHints] = useState(false);
 
-  // refs for nav
   const navRef = useRef(null);
-  const dragStateRef = useRef({
+
+  const dragRef = useRef({
     isDown: false,
+    pointerId: null,
     startX: 0,
     lastX: 0,
     moved: false,
     startIndex: 1,
-    activeIndex: 1,
-    rects: null,
-    pointerId: null
+    rects: null, // [{left,width,center}]
   });
 
-  // Загружаем настройки при инициализации
+  // settings
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
 
-  // Конвертер цвета Telegram в hex
+  // color converter
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
-    if (typeof color === 'string') {
-      return color.startsWith('#') ? color : `#${color}`;
-    } else if (typeof color === 'number') {
-      const hex = color.toString(16).padStart(6, '0');
-      return `#${hex}`;
-    }
+    if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
+    if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
     return null;
   }, []);
 
-  // Определяем темную тему
+  // dark detect
   const detectDarkMode = useCallback(() => {
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       if (params?.bg_color) {
         try {
-          let bgColor;
-          if (typeof params.bg_color === 'string') {
-            bgColor = parseInt(params.bg_color.replace('#', ''), 16);
-          } else {
-            bgColor = params.bg_color;
-          }
+          const bgColor =
+            typeof params.bg_color === 'string'
+              ? parseInt(params.bg_color.replace('#', ''), 16)
+              : params.bg_color;
+
           const r = (bgColor >> 16) & 0xff;
           const g = (bgColor >> 8) & 0xff;
           const b = bgColor & 0xff;
           const brightness = (r * 299 + g * 587 + b * 114) / 1000;
           return brightness < 180;
-        } catch (error) {
-          console.error('Ошибка определения цвета Telegram:', error);
-        }
+        } catch (e) {}
       }
     }
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return true;
-    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
     return true;
   }, []);
 
-  // Применяем правильную тему
+  // apply theme
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
     const darkMode = detectDarkMode();
     setIsDarkMode(darkMode);
 
     let tgButtonColor = '#3390ec';
-
     if (window.Telegram?.WebApp?.themeParams) {
       const params = window.Telegram.WebApp.themeParams;
       const buttonColor = telegramColorToHex(params.button_color);
@@ -131,20 +120,21 @@ function App() {
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
-  // Показ уведомлений
-  const showToast = useCallback((message, type = 'info') => {
-    if (hideHints && type === 'info') return;
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, [hideHints]);
+  // toast
+  const showToast = useCallback(
+    (message, type = 'info') => {
+      if (hideHints && type === 'info') return;
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+    },
+    [hideHints]
+  );
 
-  // Функция для обновления настроек
   const updateHideHints = useCallback((value) => {
     setHideHints(value);
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
-  // Переключение темы
   const toggleTheme = useCallback(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -155,12 +145,10 @@ function App() {
     showToast(`Тема изменена на ${darkMode ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
-  // Получение ID пользователя
   const getUserId = () => {
     try {
       if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        const tgUser = tg.initDataUnsafe?.user;
+        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
         if (tgUser?.id) return tgUser.id.toString();
       }
       const savedUser = localStorage.getItem('currentUser');
@@ -169,13 +157,11 @@ function App() {
         return parsed.telegramId?.toString() || parsed.id?.toString();
       }
       return '7879866656';
-    } catch (error) {
-      console.error('❌ Ошибка получения ID:', error);
+    } catch {
       return '7879866656';
     }
   };
 
-  // Загрузка реферальных данных
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -184,35 +170,39 @@ function App() {
         const result = await response.json();
         if (result.success) setReferralData(result.data);
       }
-    } catch (error) {
-      console.error('Ошибка загрузки реферальных данных:', error);
-    }
+    } catch (e) {}
   }, []);
 
-  // Навигация
-  const navigateTo = useCallback((page) => {
-    if (page === currentPage) return;
-    window.location.hash = page;
-    setCurrentPage(page);
-    if (window.Telegram?.WebApp?.BackButton) {
-      const tg = window.Telegram.WebApp;
-      if (page === 'home') {
-        try { tg.BackButton.hide(); } catch {}
-      } else {
-        try { tg.BackButton.show(); } catch {}
-      }
-    }
-  }, [currentPage]);
+  const navigateTo = useCallback(
+    (page) => {
+      if (page === currentPage) return;
 
-  // ==========================
-  // Telegram WebApp init
-  // ==========================
+      window.location.hash = page;
+      setCurrentPage(page);
+
+      if (window.Telegram?.WebApp?.BackButton) {
+        const tg = window.Telegram.WebApp;
+        if (page === 'home') {
+          try {
+            tg.BackButton.hide();
+          } catch {}
+        } else {
+          try {
+            tg.BackButton.show();
+          } catch {}
+        }
+      }
+    },
+    [currentPage]
+  );
+
+  // init
   useEffect(() => {
     const debugUser = {
       id: '7879866656',
       telegramId: '7879866656',
       username: 'TERBCEO',
-      firstName: 'G'
+      firstName: 'G',
     };
     localStorage.setItem('currentUser', JSON.stringify(debugUser));
 
@@ -226,7 +216,9 @@ function App() {
           if (tg.BackButton) {
             tg.BackButton.onClick(() => navigateTo('home'));
             if (currentPage === 'home') {
-              try { tg.BackButton.hide(); } catch {}
+              try {
+                tg.BackButton.hide();
+              } catch {}
             }
           }
         } catch {}
@@ -242,19 +234,21 @@ function App() {
         tg.onEvent('themeChanged', () => setTimeout(applyTheme, 100));
 
         if (tg.initDataUnsafe?.user) {
-          const tgUser = tg.initDataUnsafe.user;
+          const u = tg.initDataUnsafe.user;
           const userData = {
-            id: tgUser.id.toString(),
-            telegramId: tgUser.id,
-            username: tgUser.username || `user_${tgUser.id}`,
-            firstName: tgUser.first_name || 'Пользователь',
-            lastName: tgUser.last_name || '',
-            photoUrl: tgUser.photo_url || null,
-            languageCode: tgUser.language_code || 'ru'
+            id: u.id.toString(),
+            telegramId: u.id,
+            username: u.username || `user_${u.id}`,
+            firstName: u.first_name || 'Пользователь',
+            lastName: u.last_name || '',
+            photoUrl: u.photo_url || null,
+            languageCode: u.language_code || 'ru',
           };
+
           setTelegramUser(userData);
           localStorage.setItem('telegramUser', JSON.stringify(userData));
           localStorage.setItem('currentUser', JSON.stringify(userData));
+
           if (!hideHints) {
             setTimeout(() => showToast(`Добро пожаловать, ${userData.firstName}! 👋`, 'success'), 1000);
           }
@@ -265,7 +259,7 @@ function App() {
           telegramId: '7879866656',
           username: 'test_user',
           firstName: 'Тестовый',
-          photoUrl: null
+          photoUrl: null,
         });
         applyTheme();
       }
@@ -279,7 +273,7 @@ function App() {
     }
 
     loadReferralData();
-    setTimeout(() => setIsLoading(false), 1000);
+    setTimeout(() => setIsLoading(false), 800);
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
@@ -287,17 +281,18 @@ function App() {
         setCurrentPage(h);
       }
     };
+
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ==========================
-  // Keyboard hide nav
-  // ==========================
+  // keyboard hide nav
   useEffect(() => {
     const handleResize = () => {
       const nav = navRef.current;
       if (!nav) return;
+
       if (window.innerHeight < 500) {
         nav.classList.add('keyboard-hidden');
         nav.classList.remove('keyboard-visible');
@@ -330,6 +325,7 @@ function App() {
     window.addEventListener('orientationchange', handleResize);
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('focusout', handleBlur);
+
     handleResize();
 
     return () => {
@@ -340,70 +336,60 @@ function App() {
     };
   }, []);
 
-  // ==========================
-  // Tab -> index helpers
-  // ==========================
+  // index helpers
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // ==========================
-  // Indicator positioning
-  // ==========================
+  // measure & set indicator (NO JERK)
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const updateIndicator = () => {
-      const tabs = [
-        nav.querySelector('[data-tab="profile"]'),
-        nav.querySelector('[data-tab="home"]'),
-        nav.querySelector('[data-tab="history"]')
-      ].filter(Boolean);
+    const tabs = [
+      nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="home"]'),
+      nav.querySelector('[data-tab="history"]'),
+    ].filter(Boolean);
 
-      if (tabs.length !== 3) return;
+    if (tabs.length !== 3) return;
 
-      const navRect = nav.getBoundingClientRect();
-      const rects = tabs.map((el) => {
-        const r = el.getBoundingClientRect();
-        const left = r.left - navRect.left;
-        const width = r.width;
-        return { left, width };
-      });
+    const navRect = nav.getBoundingClientRect();
+    const rects = tabs.map((el) => {
+      const r = el.getBoundingClientRect();
+      const left = r.left - navRect.left;
+      const width = r.width;
+      const center = left + width / 2;
+      return { left, width, center };
+    });
 
-      dragStateRef.current.rects = rects;
+    dragRef.current.rects = rects;
 
-      const activeIndex = pageToIndex(currentPage);
-      dragStateRef.current.activeIndex = activeIndex;
-
-      nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
-      nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
-      nav.classList.add('ready');
-    };
-
-    updateIndicator();
-    window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
+    const idx = pageToIndex(currentPage);
+    nav.style.setProperty('--indicator-left', `${rects[idx].left}px`);
+    nav.style.setProperty('--indicator-width', `${rects[idx].width}px`);
+    nav.classList.add('ready');
   }, [currentPage]);
 
-  // ==========================
-  // Drag to switch tabs (Telegram-like scrub)
-  // ==========================
+  // drag-to-switch (Telegram scrub)
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const getRects = () => {
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const readRects = () => {
       const tabs = [
         nav.querySelector('[data-tab="profile"]'),
         nav.querySelector('[data-tab="home"]'),
-        nav.querySelector('[data-tab="history"]')
+        nav.querySelector('[data-tab="history"]'),
       ].filter(Boolean);
 
       if (tabs.length !== 3) return null;
 
+      const navRect = nav.getBoundingClientRect();
       return tabs.map((el) => {
         const r = el.getBoundingClientRect();
-        const navRect = nav.getBoundingClientRect();
         const left = r.left - navRect.left;
         const width = r.width;
         const center = left + width / 2;
@@ -411,42 +397,26 @@ function App() {
       });
     };
 
-    const setIndicatorByIndex = (idx, animate = true) => {
-      const rects = dragStateRef.current.rects || getRects();
-      if (!rects) return;
-      
-      if (!animate) nav.classList.add('no-anim');
-      nav.style.setProperty('--indicator-left', `${rects[idx].left}px`);
-      nav.style.setProperty('--indicator-width', `${rects[idx].width}px`);
-      if (!animate) {
-        requestAnimationFrame(() => nav.classList.remove('no-anim'));
-      }
-    };
-
-    const lerp = (a, b, t) => a + (b - a) * t;
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-    const onPointerDown = (e) => {
+    const onDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-      const st = dragStateRef.current;
+      const st = dragRef.current;
       st.isDown = true;
-      st.moved = false;
       st.pointerId = e.pointerId;
       st.startX = e.clientX;
       st.lastX = e.clientX;
+      st.moved = false;
       st.startIndex = pageToIndex(currentPage);
-      st.activeIndex = st.startIndex;
-      st.rects = getRects();
+      st.rects = readRects() || st.rects;
 
       nav.classList.add('dragging');
       try { nav.setPointerCapture(e.pointerId); } catch {}
     };
 
-    const onPointerMove = (e) => {
-      const st = dragStateRef.current;
+    const onMove = (e) => {
+      const st = dragRef.current;
       if (!st.isDown) return;
-      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId != null && e.pointerId !== st.pointerId) return;
 
       st.lastX = e.clientX;
       const dx = st.lastX - st.startX;
@@ -456,13 +426,11 @@ function App() {
       if (!rects) return;
 
       const from = st.startIndex;
+      // TG-like: drag left => go right tab, drag right => go left tab
       const dir = dx > 0 ? -1 : 1;
       const to = clamp(from + dir, 0, 2);
 
-      if (to === from) {
-        setIndicatorByIndex(from, false);
-        return;
-      }
+      if (to === from) return;
 
       const dist = Math.abs(rects[to].center - rects[from].center) || 1;
       const t = clamp(Math.abs(dx) / dist, 0, 1);
@@ -474,50 +442,49 @@ function App() {
       nav.style.setProperty('--indicator-width', `${width}px`);
     };
 
-    const onPointerUp = (e) => {
-      const st = dragStateRef.current;
+    const onUp = (e) => {
+      const st = dragRef.current;
       if (!st.isDown) return;
-      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId != null && e.pointerId !== st.pointerId) return;
 
       st.isDown = false;
       nav.classList.remove('dragging');
 
       const dx = st.lastX - st.startX;
 
-      if (!st.moved) {
-        setIndicatorByIndex(pageToIndex(currentPage), true);
-        st.pointerId = null;
-        return;
+      // если не двигали — клики сами отработают
+      if (!st.moved) return;
+
+      const THRESHOLD = 22;
+      let target = st.startIndex;
+
+      if (dx > THRESHOLD) target = clamp(st.startIndex - 1, 0, 2);
+      else if (dx < -THRESHOLD) target = clamp(st.startIndex + 1, 0, 2);
+
+      const rects = st.rects || readRects();
+      if (rects) {
+        nav.style.setProperty('--indicator-left', `${rects[target].left}px`);
+        nav.style.setProperty('--indicator-width', `${rects[target].width}px`);
       }
 
-      const THRESHOLD = 24;
-      let targetIndex = st.startIndex;
-      
-      if (dx > THRESHOLD) {
-        targetIndex = clamp(st.startIndex - 1, 0, 2);
-      } else if (dx < -THRESHOLD) {
-        targetIndex = clamp(st.startIndex + 1, 0, 2);
-      }
-
-      setIndicatorByIndex(targetIndex, true);
-      navigateTo(indexToPage(targetIndex));
+      navigateTo(indexToPage(target));
       st.pointerId = null;
     };
 
-    nav.addEventListener('pointerdown', onPointerDown, { passive: true });
-    nav.addEventListener('pointermove', onPointerMove, { passive: true });
-    nav.addEventListener('pointerup', onPointerUp, { passive: true });
-    nav.addEventListener('pointercancel', onPointerUp, { passive: true });
+    nav.addEventListener('pointerdown', onDown, { passive: true });
+    nav.addEventListener('pointermove', onMove, { passive: true });
+    nav.addEventListener('pointerup', onUp, { passive: true });
+    nav.addEventListener('pointercancel', onUp, { passive: true });
 
     return () => {
-      nav.removeEventListener('pointerdown', onPointerDown);
-      nav.removeEventListener('pointermove', onPointerMove);
-      nav.removeEventListener('pointerup', onPointerUp);
-      nav.removeEventListener('pointercancel', onPointerUp);
+      nav.removeEventListener('pointerdown', onDown);
+      nav.removeEventListener('pointermove', onMove);
+      nav.removeEventListener('pointerup', onUp);
+      nav.removeEventListener('pointercancel', onUp);
     };
   }, [currentPage, navigateTo]);
 
-  // Рендер страниц
+  // render pages
   const renderPage = () => {
     const commonProps = {
       telegramUser,
@@ -527,7 +494,7 @@ function App() {
       toggleTheme,
       isDarkMode,
       hideHints,
-      updateHideHints
+      updateHideHints,
     };
 
     switch (currentPage) {
@@ -540,7 +507,6 @@ function App() {
     }
   };
 
-  // Плавающая навигация
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
@@ -548,7 +514,7 @@ function App() {
     return (
       <div className="floating-nav" ref={navRef}>
         <div className="nav-indicator" />
-        
+
         <button
           data-tab="profile"
           className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
@@ -559,11 +525,7 @@ function App() {
             <ProfileIcon active={currentPage === 'profile'} />
           </div>
           <span className="nav-label-floating">Профиль</span>
-          {showBadge && (
-            <span className="nav-badge-floating">
-              ${availableEarnings.toFixed(0)}
-            </span>
-          )}
+          {showBadge && <span className="nav-badge-floating">${availableEarnings.toFixed(0)}</span>}
         </button>
 
         <button
@@ -608,6 +570,7 @@ function App() {
         <div className="app-content">
           {renderPage()}
           {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
+
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
               <span className="telegram-toast-icon">

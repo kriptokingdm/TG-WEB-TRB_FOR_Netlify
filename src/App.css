@@ -1,7 +1,4 @@
-/* App.css - Исправленная версия */
-
 :root {
-  /* Дефолтные значения (темная тема) */
   --tg-theme-bg-color: #1a1d21;
   --tg-theme-text-color: #ffffff;
   --tg-theme-hint-color: #8e8e93;
@@ -9,7 +6,7 @@
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #212428;
   --tg-theme-section-bg-color: #3a3d42;
-  
+
   --tg-success-color: #34c759;
   --tg-error-color: #ff3b30;
   --tg-warning-color: #ff9500;
@@ -18,10 +15,8 @@
   --tg-input-bg: #2a2d32;
   --tg-border-color: #3a3d42;
   --tg-hover-color: #2c2f34;
-  --tg-nav-bg: rgba(33, 36, 40, 0.85);
 }
 
-/* Светлая тема */
 :root:not([data-theme]) {
   --tg-theme-bg-color: #ffffff;
   --tg-theme-text-color: #000000;
@@ -30,7 +25,7 @@
   --tg-theme-button-text-color: #ffffff;
   --tg-theme-secondary-bg-color: #f8f9fa;
   --tg-theme-section-bg-color: #e0e0e0;
-  
+
   --tg-success-color: #28a745;
   --tg-error-color: #dc3545;
   --tg-warning-color: #ffc107;
@@ -39,15 +34,13 @@
   --tg-input-bg: #ffffff;
   --tg-border-color: #e0e0e0;
   --tg-hover-color: #e9ecef;
-  --tg-nav-bg: rgba(248, 249, 250, 0.9);
 }
 
-/* Сброс и базовые стили */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 html, body, #root {
@@ -58,14 +51,21 @@ html, body, #root {
   background: var(--tg-theme-bg-color);
   color: var(--tg-theme-text-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* убираем белый flash / фокус */
+button, a, .nav-item-floating {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+button:focus, a:focus { outline: none !important; }
+button::-moz-focus-inner { border: 0; }
+button { background: none; border: none; color: inherit; }
 
 /* Основной контейнер */
 .app {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
@@ -74,7 +74,6 @@ html, body, #root {
   color: var(--tg-theme-text-color);
   display: flex;
   flex-direction: column;
-  max-width: 100vw;
   overflow: hidden;
   touch-action: pan-y;
 }
@@ -83,318 +82,209 @@ html, body, #root {
   flex: 1;
   width: 100%;
   position: relative;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
 
-/* Контент */
 .app-content {
-  flex: 1;
+  height: 100%;
   width: 100%;
-  position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  padding-bottom: calc(94px + env(safe-area-inset-bottom, 0px));
-  background: var(--tg-theme-bg-color);
   padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
-/* НАВИГАЦИЯ - ФИКСИРОВАННАЯ БЕЗ ПРЫЖКОВ */
+/* =========================================
+   TELEGRAM-LIKE FLOATING NAV (ONE IN ONE)
+   ========================================= */
 .floating-nav {
   position: fixed;
-  bottom: max(16px, env(safe-area-inset-bottom, 16px));
   left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom, 10px));
   transform: translateX(-50%);
-  width: 92%;
-  min-width: 280px;
-  max-width: 360px;
-  height: 64px;
-  border-radius: 18px;
+  width: min(430px, calc(100% - 24px));
+  height: 66px;
+  padding: 8px;
+  border-radius: 28px;
+  z-index: 10000;
+
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  z-index: 10000; /* Высокий z-index чтобы всегда сверху */
-  padding: 0 12px;
-  
-  /* Эффект стекла */
+  justify-content: space-between;
+
+  /* TG glass */
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  
-  /* Фиксированное поведение при клавиатуре */
-  transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
-  will-change: transform, opacity, bottom;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.32),
+    0 1px 0 rgba(255,255,255,0.08) inset;
+
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  transition: opacity .22s ease, transform .22s ease, bottom .22s ease;
+
+  /* indicator driven by JS */
+  --indicator-left: 0px;
+  --indicator-width: 0px;
+
+  /* allow horizontal drag */
+  touch-action: pan-x;
+  user-select: none;
 }
 
-/* Для светлой темы */
 :root:not([data-theme]) .floating-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.90), rgba(255,255,255,0.60));
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.14),
+    0 1px 0 rgba(255,255,255,0.70) inset;
 }
 
-/* Кнопки навигации */
+/* selected pill */
+.nav-indicator {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  height: calc(100% - 14px);
+  width: var(--indicator-width);
+  transform: translateX(var(--indicator-left));
+  border-radius: 22px;
+
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.18),
+    0 1px 0 rgba(255,255,255,0.10) inset;
+
+  transition:
+    transform 280ms cubic-bezier(.2,.9,.2,1),
+    width 280ms cubic-bezier(.2,.9,.2,1),
+    opacity 140ms ease;
+
+  pointer-events: none;
+  opacity: 0; /* пока не ready */
+}
+
+:root:not([data-theme]) .nav-indicator {
+  background: rgba(255,255,255,0.62);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.10);
+}
+
+/* чтобы не дергалось при первом рендере */
+.floating-nav.ready .nav-indicator { opacity: 1; }
+
+/* during drag => no transitions */
+.floating-nav.dragging .nav-indicator { transition: none !important; }
+
+/* nav buttons */
 .nav-item-floating {
   flex: 1;
+  height: 100%;
+  border-radius: 22px;
+  position: relative;
+  z-index: 2;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px 0 6px;
-  position: relative;
   gap: 4px;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  color: inherit;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
+
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+
+  color: var(--tg-theme-hint-color);
   user-select: none;
   touch-action: manipulation;
 }
 
-.nav-item-floating:focus {
-  outline: none;
+.nav-item-floating:active {
+  transform: scale(0.985);
 }
 
-/* Активное состояние */
+/* active color */
 .nav-item-floating.active {
   color: var(--tg-theme-button-color) !important;
 }
 
-.nav-item-floating.active::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  width: 20px;
-  height: 2px;
-  background: var(--tg-theme-button-color);
-  border-radius: 2px;
-}
-
-/* Активация при касании */
-.nav-item-floating:active {
-  transform: scale(0.95);
-  transition: transform 0.1s ease;
-}
-
-/* Неактивное состояние */
-.nav-item-floating:not(.active) {
-  color: var(--tg-theme-hint-color) !important;
-}
-
-/* Иконки */
+/* icons (FIX: always 24x24) */
 .nav-icon-floating {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
-  transition: transform 0.3s ease;
 }
 
-.nav-item-floating.active .nav-icon-floating {
-  transform: translateY(-2px);
+.nav-icon-floating svg {
+  width: 24px !important;
+  height: 24px !important;
+  display: block;
 }
 
-/* Текст */
+/* label */
 .nav-label-floating {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.2px;
+  line-height: 1;
 }
 
-/* Бейдж */
+/* badge */
 .nav-badge-floating {
   position: absolute;
-  top: 6px;
-  right: calc(50% - 12px);
+  top: 7px;
+  right: 22px;
+  z-index: 3;
+
   background: var(--tg-error-color);
-  color: white;
-  font-size: 8px;
-  font-weight: 700;
-  padding: 2px 4px;
-  border-radius: 6px;
-  min-width: 14px;
-  height: 14px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+
+  padding: 2px 7px;
+  border-radius: 999px;
+  height: 18px;
+  min-width: 18px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--tg-theme-bg-color);
-  z-index: 2;
+
+  border: 2px solid rgba(255,255,255,0.18);
 }
 
-/* Центральная кнопка */
-.nav-center-floating {
-  position: relative;
-  margin: 0 -4px;
-  z-index: 1;
+:root:not([data-theme]) .nav-badge-floating {
+  border-color: rgba(255,255,255,0.75);
 }
 
-.nav-center-circle-floating {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--tg-theme-button-color);
-  background: linear-gradient(135deg, var(--tg-theme-button-color), #5e5ce6);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3);
-}
-
-.nav-center-circle-floating:active {
-  transform: scale(0.95);
-}
-
-.nav-center-label-floating {
-  position: absolute;
-  bottom: -16px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--tg-theme-button-color);
-  white-space: nowrap;
-}
-
-/* ==================== */
-/* ФИКС ДЛЯ КЛАВИАТУРЫ */
-/* ==================== */
-
-/* Когда клавиатура открыта - плавно скрываем навигацию */
+/* keyboard hide/show */
 .floating-nav.keyboard-hidden {
   opacity: 0 !important;
   pointer-events: none !important;
-  transform: translateX(-50%) translateY(20px) !important;
+  transform: translateX(-50%) translateY(18px) !important;
 }
-
-/* Когда клавиатура закрыта - плавно показываем */
 .floating-nav.keyboard-visible {
   opacity: 1 !important;
   pointer-events: auto !important;
   transform: translateX(-50%) translateY(0) !important;
 }
 
-/* Медиа-запрос для очень маленьких высот (клавиатура открыта) */
 @media (max-height: 500px) {
-  .floating-nav {
-    display: none !important;
-  }
-  
-  .app-content {
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-  }
+  .floating-nav { display: none !important; }
+  .app-content { padding-bottom: env(safe-area-inset-bottom, 0px) !important; }
 }
 
-/* Адаптивность */
-@media (max-width: 375px) {
-  .floating-nav {
-    width: 94%;
-    height: 60px;
-    border-radius: 16px;
-  }
-  
-  .nav-center-circle-floating {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-  }
-  
-  .nav-icon-floating {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .nav-label-floating {
-    font-size: 8px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .floating-nav {
-    width: 80%;
-    max-width: 420px;
-    height: 68px;
-    border-radius: 20px;
-  }
-  
-  .nav-center-circle-floating {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-  }
-}
-
-/* Десктоп */
-@media (min-width: 1025px) {
-  .app {
-    max-width: 420px;
-    margin: 0 auto;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 0;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
-    height: 90vh;
-    top: 5vh;
-  }
-  
-  .floating-nav {
-    max-width: 380px;
-  }
-}
-
-/* iOS безопасная область */
-@supports (padding: max(0px)) {
-  .app-content {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 16px));
-  }
-  
-  .floating-nav {
-    bottom: max(16px, env(safe-area-inset-bottom, 16px));
-  }
-}
-
-/* Android Chrome */
-@supports (padding: constant(safe-area-inset-bottom)) {
-  .app-content {
-    padding-bottom: calc(64px + constant(safe-area-inset-bottom));
-  }
-  
-  .floating-nav {
-    bottom: max(16px, constant(safe-area-inset-bottom));
-  }
-}
-
-/* Исправление для iOS Safari */
-@supports (-webkit-touch-callout: none) {
-  .floating-nav {
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
-  }
-}
-
-/* Лоадер */
+/* loader */
 .app-loading {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: var(--tg-theme-bg-color);
   display: flex;
   flex-direction: column;
@@ -406,23 +296,21 @@ html, body, #root {
 .loading-spinner {
   width: 44px;
   height: 44px;
-  border: 2.5px solid rgba(51, 144, 236, 0.1);
+  border: 2.5px solid rgba(51, 144, 236, 0.12);
   border-top-color: var(--tg-theme-button-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .app-loading p {
   font-size: 15px;
   color: var(--tg-theme-hint-color);
 }
 
-/* Toast */
+/* toast */
 .telegram-toast {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 20px);
@@ -435,7 +323,7 @@ html, body, #root {
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  z-index: 10001; /* Выше навигации */
+  z-index: 10001;
   animation: slideDownToast 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
   border: 1px solid var(--tg-border-color);
   max-width: 90%;
@@ -443,200 +331,26 @@ html, body, #root {
   -webkit-backdrop-filter: blur(20px);
 }
 
-.telegram-toast-icon {
-  font-size: 18px;
-}
-
-.telegram-toast-text {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-theme-text-color);
-}
+.telegram-toast-icon { font-size: 18px; }
+.telegram-toast-text { font-size: 15px; font-weight: 500; color: var(--tg-theme-text-color); }
 
 @keyframes slideDownToast {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+@keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
+.telegram-toast.success { border-left: 4px solid var(--tg-success-color); }
+.telegram-toast.error { border-left: 4px solid var(--tg-error-color); }
+.telegram-toast.info { border-left: 4px solid var(--tg-info-color); }
 
-.telegram-toast.success {
-  border-left: 4px solid var(--tg-success-color);
-}
-
-.telegram-toast.error {
-  border-left: 4px solid var(--tg-error-color);
-}
-
-.telegram-toast.info {
-  border-left: 4px solid var(--tg-info-color);
-}
-
-/* Скроллбары */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--tg-theme-secondary-bg-color);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--tg-theme-hint-color);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--tg-theme-button-color);
-}
+/* scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--tg-theme-secondary-bg-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--tg-theme-hint-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--tg-theme-button-color); }
 
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--tg-theme-hint-color) var(--tg-theme-secondary-bg-color);
 }
-
-/* Плавные переходы */
-* {
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease,
-              box-shadow 0.3s ease;
-}
-
-/* SettingsApp.css (добавь в конце) */
-.settings-container {
-    min-height: 100vh;
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.settings-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f2f2f2);
-}
-
-.settings-header h1 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    text-align: center;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.settings-content {
-    padding: 20px 16px;
-}
-
-.settings-section {
-    margin-bottom: 24px;
-}
-
-.settings-list {
-    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.settings-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    border-bottom: 1px solid var(--tg-theme-section-bg-color, #e0e0e0);
-    transition: background-color 0.2s;
-    color: var(--tg-theme-text-color, #000000);
-}
-
-.settings-item:last-child {
-    border-bottom: none;
-}
-
-.settings-item:hover {
-    background-color: var(--tg-hover-color, rgba(0,0,0,0.05));
-}
-
-.settings-item.danger {
-    color: #ff3b30;
-}
-
-.settings-item-text {
-    flex: 1;
-}
-
-.settings-item-text .title {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 2px;
-}
-
-.settings-item-text .desc {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-}
-
-.switch {
-    width: 50px;
-    height: 28px;
-    background: var(--tg-theme-secondary-bg-color, #e5e5e7);
-    border-radius: 14px;
-    position: relative;
-    transition: background-color 0.3s;
-    flex-shrink: 0;
-}
-
-.switch.on {
-    background: var(--tg-theme-button-color, #3390ec);
-}
-
-.switch span {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.switch.on span {
-    transform: translateX(22px);
-}
-
-.settings-footer {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-    color: var(--tg-theme-hint-color, #8e8e93);
-    font-size: 14px;
-}
-
-.settings-footer div:first-child {
-    margin-bottom: 8px;
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.settings-footer div:last-child {
-    font-size: 12px;
-}
-

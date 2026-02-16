@@ -112,6 +112,7 @@
 
 .amount-input-wrapper {
   background: var(--tg-bg);
+  border: none!important;
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -348,23 +349,43 @@
 }
 
 .action-btn {
-  background: none;
-  border: none;
+   background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
   cursor: pointer;
-  padding: 4px;
-  transition: opacity 0.2s;
+  padding: 6px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
 }
 
 .action-btn.copy-btn {
-  color: var(--tg-button);
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--tg-button, #3390ec) !important;
 }
 
 .action-btn.delete-btn {
-  color: #ff3b30;
+   background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #ff3b30 !important;
 }
 
 .action-btn:hover {
-  opacity: 0.8;
+ opacity: 0.7;
+}
+
+.action-btn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: none;
 }
 
 /* ==================== МОДАЛЬНОЕ ОКНО - ПО ЦЕНТРУ ==================== */

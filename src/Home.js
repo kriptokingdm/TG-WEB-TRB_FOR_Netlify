@@ -695,13 +695,13 @@ function Home({ navigateTo, telegramUser, showToast }) {
             <div className="payment-section-new">
               <h3 className="section-title">Адрес для получения USDT</h3>
               
-              <div className="network-selector" onClick={() => setIsModalOpen(true)}>
+              {/* <div className="network-selector" onClick={() => setIsModalOpen(true)}>
                 <span className="selector-label">Выберите сеть</span>
                 <span className="selector-arrow">▼</span>
                 {selectedCrypto && (
                   <span className="selected-network">{selectedCrypto.network}</span>
                 )}
-              </div>
+              </div> */}
 
               <button onClick={handleAddCrypto} className="add-button">
                 + Добавить адрес

@@ -562,7 +562,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <div className="tg-detail-row">
                   <span className="tg-detail-label">Курс</span>
                   <span className="tg-detail-value">
-                    {activeOrderData?.rate || 0} ₽ за 1 USDT
+                    {activeOrderData?.rate || 0} ₽
                   </span>
                 </div>
 
@@ -613,12 +613,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <button className="tg-action-btn" onClick={() => navigateTo?.('history')}>
                   📋 История операций
                 </button>
-                
-                {activeOrderData?.status === 'pending' && (
-                  <button className="tg-action-btn tg-action-btn-secondary">
-                    🚫 Отменить заявку
-                  </button>
-                )}
               </div>
             </div>
 
@@ -659,57 +653,49 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
-            {/* ПОЛЯ ВВОДА */}
             {/* ПОЛЯ ВВОДА (Telegram style) */}
-<div className={`amount-input-section tg-amount ${error ? 'has-error' : ''}`}>
-  {/* Отдаёшь */}
-  <div className={`tg-amount-card ${error ? 'error' : ''}`}>
-    <div className="tg-amount-top">
-      <span className="tg-amount-label">{isBuyMode ? 'Вы отдаёте' : 'Вы отдаёте'}</span>
-      <span className="tg-amount-chip">{isBuyMode ? 'RUB' : 'USDT'}</span>
-    </div>
+            <div className={`amount-input-section tg-amount ${error ? 'has-error' : ''}`}>
+              {/* Отдаёшь */}
+              <div className={`tg-amount-card ${error ? 'error' : ''}`}>
+                <div className="tg-amount-top">
+                  <span className="tg-amount-label">Вы отдаёте</span>
+                  <span className="tg-amount-chip">{isBuyMode ? 'RUB' : 'USDT'}</span>
+                </div>
 
-    <div className="tg-amount-row">
-      <input
-        type="text"
-        inputMode="decimal"
-        value={amount}
-        onChange={handleAmountChange}
-        className="tg-amount-input"
-        placeholder="0"
-        aria-label="Сумма"
-      />
-      {/* <span className="tg-amount-suffix">{isBuyMode ? '₽' : 'USDT'}</span> */}
-    </div>
+                <div className="tg-amount-row">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    className="tg-amount-input"
+                    placeholder="0"
+                    aria-label="Сумма"
+                  />
+                </div>
 
-    {error && <div className="tg-amount-error">{error}</div>}
-  </div>
+                {error && <div className="tg-amount-error">{error}</div>}
+              </div>
 
-  {/* Получаешь */}
-  <div className="tg-amount-card readonly">
-    <div className="tg-amount-top">
-      <span className="tg-amount-label">Вы получаете</span>
-      <span className="tg-amount-chip">{isBuyMode ? 'USDT' : 'RUB'}</span>
-    </div>
+              {/* Получаешь */}
+              <div className="tg-amount-card readonly">
+                <div className="tg-amount-top">
+                  <span className="tg-amount-label">Вы получаете</span>
+                  <span className="tg-amount-chip">{isBuyMode ? 'USDT' : 'RUB'}</span>
+                </div>
 
-    <div className="tg-amount-row">
-      <input
-        type="text"
-        value={convertedAmount()}
-        readOnly
-        className="tg-amount-input"
-        placeholder="0"
-        aria-label="Получаемая сумма"
-      />
-      {/* <span className="tg-amount-suffix">{isBuyMode ? 'USDT' : '₽'}</span> */}
-    </div>
-
-    {/* <div className="tg-amount-hint">
-      Курс: <span className="tg-amount-hint-strong">{currentRate.toFixed(2)} ₽</span>
-    </div> */}
-  </div>
-</div>
-
+                <div className="tg-amount-row">
+                  <input
+                    type="text"
+                    value={convertedAmount()}
+                    readOnly
+                    className="tg-amount-input"
+                    placeholder="0"
+                    aria-label="Получаемая сумма"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* БЛОК АДРЕСА ДЛЯ USDT */}
@@ -717,14 +703,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
             <div className="payment-section-new">
               <h3 className="section-title">Адрес для получения USDT</h3>
               
-              {/* <div className="network-selector" onClick={() => setIsModalOpen(true)}>
-                <span className="selector-label">Выберите сеть</span>
-                <span className="selector-arrow">▼</span>
-                {selectedCrypto && (
-                  <span className="selected-network">{selectedCrypto.network}</span>
-                )}
-              </div> */}
-
               <button onClick={handleAddCrypto} className="add-button">
                 + Добавить адрес
               </button>
@@ -826,7 +804,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
           <div className="security-info">
             <SecurityIcon />
             <div className="security-text">
-              <strong>Безопасная сделка:</strong>  Средства резервируются у операторов до подтверждения сделки системой TetherRabbit
+              <strong>Безопасная сделка:</strong> Средства резервируются у операторов до подтверждения сделки системой TetherRabbit
             </div>
           </div>
         </div>

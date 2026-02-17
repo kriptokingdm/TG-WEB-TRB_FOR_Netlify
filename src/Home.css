@@ -1,4 +1,4 @@
-/* Home.css - Telegram WebApp стили (минималистичные) */
+/* Home.css - Telegram WebApp стили (Telegram iOS style) */
 
 :root {
   --tg-bg: var(--tg-theme-bg-color, #ffffff);
@@ -6,8 +6,8 @@
   --tg-hint: var(--tg-theme-hint-color, #8e8e93);
   --tg-button: var(--tg-theme-button-color, #3390ec);
   --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
-  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f1f1f1);
-  --tg-border: var(--tg-theme-section-bg-color, #e7e8ec);
+  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  --tg-border: var(--tg-theme-section-bg-color, #e9e9ed);
 }
 
 /* ==================== КОНТЕЙНЕРЫ ==================== */
@@ -27,9 +27,10 @@
 /* ==================== ВАЛЮТНЫЕ КАРТОЧКИ ==================== */
 .currency-cards-section {
   background: var(--tg-secondary-bg);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .currency-cards-horizontal {
@@ -37,30 +38,31 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 20px 0;
-  gap: 8px;
+  padding: 16px 0;
+  gap: 12px;
 }
 
 .currency-card-side {
   flex: 1;
   background: var(--tg-bg);
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 20px;
   min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .currency-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .currency-name {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--tg-text);
 }
@@ -87,7 +89,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
 }
 
 .swap-center-button:hover:not(:disabled) {
@@ -103,93 +106,141 @@
   cursor: not-allowed;
 }
 
-/* ==================== ПОЛЯ ВВОДА - МИНИМАЛИСТИЧНЫЕ ==================== */
-.amount-input-section {
+/* ==================== ПОЛЯ ВВОДА - TELEGRAM STYLE ==================== */
+.amount-input-section.tg-amount {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  margin-top: 12px;
 }
 
-.amount-input-wrapper {
+.tg-amount-card {
   background: var(--tg-bg);
-  border: none!important;
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.tg-amount-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
-.amount-input {
-  background: none;
-  border: none;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--tg-text);
-  outline: none;
-  width: 70%;
-}
-
-.amount-input::placeholder {
-  color: var(--tg-hint);
-  opacity: 0.5;
-}
-
-.amount-currency {
-  font-size: 16px;
+.tg-amount-label {
+  font-size: 13px;
   font-weight: 600;
   color: var(--tg-hint);
+  letter-spacing: -0.2px;
 }
 
-.error-message {
+.tg-amount-chip {
   font-size: 12px;
+  font-weight: 700;
+  color: var(--tg-text);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--tg-border);
+}
+
+.tg-amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tg-amount-input {
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--tg-text);
+  caret-color: var(--tg-button);
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tg-amount-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.4;
+  font-weight: 600;
+}
+
+.tg-amount-input[readonly] {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+  opacity: 1 !important;
+}
+
+.tg-amount-card:focus-within {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.tg-amount-error {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
   color: #ff3b30;
-  margin-top: 4px;
+}
+
+.tg-amount-card.error {
+  border-color: #ff3b30;
+  background: rgba(255, 59, 48, 0.02);
 }
 
 /* ==================== ЗАГОЛОВКИ ==================== */
 .section-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   margin: 0 0 16px 0;
   color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
 }
 
-/* ==================== СЕЛЕКТОР СЕТИ ==================== */
-.network-selector {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  margin-bottom: 12px;
-  cursor: pointer;
-}
-
-.selector-label {
-  font-size: 15px;
-  color: var(--tg-hint);
-}
-
-.selector-arrow {
-  font-size: 12px;
-  color: var(--tg-hint);
-}
-
-/* ==================== КНОПКА ДОБАВЛЕНИЯ ==================== */
+/* ==================== КНОПКА ДОБАВЛЕНИЯ - ЦВЕТНАЯ ПО ЦЕНТРУ ==================== */
 .add-button {
   width: 100%;
-  padding: 16px;
-  background: var(--tg-secondary-bg);
+  padding: 18px;
+  background: var(--tg-button);
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-text);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
   cursor: pointer;
-  margin-bottom: 16px;
-  text-align: left;
+  margin: 8px 0 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+  transition: all 0.2s ease;
+}
+
+.add-button:hover {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.add-button:active {
+  transform: scale(0.96);
+  opacity: 0.8;
 }
 
 /* ==================== КНОПКА ОБМЕНА ==================== */
@@ -204,9 +255,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin: 16px 0;
-  transition: opacity 0.2s;
+  gap: 8px;
+  margin: 20px 0 16px 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
 }
 
 .exchange-button-new.buy {
@@ -216,13 +268,19 @@
 
 .exchange-button-new.sell {
   background: var(--tg-button);
-  color: var(--tg-button-text);
+  color: white;
 }
 
 .exchange-button-new.disabled {
   background: var(--tg-hint);
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+.exchange-button-new:active:not(.disabled) {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
 .exchange-icon {
@@ -237,43 +295,51 @@
 /* ==================== БЕЗОПАСНОСТЬ ==================== */
 .security-info {
   display: flex;
-  gap: 12px;
-  padding: 16px;
+  gap: 16px;
+  padding: 20px 16px;
   background: var(--tg-secondary-bg);
-  border-radius: 12px;
+  border-radius: 20px;
   margin: 16px 0;
+  align-items: center;
 }
 
 .security-icon {
   flex-shrink: 0;
   color: var(--tg-button);
+  opacity: 0.9;
 }
 
 .security-text {
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--tg-hint);
+  font-weight: 500;
 }
 
 .security-text strong {
   color: var(--tg-text);
-  font-weight: 600;
+  font-weight: 700;
 }
 
-/* ==================== СПИСКИ ==================== */
+/* ==================== СПИСКИ - iOS СТИЛЬ ==================== */
 .crypto-list,
 .payments-list {
-  margin-top: 16px;
-  max-height: 200px;
+  margin-top: 20px;
+  max-height: 240px;
   overflow-y: auto;
+  border-radius: 16px;
+  background: var(--tg-secondary-bg);
+  padding: 8px;
 }
 
 .crypto-list h4,
 .payments-list h4 {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin: 4px 8px 12px 8px;
   color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
 }
 
 .crypto-item,
@@ -281,16 +347,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  margin-bottom: 8px;
+  padding: 16px 12px;
+  background: var(--tg-bg);
+  border-radius: 14px;
+  margin-bottom: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.crypto-item:active,
+.payment-item:active {
+  background: var(--tg-secondary-bg);
+  transform: scale(0.99);
 }
 
 .crypto-item.selected,
 .payment-item.selected {
-  border: 1px solid var(--tg-button);
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
 }
 
 .crypto-info {
@@ -301,27 +376,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .crypto-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--tg-text);
 }
 
 .crypto-network-badge {
   font-size: 12px;
-  padding: 2px 6px;
-  background: color-mix(in srgb, var(--tg-button) 15%, transparent);
+  padding: 4px 8px;
+  background: var(--tg-secondary-bg);
   color: var(--tg-button);
-  border-radius: 4px;
+  border-radius: 20px;
+  font-weight: 600;
 }
 
 .crypto-address {
-  font-size: 12px;
-  font-family: monospace;
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
   color: var(--tg-hint);
+  word-break: break-all;
 }
 
 .payment-info {
@@ -329,7 +406,7 @@
 }
 
 .bank-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--tg-text);
   display: block;
@@ -337,202 +414,54 @@
 }
 
 .payment-number {
-  font-size: 12px;
-  font-family: monospace;
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
   color: var(--tg-hint);
 }
 
-/* ==================== КНОПКИ ДЕЙСТВИЙ ==================== */
+/* ==================== КНОПКИ ДЕЙСТВИЙ - ТОЛЬКО ИКОНКИ ==================== */
 .crypto-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  margin-left: 8px;
 }
 
 .action-btn {
-   background: none !important;
+  background: none !important;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
   cursor: pointer;
-  padding: 6px !important;
+  padding: 8px !important;
   margin: 0 !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease;
+  border-radius: 8px;
 }
 
 .action-btn.copy-btn {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  color: var(--tg-button, #3390ec) !important;
+  color: var(--tg-button) !important;
 }
 
 .action-btn.delete-btn {
-   background: none !important;
-  border: none !important;
-  box-shadow: none !important;
   color: #ff3b30 !important;
 }
 
 .action-btn:hover {
- opacity: 0.7;
+  opacity: 0.7;
+}
+
+.action-btn:active {
+  opacity: 0.5;
+  transform: scale(0.92);
 }
 
 .action-btn svg {
   display: block;
   width: 20px;
   height: 20px;
-  fill: none;
-  stroke: none;
-}
-
-/* ==================== МОДАЛЬНОЕ ОКНО - ПО ЦЕНТРУ ==================== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--tg-bg);
-  border-radius: 20px;
-  padding: 20px;
-  width: 90%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--tg-border);
-}
-
-.modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--tg-text);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--tg-hint);
-}
-
-.network-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.network-item {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.network-icon {
-  font-size: 24px;
-  margin-right: 12px;
-}
-
-.network-name {
-  flex: 1;
-  font-size: 16px;
-  color: var(--tg-text);
-}
-
-.network-arrow {
-  font-size: 20px;
-  color: var(--tg-hint);
-}
-
-.input-group {
-  margin-bottom: 16px;
-}
-
-.input-group label {
-  display: block;
-  font-size: 13px;
-  color: var(--tg-hint);
-  margin-bottom: 6px;
-}
-
-.modal-input {
-  width: 100%;
-  padding: 14px;
-  background: var(--tg-secondary-bg);
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  color: var(--tg-text);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.modal-btn.cancel {
-  background: var(--tg-secondary-bg);
-  color: var(--tg-text);
-}
-
-.modal-btn.save {
-  background: var(--tg-button);
-  color: var(--tg-button-text);
-}
-
-/* ==================== АДАПТИВНОСТЬ ==================== */
-@media (max-width: 480px) {
-  .amount-input-section {
-    grid-template-columns: 1fr;
-  }
-  
-  .currency-name {
-    font-size: 20px;
-  }
-  
-  .swap-center-button {
-    width: 48px;
-    height: 48px;
-  }
 }
 
 /* ==================== АКТИВНЫЙ ОРДЕР ==================== */
@@ -548,6 +477,8 @@
   background: var(--tg-bg);
   border-bottom: 1px solid var(--tg-border);
   padding-top: env(safe-area-inset-top);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .tg-header-content {
@@ -561,7 +492,7 @@
   width: 40px;
   height: 40px;
   border: none;
-  background: none;
+  background: var(--tg-secondary-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -570,6 +501,12 @@
   color: var(--tg-button);
   font-size: 24px;
   padding: 0;
+  transition: all 0.2s ease;
+}
+
+.tg-back-btn:active {
+  background: var(--tg-border);
+  transform: scale(0.94);
 }
 
 .tg-header-titles {
@@ -578,49 +515,26 @@
 
 .tg-header-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   color: var(--tg-text);
 }
 
 .tg-header-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--tg-hint);
   margin: 2px 0 0;
+  font-weight: 500;
 }
 
 .tg-status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
-}
-
-.tg-status-pending {
-  background: rgba(255, 200, 0, 0.1);
-  color: #ffd700;
-}
-
-.tg-status-processing {
-  background: rgba(255, 165, 0, 0.1);
-  color: #ffa500;
-}
-
-.tg-status-accepted {
-  background: rgba(52, 199, 89, 0.1);
-  color: #34c759;
-}
-
-.tg-status-completed {
-  background: rgba(51, 144, 236, 0.1);
-  color: #3390ec;
-}
-
-.tg-status-cancelled,
-.tg-status-rejected {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
 }
 
 .tg-main-content {
@@ -630,7 +544,7 @@
 
 .tg-order-card {
   background: var(--tg-secondary-bg);
-  border-radius: 16px;
+  border-radius: 24px;
   padding: 20px;
   margin-bottom: 16px;
 }
@@ -638,19 +552,19 @@
 .tg-card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
 .tg-order-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
   background: var(--tg-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .tg-order-info {
@@ -658,22 +572,24 @@
 }
 
 .tg-order-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   margin: 0 0 4px 0;
   color: var(--tg-text);
+  letter-spacing: -0.3px;
 }
 
 .tg-order-subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--tg-hint);
   margin: 0;
+  font-weight: 500;
 }
 
 .tg-order-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -682,7 +598,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid var(--tg-border);
+  border-bottom: 1px solid rgba(142, 142, 147, 0.1);
 }
 
 .tg-detail-row:last-child {
@@ -690,19 +606,20 @@
 }
 
 .tg-detail-label {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--tg-hint);
+  font-weight: 500;
 }
 
 .tg-detail-value {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--tg-text);
 }
 
 .tg-detail-amount {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .tg-detail-accent {
@@ -712,23 +629,23 @@
 .tg-detail-full {
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tg-detail-box {
   background: var(--tg-bg);
-  padding: 12px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .tg-detail-mono {
-  font-family: monospace;
-  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  font-size: 14px;
   word-break: break-all;
   color: var(--tg-text);
 }
@@ -737,17 +654,23 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   color: var(--tg-button);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  border-radius: 8px;
 }
 
 .tg-copy-btn:hover {
   opacity: 1;
+  background: rgba(51, 144, 236, 0.05);
+}
+
+.tg-copy-btn:active {
+  transform: scale(0.9);
 }
 
 .tg-copy-btn svg {
@@ -758,51 +681,49 @@
 .tg-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tg-action-btn {
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   background: var(--tg-button);
-  color: var(--tg-button-text);
+  color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
+  border-radius: 16px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
 }
 
-.tg-action-btn:hover {
+.tg-action-btn:active {
+  transform: scale(0.97);
   opacity: 0.9;
-}
-
-.tg-action-btn-secondary {
-  background: var(--tg-secondary-bg);
-  color: var(--tg-text);
-  border: 1px solid var(--tg-border);
 }
 
 /* Предупреждение */
 .tg-warning {
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  background: rgba(255, 200, 0, 0.05);
-  border-radius: 12px;
-  margin-top: 16px;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 200, 0, 0.04);
+  border-radius: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
 }
 
 .tg-warning-icon {
-  font-size: 16px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
 .tg-warning-text {
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--tg-hint);
+  font-weight: 500;
 }
 
 /* ==================== МОДАЛЬНОЕ ОКНО ==================== */
@@ -812,7 +733,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -821,74 +744,75 @@
 
 .modal-content {
   background: var(--tg-bg);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 28px;
+  padding: 24px;
   width: 90%;
   max-width: 400px;
   max-height: 80vh;
   overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   margin: 0;
   color: var(--tg-text);
 }
 
 .modal-close {
-  background: none;
+  background: var(--tg-secondary-bg);
   border: none;
   font-size: 24px;
   cursor: pointer;
   color: var(--tg-hint);
-  padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
-/* Вкладки модалки */
+.modal-close:active {
+  background: var(--tg-border);
+  transform: scale(0.94);
+}
+
 .modal-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   background: var(--tg-secondary-bg);
-  border-radius: 12px;
+  border-radius: 30px;
   padding: 4px;
 }
 
 .modal-tab {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 26px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   background: transparent;
   color: var(--tg-hint);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .modal-tab.active {
   background: var(--tg-button);
-  color: var(--tg-button-text);
-}
-
-.selector-label {
-  font-size: 14px;
-  color: var(--tg-hint);
-  margin-bottom: 12px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.2);
 }
 
 .network-list {
@@ -901,422 +825,129 @@
 .network-item {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: 16px;
   background: var(--tg-secondary-bg);
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
-.network-item:hover {
-  background: color-mix(in srgb, var(--tg-button) 10%, transparent);
+.network-item:active {
+  background: var(--tg-border);
+  transform: scale(0.98);
 }
 
 .network-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
+  width: 32px;
+  height: 32px;
+  margin-right: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .network-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
 }
 
 .network-name {
   flex: 1;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tg-text);
-}
-
-.network-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  background: var(--tg-bg);
-  border-radius: 4px;
-  color: var(--tg-hint);
-  margin-right: 8px;
-}
-
-.network-arrow {
-  font-size: 18px;
-  color: var(--tg-hint);
-}
-
-.selected-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.selected-icon {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.selected-name {
   font-size: 16px;
   font-weight: 600;
   color: var(--tg-text);
 }
 
-/* Сохраненные адреса */
-.saved-addresses {
-  margin-top: 20px;
-  border-top: 1px solid var(--tg-border);
-  padding-top: 16px;
+.network-arrow {
+  font-size: 18px;
+  color: var(--tg-hint);
+  opacity: 0.5;
 }
 
-.saved-addresses h3 {
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
   font-size: 14px;
   font-weight: 600;
-  margin: 0 0 12px 0;
   color: var(--tg-hint);
-}
-
-.saved-address-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: var(--tg-secondary-bg);
-  border-radius: 12px;
   margin-bottom: 8px;
 }
 
-.saved-address-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
-
-.saved-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.saved-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.saved-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.saved-name {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--tg-text);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.saved-hash {
-  display: block;
-  font-size: 11px;
-  font-family: monospace;
-  color: var(--tg-hint);
-}
-
-.saved-copy {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: var(--tg-button);
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.saved-copy:hover {
-  opacity: 1;
-}
-
-
-
-/* ===== FIX: нормальная ширина + убрать "серый/белый прямоугольник" инпута ===== */
-.amount-input-wrapper{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  overflow:hidden;              /* чтобы ничего не вылазило */
-}
-
-.amount-input{
-  flex: 1 1 0%;
-  min-width: 0;
-  width: 100% !important;       /* ПЕРЕБИВАЕМ твоё width:70% */
-  padding: 0 !important;
-  margin: 0 !important;
-
-  background-color: transparent !important;
-  background: transparent !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-
-  color: var(--tg-text) !important;
-  caret-color: var(--tg-text);
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-/* На всякий: если браузер добавляет рамку/фон на readonly */
-.amount-input[readonly]{
-  background-color: transparent !important;
-  -webkit-text-fill-color: var(--tg-text) !important;
-}
-
-/* Если внезапно автозаполнение красит фон */
-.amount-input:-webkit-autofill,
-.amount-input:-webkit-autofill:hover,
-.amount-input:-webkit-autofill:focus{
-  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-  box-shadow: 0 0 0 1000px transparent inset !important;
-  -webkit-text-fill-color: var(--tg-text) !important;
-}
-
-/* ===== УБРАТЬ ОКАНТОВКУ У ВТОРОГО (readonly) ПОЛЯ ===== */
-
-/* убираем нативный бордер/фон у всех input суммы */
-.amount-input {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* самое главное — readonly поле */
-.amount-input[readonly] {
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  -webkit-text-fill-color: var(--tg-text) !important;
-  opacity: 1 !important;
-}
-
-/* если браузер рисует внутреннюю рамку */
-.amount-input:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* если это автозаполнение */
-.amount-input:-webkit-autofill,
-.amount-input:-webkit-autofill:hover,
-.amount-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-  box-shadow: 0 0 0 1000px
-}
-
-/* ==============================
-   TELEGRAM STYLE: AMOUNT INPUTS
-   ============================== */
-
-/* ВАЖНО: можно оставить твой grid на 2 колонки */
-.amount-input-section.tg-amount{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-/* карточка как в TG */
-.tg-amount-card{
-  background: color-mix(in srgb, var(--tg-bg) 88%, var(--tg-secondary-bg));
-  border: 1px solid color-mix(in srgb, var(--tg-border) 70%, transparent);
-  border-radius: 14px;
-  padding: 12px 12px 10px;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
-  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
-  overflow: hidden;
-}
-
-/* светлая тема — чуть чище */
-:root:not([data-theme]) .tg-amount-card{
-  background: rgba(255,255,255,0.85);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
-}
-
-/* верхняя строка (лейбл + chip) */
-.tg-amount-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom: 8px;
-}
-
-.tg-amount-label{
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--tg-hint);
-  letter-spacing: 0.2px;
-}
-
-/* маленький chip справа (как плашка валюты) */
-.tg-amount-chip{
-  font-size: 12px;
-  font-weight: 700;
-  color: color-mix(in srgb, var(--tg-text) 75%, var(--tg-hint));
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--tg-secondary-bg) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--tg-border) 60%, transparent);
-}
-
-/* строка с input + суффикс */
-.tg-amount-row{
-  display:flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-/* INPUT — без рамок и фона 100% */
-.tg-amount-input{
-  flex: 1 1 0%;
-  min-width: 0;
+.modal-input {
   width: 100%;
-
-  background: transparent !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-
-  font-size: 22px;
-  font-weight: 750;
-  line-height: 1.1;
+  padding: 16px;
+  background: var(--tg-secondary-bg);
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
   color: var(--tg-text);
-  caret-color: var(--tg-theme-button-color, #3390ec);
-
-  padding: 0;
-  margin: 0;
-
-  -webkit-appearance: none;
-  appearance: none;
 }
 
-/* placeholder */
-.tg-amount-input::placeholder{
-  color: color-mix(in srgb, var(--tg-hint) 65%, transparent);
-  opacity: 1;
+.modal-input:focus {
+  outline: 2px solid var(--tg-button);
+  outline-offset: 2px;
 }
 
-/* суффикс справа */
-.tg-amount-suffix{
-  flex: 0 0 auto;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--tg-hint);
-  transform: translateY(-1px);
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
 }
 
-/* подсказка внизу для readonly карточки */
-.tg-amount-hint{
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--tg-hint);
+.modal-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.tg-amount-hint-strong{
+.modal-btn.cancel {
+  background: var(--tg-secondary-bg);
   color: var(--tg-text);
-  font-weight: 700;
 }
 
-/* ERROR */
-.tg-amount-error{
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 650;
-  color: #ff3b30;
+.modal-btn.save {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
 }
 
-/* если есть ошибка — подсветка рамки */
-.tg-amount-card.error{
-  border-color: rgba(255, 59, 48, 0.55);
-  background: color-mix(in srgb, #ff3b30 6%, var(--tg-bg));
+.modal-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
-/* readonly карточка — без “серой рамки” */
-.tg-amount-card.readonly{
-  opacity: 0.95;
-}
-
-/* ВАЖНО: убрать любые нативные стили readonly инпута */
-.tg-amount-input[readonly]{
-  background: transparent !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  -webkit-text-fill-color: var(--tg-text) !important;
-  opacity: 1 !important;
-}
-
-/* автозаполнение чтобы не красило фон */
-.tg-amount-input:-webkit-autofill,
-.tg-amount-input:-webkit-autofill:hover,
-.tg-amount-input:-webkit-autofill:focus{
-  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-  box-shadow: 0 0 0 1000px transparent inset !important;
-  -webkit-text-fill-color: var(--tg-text) !important;
-}
-
-/* фокус — мягкая подсветка как в TG */
-.tg-amount-card:has(.tg-amount-input:focus){
-  border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 55%, transparent);
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 18%, transparent),
-    0 1px 0 rgba(255,255,255,0.06) inset;
-}
-
-/* убрать белые подсветки на мобиле */
-.tg-amount-card,
-.tg-amount-input{
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* адаптив: на телефонах в одну колонку */
-@media (max-width: 480px){
-  .amount-input-section.tg-amount{
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 480px) {
+  .amount-input-section.tg-amount {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .currency-name {
+    font-size: 22px;
+  }
+  
+  .swap-center-button {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .tg-amount-input {
+    font-size: 24px;
   }
 }
 
-/* ==============================
-   IMPORTANT: выключаем старые стили amount-input
-   (если они у тебя выше в файле — этот блок перебьёт)
-   ============================== */
-.amount-input-section .amount-input-wrapper,
-.amount-input-section .amount-input,
-.amount-input-section .amount-currency{
-  all: unset;
+/* Safe area */
+@supports (padding: max(0px)) {
+  .home-content {
+    padding-bottom: calc(80px + max(0px, env(safe-area-inset-bottom, 10px)));
+  }
 }

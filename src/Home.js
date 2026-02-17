@@ -679,7 +679,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
         placeholder="0"
         aria-label="Сумма"
       />
-      <span className="tg-amount-suffix">{isBuyMode ? '₽' : 'USDT'}</span>
+      {/* <span className="tg-amount-suffix">{isBuyMode ? '₽' : 'USDT'}</span> */}
     </div>
 
     {error && <div className="tg-amount-error">{error}</div>}
@@ -701,7 +701,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
         placeholder="0"
         aria-label="Получаемая сумма"
       />
-      <span className="tg-amount-suffix">{isBuyMode ? 'USDT' : '₽'}</span>
+      {/* <span className="tg-amount-suffix">{isBuyMode ? 'USDT' : '₽'}</span> */}
     </div>
 
     {/* <div className="tg-amount-hint">

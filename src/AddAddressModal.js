@@ -186,49 +186,30 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
         )}
 
         {/* Сохраненные адреса */}
-        {savedAddresses.length > 0 && step === 1 && (
-  <div className="saved-addresses">
-    <h3>Сохраненные адреса</h3>
-    <div className="saved-addresses-list">
-      {savedAddresses.map(addr => (
-        <div 
-          key={addr.id} 
-          className={`saved-address-item ${selectedAddress?.id === addr.id ? 'selected' : ''}`}
-          onClick={() => handleSelectAddress(addr)}
-        >
-          <div className="saved-address-info">
-            <div className="saved-address-icon">
-              {addr.icon || '💎'}
-            </div>
-            <div className="saved-address-details">
-              <span className="saved-address-name">{addr.name}</span>
-              <span className="saved-address-hash">
-                {addr.address.length > 20 
-                  ? `${addr.address.slice(0, 8)}...${addr.address.slice(-8)}`
-                  : addr.address
-                }
-              </span>
-            </div>
+        {addresses.length > 0 && step === 1 && (
+          <div className="saved-addresses">
+            <h3>Сохраненные адреса:</h3>
+            {addresses.map(addr => (
+              <div key={addr.id} className="saved-address-item">
+                <div className="saved-address-info">
+                  <span className="saved-icon">{addr.icon}</span>
+                  <div className="saved-details">
+                    <span className="saved-name">"{addr.name}"</span>
+                    <span className="saved-hash">
+                      {addr.address.length > 20 
+                        ? `${addr.address.slice(0, 8)}...${addr.address.slice(-8)}`
+                        : addr.address
+                      }
+                    </span>
+                  </div>
+                </div>
+                <button className="saved-copy" onClick={() => navigator.clipboard.writeText(addr.address)}>
+                  <CopyIcon />
+                </button>
+              </div>
+            ))}
           </div>
-          <div className="saved-address-actions">
-            <button 
-              className="saved-address-copy"
-              onClick={(e) => { e.stopPropagation(); copyToClipboard(addr.address); }}
-            >
-              <CopyIcon />
-            </button>
-            <button 
-              className="saved-address-delete"
-              onClick={(e) => { e.stopPropagation(); handleDeleteAddress(addr.id); }}
-            >
-              <DeleteIcon />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+        )}
       </div>
     </div>
   );

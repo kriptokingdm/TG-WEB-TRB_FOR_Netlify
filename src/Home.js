@@ -826,7 +826,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
           <div className="security-info">
             <SecurityIcon />
             <div className="security-text">
-              <strong>Безопасная сделка:</strong> Средства резервируются у операторов
+              <strong>Безопасная сделка:</strong>  Средства резервируются у операторов до подтверждения сделки системой TetherRabbit
             </div>
           </div>
         </div>

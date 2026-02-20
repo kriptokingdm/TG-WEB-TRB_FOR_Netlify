@@ -185,21 +185,33 @@ function App() {
 
   // navigation
   const navigateTo = useCallback((page) => {
-    setCurrentPage((prev) => {
-      if (prev === page) return prev;
-      window.location.hash = page;
+  setCurrentPage((prev) => {
+    if (prev === page) return prev;
+    
+    // Сохраняем текущую позицию индикатора перед анимацией
+    const nav = navRef.current;
+    if (nav) {
+      const currentLeft = nav.style.getPropertyValue('--indicator-left');
+      const currentWidth = nav.style.getPropertyValue('--indicator-width');
+      
+      // Запоминаем в data-атрибутах
+      if (currentLeft) nav.dataset.prevLeft = currentLeft;
+      if (currentWidth) nav.dataset.prevWidth = currentWidth;
+    }
+    
+    window.location.hash = page;
 
-      if (window.Telegram?.WebApp?.BackButton) {
-        const tg = window.Telegram.WebApp;
-        if (page === 'home') {
-          try { tg.BackButton.hide(); } catch {}
-        } else {
-          try { tg.BackButton.show(); } catch {}
-        }
+    if (window.Telegram?.WebApp?.BackButton) {
+      const tg = window.Telegram.WebApp;
+      if (page === 'home') {
+        try { tg.BackButton.hide(); } catch {}
+      } else {
+        try { tg.BackButton.show(); } catch {}
       }
-      return page;
-    });
-  }, []);
+    }
+    return page;
+  });
+}, []);
 
   // init tg + app
   useEffect(() => {
@@ -333,49 +345,71 @@ function App() {
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
   // Обновление позиций вкладок
-  useLayoutEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
+  // Замени существующий useLayoutEffect на этот:
 
-    const updateRects = () => {
-      const tabs = [
-        nav.querySelector('[data-tab="profile"]'),
-        nav.querySelector('[data-tab="home"]'),
-        nav.querySelector('[data-tab="history"]')
-      ].filter(Boolean);
+useLayoutEffect(() => {
+  const nav = navRef.current;
+  if (!nav) return;
 
-      if (tabs.length !== 3) return;
+  const updateRects = () => {
+    const tabs = [
+      nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="home"]'),
+      nav.querySelector('[data-tab="history"]')
+    ].filter(Boolean);
 
-      const navRect = nav.getBoundingClientRect();
-      const rects = tabs.map((el) => {
-        const r = el.getBoundingClientRect();
-        return {
-          left: r.left - navRect.left,
-          width: r.width,
-          center: r.left - navRect.left + r.width / 2
-        };
-      });
+    if (tabs.length !== 3) return;
 
-      dragStateRef.current.rects = rects;
-      dragStateRef.current.minLeft = rects[0].left;
-      dragStateRef.current.maxLeft = rects[2].left;
+    const navRect = nav.getBoundingClientRect();
+    const rects = tabs.map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - navRect.left,
+        width: r.width,
+        center: r.left - navRect.left + r.width / 2
+      };
+    });
 
-      // Устанавливаем индикатор на активную вкладку
-      const activeIndex = pageToIndex(currentPage);
-      const targetRect = rects[activeIndex];
+    dragStateRef.current.rects = rects;
+    dragStateRef.current.minLeft = rects[0].left;
+    dragStateRef.current.maxLeft = rects[2].left;
+
+    // Получаем целевую позицию для текущей страницы
+    const activeIndex = pageToIndex(currentPage);
+    const targetRect = rects[activeIndex];
+    
+    // Проверяем, есть ли сохраненная предыдущая позиция
+    const prevLeft = nav.dataset.prevLeft;
+    const prevWidth = nav.dataset.prevWidth;
+    
+    if (prevLeft && prevWidth && nav.classList.contains('ready')) {
+      // Если есть предыдущая позиция - сначала ставим её
+      nav.style.setProperty('--indicator-left', prevLeft);
+      nav.style.setProperty('--indicator-width', prevWidth);
       
+      // В следующем кадре анимируем к целевой позиции
+      requestAnimationFrame(() => {
+        nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+        nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+        // Очищаем сохраненные данные
+        delete nav.dataset.prevLeft;
+        delete nav.dataset.prevWidth;
+      });
+    } else {
+      // Если нет предыдущей позиции - просто ставим целевую
       nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
       nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-      
-      if (!nav.classList.contains('ready')) {
-        nav.classList.add('ready');
-      }
-    };
+    }
+    
+    if (!nav.classList.contains('ready')) {
+      nav.classList.add('ready');
+    }
+  };
 
-    updateRects();
-    window.addEventListener('resize', updateRects);
-    return () => window.removeEventListener('resize', updateRects);
-  }, [currentPage]);
+  updateRects();
+  window.addEventListener('resize', updateRects);
+  return () => window.removeEventListener('resize', updateRects);
+}, [currentPage]);
 
   // ==================== ИСПРАВЛЕННЫЙ DRAG - БЕЗ ДЕРГАНИЙ ====================
   useEffect(() => {

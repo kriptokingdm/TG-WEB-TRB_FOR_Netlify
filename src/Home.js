@@ -789,10 +789,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     <div key={p.id} className={`payment-item ${selectedPayment?.id === p.id ? 'selected' : ''}`}
                          onClick={() => setSelectedPayment(p)}>
                       <div className="payment-info">
-                        <span className="bank-name">
+                        {/* <span className="bank-name">
                           <span className="payment-icon">{p.icon}</span>
                           {p.bankName}
-                        </span>
+                        </span> */}
                         <span className="payment-number">{p.formattedNumber}</span>
                       </div>
                       <button className="action-btn delete-btn" onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}>

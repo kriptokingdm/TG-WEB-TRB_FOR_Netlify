@@ -357,6 +357,8 @@ function App() {
       });
 
       dragStateRef.current.rects = rects;
+      dragStateRef.current.minLeft = rects[0].left;
+      dragStateRef.current.maxLeft = rects[2].left;
 
       // Устанавливаем индикатор на активную вкладку
       const activeIndex = pageToIndex(currentPage);
@@ -375,7 +377,7 @@ function App() {
     return () => window.removeEventListener('resize', updateRects);
   }, [currentPage]);
 
-  // ==================== ИСПРАВЛЕННЫЙ DRAG ====================
+  // ==================== ИСПРАВЛЕННЫЙ DRAG - БЕЗ ДЕРГАНИЙ ====================
   useEffect(() => {
     const nav = navRef.current;
     const indicator = indicatorRef.current;
@@ -389,9 +391,7 @@ function App() {
       const rects = dragStateRef.current.rects;
       if (!rects || rects.length !== 3) return;
 
-      const navRect = nav.getBoundingClientRect();
-      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left')) || rects[pageToIndex(currentPage)].left;
-      const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width')) || rects[pageToIndex(currentPage)].width;
+      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
 
       // Сохраняем состояние для драга
       dragStateRef.current = {
@@ -400,12 +400,10 @@ function App() {
         startX: e.clientX,
         currentX: e.clientX,
         startLeft: currentLeft,
-        startWidth: currentWidth,
-        minLeft: rects[0].left,
-        maxLeft: rects[2].left,
         pointerId: e.pointerId
       };
 
+      // Отключаем анимацию во время драга
       nav.classList.add('dragging');
       nav.style.transition = 'none';
       indicator.setPointerCapture(e.pointerId);
@@ -419,38 +417,33 @@ function App() {
       e.preventDefault();
 
       const dx = e.clientX - state.startX;
-      state.currentX = e.clientX;
-
-      // Рассчитываем новую позицию
+      
+      // Рассчитываем новую позицию - четко跟随 за пальцем
       let newLeft = state.startLeft + dx;
       
-      // Ограничиваем минимальным и максимальным значением
+      // Ограничиваем, чтобы не выходил за пределы навигации
       newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, newLeft));
 
-      // Находим ближайшую вкладку для пропорционального изменения ширины
+      // Находим ближайшую вкладку для расчета ширины
       const rects = state.rects;
-      let targetWidth = state.startWidth;
-      
-      // Плавно меняем ширину в зависимости от позиции
-      if (newLeft <= rects[0].left + 10) {
+      let targetWidth = rects[1].width; // ширина по умолчанию
+
+      // Определяем ширину в зависимости от позиции
+      if (newLeft <= rects[0].left + 5) {
         targetWidth = rects[0].width;
-      } else if (newLeft >= rects[2].left - 10) {
+      } else if (newLeft >= rects[2].left - 5) {
         targetWidth = rects[2].width;
+      } else if (newLeft < rects[1].left) {
+        // Между первой и второй
+        const progress = (newLeft - rects[0].left) / (rects[1].left - rects[0].left);
+        targetWidth = rects[0].width + (rects[1].width - rects[0].width) * progress;
       } else {
-        // Интерполяция ширины между вкладками
-        const t = (newLeft - rects[0].left) / (rects[2].left - rects[0].left);
-        if (t < 0.5) {
-          // Между первой и второй
-          const progress = t * 2;
-          targetWidth = rects[0].width + (rects[1].width - rects[0].width) * progress;
-        } else {
-          // Между второй и третьей
-          const progress = (t - 0.5) * 2;
-          targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
-        }
+        // Между второй и третьей
+        const progress = (newLeft - rects[1].left) / (rects[2].left - rects[1].left);
+        targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
       }
 
-      // Применяем изменения
+      // Применяем позицию - БЕЗ ЗАДЕРЖЕК
       nav.style.setProperty('--indicator-left', `${newLeft}px`);
       nav.style.setProperty('--indicator-width', `${targetWidth}px`);
     };
@@ -462,14 +455,19 @@ function App() {
 
       e.preventDefault();
 
+      // Включаем анимацию обратно
+      nav.style.transition = '';
+      
       // Находим ближайшую вкладку по текущей позиции
       const rects = state.rects;
       const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
+      const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width'));
+      const currentCenter = currentLeft + currentWidth / 2;
       
       // Вычисляем расстояния до центров вкладок
       const distances = rects.map((rect, index) => ({
         index,
-        distance: Math.abs(currentLeft + (state.startWidth / 2) - rect.center)
+        distance: Math.abs(currentCenter - rect.center)
       }));
 
       // Выбираем ближайшую
@@ -477,9 +475,8 @@ function App() {
         curr.distance < min.distance ? curr : min
       );
 
-      // Анимируем к выбранной вкладке
+      // Плавно анимируем к выбранной вкладке
       const targetRect = rects[closest.index];
-      nav.style.transition = '';
       nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
       nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
 
@@ -499,16 +496,17 @@ function App() {
       onPointerUp(e);
     };
 
-    indicator.addEventListener('pointerdown', onPointerDown);
-    indicator.addEventListener('pointermove', onPointerMove);
-    indicator.addEventListener('pointerup', onPointerUp);
-    indicator.addEventListener('pointercancel', onPointerCancel);
+    // Используем capture фазу чтобы гарантированно получать события
+    indicator.addEventListener('pointerdown', onPointerDown, { capture: true });
+    window.addEventListener('pointermove', onPointerMove, { capture: true });
+    window.addEventListener('pointerup', onPointerUp, { capture: true });
+    window.addEventListener('pointercancel', onPointerCancel, { capture: true });
 
     return () => {
-      indicator.removeEventListener('pointerdown', onPointerDown);
-      indicator.removeEventListener('pointermove', onPointerMove);
-      indicator.removeEventListener('pointerup', onPointerUp);
-      indicator.removeEventListener('pointercancel', onPointerCancel);
+      indicator.removeEventListener('pointerdown', onPointerDown, { capture: true });
+      window.removeEventListener('pointermove', onPointerMove, { capture: true });
+      window.removeEventListener('pointerup', onPointerUp, { capture: true });
+      window.removeEventListener('pointercancel', onPointerCancel, { capture: true });
     };
   }, [currentPage, navigateTo]);
 

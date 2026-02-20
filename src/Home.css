@@ -123,6 +123,13 @@
   overflow: hidden;
 }
 
+
+tg-amount-card-stat{
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  overflow: hidden;
+}
+
 .tg-amount-top {
   display: flex;
   align-items: center;

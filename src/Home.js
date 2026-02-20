@@ -98,19 +98,26 @@ const CardIcon = () => (
   </svg>
 );
 
-// ==================== SWAP ИКОНКА ====================
+// ==================== SWAP ИКОНКА С АНИМАЦИЕЙ ====================
 const SwapIcon = ({ isSwapped }) => (
   <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="26" cy="26" r="24" fill="var(--tg-theme-button-color, #3390ec)"/>
-    <path 
-      d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
-      stroke="white"
-      strokeWidth="2.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-      fill="none"
-      transform={isSwapped ? 'rotate(180 26 26)' : ''}
-    />
+    <g
+      style={{
+        transform: isSwapped ? 'rotate(180deg)' : 'rotate(0deg)',
+        transformOrigin: 'center',
+        transition: 'transform 0.3s ease'
+      }}
+    >
+      <path 
+        d="M34 16C37.31 18.33 39.5 22 39.5 26C39.5 33.1 33.6 39 26.5 39H25.5M18 36C14.69 33.67 12.5 30 12.5 26C12.5 18.9 18.4 13 25.5 13H26.5M28.5 42L25 38.5L28.5 35M25 17L28.5 13.5L25 10" 
+        stroke="white"
+        strokeWidth="2.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </g>
   </svg>
 );
 

@@ -97,7 +97,7 @@ html, body, #root {
   width: min(92vw, 380px);
   height: 58px;
   padding: 6px;
-  border-radius: 18px;
+  border-radius: 50px;
 
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

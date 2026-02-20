@@ -28,11 +28,11 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
   ];
 
   const exchanges = [
-    { value: 'Binance', name: 'Binance', icon: <BinanceIcon />, badge: 'Binance' },
-    { value: 'Bybit', name: 'Bybit', icon: <BybitIcon />, badge: 'BYBIT' },
-    { value: 'MEXC', name: 'MEXC', icon: <MEXCIcon />, badge: 'МЕХС' },
-    { value: 'OKX', name: 'OKX', icon: <OKXIcon />, badge: 'OKX' },
-    { value: 'BitGet', name: 'BitGet', icon: <BitGetIcon />, badge: 'BITGET' },
+    { value: 'Binance', name: 'Binance', icon: <BinanceIcon />, badge: '' },
+    { value: 'Bybit', name: 'Bybit', icon: <BybitIcon />, badge: '' },
+    { value: 'MEXC', name: 'MEXC', icon: <MEXCIcon />, badge: '' },
+    { value: 'OKX', name: 'OKX', icon: <OKXIcon />, badge: '' },
+    { value: 'BitGet', name: 'BitGet', icon: <BitGetIcon />, badge: '' },
   ];
 
   const handleNetworkSelect = (network) => {

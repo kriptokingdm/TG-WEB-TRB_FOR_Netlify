@@ -130,7 +130,7 @@ html, body, #root {
   left: var(--indicator-left);
   width: var(--indicator-width);
   height: calc(58px - 12px);
-  border-radius: 14px;
+  border-radius: 30px;
 
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);

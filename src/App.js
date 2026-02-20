@@ -19,6 +19,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [hideHints, setHideHints] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
 
   const navRef = useRef(null);
   const indicatorRef = useRef(null);
@@ -30,7 +31,9 @@ function App() {
     moved: false,
     startIndex: 1,
     rects: null,
-    pointerId: null
+    pointerId: null,
+    initialIndicatorLeft: 0,
+    initialIndicatorWidth: 0
   });
 
   // Загружаем настройки
@@ -279,50 +282,51 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // keyboard hide nav
+  // ==================== ИСПРАВЛЕННАЯ ОБРАБОТКА КЛАВИАТУРЫ ====================
   useEffect(() => {
+    let resizeTimeout;
+    let lastHeight = window.innerHeight;
+
     const handleResize = () => {
-      const nav = navRef.current;
-      if (!nav) return;
-      if (window.innerHeight < 500) {
-        nav.classList.add('keyboard-hidden');
-        nav.classList.remove('keyboard-visible');
-      } else {
-        nav.classList.add('keyboard-visible');
-        nav.classList.remove('keyboard-hidden');
-      }
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const newHeight = window.innerHeight;
+        const heightDiff = Math.abs(newHeight - lastHeight);
+        
+        // Если изменение высоты значительное (появилась/скрылась клавиатура)
+        if (heightDiff > 150) {
+          const isKeyboard = newHeight < lastHeight;
+          setIsKeyboardVisible(!isKeyboard);
+          lastHeight = newHeight;
+        }
+      }, 100);
     };
 
     const handleFocus = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        const nav = navRef.current;
-        if (!nav) return;
-        nav.classList.add('keyboard-hidden');
-        nav.classList.remove('keyboard-visible');
+        setIsKeyboardVisible(false);
       }
     };
 
     const handleBlur = () => {
-      const nav = navRef.current;
-      if (!nav) return;
+      // Задержка чтобы убедиться что клавиатура действительно скрылась
       setTimeout(() => {
-        nav.classList.add('keyboard-visible');
-        nav.classList.remove('keyboard-hidden');
+        const activeElement = document.activeElement;
+        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
+          setIsKeyboardVisible(true);
+        }
       }, 200);
     };
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
     document.addEventListener('focusin', handleFocus);
     document.addEventListener('focusout', handleBlur);
 
-    handleResize();
-
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
       document.removeEventListener('focusin', handleFocus);
       document.removeEventListener('focusout', handleBlur);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 
@@ -330,7 +334,7 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // indicator positioning
+  // ==================== ИСПРАВЛЕННОЕ ПОЛОЖЕНИЕ ИНДИКАТОРА ====================
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -349,16 +353,25 @@ function App() {
         const r = el.getBoundingClientRect();
         const left = r.left - navRect.left;
         const width = r.width;
-        const center = left + width / 2;
-        return { left, width, center };
+        return { left, width };
       });
 
       dragStateRef.current.rects = rects;
 
       const activeIndex = pageToIndex(currentPage);
-      nav.style.setProperty('--indicator-left', `${rects[activeIndex].left}px`);
-      nav.style.setProperty('--indicator-width', `${rects[activeIndex].width}px`);
-      nav.classList.add('ready');
+      const targetLeft = rects[activeIndex].left;
+      const targetWidth = rects[activeIndex].width;
+
+      // Применяем позицию без анимации при первом рендере
+      if (!nav.classList.contains('ready')) {
+        nav.style.setProperty('--indicator-left', `${targetLeft}px`);
+        nav.style.setProperty('--indicator-width', `${targetWidth}px`);
+        nav.classList.add('ready');
+      } else {
+        // С анимацией при смене страницы
+        nav.style.setProperty('--indicator-left', `${targetLeft}px`);
+        nav.style.setProperty('--indicator-width', `${targetWidth}px`);
+      }
     };
 
     updateIndicator();
@@ -366,31 +379,19 @@ function App() {
     return () => window.removeEventListener('resize', updateIndicator);
   }, [currentPage]);
 
-  // ✅ drag ONLY on the pill (indicator) + correct direction
+  // ==================== ИСПРАВЛЕННЫЙ DRAG ====================
   useEffect(() => {
     const nav = navRef.current;
     const pill = indicatorRef.current;
     if (!nav || !pill) return;
 
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const lerp = (a, b, t) => a + (b - a) * t;
-
-    const setIndicator = (left, width, animate = true) => {
-      if (!animate) nav.classList.add('no-anim');
-      nav.style.setProperty('--indicator-left', `${left}px`);
-      nav.style.setProperty('--indicator-width', `${width}px`);
-      if (!animate) requestAnimationFrame(() => nav.classList.remove('no-anim'));
-    };
-
-    const setIndicatorByIndex = (idx, animate = true) => {
-      const rects = dragStateRef.current.rects;
-      if (!rects) return;
-      setIndicator(rects[idx].left, rects[idx].width, animate);
-    };
+    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 
     const onPointerDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
+      e.preventDefault();
+      
       const st = dragStateRef.current;
       st.isDown = true;
       st.moved = false;
@@ -398,74 +399,85 @@ function App() {
       st.startX = e.clientX;
       st.lastX = e.clientX;
       st.startIndex = pageToIndex(currentPage);
+      
+      // Сохраняем начальную позицию
+      st.initialIndicatorLeft = parseFloat(nav.style.getPropertyValue('--indicator-left')) || 0;
+      st.initialIndicatorWidth = parseFloat(nav.style.getPropertyValue('--indicator-width')) || 0;
 
       nav.classList.add('dragging');
-      try { pill.setPointerCapture(e.pointerId); } catch {}
+      pill.setPointerCapture(e.pointerId);
     };
 
     const onPointerMove = (e) => {
       const st = dragStateRef.current;
       if (!st.isDown) return;
-      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId !== e.pointerId) return;
+
+      e.preventDefault();
 
       st.lastX = e.clientX;
       const dx = st.lastX - st.startX;
-      if (Math.abs(dx) > 6) st.moved = true;
-
-      const rects = st.rects;
-      if (!rects) return;
-
-      const from = st.startIndex;
-
-      // ✅ ПРАВИЛЬНО: вправо -> вправо, влево -> влево
-      const dir = dx > 0 ? +1 : -1;
-      const to = clamp(from + dir, 0, 2);
-
-      if (to === from) {
-        setIndicatorByIndex(from, false);
-        return;
+      
+      if (Math.abs(dx) > 5) {
+        st.moved = true;
       }
 
-      const dist = Math.abs(rects[to].center - rects[from].center) || 1;
-      const t = clamp(Math.abs(dx) / dist, 0, 1);
+      if (!st.moved) return;
 
-      const left = lerp(rects[from].left, rects[to].left, t);
-      const width = lerp(rects[from].width, rects[to].width, t);
-      setIndicator(left, width, false);
+      // Плавное перемещение индикатора
+      const newLeft = st.initialIndicatorLeft + dx;
+      
+      // Ограничиваем, чтобы не выходил за пределы
+      const minLeft = st.rects[0].left;
+      const maxLeft = st.rects[2].left;
+      const clampedLeft = clamp(newLeft, minLeft, maxLeft);
+      
+      // Сохраняем ширину неизменной при перетаскивании
+      nav.style.setProperty('--indicator-left', `${clampedLeft}px`);
+      nav.style.setProperty('--indicator-width', `${st.initialIndicatorWidth}px`);
+      nav.style.transition = 'none';
     };
 
     const onPointerUp = (e) => {
       const st = dragStateRef.current;
       if (!st.isDown) return;
-      if (st.pointerId !== null && e.pointerId !== st.pointerId) return;
+      if (st.pointerId !== e.pointerId) return;
+
+      e.preventDefault();
 
       st.isDown = false;
       nav.classList.remove('dragging');
+      nav.style.transition = '';
 
       const dx = st.lastX - st.startX;
-
-      // если не двигали — просто вернемся на активную
-      if (!st.moved) {
-        setIndicatorByIndex(pageToIndex(currentPage), true);
-        st.pointerId = null;
-        return;
-      }
-
-      const THRESHOLD = 24;
       let targetIndex = st.startIndex;
 
-      if (dx > THRESHOLD) targetIndex = clamp(st.startIndex + 1, 0, 2);      // ✅ вправо -> следующая
-      else if (dx < -THRESHOLD) targetIndex = clamp(st.startIndex - 1, 0, 2); // ✅ влево -> предыдущая
+      if (st.moved) {
+        const threshold = 30;
+        if (dx > threshold && st.startIndex < 2) {
+          targetIndex = st.startIndex + 1;
+        } else if (dx < -threshold && st.startIndex > 0) {
+          targetIndex = st.startIndex - 1;
+        }
+      }
 
-      setIndicatorByIndex(targetIndex, true);
-      navigateTo(indexToPage(targetIndex));
+      // Анимируем к целевому индексу
+      const targetRect = st.rects[targetIndex];
+      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+
+      if (targetIndex !== st.startIndex) {
+        navigateTo(indexToPage(targetIndex));
+      }
+
+      pill.releasePointerCapture(e.pointerId);
       st.pointerId = null;
     };
 
-    pill.addEventListener('pointerdown', onPointerDown, { passive: true });
-    pill.addEventListener('pointermove', onPointerMove, { passive: true });
-    pill.addEventListener('pointerup', onPointerUp, { passive: true });
-    pill.addEventListener('pointercancel', onPointerUp, { passive: true });
+    pill.addEventListener('pointerdown', onPointerDown);
+    pill.addEventListener('pointermove', onPointerMove);
+    pill.addEventListener('pointerup', onPointerUp);
+    pill.addEventListener('pointercancel', onPointerUp);
 
     return () => {
       pill.removeEventListener('pointerdown', onPointerDown);
@@ -504,8 +516,11 @@ function App() {
     const showBadge = availableEarnings >= 10;
 
     return (
-      <div className="floating-nav keyboard-visible" ref={navRef}>
-        {/* pill */}
+      <div 
+        className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`} 
+        ref={navRef}
+      >
+        {/* pill - теперь только для drag, без pointer-events на кнопки */}
         <div className="nav-indicator" ref={indicatorRef} />
 
         <button

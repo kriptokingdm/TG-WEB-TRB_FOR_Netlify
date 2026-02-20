@@ -335,3 +335,58 @@ button, a, div {
     border-radius: 13px;
   }
 }
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ НАВИГАЦИИ ==================== */
+
+/* Убираем дерганье при перетаскивании */
+.floating-nav.dragging {
+  transition: none;
+}
+
+.floating-nav.dragging .nav-indicator {
+  transition: none;
+  cursor: grabbing;
+}
+
+/* Плавные переходы только когда не драг */
+.floating-nav:not(.dragging) .nav-indicator {
+  transition: left 0.22s cubic-bezier(0.2, 0.9, 0.3, 1), 
+              width 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* Убираем pointer-events с индикатора чтобы кнопки работали */
+.nav-indicator {
+  pointer-events: auto; /* Только для drag */
+}
+
+.nav-item-floating {
+  pointer-events: auto; /* Кнопки кликабельны */
+}
+
+/* Защита от случайных нажатий */
+.floating-nav {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Плавное появление/исчезновение */
+.floating-nav.keyboard-hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.floating-nav.keyboard-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: auto;
+}
+
+/* Фикс для iOS */
+@media (hover: none) and (pointer: coarse) {
+  .nav-indicator {
+    touch-action: pan-x pinch-zoom;
+  }
+}

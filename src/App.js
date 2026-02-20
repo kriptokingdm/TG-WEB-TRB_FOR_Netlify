@@ -24,16 +24,16 @@ function App() {
   const navRef = useRef(null);
   const indicatorRef = useRef(null);
 
+  // Состояние для перетаскивания
   const dragStateRef = useRef({
-    isDown: false,
+    isDragging: false,
     startX: 0,
-    lastX: 0,
-    moved: false,
-    startIndex: 1,
-    rects: null,
-    pointerId: null,
-    initialIndicatorLeft: 0,
-    initialIndicatorWidth: 0
+    currentX: 0,
+    startLeft: 0,
+    minLeft: 0,
+    maxLeft: 0,
+    rects: [],
+    pointerId: null
   });
 
   // Загружаем настройки
@@ -282,7 +282,7 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ==================== ИСПРАВЛЕННАЯ ОБРАБОТКА КЛАВИАТУРЫ ====================
+  // Обработка клавиатуры
   useEffect(() => {
     let resizeTimeout;
     let lastHeight = window.innerHeight;
@@ -293,7 +293,6 @@ function App() {
         const newHeight = window.innerHeight;
         const heightDiff = Math.abs(newHeight - lastHeight);
         
-        // Если изменение высоты значительное (появилась/скрылась клавиатура)
         if (heightDiff > 150) {
           const isKeyboard = newHeight < lastHeight;
           setIsKeyboardVisible(!isKeyboard);
@@ -309,7 +308,6 @@ function App() {
     };
 
     const handleBlur = () => {
-      // Задержка чтобы убедиться что клавиатура действительно скрылась
       setTimeout(() => {
         const activeElement = document.activeElement;
         if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
@@ -334,12 +332,12 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // ==================== ИСПРАВЛЕННОЕ ПОЛОЖЕНИЕ ИНДИКАТОРА ====================
+  // Обновление позиций вкладок
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const updateIndicator = () => {
+    const updateRects = () => {
       const tabs = [
         nav.querySelector('[data-tab="profile"]'),
         nav.querySelector('[data-tab="home"]'),
@@ -351,139 +349,166 @@ function App() {
       const navRect = nav.getBoundingClientRect();
       const rects = tabs.map((el) => {
         const r = el.getBoundingClientRect();
-        const left = r.left - navRect.left;
-        const width = r.width;
-        return { left, width };
+        return {
+          left: r.left - navRect.left,
+          width: r.width,
+          center: r.left - navRect.left + r.width / 2
+        };
       });
 
       dragStateRef.current.rects = rects;
 
+      // Устанавливаем индикатор на активную вкладку
       const activeIndex = pageToIndex(currentPage);
-      const targetLeft = rects[activeIndex].left;
-      const targetWidth = rects[activeIndex].width;
-
-      // Применяем позицию без анимации при первом рендере
+      const targetRect = rects[activeIndex];
+      
+      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+      
       if (!nav.classList.contains('ready')) {
-        nav.style.setProperty('--indicator-left', `${targetLeft}px`);
-        nav.style.setProperty('--indicator-width', `${targetWidth}px`);
         nav.classList.add('ready');
-      } else {
-        // С анимацией при смене страницы
-        nav.style.setProperty('--indicator-left', `${targetLeft}px`);
-        nav.style.setProperty('--indicator-width', `${targetWidth}px`);
       }
     };
 
-    updateIndicator();
-    window.addEventListener('resize', updateIndicator);
-    return () => window.removeEventListener('resize', updateIndicator);
+    updateRects();
+    window.addEventListener('resize', updateRects);
+    return () => window.removeEventListener('resize', updateRects);
   }, [currentPage]);
 
   // ==================== ИСПРАВЛЕННЫЙ DRAG ====================
   useEffect(() => {
     const nav = navRef.current;
-    const pill = indicatorRef.current;
-    if (!nav || !pill) return;
-
-    const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+    const indicator = indicatorRef.current;
+    if (!nav || !indicator) return;
 
     const onPointerDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-
+      
       e.preventDefault();
       
-      const st = dragStateRef.current;
-      st.isDown = true;
-      st.moved = false;
-      st.pointerId = e.pointerId;
-      st.startX = e.clientX;
-      st.lastX = e.clientX;
-      st.startIndex = pageToIndex(currentPage);
-      
-      // Сохраняем начальную позицию
-      st.initialIndicatorLeft = parseFloat(nav.style.getPropertyValue('--indicator-left')) || 0;
-      st.initialIndicatorWidth = parseFloat(nav.style.getPropertyValue('--indicator-width')) || 0;
+      const rects = dragStateRef.current.rects;
+      if (!rects || rects.length !== 3) return;
+
+      const navRect = nav.getBoundingClientRect();
+      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left')) || rects[pageToIndex(currentPage)].left;
+      const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width')) || rects[pageToIndex(currentPage)].width;
+
+      // Сохраняем состояние для драга
+      dragStateRef.current = {
+        ...dragStateRef.current,
+        isDragging: true,
+        startX: e.clientX,
+        currentX: e.clientX,
+        startLeft: currentLeft,
+        startWidth: currentWidth,
+        minLeft: rects[0].left,
+        maxLeft: rects[2].left,
+        pointerId: e.pointerId
+      };
 
       nav.classList.add('dragging');
-      pill.setPointerCapture(e.pointerId);
+      nav.style.transition = 'none';
+      indicator.setPointerCapture(e.pointerId);
     };
 
     const onPointerMove = (e) => {
-      const st = dragStateRef.current;
-      if (!st.isDown) return;
-      if (st.pointerId !== e.pointerId) return;
+      const state = dragStateRef.current;
+      if (!state.isDragging) return;
+      if (state.pointerId !== e.pointerId) return;
 
       e.preventDefault();
 
-      st.lastX = e.clientX;
-      const dx = st.lastX - st.startX;
+      const dx = e.clientX - state.startX;
+      state.currentX = e.clientX;
+
+      // Рассчитываем новую позицию
+      let newLeft = state.startLeft + dx;
       
-      if (Math.abs(dx) > 5) {
-        st.moved = true;
-      }
+      // Ограничиваем минимальным и максимальным значением
+      newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, newLeft));
 
-      if (!st.moved) return;
-
-      // Плавное перемещение индикатора
-      const newLeft = st.initialIndicatorLeft + dx;
+      // Находим ближайшую вкладку для пропорционального изменения ширины
+      const rects = state.rects;
+      let targetWidth = state.startWidth;
       
-      // Ограничиваем, чтобы не выходил за пределы
-      const minLeft = st.rects[0].left;
-      const maxLeft = st.rects[2].left;
-      const clampedLeft = clamp(newLeft, minLeft, maxLeft);
-      
-      // Сохраняем ширину неизменной при перетаскивании
-      nav.style.setProperty('--indicator-left', `${clampedLeft}px`);
-      nav.style.setProperty('--indicator-width', `${st.initialIndicatorWidth}px`);
-      nav.style.transition = 'none';
-    };
-
-    const onPointerUp = (e) => {
-      const st = dragStateRef.current;
-      if (!st.isDown) return;
-      if (st.pointerId !== e.pointerId) return;
-
-      e.preventDefault();
-
-      st.isDown = false;
-      nav.classList.remove('dragging');
-      nav.style.transition = '';
-
-      const dx = st.lastX - st.startX;
-      let targetIndex = st.startIndex;
-
-      if (st.moved) {
-        const threshold = 30;
-        if (dx > threshold && st.startIndex < 2) {
-          targetIndex = st.startIndex + 1;
-        } else if (dx < -threshold && st.startIndex > 0) {
-          targetIndex = st.startIndex - 1;
+      // Плавно меняем ширину в зависимости от позиции
+      if (newLeft <= rects[0].left + 10) {
+        targetWidth = rects[0].width;
+      } else if (newLeft >= rects[2].left - 10) {
+        targetWidth = rects[2].width;
+      } else {
+        // Интерполяция ширины между вкладками
+        const t = (newLeft - rects[0].left) / (rects[2].left - rects[0].left);
+        if (t < 0.5) {
+          // Между первой и второй
+          const progress = t * 2;
+          targetWidth = rects[0].width + (rects[1].width - rects[0].width) * progress;
+        } else {
+          // Между второй и третьей
+          const progress = (t - 0.5) * 2;
+          targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
         }
       }
 
-      // Анимируем к целевому индексу
-      const targetRect = st.rects[targetIndex];
+      // Применяем изменения
+      nav.style.setProperty('--indicator-left', `${newLeft}px`);
+      nav.style.setProperty('--indicator-width', `${targetWidth}px`);
+    };
+
+    const onPointerUp = (e) => {
+      const state = dragStateRef.current;
+      if (!state.isDragging) return;
+      if (state.pointerId !== e.pointerId) return;
+
+      e.preventDefault();
+
+      // Находим ближайшую вкладку по текущей позиции
+      const rects = state.rects;
+      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
+      
+      // Вычисляем расстояния до центров вкладок
+      const distances = rects.map((rect, index) => ({
+        index,
+        distance: Math.abs(currentLeft + (state.startWidth / 2) - rect.center)
+      }));
+
+      // Выбираем ближайшую
+      const closest = distances.reduce((min, curr) => 
+        curr.distance < min.distance ? curr : min
+      );
+
+      // Анимируем к выбранной вкладке
+      const targetRect = rects[closest.index];
+      nav.style.transition = '';
       nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
       nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
 
-      if (targetIndex !== st.startIndex) {
-        navigateTo(indexToPage(targetIndex));
+      // Меняем страницу если нужно
+      const targetPage = indexToPage(closest.index);
+      if (targetPage !== currentPage) {
+        navigateTo(targetPage);
       }
 
-      pill.releasePointerCapture(e.pointerId);
-      st.pointerId = null;
+      // Сбрасываем состояние
+      dragStateRef.current.isDragging = false;
+      nav.classList.remove('dragging');
+      indicator.releasePointerCapture(e.pointerId);
     };
 
-    pill.addEventListener('pointerdown', onPointerDown);
-    pill.addEventListener('pointermove', onPointerMove);
-    pill.addEventListener('pointerup', onPointerUp);
-    pill.addEventListener('pointercancel', onPointerUp);
+    const onPointerCancel = (e) => {
+      onPointerUp(e);
+    };
+
+    indicator.addEventListener('pointerdown', onPointerDown);
+    indicator.addEventListener('pointermove', onPointerMove);
+    indicator.addEventListener('pointerup', onPointerUp);
+    indicator.addEventListener('pointercancel', onPointerCancel);
 
     return () => {
-      pill.removeEventListener('pointerdown', onPointerDown);
-      pill.removeEventListener('pointermove', onPointerMove);
-      pill.removeEventListener('pointerup', onPointerUp);
-      pill.removeEventListener('pointercancel', onPointerUp);
+      indicator.removeEventListener('pointerdown', onPointerDown);
+      indicator.removeEventListener('pointermove', onPointerMove);
+      indicator.removeEventListener('pointerup', onPointerUp);
+      indicator.removeEventListener('pointercancel', onPointerCancel);
     };
   }, [currentPage, navigateTo]);
 
@@ -520,7 +545,6 @@ function App() {
         className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`} 
         ref={navRef}
       >
-        {/* pill - теперь только для drag, без pointer-events на кнопки */}
         <div className="nav-indicator" ref={indicatorRef} />
 
         <button

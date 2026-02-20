@@ -260,7 +260,7 @@ export default function History({ navigateTo, showToast }) {
               <p className="tgH__subtitle">Ваши заявки и статусы</p>
             </div>
 
-            <button
+            {/* <button
               className="tgBtn tgBtn--ghost tgH__refresh"
               onClick={() => !refreshing && fetchOrders(true)}
               disabled={refreshing}
@@ -268,7 +268,7 @@ export default function History({ navigateTo, showToast }) {
             >
               <span className={refreshing ? 'tgSpin' : 'tgH__refreshIcon'} />
               <span>{refreshing ? 'Обновляю…' : 'Обновить'}</span>
-            </button>
+            </button> */}
           </div>
 
           <div className="tgH__stats">

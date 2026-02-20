@@ -77,6 +77,27 @@ const DeleteIcon = () => (
   </svg>
 );
 
+// ==================== ИКОНКА СБП ====================
+const SBPIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M2.19995 4.78868L4.86415 9.55076V12.4555L2.20307 17.2082L2.19995 4.78868Z" fill="#5B57A2"/>
+    <path d="M12.4294 7.81796L14.9259 6.28786L20.035 6.2831L12.4294 10.9423V7.81796Z" fill="#D90751"/>
+    <path d="M12.4153 4.76061L12.4295 11.0654L9.75903 9.42461V0L12.4155 4.76061H12.4153Z" fill="#FAB718"/>
+    <path d="M20.035 6.28301L14.9257 6.28778L12.4153 4.76061L9.75903 0L20.0349 6.28301H20.035Z" fill="#ED6F26"/>
+    <path d="M12.4295 17.2346V14.1757L9.75903 12.566L9.7605 22L12.4295 17.2346Z" fill="#63B22F"/>
+    <path d="M14.9196 15.7185L4.86397 9.55076L2.19995 4.78868L20.0242 15.7122L14.9194 15.7185H14.9196Z" fill="#1487C9"/>
+    <path d="M9.76074 22L12.4293 17.2346L14.9196 15.7185L20.0241 15.7122L9.76074 22Z" fill="#017F36"/>
+    <path d="M2.20312 17.2081L9.78083 12.5661L7.23324 11.003L4.86421 12.4554L2.20312 17.2081Z" fill="#984995"/>
+  </svg>
+);
+
+// ==================== ИКОНКА КАРТЫ ====================
+const CardIcon = () => (
+  <svg width="19" height="15" viewBox="0 0 19 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16.5 0H1.83333C0.815833 0 0.00916666 0.815833 0.00916666 1.83333L0 12.8333C0 13.8508 0.815833 14.6667 1.83333 14.6667H16.5C17.5175 14.6667 18.3333 13.8508 18.3333 12.8333V1.83333C18.3333 0.815833 17.5175 0 16.5 0ZM16.5 12.8333H1.83333V7.33333H16.5V12.8333ZM16.5 3.66667H1.83333V1.83333H16.5V3.66667Z" fill="white"/>
+  </svg>
+);
+
 // ==================== SWAP ИКОНКА ====================
 const SwapIcon = ({ isSwapped }) => (
   <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -96,6 +117,13 @@ const SwapIcon = ({ isSwapped }) => (
     />
   </svg>
 );
+
+// ==================== ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ АДРЕСА ====================
+const formatAddress = (address) => {
+  if (!address) return '';
+  if (address.length <= 8) return address;
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+};
 
 function Home({ navigateTo, telegramUser, showToast }) {
   console.log('🏠 Home загружен');
@@ -126,8 +154,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [cryptoAddresses, setCryptoAddresses] = useState([]);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   
-  // Банки
-  const [bankName, setBankName] = useState('СБП (Система быстрых платежей)');
+  // Банки - теперь только карта и сбп
+  const [bankName, setBankName] = useState('СБП');
   const [cardNumber, setCardNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -138,34 +166,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
   const abortControllerRef = useRef(null);
 
-  // ==================== КОНСТАНТЫ ====================
+  // ==================== КОНСТАНТЫ - ТОЛЬКО КАРТА И СБП ====================
   const availableBanks = [
-    'СБП (Система быстрых платежей)',
-    'Сбербанк',
-    'Тинькофф',
-    'ВТБ',
-    'Альфа-Банк',
-    'Газпромбанк',
-    'Райффайзен Банк',
-    'СовкомБанк',
-    'Россельхоз',
-    'МТС Банк',
-    'Почта Банк',
-    'Озон Банк',
-    'ОТП Банк',
-    'Банк Уралсиб',
-    'Кредит Европа Банк',
-    'Хоум Кредит',
-    'Ренессанс Кредит',
-    'Банк Русский Стандарт',
-    'Банк Санкт-Петербург',
-    'МКБ',
-    'Промсвязьбанк',
-    'Росбанк',
-    'Ак Барс',
-    'Бинбанк',
-    'ЮМани (Яндекс Деньги)',
-    'Т-Банк'
+    { name: 'СБП', icon: <SBPIcon /> },
+    { name: 'Карта', icon: <CardIcon /> }
   ];
 
   // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
@@ -273,7 +277,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   };
 
   const handleAddPayment = () => {
-    const isSBP = bankName === 'СБП (Система быстрых платежей)';
+    const isSBP = bankName === 'СБП';
     
     if (isSBP) {
       const clean = phoneNumber.replace(/\D/g, '');
@@ -292,6 +296,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
     const newPayment = {
       id: Date.now().toString(),
       bankName,
+      icon: isSBP ? <SBPIcon /> : <CardIcon />,
       type: isSBP ? 'sbp' : 'card',
       number: isSBP ? phoneNumber : cardNumber,
       formattedNumber: isSBP ? formatPhone(phoneNumber) : formatCard(cardNumber)
@@ -299,7 +304,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
     setPaymentMethods([...paymentMethods, newPayment]);
     setSelectedPayment(newPayment);
-    setBankName('СБП (Система быстрых платежей)');
+    setBankName('СБП');
     setCardNumber('');
     setPhoneNumber('');
     showMessage('success', '✅ Реквизиты добавлены');
@@ -445,7 +450,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
     return isBuyMode ? (num / currentRate).toFixed(2) : (num * currentRate).toFixed(2);
   };
 
-  const isSBPSelected = bankName === 'СБП (Система быстрых платежей)';
+  const isSBPSelected = bankName === 'СБП';
 
   // ==================== EFFECTS ====================
   useEffect(() => {
@@ -677,7 +682,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 {error && <div className="tg-amount-error">{error}</div>}
               </div>
 
-              {/* Получаешь */}
+              {/* Получаешь - теперь без возможности взаимодействия */}
               <div className="tg-amount-card readonly">
                 <div className="tg-amount-top">
                   <span className="tg-amount-label">Вы получаете</span>
@@ -692,6 +697,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     className="tg-amount-input"
                     placeholder="0"
                     aria-label="Получаемая сумма"
+                    style={{ pointerEvents: 'none' }}
                   />
                 </div>
               </div>
@@ -719,10 +725,8 @@ function Home({ navigateTo, telegramUser, showToast }) {
                           <span className="crypto-network-badge">{c.network}</span>
                         </div>
                         <div className="crypto-address">
-                          {c.address.length > 20 
-                            ? `${c.address.slice(0, 12)}...${c.address.slice(-8)}`
-                            : c.address
-                          }
+                          {/* Форматируем адрес: первые 4 символа + ... + последние 4 символа */}
+                          {formatAddress(c.address)}
                         </div>
                       </div>
                       <div className="crypto-actions">
@@ -742,9 +746,19 @@ function Home({ navigateTo, telegramUser, showToast }) {
             <div className="payment-section-new">
               <h3 className="section-title">Реквизиты для RUB</h3>
               
-              <select value={bankName} onChange={(e) => setBankName(e.target.value)} className="bank-select">
-                {availableBanks.map(b => <option key={b}>{b}</option>)}
-              </select>
+              {/* Кастомный select с иконками */}
+              <div className="custom-select-wrapper">
+                {availableBanks.map(bank => (
+                  <div
+                    key={bank.name}
+                    className={`custom-select-option ${bankName === bank.name ? 'selected' : ''}`}
+                    onClick={() => setBankName(bank.name)}
+                  >
+                    <span className="option-icon">{bank.icon}</span>
+                    <span className="option-name">{bank.name}</span>
+                  </div>
+                ))}
+              </div>
 
               {isSBPSelected ? (
                 <input
@@ -775,7 +789,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     <div key={p.id} className={`payment-item ${selectedPayment?.id === p.id ? 'selected' : ''}`}
                          onClick={() => setSelectedPayment(p)}>
                       <div className="payment-info">
-                        <span className="bank-name">{p.bankName}</span>
+                        <span className="bank-name">
+                          <span className="payment-icon">{p.icon}</span>
+                          {p.bankName}
+                        </span>
                         <span className="payment-number">{p.formattedNumber}</span>
                       </div>
                       <button className="action-btn delete-btn" onClick={(e) => { e.stopPropagation(); handleDeletePayment(p.id); }}>

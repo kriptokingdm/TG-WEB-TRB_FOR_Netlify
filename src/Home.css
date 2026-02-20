@@ -124,12 +124,6 @@
 }
 
 
-tg-amount-card-stat{
-  border-radius: 16px;
-  padding: 14px 14px 12px;
-  overflow: hidden;
-}
-
 .tg-amount-top {
   display: flex;
   align-items: center;
@@ -1416,4 +1410,139 @@ tg-amount-card-stat{
 
 .selected-name{
   margin: auto;
+}
+
+/* ==================== КАСТОМНЫЙ SELECT С ИКОНКАМИ ==================== */
+.custom-select-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: var(--tg-secondary-bg);
+  border-radius: 16px;
+  padding: 6px;
+}
+
+.custom-select-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+.custom-select-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.custom-select-option.selected svg path {
+  fill: white;
+}
+
+.custom-select-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.97);
+}
+
+.option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.option-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.option-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ==================== ИКОНКИ В СПИСКЕ ПЛАТЕЖЕЙ ==================== */
+.payment-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.payment-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.payment-item.selected .payment-icon svg path {
+  fill: var(--tg-button);
+}
+
+/* ==================== УЛУЧШЕННЫЙ CRYPTO-ADDRESS ==================== */
+.crypto-address {
+  font-size: 14px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.05);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ==================== ПОЛЯ БЕЗ ВЗАИМОДЕЙСТВИЯ ==================== */
+.tg-amount-input[readonly] {
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+  opacity: 1 !important;
+}
+
+.tg-amount-card.readonly {
+  background: var(--tg-secondary-bg);
+  border-color: transparent;
+  opacity: 0.9;
+}
+
+.tg-amount-card.readonly:focus-within {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ==================== АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ ==================== */
+@media (max-width: 480px) {
+  .custom-select-wrapper {
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+  }
+  
+  .custom-select-option {
+    padding: 16px 12px;
+  }
+  
+  .option-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .option-name {
+    font-size: 16px;
+  }
 }

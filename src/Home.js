@@ -98,7 +98,7 @@ const CardIcon = () => (
   </svg>
 );
 
-// ==================== SWAP ИКОНКА (ИСПРАВЛЕННАЯ) ====================
+// ==================== SWAP ИКОНКА ====================
 const SwapIcon = ({ isSwapped }) => (
   <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="26" cy="26" r="24" fill="var(--tg-theme-button-color, #3390ec)"/>
@@ -150,7 +150,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [cryptoAddresses, setCryptoAddresses] = useState([]);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   
-  // Банки - теперь только карта и сбп
+  // Банки
   const [bankName, setBankName] = useState('СБП');
   const [cardNumber, setCardNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -161,12 +161,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const abortControllerRef = useRef(null);
-
-  // ==================== КОНСТАНТЫ - ТОЛЬКО КАРТА И СБП ====================
-  const availableBanks = [
-    { name: 'СБП', icon: <SBPIcon /> },
-    { name: 'Карта', icon: <CardIcon /> }
-  ];
 
   // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
   const getUserId = () => {
@@ -292,7 +286,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
     const newPayment = {
       id: Date.now().toString(),
       bankName,
-      icon: isSBP ? <SBPIcon /> : <CardIcon />,
       type: isSBP ? 'sbp' : 'card',
       number: isSBP ? phoneNumber : cardNumber,
       formattedNumber: isSBP ? formatPhone(phoneNumber) : formatCard(cardNumber)
@@ -416,7 +409,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
         showMessage('success', `✅ Ордер #${result.order?.id}`);
         setAmount('');
         
-        // Обновляем активный ордер
         await checkActiveOrder();
         
         setTimeout(() => navigateTo?.('history'), 1500);
@@ -654,7 +646,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
               </div>
             </div>
 
-            {/* ПОЛЯ ВВОДА (Telegram style) */}
+            {/* ПОЛЯ ВВОДА */}
             <div className={`amount-input-section tg-amount ${error ? 'has-error' : ''}`}>
               {/* Отдаёшь */}
               <div className={`tg-amount-card ${error ? 'error' : ''}`}>
@@ -678,7 +670,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 {error && <div className="tg-amount-error">{error}</div>}
               </div>
 
-              {/* Получаешь - без взаимодействия но с рамкой */}
+              {/* Получаешь */}
               <div className="tg-amount-card">
                 <div className="tg-amount-top">
                   <span className="tg-amount-label">Вы получаете</span>
@@ -693,7 +685,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                     className="tg-amount-input tg-amount-readonly"
                     placeholder="0"
                     aria-label="Получаемая сумма"
-                    tabIndex="-1"
                   />
                 </div>
               </div>
@@ -721,7 +712,6 @@ function Home({ navigateTo, telegramUser, showToast }) {
                           <span className="crypto-network-badge">{c.network}</span>
                         </div>
                         <div className="crypto-address">
-                          {/* Форматируем адрес: первые 4 символа + ... + последние 4 символа */}
                           {formatAddress(c.address)}
                         </div>
                       </div>
@@ -742,18 +732,46 @@ function Home({ navigateTo, telegramUser, showToast }) {
             <div className="payment-section-new">
               <h3 className="section-title">Реквизиты для RUB</h3>
               
-              {/* Кастомный select с иконками */}
-              <div className="custom-select-wrapper">
-                {availableBanks.map(bank => (
-                  <div
-                    key={bank.name}
-                    className={`custom-select-option ${bankName === bank.name ? 'selected' : ''}`}
-                    onClick={() => setBankName(bank.name)}
-                  >
-                    <span className="option-icon">{bank.icon}</span>
-                    <span className="option-name">{bank.name}</span>
-                  </div>
-                ))}
+              {/* Простые кнопки вместо select */}
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                <button
+                  onClick={() => setBankName('СБП')}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: bankName === 'СБП' ? 'var(--tg-button)' : 'var(--tg-secondary-bg)',
+                    color: bankName === 'СБП' ? 'white' : 'var(--tg-text)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <SBPIcon />
+                  <span>СБП</span>
+                </button>
+                <button
+                  onClick={() => setBankName('Карта')}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: bankName === 'Карта' ? 'var(--tg-button)' : 'var(--tg-secondary-bg)',
+                    color: bankName === 'Карта' ? 'white' : 'var(--tg-text)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <CardIcon />
+                  <span>Карта</span>
+                </button>
               </div>
 
               {isSBPSelected ? (
@@ -786,7 +804,9 @@ function Home({ navigateTo, telegramUser, showToast }) {
                          onClick={() => setSelectedPayment(p)}>
                       <div className="payment-info">
                         <span className="bank-name">
-                          <span className="payment-icon">{p.icon}</span>
+                          <span className="payment-icon">
+                            {p.type === 'sbp' ? <SBPIcon /> : <CardIcon />}
+                          </span>
                           {p.bankName}
                         </span>
                         <span className="payment-number">{p.formattedNumber}</span>

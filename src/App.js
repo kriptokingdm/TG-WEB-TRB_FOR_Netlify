@@ -185,33 +185,28 @@ function App() {
 
   // navigation
   const navigateTo = useCallback((page) => {
-  setCurrentPage((prev) => {
-    if (prev === page) return prev;
-    
-    // Сохраняем текущую позицию индикатора перед анимацией
-    const nav = navRef.current;
-    if (nav) {
-      const currentLeft = nav.style.getPropertyValue('--indicator-left');
-      const currentWidth = nav.style.getPropertyValue('--indicator-width');
+    setCurrentPage((prev) => {
+      if (prev === page) return prev;
       
-      // Запоминаем в data-атрибутах
-      if (currentLeft) nav.dataset.prevLeft = currentLeft;
-      if (currentWidth) nav.dataset.prevWidth = currentWidth;
-    }
-    
-    window.location.hash = page;
-
-    if (window.Telegram?.WebApp?.BackButton) {
-      const tg = window.Telegram.WebApp;
-      if (page === 'home') {
-        try { tg.BackButton.hide(); } catch {}
-      } else {
-        try { tg.BackButton.show(); } catch {}
+      // Отключаем анимацию при клике
+      const nav = navRef.current;
+      if (nav) {
+        nav.style.transition = 'none';
       }
-    }
-    return page;
-  });
-}, []);
+      
+      window.location.hash = page;
+
+      if (window.Telegram?.WebApp?.BackButton) {
+        const tg = window.Telegram.WebApp;
+        if (page === 'home') {
+          try { tg.BackButton.hide(); } catch {}
+        } else {
+          try { tg.BackButton.show(); } catch {}
+        }
+      }
+      return page;
+    });
+  }, []);
 
   // init tg + app
   useEffect(() => {
@@ -345,73 +340,56 @@ function App() {
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
   // Обновление позиций вкладок
-  // Замени существующий useLayoutEffect на этот:
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
 
-useLayoutEffect(() => {
-  const nav = navRef.current;
-  if (!nav) return;
+    const updateRects = () => {
+      const tabs = [
+        nav.querySelector('[data-tab="profile"]'),
+        nav.querySelector('[data-tab="home"]'),
+        nav.querySelector('[data-tab="history"]')
+      ].filter(Boolean);
 
-  const updateRects = () => {
-    const tabs = [
-      nav.querySelector('[data-tab="profile"]'),
-      nav.querySelector('[data-tab="home"]'),
-      nav.querySelector('[data-tab="history"]')
-    ].filter(Boolean);
+      if (tabs.length !== 3) return;
 
-    if (tabs.length !== 3) return;
-
-    const navRect = nav.getBoundingClientRect();
-    const rects = tabs.map((el) => {
-      const r = el.getBoundingClientRect();
-      return {
-        left: r.left - navRect.left,
-        width: r.width,
-        center: r.left - navRect.left + r.width / 2
-      };
-    });
-
-    dragStateRef.current.rects = rects;
-    dragStateRef.current.minLeft = rects[0].left;
-    dragStateRef.current.maxLeft = rects[2].left;
-
-    // Получаем целевую позицию для текущей страницы
-    const activeIndex = pageToIndex(currentPage);
-    const targetRect = rects[activeIndex];
-    
-    // Проверяем, есть ли сохраненная предыдущая позиция
-    const prevLeft = nav.dataset.prevLeft;
-    const prevWidth = nav.dataset.prevWidth;
-    
-    if (prevLeft && prevWidth && nav.classList.contains('ready')) {
-      // Если есть предыдущая позиция - сначала ставим её
-      nav.style.setProperty('--indicator-left', prevLeft);
-      nav.style.setProperty('--indicator-width', prevWidth);
-      
-      // В следующем кадре анимируем к целевой позиции
-      requestAnimationFrame(() => {
-        nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-        nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-        // Очищаем сохраненные данные
-        delete nav.dataset.prevLeft;
-        delete nav.dataset.prevWidth;
+      const navRect = nav.getBoundingClientRect();
+      const rects = tabs.map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          left: r.left - navRect.left,
+          width: r.width,
+          center: r.left - navRect.left + r.width / 2
+        };
       });
-    } else {
-      // Если нет предыдущей позиции - просто ставим целевую
+
+      dragStateRef.current.rects = rects;
+      dragStateRef.current.minLeft = rects[0].left;
+      dragStateRef.current.maxLeft = rects[2].left;
+
+      // Мгновенно устанавливаем позицию без анимации
+      const activeIndex = pageToIndex(currentPage);
+      const targetRect = rects[activeIndex];
+      
       nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
       nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-    }
-    
-    if (!nav.classList.contains('ready')) {
-      nav.classList.add('ready');
-    }
-  };
+      
+      // Включаем анимацию обратно после установки позиции
+      Promise.resolve().then(() => {
+        nav.style.transition = '';
+      });
+      
+      if (!nav.classList.contains('ready')) {
+        nav.classList.add('ready');
+      }
+    };
 
-  updateRects();
-  window.addEventListener('resize', updateRects);
-  return () => window.removeEventListener('resize', updateRects);
-}, [currentPage]);
+    updateRects();
+    window.addEventListener('resize', updateRects);
+    return () => window.removeEventListener('resize', updateRects);
+  }, [currentPage]);
 
-  // ==================== ИСПРАВЛЕННЫЙ DRAG - БЕЗ ДЕРГАНИЙ ====================
+  // DRAG эффект
   useEffect(() => {
     const nav = navRef.current;
     const indicator = indicatorRef.current;
@@ -427,7 +405,6 @@ useLayoutEffect(() => {
 
       const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
 
-      // Сохраняем состояние для драга
       dragStateRef.current = {
         ...dragStateRef.current,
         isDragging: true,
@@ -437,7 +414,6 @@ useLayoutEffect(() => {
         pointerId: e.pointerId
       };
 
-      // Отключаем анимацию во время драга
       nav.classList.add('dragging');
       nav.style.transition = 'none';
       indicator.setPointerCapture(e.pointerId);
@@ -451,33 +427,25 @@ useLayoutEffect(() => {
       e.preventDefault();
 
       const dx = e.clientX - state.startX;
-      
-      // Рассчитываем новую позицию - четко跟随 за пальцем
       let newLeft = state.startLeft + dx;
       
-      // Ограничиваем, чтобы не выходил за пределы навигации
       newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, newLeft));
 
-      // Находим ближайшую вкладку для расчета ширины
       const rects = state.rects;
-      let targetWidth = rects[1].width; // ширина по умолчанию
+      let targetWidth = rects[1].width;
 
-      // Определяем ширину в зависимости от позиции
       if (newLeft <= rects[0].left + 5) {
         targetWidth = rects[0].width;
       } else if (newLeft >= rects[2].left - 5) {
         targetWidth = rects[2].width;
       } else if (newLeft < rects[1].left) {
-        // Между первой и второй
         const progress = (newLeft - rects[0].left) / (rects[1].left - rects[0].left);
         targetWidth = rects[0].width + (rects[1].width - rects[0].width) * progress;
       } else {
-        // Между второй и третьей
         const progress = (newLeft - rects[1].left) / (rects[2].left - rects[1].left);
         targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
       }
 
-      // Применяем позицию - БЕЗ ЗАДЕРЖЕК
       nav.style.setProperty('--indicator-left', `${newLeft}px`);
       nav.style.setProperty('--indicator-width', `${targetWidth}px`);
     };
@@ -489,38 +457,38 @@ useLayoutEffect(() => {
 
       e.preventDefault();
 
-      // Включаем анимацию обратно
-      nav.style.transition = '';
-      
-      // Находим ближайшую вкладку по текущей позиции
       const rects = state.rects;
       const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
       const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width'));
       const currentCenter = currentLeft + currentWidth / 2;
       
-      // Вычисляем расстояния до центров вкладок
       const distances = rects.map((rect, index) => ({
         index,
         distance: Math.abs(currentCenter - rect.center)
       }));
 
-      // Выбираем ближайшую
       const closest = distances.reduce((min, curr) => 
         curr.distance < min.distance ? curr : min
       );
 
-      // Плавно анимируем к выбранной вкладке
-      const targetRect = rects[closest.index];
-      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-
-      // Меняем страницу если нужно
       const targetPage = indexToPage(closest.index);
+      
+      // Отключаем анимацию перед сменой страницы
+      nav.style.transition = 'none';
+      
       if (targetPage !== currentPage) {
         navigateTo(targetPage);
+      } else {
+        const targetRect = rects[closest.index];
+        nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+        nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
       }
 
-      // Сбрасываем состояние
+      // Включаем анимацию обратно
+      Promise.resolve().then(() => {
+        nav.style.transition = '';
+      });
+
       dragStateRef.current.isDragging = false;
       nav.classList.remove('dragging');
       indicator.releasePointerCapture(e.pointerId);
@@ -530,7 +498,6 @@ useLayoutEffect(() => {
       onPointerUp(e);
     };
 
-    // Используем capture фазу чтобы гарантированно получать события
     indicator.addEventListener('pointerdown', onPointerDown, { capture: true });
     window.addEventListener('pointermove', onPointerMove, { capture: true });
     window.addEventListener('pointerup', onPointerUp, { capture: true });

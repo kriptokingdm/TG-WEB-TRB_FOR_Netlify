@@ -145,9 +145,9 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
             </div>
 
             <div className="input-group">
-              <label>
+              {/* <label>
                 {tab === 'wallet' ? 'Введите адрес кошелька' : 'Введите UID биржи'}
-              </label>
+              </label> */}
               <input
                 type="text"
                 placeholder={tab === 'wallet' 
@@ -161,7 +161,7 @@ const AddAddressModal = ({ isOpen, onClose, onSave }) => {
             </div>
 
             <div className="input-group">
-              <label>Введите название (опционально)</label>
+              {/* <label>Введите название (опционально)</label> */}
               <input
                 type="text"
                 placeholder={tab === 'wallet' 

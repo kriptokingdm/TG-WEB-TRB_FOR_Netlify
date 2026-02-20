@@ -811,7 +811,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
             disabled={!isExchangeReady() || isLoading}
             onClick={handleExchange}
           >
-            <span className="exchange-icon">{isBuyMode ? '🛒' : '💰'}</span>
+            <span className="exchange-icon">{isBuyMode ? '' : ''}</span>
             <span className="exchange-text">
               {isLoading ? 'Обработка...' : (isBuyMode ? 'Купить USDT' : 'Продать USDT')}
             </span>

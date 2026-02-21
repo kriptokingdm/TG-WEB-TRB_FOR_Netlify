@@ -346,47 +346,46 @@ function App() {
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
   // Обновление позиций вкладок - СРАЗУ ПРИ ЗАГРУЗКЕ
-  const updateIndicatorPosition = useCallback(() => {
-    const nav = navRef.current;
-    if (!nav) return;
+  // В функции updateIndicatorPosition убери эти строки:
+// nav.classList.remove('ready');
+// void nav.offsetHeight;
+// nav.classList.add('ready');
 
-    const tabs = [
-      nav.querySelector('[data-tab="profile"]'),
-      nav.querySelector('[data-tab="home"]'),
-      nav.querySelector('[data-tab="history"]')
-    ].filter(Boolean);
+// Оставь только установку позиции:
+const updateIndicatorPosition = useCallback(() => {
+  const nav = navRef.current;
+  if (!nav) return;
 
-    if (tabs.length !== 3) return;
+  const tabs = [
+    nav.querySelector('[data-tab="profile"]'),
+    nav.querySelector('[data-tab="home"]'),
+    nav.querySelector('[data-tab="history"]')
+  ].filter(Boolean);
 
-    const navRect = nav.getBoundingClientRect();
-    const rects = tabs.map((el) => {
-      const r = el.getBoundingClientRect();
-      return {
-        left: r.left - navRect.left,
-        width: r.width
-      };
-    });
+  if (tabs.length !== 3) return;
 
-    dragStateRef.current.rects = rects;
-    dragStateRef.current.minLeft = rects[0].left;
-    dragStateRef.current.maxLeft = rects[2].left;
+  const navRect = nav.getBoundingClientRect();
+  const rects = tabs.map((el) => {
+    const r = el.getBoundingClientRect();
+    return {
+      left: r.left - navRect.left,
+      width: r.width
+    };
+  });
 
-    // Ставим индикатор на активную вкладку
-    const activeIndex = pageToIndex(currentPage);
-    const targetRect = rects[activeIndex];
-    
-    // Принудительно устанавливаем позицию
-    nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-    nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-    
-    // Убираем класс ready если был, и добавляем снова чтобы индикатор показался
-    nav.classList.remove('ready');
-    // Форсируем reflow
-    void nav.offsetHeight;
-    nav.classList.add('ready');
-    
-    console.log('Индикатор обновлен:', targetRect.left, targetRect.width);
-  }, [currentPage]);
+  dragStateRef.current.rects = rects;
+  dragStateRef.current.minLeft = rects[0].left;
+  dragStateRef.current.maxLeft = rects[2].left;
+
+  const activeIndex = pageToIndex(currentPage);
+  const targetRect = rects[activeIndex];
+  
+  // Просто ставим позицию
+  nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+  nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+  
+  console.log('Индикатор на позиции:', targetRect.left, targetRect.width);
+}, [currentPage]);
 
   // Первоначальная установка при монтировании
   useEffect(() => {

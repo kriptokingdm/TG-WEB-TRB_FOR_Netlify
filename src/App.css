@@ -123,7 +123,7 @@ html, body, #root {
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
-/* indicator (pill) - УБРАЛ ВСЮ АНИМАЦИЮ НАХУЙ */
+/* indicator (pill) - ВСЕГДА ВИДИМЫЙ */
 .nav-indicator {
   position: absolute;
   top: 6px;
@@ -132,24 +132,33 @@ html, body, #root {
   height: calc(58px - 12px);
   border-radius: 30px;
 
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
 
-  /* АНИМАЦИИ БОЛЬШЕ НЕТ! */
+  /* АНИМАЦИИ НЕТ */
   transition: none;
   
   will-change: left, width;
 
-  /* ✅ drag handle */
+  /* drag handle */
   cursor: grab;
   touch-action: pan-x;
 
   z-index: 3;
+
+  /* ВСЕГДА ВИДИМЫЙ */
+  opacity: 1 !important;
 }
 
 :root:not([data-theme]) .nav-indicator {
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Убираем все классы которые могут скрывать индикатор */
+.floating-nav:not(.ready) .nav-indicator,
+.floating-nav.ready .nav-indicator {
+  opacity: 1 !important;
 }
 
 .floating-nav.dragging .nav-indicator {
@@ -211,7 +220,7 @@ html, body, #root {
   display: block;
 }
 
-/* exchange icon fix (у тебя он огромный svg 101x53) */
+/* exchange icon fix */
 .nav-icon-exchange svg {
   width: 26px !important;
   height: 26px !important;
@@ -244,11 +253,13 @@ html, body, #root {
   opacity: 0;
   pointer-events: none;
   transform: translateX(-50%) translateY(16px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .floating-nav.keyboard-visible {
   opacity: 1;
   pointer-events: auto;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* loader */
@@ -315,12 +326,13 @@ button, a, div {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* prevent indicator snap before ready */
-.floating-nav:not(.ready) .nav-indicator {
-  opacity: 0;
-}
-.floating-nav.ready .nav-indicator {
-  opacity: 1;
+/* Убираем все условия для opacity */
+.floating-nav:not(.ready) .nav-indicator,
+.floating-nav.ready .nav-indicator,
+.floating-nav .nav-indicator {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
 }
 
 /* small screens */
@@ -346,18 +358,9 @@ button, a, div {
   cursor: grabbing;
 }
 
-/* УБИРАЕМ ВСЮ АНИМАЦИЮ ПОЛЗУНКА */
+/* АНИМАЦИИ НЕТ */
 .floating-nav:not(.dragging) .nav-indicator {
-  transition: none; /* АНИМАЦИИ НЕТ */
-}
-
-/* Убираем pointer-events с индикатора чтобы кнопки работали */
-.nav-indicator {
-  pointer-events: auto; /* Только для drag */
-}
-
-.nav-item-floating {
-  pointer-events: auto; /* Кнопки кликабельны */
+  transition: none;
 }
 
 /* Защита от случайных нажатий */
@@ -366,38 +369,9 @@ button, a, div {
   -webkit-user-select: none;
 }
 
-/* Плавное появление/исчезновение - это оставляем */
-.floating-nav.keyboard-hidden {
-  opacity: 0;
-  transform: translateX(-50%) translateY(20px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: none;
-}
-
-.floating-nav.keyboard-visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: auto;
-}
-
 /* Фикс для iOS */
 @media (hover: none) and (pointer: coarse) {
   .nav-indicator {
     touch-action: pan-x pinch-zoom;
   }
-}
-
-/* Индикатор всегда видим */
-.floating-nav .nav-indicator {
-  opacity: 1 !important;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.floating-nav.ready .nav-indicator {
-  opacity: 1 !important;
-}
-
-:root:not([data-theme]) .floating-nav .nav-indicator {
-  background: rgba(0, 0, 0, 0.1);
 }

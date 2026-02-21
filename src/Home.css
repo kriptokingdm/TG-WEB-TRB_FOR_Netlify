@@ -217,7 +217,7 @@
   letter-spacing: -0.2px;
 }
 
-/* ==================== КНОПКА ДОБАВЛЕНИЯ - ЦВЕТНАЯ ПО ЦЕНТРУ ==================== */
+/* ==================== КНОПКА ДОБАВЛЕНИЯ ==================== */
 .add-button {
   width: 100%;
   padding: 18px;
@@ -322,7 +322,7 @@
   font-weight: 700;
 }
 
-/* ==================== СПИСКИ - iOS СТИЛЬ ==================== */
+/* ==================== СПИСКИ ==================== */
 .crypto-list,
 .payments-list {
   margin-top: 20px;
@@ -420,7 +420,7 @@
   color: var(--tg-hint);
 }
 
-/* ==================== КНОПКИ ДЕЙСТВИЙ - ТОЛЬКО ИКОНКИ ==================== */
+/* ==================== КНОПКИ ДЕЙСТВИЙ ==================== */
 .crypto-actions {
   display: flex;
   gap: 8px;
@@ -953,7 +953,7 @@
   }
 }
 
-/* ==================== СОХРАНЕННЫЕ АДРЕСА - КРАСИВЫЙ СТИЛЬ ==================== */
+/* ==================== СОХРАНЕННЫЕ АДРЕСА ==================== */
 .saved-addresses {
   margin-top: 24px;
   background: var(--tg-secondary-bg);
@@ -1105,7 +1105,6 @@
   height: 20px;
 }
 
-/* Стиль для выбранного адреса */
 .saved-address-item.selected {
   border-color: var(--tg-button);
   background: rgba(51, 144, 236, 0.03);
@@ -1117,7 +1116,6 @@
   color: white;
 }
 
-/* Пустое состояние */
 .saved-addresses-empty {
   text-align: center;
   padding: 32px 16px;
@@ -1135,7 +1133,7 @@
   opacity: 0.5;
 }
 
-/* ==================== ОБНОВЛЕННЫЙ crypto-list ДЛЯ СОВМЕСТИМОСТИ ==================== */
+/* ==================== CRYPTO LIST ==================== */
 .crypto-list {
   margin-top: 20px;
   background: var(--tg-secondary-bg);
@@ -1218,7 +1216,7 @@
   margin-left: 12px;
 }
 
-/* ==================== БАНКОВСКИЕ ПОЛЯ - TELEGRAM STYLE ==================== */
+/* ==================== БАНКОВСКИЕ ПОЛЯ ==================== */
 .bank-select {
   width: 100%;
   padding: 16px;
@@ -1321,95 +1319,238 @@
   letter-spacing: normal;
 }
 
-/* Группа для банковских полей */
-.payment-fields-group {
+/* ==================== PAYMENT SECTION NEW - ОБНОВЛЕННЫЙ ==================== */
+.payment-section-new {
   background: var(--tg-secondary-bg);
   border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.payment-fields-group .section-title {
-  margin-bottom: 12px;
-  padding-left: 4px;
+.payment-section-new .section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  margin: 0 0 16px 0;
+  padding: 0 4px;
 }
 
-/* Иконка для выпадающего списка (кастомная стрелка) */
-.select-wrapper {
-  position: relative;
+/* Контейнер для кнопок выбора банка */
+.payment-section-new .bank-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid var(--tg-border);
+}
+
+/* Кнопки выбора банка */
+.payment-section-new .bank-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.payment-section-new .bank-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.payment-section-new .bank-option.selected svg path {
+  fill: white;
+}
+
+.payment-section-new .bank-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}
+
+/* Поля ввода */
+.payment-section-new .phone-input,
+.payment-section-new .card-input {
   width: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tg-text);
+  outline: none;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', 'Menlo', monospace;
 }
 
-.select-wrapper::after {
-  content: '';
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  pointer-events: none;
+.payment-section-new .phone-input:hover,
+.payment-section-new .card-input:hover {
+  border-color: var(--tg-button);
 }
 
-/* Стили для выбранного платежного метода */
-.payment-item .bank-name {
+.payment-section-new .phone-input:focus,
+.payment-section-new .card-input:focus {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.payment-section-new .phone-input::placeholder,
+.payment-section-new .card-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.5;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Кнопка добавления */
+.payment-section-new .add-button {
+  margin: 0 0 20px 0;
+}
+
+/* Список сохраненных реквизитов */
+.payment-section-new .payments-list {
+  margin-top: 20px;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--tg-bg);
+  padding: 8px;
+  border: 1px solid var(--tg-border);
+}
+
+.payment-section-new .payments-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 8px 12px 8px;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+/* Элементы списка */
+.payment-section-new .payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 12px;
+  background: var(--tg-secondary-bg);
+  border-radius: 14px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.payment-section-new .payment-item:last-child {
+  margin-bottom: 0;
+}
+
+.payment-section-new .payment-item:active {
+  background: var(--tg-border);
+  transform: scale(0.99);
+}
+
+.payment-section-new .payment-item.selected {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
+}
+
+/* Информация о платеже */
+.payment-section-new .payment-info {
+  flex: 1;
+}
+
+.payment-section-new .bank-name {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+  margin-bottom: 6px;
 }
 
-.payment-item .bank-name::before {
-  content: '💳';
-  font-size: 18px;
+.payment-section-new .payment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.payment-section-new .payment-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-section-new .payment-number {
+  font-size: 13px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--tg-hint);
+  background: var(--tg-bg);
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Кнопка удаления */
+.payment-section-new .action-btn.delete-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+  color: #ff3b30 !important;
+}
+
+.payment-section-new .action-btn.delete-btn:hover {
   opacity: 0.7;
 }
 
-.payment-item.sbp .bank-name::before {
-  content: '📱';
+.payment-section-new .action-btn.delete-btn:active {
+  opacity: 0.5;
+  transform: scale(0.92);
 }
 
-/* Бейдж СБП */
-.sbp-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  background: rgba(51, 144, 236, 0.1);
-  color: var(--tg-button);
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  margin-left: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+.payment-section-new .action-btn.delete-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
-/* Сообщение об ошибке для банковских полей */
-.payment-error {
-  font-size: 12px;
-  color: #ff3b30;
-  margin: -8px 0 12px 4px;
+/* Пустое состояние */
+.payment-section-new .empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--tg-hint);
+  font-size: 14px;
   font-weight: 500;
-}
-
-/* Адаптивность для маленьких экранов */
-@media (max-width: 480px) {
-  .bank-select,
-  .phone-input,
-  .card-input {
-    padding: 14px;
-    font-size: 15px;
-  }
-  
-  .payment-fields-group {
-    padding: 14px;
-  }
-}
-
-.selected-name{
-  margin: auto;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  border: 1px dashed var(--tg-border);
+  margin-top: 20px;
 }
 
 /* ==================== КАСТОМНЫЙ SELECT С ИКОНКАМИ ==================== */
@@ -1544,5 +1685,32 @@
   
   .option-name {
     font-size: 16px;
+  }
+  
+  .payment-section-new {
+    padding: 16px;
+  }
+  
+  .payment-section-new .bank-option {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+  
+  .payment-section-new .phone-input,
+  .payment-section-new .card-input {
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .payment-section-new .payment-item {
+    padding: 14px 10px;
+  }
+  
+  .payment-section-new .bank-name {
+    font-size: 14px;
+  }
+  
+  .payment-section-new .payment-number {
+    font-size: 12px;
   }
 }

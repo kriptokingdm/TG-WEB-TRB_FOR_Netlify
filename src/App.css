@@ -123,7 +123,7 @@ html, body, #root {
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
-/* indicator (pill) */
+/* indicator (pill) - УБРАЛ ВСЮ АНИМАЦИЮ НАХУЙ */
 .nav-indicator {
   position: absolute;
   top: 6px;
@@ -135,14 +135,16 @@ html, body, #root {
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
 
-  transition: left .22s ease, width .22s ease, background .22s ease;
+  /* АНИМАЦИИ БОЛЬШЕ НЕТ! */
+  transition: none;
+  
   will-change: left, width;
 
   /* ✅ drag handle */
   cursor: grab;
   touch-action: pan-x;
 
-  z-index: 3; /* выше кнопок, чтобы тащить пилюлю */
+  z-index: 3;
 }
 
 :root:not([data-theme]) .nav-indicator {
@@ -152,17 +154,13 @@ html, body, #root {
 
 .floating-nav.dragging .nav-indicator {
   cursor: grabbing;
-  transition: none !important;
-}
-
-.floating-nav.no-anim .nav-indicator {
-  transition: none !important;
+  transition: none;
 }
 
 /* buttons */
 .nav-item-floating {
   position: relative;
-  z-index: 2; /* под индикатором, но клики работают, потому что индикатор только для drag */
+  z-index: 2;
   height: 100%;
   width: 100%;
 
@@ -348,10 +346,9 @@ button, a, div {
   cursor: grabbing;
 }
 
-/* Плавные переходы только когда не драг */
+/* УБИРАЕМ ВСЮ АНИМАЦИЮ ПОЛЗУНКА */
 .floating-nav:not(.dragging) .nav-indicator {
-  transition: left 0.22s cubic-bezier(0.2, 0.9, 0.3, 1), 
-              width 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: none; /* АНИМАЦИИ НЕТ */
 }
 
 /* Убираем pointer-events с индикатора чтобы кнопки работали */
@@ -369,7 +366,7 @@ button, a, div {
   -webkit-user-select: none;
 }
 
-/* Плавное появление/исчезновение */
+/* Плавное появление/исчезновение - это оставляем */
 .floating-nav.keyboard-hidden {
   opacity: 0;
   transform: translateX(-50%) translateY(20px);

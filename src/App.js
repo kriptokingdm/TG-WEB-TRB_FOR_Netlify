@@ -198,7 +198,7 @@ function App() {
 
   // navigation с вибрацией
   const navigateTo = useCallback((page) => {
-    vibrate(); // вибрация при клике как в Wallet
+    vibrate();
     setCurrentPage((prev) => {
       if (prev === page) return prev;
       window.location.hash = page;
@@ -293,7 +293,6 @@ function App() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Обработка клавиатуры
@@ -346,49 +345,68 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // Обновление позиций вкладок - БЕЗ АНИМАЦИИ
-  useLayoutEffect(() => {
+  // Обновление позиций вкладок - с принудительным обновлением
+  const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const updateRects = () => {
-      const tabs = [
-        nav.querySelector('[data-tab="profile"]'),
-        nav.querySelector('[data-tab="home"]'),
-        nav.querySelector('[data-tab="history"]')
-      ].filter(Boolean);
+    const tabs = [
+      nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="home"]'),
+      nav.querySelector('[data-tab="history"]')
+    ].filter(Boolean);
 
-      if (tabs.length !== 3) return;
+    if (tabs.length !== 3) return;
 
-      const navRect = nav.getBoundingClientRect();
-      const rects = tabs.map((el) => {
-        const r = el.getBoundingClientRect();
-        return {
-          left: r.left - navRect.left,
-          width: r.width
-        };
-      });
+    const navRect = nav.getBoundingClientRect();
+    const rects = tabs.map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - navRect.left,
+        width: r.width
+      };
+    });
 
-      dragStateRef.current.rects = rects;
-      dragStateRef.current.minLeft = rects[0].left;
-      dragStateRef.current.maxLeft = rects[2].left;
+    dragStateRef.current.rects = rects;
+    dragStateRef.current.minLeft = rects[0].left;
+    dragStateRef.current.maxLeft = rects[2].left;
 
-      // МГНОВЕННО ставим индикатор на место
-      const activeIndex = pageToIndex(currentPage);
-      const targetRect = rects[activeIndex];
-      
-      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-      
-      if (!nav.classList.contains('ready')) {
-        nav.classList.add('ready');
-      }
-    };
-
-    updateRects();
-    window.addEventListener('resize', updateRects);
-    return () => window.removeEventListener('resize', updateRects);
+    // Ставим индикатор на активную вкладку
+    const activeIndex = pageToIndex(currentPage);
+    const targetRect = rects[activeIndex];
+    
+    nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+    nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+    
+    // Делаем индикатор видимым
+    nav.style.opacity = '1';
+    
+    if (!nav.classList.contains('ready')) {
+      nav.classList.add('ready');
+    }
   }, [currentPage]);
+
+  // Используем useLayoutEffect для синхронного обновления
+  useLayoutEffect(() => {
+    updateIndicatorPosition();
+    
+    // Обновляем при ресайзе
+    window.addEventListener('resize', updateIndicatorPosition);
+    
+    // Обновляем после скролла
+    const observer = new ResizeObserver(() => {
+      updateIndicatorPosition();
+    });
+    
+    if (navRef.current) {
+      observer.observe(navRef.current);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', updateIndicatorPosition);
+      observer.disconnect();
+    };
+  }, [updateIndicatorPosition]);
 
   // DRAG эффект
   useEffect(() => {

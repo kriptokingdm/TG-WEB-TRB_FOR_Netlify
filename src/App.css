@@ -387,3 +387,17 @@ button, a, div {
     touch-action: pan-x pinch-zoom;
   }
 }
+
+/* Индикатор всегда видим */
+.floating-nav .nav-indicator {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.floating-nav.ready .nav-indicator {
+  opacity: 1 !important;
+}
+
+:root:not([data-theme]) .floating-nav .nav-indicator {
+  background: rgba(0, 0, 0, 0.1);
+}

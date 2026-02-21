@@ -345,7 +345,7 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // Обновление позиций вкладок - с принудительным обновлением
+  // Обновление позиций вкладок - СРАЗУ ПРИ ЗАГРУЗКЕ
   const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -375,36 +375,53 @@ function App() {
     const activeIndex = pageToIndex(currentPage);
     const targetRect = rects[activeIndex];
     
+    // Принудительно устанавливаем позицию
     nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
     nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
     
-    // Делаем индикатор видимым
-    nav.style.opacity = '1';
+    // Убираем класс ready если был, и добавляем снова чтобы индикатор показался
+    nav.classList.remove('ready');
+    // Форсируем reflow
+    void nav.offsetHeight;
+    nav.classList.add('ready');
     
-    if (!nav.classList.contains('ready')) {
-      nav.classList.add('ready');
-    }
+    console.log('Индикатор обновлен:', targetRect.left, targetRect.width);
   }, [currentPage]);
 
-  // Используем useLayoutEffect для синхронного обновления
+  // Первоначальная установка при монтировании
+  useEffect(() => {
+    // Ждем когда навигация отрендерится
+    const timer = setTimeout(() => {
+      updateIndicatorPosition();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Обновляем при изменении страницы
   useLayoutEffect(() => {
     updateIndicatorPosition();
-    
-    // Обновляем при ресайзе
-    window.addEventListener('resize', updateIndicatorPosition);
-    
-    // Обновляем после скролла
+  }, [currentPage, updateIndicatorPosition]);
+
+  // Следим за изменениями размеров
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const updateOnResize = () => {
+      updateIndicatorPosition();
+    };
+
     const observer = new ResizeObserver(() => {
       updateIndicatorPosition();
     });
     
-    if (navRef.current) {
-      observer.observe(navRef.current);
-    }
+    observer.observe(nav);
+    window.addEventListener('resize', updateOnResize);
     
     return () => {
-      window.removeEventListener('resize', updateIndicatorPosition);
       observer.disconnect();
+      window.removeEventListener('resize', updateOnResize);
     };
   }, [updateIndicatorPosition]);
 

@@ -1,99 +1,437 @@
+/* SettingsApp.css - Telegram WebApp стили */
+
+:root {
+  --tg-bg: var(--tg-theme-bg-color, #ffffff);
+  --tg-text: var(--tg-theme-text-color, #000000);
+  --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+  --tg-button: var(--tg-theme-button-color, #3390ec);
+  --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  --tg-border: var(--tg-theme-section-bg-color, #e9e9ed);
+  --tg-red: #ff3b30;
+}
+
 .settings-container {
   min-height: 100vh;
-  background: var(--tg-theme-bg-color, #f4f4f5);
-  color: var(--tg-theme-text-color, #000);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  padding-bottom: 20px;
 }
 
-/* Header */
+/* ==================== HEADER ==================== */
 .settings-header {
-  padding: 16px;
-  font-size: 20px;
-  font-weight: 600;
-  background: var(--tg-theme-bg-color, #fff);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background: var(--tg-bg);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--tg-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-/* Content */
+.settings-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--tg-text);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ==================== CONTENT ==================== */
 .settings-content {
-  padding: 12px;
+  padding: 16px;
 }
 
-/* Section */
+/* ==================== SECTION ==================== */
 .settings-section {
-  background: var(--tg-theme-bg-color, #fff);
-  border-radius: 12px;
-  margin-bottom: 16px;
+  background: var(--tg-bg);
+  border-radius: 20px;
+  margin-bottom: 24px;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-/* List item */
+/* Заголовок секции */
+.settings-section-header {
+  padding: 16px 16px 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+/* ==================== LIST ITEMS ==================== */
+.settings-list {
+  display: flex;
+  flex-direction: column;
+}
+
 .settings-item {
   width: 100%;
-  padding: 14px 16px;
+  padding: 16px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid var(--tg-border);
   text-align: left;
   cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--tg-text);
 }
 
 .settings-item:last-child {
   border-bottom: none;
 }
 
+.settings-item:active {
+  background: var(--tg-secondary-bg);
+  transform: scale(1);
+}
+
+.settings-item-text {
+  flex: 1;
+}
+
 .settings-item-text .title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
+  color: var(--tg-text);
+  margin-bottom: 4px;
 }
 
 .settings-item-text .desc {
   font-size: 13px;
-  opacity: 0.6;
-  margin-top: 2px;
+  color: var(--tg-hint);
+  line-height: 1.4;
 }
 
-/* Switch */
+/* Иконка справа (шеврон) */
+.settings-item-arrow {
+  color: var(--tg-hint);
+  font-size: 18px;
+  opacity: 0.7;
+  margin-left: 12px;
+}
+
+/* ==================== SWITCH ==================== */
 .switch {
-  width: 42px;
-  height: 24px;
-  background: #ccc;
+  width: 46px;
+  height: 26px;
+  background: var(--tg-border);
   border-radius: 999px;
   position: relative;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
+  margin-left: 12px;
+  flex-shrink: 0;
 }
 
 .switch span {
-  width: 20px;
-  height: 20px;
-  background: #fff;
+  width: 22px;
+  height: 22px;
+  background: white;
   border-radius: 50%;
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .switch.on {
-  background: var(--tg-theme-button-color, #3390ec);
+  background: var(--tg-button);
 }
 
 .switch.on span {
-  transform: translateX(18px);
+  transform: translateX(20px);
 }
 
-/* Danger */
+/* ==================== DANGER ITEM ==================== */
 .settings-item.danger .title {
-  color: #ff3b30;
+  color: var(--tg-red);
 }
 
-/* Footer */
+.settings-item.danger .desc {
+  color: var(--tg-red);
+  opacity: 0.8;
+}
+
+/* ==================== FOOTER ==================== */
 .settings-footer {
   text-align: center;
+  padding: 24px 16px 16px;
   font-size: 12px;
-  opacity: 0.5;
-  margin-top: 24px;
+  color: var(--tg-hint);
+  line-height: 1.6;
+}
+
+.settings-footer div:first-child {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* ==================== ДОПОЛНИТЕЛЬНЫЕ ЭЛЕМЕНТЫ ==================== */
+
+/* Кнопка копирования */
+.copy-button {
+  background: none;
+  border: none;
+  color: var(--tg-button);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-button:active {
+  background: var(--tg-secondary-bg);
+}
+
+/* ID пользователя */
+.user-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tg-secondary-bg);
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin: 16px;
+}
+
+.user-id-label {
+  font-size: 14px;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+.user-id-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tg-text);
+  font-family: 'SF Mono', monospace;
+}
+
+/* Версия приложения */
+.app-version {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--tg-bg);
+  border-radius: 20px;
+  margin-top: 16px;
+}
+
+.app-version-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tg-text);
+}
+
+.app-version-value {
+  font-size: 15px;
+  color: var(--tg-hint);
+}
+
+/* ==================== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ==================== */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-modal-content {
+  background: var(--tg-bg);
+  border-radius: 28px;
+  padding: 24px;
+  width: 90%;
+  max-width: 320px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tg-text);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.confirm-modal-text {
+  font-size: 15px;
+  color: var(--tg-hint);
+  margin-bottom: 24px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-modal-button {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-modal-button.cancel {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.confirm-modal-button.confirm {
+  background: var(--tg-red);
+  color: white;
+}
+
+.confirm-modal-button:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* ==================== АНИМАЦИИ ==================== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-section {
+  animation: slideIn 0.3s ease;
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 480px) {
+  .settings-header h1 {
+    font-size: 24px;
+  }
+  
+  .settings-content {
+    padding: 12px;
+  }
+  
+  .settings-item {
+    padding: 14px 14px;
+  }
+  
+  .settings-item-text .title {
+    font-size: 15px;
+  }
+  
+  .settings-item-text .desc {
+    font-size: 12px;
+  }
+  
+  .switch {
+    width: 42px;
+    height: 24px;
+  }
+  
+  .switch span {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .switch.on span {
+    transform: translateX(18px);
+  }
+}
+
+/* ==================== DARK MODE FIXES ==================== */
+[data-theme="dark"] .settings-header {
+  background: var(--tg-bg);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .settings-section {
+  background: var(--tg-bg);
+}
+
+[data-theme="dark"] .switch {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .switch span {
+  background: #ffffff;
+}
+
+[data-theme="dark"] .settings-item:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==================== ПОДСКАЗКИ ==================== */
+.hint-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--tg-button);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
+/* ==================== РАЗДЕЛИТЕЛИ ==================== */
+.settings-divider {
+  height: 1px;
+  background: var(--tg-border);
+  margin: 8px 16px;
+}
+
+/* ==================== ИКОНКИ ==================== */
+.settings-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  color: var(--tg-hint);
+  flex-shrink: 0;
+}
+
+.settings-item.active .settings-icon {
+  color: var(--tg-button);
+}
+
+/* ==================== ГРУППЫ ==================== */
+.settings-group {
+  background: var(--tg-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.settings-group-header {
+  padding: 16px 16px 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
 }

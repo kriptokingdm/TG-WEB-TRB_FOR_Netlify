@@ -11,6 +11,19 @@ import Game from './Game';
 // URL API
 const API_BASE_URL = 'https://tethrab.shop';
 
+// Функция для вибрации как в Wallet
+const vibrate = () => {
+  try {
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    } else if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  } catch (e) {
+    console.log('vibrate error:', e);
+  }
+};
+
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [telegramUser, setTelegramUser] = useState(null);
@@ -28,7 +41,6 @@ function App() {
   const dragStateRef = useRef({
     isDragging: false,
     startX: 0,
-    currentX: 0,
     startLeft: 0,
     minLeft: 0,
     maxLeft: 0,
@@ -146,6 +158,7 @@ function App() {
 
   // toggle theme
   const toggleTheme = useCallback(() => {
+    vibrate();
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('theme', newTheme);
@@ -183,17 +196,11 @@ function App() {
     } catch (e) {}
   }, []);
 
-  // navigation
+  // navigation с вибрацией
   const navigateTo = useCallback((page) => {
+    vibrate(); // вибрация при клике как в Wallet
     setCurrentPage((prev) => {
       if (prev === page) return prev;
-      
-      // Отключаем анимацию при клике
-      const nav = navRef.current;
-      if (nav) {
-        nav.style.transition = 'none';
-      }
-      
       window.location.hash = page;
 
       if (window.Telegram?.WebApp?.BackButton) {
@@ -339,7 +346,7 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // Обновление позиций вкладок
+  // Обновление позиций вкладок - БЕЗ АНИМАЦИИ
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -358,8 +365,7 @@ function App() {
         const r = el.getBoundingClientRect();
         return {
           left: r.left - navRect.left,
-          width: r.width,
-          center: r.left - navRect.left + r.width / 2
+          width: r.width
         };
       });
 
@@ -367,17 +373,12 @@ function App() {
       dragStateRef.current.minLeft = rects[0].left;
       dragStateRef.current.maxLeft = rects[2].left;
 
-      // Мгновенно устанавливаем позицию без анимации
+      // МГНОВЕННО ставим индикатор на место
       const activeIndex = pageToIndex(currentPage);
       const targetRect = rects[activeIndex];
       
       nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
       nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-      
-      // Включаем анимацию обратно после установки позиции
-      Promise.resolve().then(() => {
-        nav.style.transition = '';
-      });
       
       if (!nav.classList.contains('ready')) {
         nav.classList.add('ready');
@@ -389,7 +390,7 @@ function App() {
     return () => window.removeEventListener('resize', updateRects);
   }, [currentPage]);
 
-  // DRAG эффект
+  // DRAG эффект - ПОЛНОСТЬЮ БЕЗ АНИМАЦИИ
   useEffect(() => {
     const nav = navRef.current;
     const indicator = indicatorRef.current;
@@ -409,13 +410,11 @@ function App() {
         ...dragStateRef.current,
         isDragging: true,
         startX: e.clientX,
-        currentX: e.clientX,
         startLeft: currentLeft,
         pointerId: e.pointerId
       };
 
       nav.classList.add('dragging');
-      nav.style.transition = 'none';
       indicator.setPointerCapture(e.pointerId);
     };
 
@@ -429,8 +428,10 @@ function App() {
       const dx = e.clientX - state.startX;
       let newLeft = state.startLeft + dx;
       
+      // Просто ограничиваем границами
       newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, newLeft));
 
+      // Меняем ширину в зависимости от позиции
       const rects = state.rects;
       let targetWidth = rects[1].width;
 
@@ -446,6 +447,7 @@ function App() {
         targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
       }
 
+      // МГНОВЕННО обновляем позицию
       nav.style.setProperty('--indicator-left', `${newLeft}px`);
       nav.style.setProperty('--indicator-width', `${targetWidth}px`);
     };
@@ -462,32 +464,29 @@ function App() {
       const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width'));
       const currentCenter = currentLeft + currentWidth / 2;
       
-      const distances = rects.map((rect, index) => ({
-        index,
-        distance: Math.abs(currentCenter - rect.center)
-      }));
-
-      const closest = distances.reduce((min, curr) => 
-        curr.distance < min.distance ? curr : min
-      );
-
-      const targetPage = indexToPage(closest.index);
+      // Находим ближайшую вкладку
+      let closestIndex = 1;
+      let minDistance = Infinity;
       
-      // Отключаем анимацию перед сменой страницы
-      nav.style.transition = 'none';
-      
-      if (targetPage !== currentPage) {
-        navigateTo(targetPage);
-      } else {
-        const targetRect = rects[closest.index];
-        nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-        nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-      }
-
-      // Включаем анимацию обратно
-      Promise.resolve().then(() => {
-        nav.style.transition = '';
+      rects.forEach((rect, index) => {
+        const distance = Math.abs(currentCenter - (rect.left + rect.width / 2));
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
       });
+
+      const targetPage = indexToPage(closestIndex);
+      
+      // МГНОВЕННО ставим на место
+      const targetRect = rects[closestIndex];
+      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
+      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
+
+      if (targetPage !== currentPage) {
+        vibrate(); // вибрация при смене вкладки
+        navigateTo(targetPage);
+      }
 
       dragStateRef.current.isDragging = false;
       nav.classList.remove('dragging');

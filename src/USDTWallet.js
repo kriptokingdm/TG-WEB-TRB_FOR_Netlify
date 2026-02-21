@@ -1,4 +1,4 @@
-// USDTWalletTG.js - Telegram Web App style (optimized) - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// USDTWalletTG.js - Telegram Web App style (ИСПРАВЛЕННАЯ ВЕРСИЯ ПОД ТВОЮ БД)
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './USDTWallet.css';
 
@@ -61,8 +61,9 @@ function formatDate(dateStr) {
 export default function USDTWalletTG({ telegramId, onBack }) {
   const [activeTab, setActiveTab] = useState('balance');
 
-  // 👇 ВАЖНО: Инициализируем с дефолтными значениями, чтобы не было undefined
-  const [balance, setBalance] = useState({
+  // 👇 Инициализируем с дефолтными значениями
+  const [balance, setBalance] = useState(0);
+  const [balanceData, setBalanceData] = useState({
     available: 0,
     reserved: 0,
     total: 0,
@@ -74,20 +75,22 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   const [addressData, setAddressData] = useState({
     address: '',
-    network: 'BEP20',
+    network: 'TRC20',
     currency: 'USDT',
     qrCode: '',
+    min_deposit: 10,
+    max_deposit: 10000
   });
 
   const [withdrawals, setWithdrawals] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [withdrawData, setWithdrawData] = useState({
     amount: '',
     address: '',
-    network: 'BEP20',
+    network: 'TRC20',
   });
 
   const [showQR, setShowQR] = useState(false);
@@ -108,111 +111,85 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     []
   );
 
-  const showToast = (message, type = 'info') => {
+  const showToastMessage = (message, type = 'info') => {
     setToast({ message, type });
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
   };
 
-  const cacheKey = useMemo(() => (telegramId ? `wallet_ui_cache:${telegramId}` : null), [telegramId]);
-
-  const readCache = () => {
-    if (!cacheKey) return null;
-    try {
-      const raw = sessionStorage.getItem(cacheKey);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      // cache ttl 60s
-      if (!parsed?.ts || Date.now() - parsed.ts > 60_000) return null;
-      return parsed;
-    } catch {
-      return null;
-    }
-  };
-
-  const writeCache = (payload) => {
-    if (!cacheKey) return;
-    try {
-      sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), ...payload }));
-    } catch {
-      // ignore
-    }
-  };
-
   // --- API loaders ---------------------------------------------------------
   const loadData = async ({ silent = false } = {}) => {
-    if (!telegramId) return;
+    if (!telegramId) {
+      console.log('❌ Нет telegramId');
+      return;
+    }
 
-    // 1) быстрая отрисовка из кеша
-    const cached = readCache();
-    if (cached?.balance) setBalance(cached.balance);
-    if (cached?.addressData) setAddressData(cached.addressData);
-    if (cached?.withdrawals) setWithdrawals(cached.withdrawals);
+    console.log(`📥 Загрузка данных кошелька для ${telegramId}...`);
 
     if (!silent) setIsLoading(true);
     else setIsRefreshing(true);
 
     try {
-      // 2) параллельная загрузка
+      // Параллельная загрузка
       const [bal, addr, wds] = await Promise.allSettled([
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`, { timeoutMs: 8000 }),
-        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}`, { timeoutMs: 8000 }),
+        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=TRC20`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
       ]);
 
-      const next = {};
+      console.log('📊 Ответ баланса:', bal.status === 'fulfilled' ? bal.value.json : 'Ошибка');
+      console.log('📊 Ответ адреса:', addr.status === 'fulfilled' ? addr.value.json : 'Ошибка');
+      console.log('📊 Ответ выводов:', wds.status === 'fulfilled' ? wds.value.json : 'Ошибка');
 
+      // Обработка баланса
       if (bal.status === 'fulfilled' && bal.value.ok && bal.value.json?.success) {
-        // 👇 ЗАЩИТА: проверяем наличие data и total
-        const data = bal.value.json.data || {};
-        next.balance = {
-          available: data.available || 0,
-          reserved: data.reserved || 0,
-          total: data.total || (data.available || 0) + (data.reserved || 0),
-          totalDeposited: data.totalDeposited || 0,
-          totalWithdrawn: data.totalWithdrawn || 0,
+        const data = bal.value.json;
+        // Сервер возвращает { success: true, balance: 1400.5, currency: 'USDT' }
+        setBalance(data.balance || 0);
+        setBalanceData({
+          available: data.balance || 0,
+          reserved: 0,
+          total: data.balance || 0,
+          totalDeposited: 0,
+          totalWithdrawn: 0,
           currency: data.currency || 'USDT',
-          updated_at: data.updated_at || null,
-        };
-        setBalance(next.balance);
+          updated_at: new Date().toISOString(),
+        });
+      } else {
+        console.log('⚠️ Не удалось загрузить баланс');
       }
 
+      // Обработка адреса
       if (addr.status === 'fulfilled' && addr.value.ok && addr.value.json?.success) {
-        const data = addr.value.json.data || {};
-        next.addressData = {
+        const data = addr.value.json;
+        // Сервер возвращает { success: true, address: "...", network: "TRC20", ... }
+        setAddressData({
           address: data.address || '',
-          network: data.network || 'BEP20',
+          network: data.network || 'TRC20',
           currency: data.currency || 'USDT',
           qrCode: data.qrCode || '',
-        };
-        setAddressData(next.addressData);
+          min_deposit: data.min_deposit || 10,
+          max_deposit: data.max_deposit || 10000
+        });
+      } else {
+        console.log('⚠️ Не удалось загрузить адрес');
       }
 
-      // 👇 ЗАЩИТА: проверяем withdrawals
-      if (wds.status === 'fulfilled' && wds.value.ok) {
-        const j = wds.value.json;
-        const list = j?.withdrawals || j?.data || [];
-        if (Array.isArray(list)) {
-          next.withdrawals = list;
-          setWithdrawals(list);
-        } else {
-          setWithdrawals([]);
-        }
+      // Обработка выводов
+      if (wds.status === 'fulfilled' && wds.value.ok && wds.value.json?.success) {
+        const data = wds.value.json;
+        // Сервер возвращает { success: true, withdrawals: [...] }
+        const list = data.withdrawals || [];
+        setWithdrawals(list);
+        console.log(`✅ Загружено ${list.length} выводов`);
+      } else {
+        console.log('⚠️ Не удалось загрузить выводы');
+        setWithdrawals([]);
       }
 
-      if (Object.keys(next).length) writeCache(next);
-
-      // 3) если что-то не загрузилось — мягко уведомим
-      const anyFail =
-        (bal.status !== 'fulfilled' || !bal.value.ok) ||
-        (addr.status !== 'fulfilled' || !addr.value.ok);
-
-      if (anyFail) {
-        showToast('Часть данных не загрузилась, попробуй обновить', 'warn');
-      }
     } catch (e) {
-      console.error('loadData error:', e);
-      showToast('Ошибка загрузки', 'error');
+      console.error('❌ loadData error:', e);
+      showToastMessage('Ошибка загрузки', 'error');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -221,10 +198,10 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   useEffect(() => {
     loadData({ silent: false });
+    
     // автообновление баланса раз в 15 сек
     const id = setInterval(() => loadData({ silent: true }), 15000);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [telegramId]);
 
   // --- actions -------------------------------------------------------------
@@ -232,9 +209,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      showToast('Скопировано', 'ok');
+      showToastMessage('Скопировано', 'ok');
     } catch {
-      showToast('Не удалось скопировать', 'error');
+      showToastMessage('Не удалось скопировать', 'error');
     }
   };
 
@@ -243,19 +220,17 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
     const amount = Number(withdrawData.amount);
     if (!amount || amount < 10) {
-      showToast('Минимальная сумма вывода: 10 USDT', 'warn');
+      showToastMessage('Минимальная сумма вывода: 10 USDT', 'warn');
       return;
     }
 
-    // 👇 ЗАЩИТА: проверяем balance.available
-    const available = Number(balance?.available || 0);
-    if (amount > available) {
-      showToast(`Недостаточно средств. Доступно: ${formatUSDT(available)}`, 'warn');
+    if (amount > balance) {
+      showToastMessage(`Недостаточно средств. Доступно: ${formatUSDT(balance)}`, 'warn');
       return;
     }
 
     if (!withdrawData.address || withdrawData.address.trim().length < 20) {
-      showToast('Введите корректный адрес', 'warn');
+      showToastMessage('Введите корректный адрес (минимум 20 символов)', 'warn');
       return;
     }
 
@@ -265,27 +240,26 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         timeoutMs: 10000,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          telegramId,
+          userId: telegramId,
           amount: withdrawData.amount,
           address: withdrawData.address.trim(),
           network: withdrawData.network,
-          currency: 'USDT',
         }),
       });
 
       const data = res.json;
 
       if (res.ok && data?.success) {
-        showToast('Запрос на вывод создан ✅', 'ok');
-        setWithdrawData({ amount: '', address: '', network: 'BEP20' });
+        showToastMessage('Запрос на вывод создан ✅', 'ok');
+        setWithdrawData({ amount: '', address: '', network: 'TRC20' });
         await loadData({ silent: true });
         setActiveTab('history');
       } else {
-        showToast(data?.error || 'Ошибка вывода', 'error');
+        showToastMessage(data?.error || 'Ошибка вывода', 'error');
       }
     } catch (err) {
-      console.error(err);
-      showToast('Ошибка при создании запроса', 'error');
+      console.error('❌ Ошибка вывода:', err);
+      showToastMessage('Ошибка при создании запроса', 'error');
     }
   };
 
@@ -296,7 +270,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     return (
       <div className="tg-loading" style={{ background: tgColors.bg }}>
         <div className="tg-spinner" style={{ borderColor: tgColors.hint }} />
-        <p style={{ color: tgColors.hint }}>Загрузка...</p>
+        <p style={{ color: tgColors.hint }}>Загрузка кошелька...</p>
       </div>
     );
   }
@@ -366,29 +340,25 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
               <div className="tg-balance-main">
                 <div className="tg-balance-total" style={{ color: tgColors.text }}>
-                  {formatUSDT(balance?.total || 0)}
+                  {formatUSDT(balance)}
                 </div>
                 <div className="tg-balance-label" style={{ color: tgColors.hint }}>
-                  Общий баланс
+                  Баланс USDT
                 </div>
               </div>
 
               <div className="tg-balance-details">
                 <div className="tg-balance-row" style={{ borderBottomColor: 'rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: tgColors.hint }}>Доступно</span>
-                  <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance?.available || 0)}</span>
+                  <span style={{ color: tgColors.hint }}>Доступно для вывода</span>
+                  <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance)}</span>
                 </div>
                 <div className="tg-balance-row" style={{ borderBottomColor: 'rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: tgColors.hint }}>В резерве</span>
-                  <span style={{ color: tgColors.text }}>{formatUSDT(balance?.reserved || 0)}</span>
-                </div>
-                <div className="tg-balance-row" style={{ borderBottomColor: 'rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: tgColors.hint }}>Пополнено</span>
-                  <span style={{ color: tgColors.text }}>{formatUSDT(balance?.totalDeposited || 0)}</span>
+                  <span style={{ color: tgColors.hint }}>Всего пополнено</span>
+                  <span style={{ color: tgColors.text }}>—</span>
                 </div>
                 <div className="tg-balance-row">
-                  <span style={{ color: tgColors.hint }}>Выведено</span>
-                  <span style={{ color: tgColors.text }}>{formatUSDT(balance?.totalWithdrawn || 0)}</span>
+                  <span style={{ color: tgColors.hint }}>Всего выведено</span>
+                  <span style={{ color: tgColors.text }}>—</span>
                 </div>
               </div>
 
@@ -404,15 +374,11 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 <button
                   className="tg-action-btn secondary"
                   onClick={() => setActiveTab('withdraw')}
-                  disabled={Number(balance?.available || 0) < 10}
+                  disabled={balance < 10}
                   style={{ borderColor: tgColors.hint, color: tgColors.text }}
                 >
                   Вывести
                 </button>
-              </div>
-
-              <div className="tg-meta" style={{ color: tgColors.hint }}>
-                Обновлено: {balance?.updated_at ? formatDate(balance.updated_at) : '—'}
               </div>
             </div>
           </div>
@@ -426,11 +392,13 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
               <div className="tg-address-container">
                 <div className="tg-address-label" style={{ color: tgColors.hint }}>
-                  {addressData?.currency || 'USDT'} ({addressData?.network || 'BEP20'})
+                  USDT ({addressData?.network || 'TRC20'})
                 </div>
 
                 <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                  <code style={{ color: tgColors.text }}>{addressData?.address || 'Загрузка...'}</code>
+                  <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
+                    {addressData?.address || 'Загрузка...'}
+                  </code>
 
                   <button
                     className="tg-copy-btn"
@@ -475,8 +443,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
               <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
                 <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
                 <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6, margin: 0, paddingLeft: 20 }}>
-                  <li>Отправляйте только {addressData?.currency || 'USDT'} в сети {addressData?.network || 'BEP20'}</li>
-                  <li>Минимальная сумма: 10 USDT</li>
+                  <li>Отправляйте только USDT в сети {addressData?.network || 'TRC20'}</li>
+                  <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
+                  <li>Максимальная сумма: {addressData?.max_deposit || 10000} USDT</li>
                   <li>Депозит обрабатывается автоматически</li>
                   <li>Обычное время зачисления: 5–30 минут</li>
                 </ol>
@@ -492,8 +461,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
               <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Вывод USDT</h3>
 
               <div className="tg-withdraw-info" style={{ color: tgColors.hint, marginBottom: 20 }}>
-                Доступно:{' '}
-                <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance?.available || 0)}</span>
+                Доступно: <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance)}</span>
               </div>
 
               <form onSubmit={handleWithdraw} className="tg-form">
@@ -503,7 +471,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                     type="number"
                     step="0.01"
                     min="10"
-                    max={Number(balance?.available || 0)}
+                    max={balance}
                     value={withdrawData.amount}
                     onChange={(e) => setWithdrawData({ ...withdrawData, amount: e.target.value })}
                     placeholder="10.00"
@@ -522,9 +490,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                     onChange={(e) => setWithdrawData({ ...withdrawData, network: e.target.value })}
                     style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                   >
+                    <option value="TRC20">TRC20 (Tron)</option>
                     <option value="BEP20">BEP20 (BSC)</option>
                     <option value="ERC20">ERC20 (Ethereum)</option>
-                    <option value="TRC20">TRC20 (Tron)</option>
                   </select>
                 </div>
 
@@ -533,7 +501,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                   <textarea
                     value={withdrawData.address}
                     onChange={(e) => setWithdrawData({ ...withdrawData, address: e.target.value })}
-                    placeholder="0x..."
+                    placeholder="Введите адрес для вывода"
                     rows="3"
                     style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                     required
@@ -574,7 +542,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
               ) : (
                 <div className="tg-history-list">
                   {withdrawals.map((wd) => (
-                    <div key={wd.id ?? `${wd.created_at}-${wd.amount}`} className="tg-history-item" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
+                    <div key={wd.id || Math.random()} className="tg-history-item" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
                       <div className="tg-history-icon">📤</div>
 
                       <div className="tg-history-details">
@@ -584,7 +552,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                         </div>
 
                         <div className="tg-history-address" style={{ color: tgColors.hint }}>
-                          {(wd.address || '').slice(0, 20)}...
+                          {wd.address ? wd.address.slice(0, 20) : '—'}
                         </div>
 
                         <div className={`tg-history-status status-${wd.status || 'pending'}`}>

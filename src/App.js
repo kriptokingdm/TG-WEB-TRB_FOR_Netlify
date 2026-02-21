@@ -33,6 +33,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [hideHints, setHideHints] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
+  const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 });
 
   const navRef = useRef(null);
   const indicatorRef = useRef(null);
@@ -345,84 +346,66 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // Обновление позиций вкладок - СРАЗУ ПРИ ЗАГРУЗКЕ
-  // В функции updateIndicatorPosition убери эти строки:
-// nav.classList.remove('ready');
-// void nav.offsetHeight;
-// nav.classList.add('ready');
-
-// Оставь только установку позиции:
-const updateIndicatorPosition = useCallback(() => {
-  const nav = navRef.current;
-  if (!nav) return;
-
-  const tabs = [
-    nav.querySelector('[data-tab="profile"]'),
-    nav.querySelector('[data-tab="home"]'),
-    nav.querySelector('[data-tab="history"]')
-  ].filter(Boolean);
-
-  if (tabs.length !== 3) return;
-
-  const navRect = nav.getBoundingClientRect();
-  const rects = tabs.map((el) => {
-    const r = el.getBoundingClientRect();
-    return {
-      left: r.left - navRect.left,
-      width: r.width
-    };
-  });
-
-  dragStateRef.current.rects = rects;
-  dragStateRef.current.minLeft = rects[0].left;
-  dragStateRef.current.maxLeft = rects[2].left;
-
-  const activeIndex = pageToIndex(currentPage);
-  const targetRect = rects[activeIndex];
-  
-  // Просто ставим позицию
-  nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-  nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-  
-  console.log('Индикатор на позиции:', targetRect.left, targetRect.width);
-}, [currentPage]);
-
-  // Первоначальная установка при монтировании
-  useEffect(() => {
-    // Ждем когда навигация отрендерится
-    const timer = setTimeout(() => {
-      updateIndicatorPosition();
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Обновляем при изменении страницы
-  useLayoutEffect(() => {
-    updateIndicatorPosition();
-  }, [currentPage, updateIndicatorPosition]);
-
-  // Следим за изменениями размеров
-  useEffect(() => {
+  // Обновление позиций вкладок - ПРОСТО И ПОНЯТНО
+  const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
 
-    const updateOnResize = () => {
-      updateIndicatorPosition();
-    };
+    const tabs = [
+      nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="home"]'),
+      nav.querySelector('[data-tab="history"]')
+    ].filter(Boolean);
 
-    const observer = new ResizeObserver(() => {
-      updateIndicatorPosition();
+    if (tabs.length !== 3) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const rects = tabs.map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        left: r.left - navRect.left,
+        width: r.width
+      };
+    });
+
+    dragStateRef.current.rects = rects;
+    dragStateRef.current.minLeft = rects[0].left;
+    dragStateRef.current.maxLeft = rects[2].left;
+
+    const activeIndex = pageToIndex(currentPage);
+    const targetRect = rects[activeIndex];
+    
+    // Сохраняем в state для индикатора
+    setIndicatorPos({
+      left: targetRect.left,
+      width: targetRect.width
     });
     
-    observer.observe(nav);
-    window.addEventListener('resize', updateOnResize);
+    console.log('Индикатор на позиции:', targetRect.left);
+  }, [currentPage]);
+
+  // Обновляем при монтировании и ресайзе
+  useEffect(() => {
+    updateIndicatorPosition();
+    
+    const timer = setTimeout(updateIndicatorPosition, 100);
+    
+    window.addEventListener('resize', updateIndicatorPosition);
+    
+    const observer = new ResizeObserver(updateIndicatorPosition);
+    if (navRef.current) observer.observe(navRef.current);
     
     return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateIndicatorPosition);
       observer.disconnect();
-      window.removeEventListener('resize', updateOnResize);
     };
   }, [updateIndicatorPosition]);
+
+  // Обновляем при смене страницы
+  useEffect(() => {
+    updateIndicatorPosition();
+  }, [currentPage, updateIndicatorPosition]);
 
   // DRAG эффект
   useEffect(() => {
@@ -438,13 +421,11 @@ const updateIndicatorPosition = useCallback(() => {
       const rects = dragStateRef.current.rects;
       if (!rects || rects.length !== 3) return;
 
-      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
-
       dragStateRef.current = {
         ...dragStateRef.current,
         isDragging: true,
         startX: e.clientX,
-        startLeft: currentLeft,
+        startLeft: indicatorPos.left,
         pointerId: e.pointerId
       };
 
@@ -479,8 +460,10 @@ const updateIndicatorPosition = useCallback(() => {
         targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
       }
 
-      nav.style.setProperty('--indicator-left', `${newLeft}px`);
-      nav.style.setProperty('--indicator-width', `${targetWidth}px`);
+      setIndicatorPos({
+        left: newLeft,
+        width: targetWidth
+      });
     };
 
     const onPointerUp = (e) => {
@@ -491,9 +474,7 @@ const updateIndicatorPosition = useCallback(() => {
       e.preventDefault();
 
       const rects = state.rects;
-      const currentLeft = parseFloat(nav.style.getPropertyValue('--indicator-left'));
-      const currentWidth = parseFloat(nav.style.getPropertyValue('--indicator-width'));
-      const currentCenter = currentLeft + currentWidth / 2;
+      const currentCenter = indicatorPos.left + indicatorPos.width / 2;
       
       let closestIndex = 1;
       let minDistance = Infinity;
@@ -508,13 +489,16 @@ const updateIndicatorPosition = useCallback(() => {
 
       const targetPage = indexToPage(closestIndex);
       
-      const targetRect = rects[closestIndex];
-      nav.style.setProperty('--indicator-left', `${targetRect.left}px`);
-      nav.style.setProperty('--indicator-width', `${targetRect.width}px`);
-
       if (targetPage !== currentPage) {
         vibrate();
         navigateTo(targetPage);
+      } else {
+        // Возвращаем на место если не сменили
+        const targetRect = rects[closestIndex];
+        setIndicatorPos({
+          left: targetRect.left,
+          width: targetRect.width
+        });
       }
 
       dragStateRef.current.isDragging = false;
@@ -526,18 +510,18 @@ const updateIndicatorPosition = useCallback(() => {
       onPointerUp(e);
     };
 
-    indicator.addEventListener('pointerdown', onPointerDown, { capture: true });
-    window.addEventListener('pointermove', onPointerMove, { capture: true });
-    window.addEventListener('pointerup', onPointerUp, { capture: true });
-    window.addEventListener('pointercancel', onPointerCancel, { capture: true });
+    indicator.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerCancel);
 
     return () => {
-      indicator.removeEventListener('pointerdown', onPointerDown, { capture: true });
-      window.removeEventListener('pointermove', onPointerMove, { capture: true });
-      window.removeEventListener('pointerup', onPointerUp, { capture: true });
-      window.removeEventListener('pointercancel', onPointerCancel, { capture: true });
+      indicator.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerCancel);
     };
-  }, [currentPage, navigateTo]);
+  }, [currentPage, indicatorPos, navigateTo]);
 
   // render pages
   const renderPage = () => {
@@ -563,63 +547,71 @@ const updateIndicatorPosition = useCallback(() => {
   };
 
   // floating nav
-  // floating nav - ПРОСТОЙ И РАБОЧИЙ
-const Navigation = () => {
-  const availableEarnings = referralData?.stats?.available_earnings || 0;
-  const showBadge = availableEarnings >= 10;
+  const Navigation = () => {
+    const availableEarnings = referralData?.stats?.available_earnings || 0;
+    const showBadge = availableEarnings >= 10;
 
-  return (
-    <div 
-      className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`}
-      data-active={currentPage}
-      ref={navRef}
-    >
-      {/* индикатор просто белый */}
-      <div className="nav-indicator" ref={indicatorRef} />
-
-      <button
-        data-tab="profile"
-        className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
-        onClick={() => navigateTo('profile')}
-        type="button"
+    return (
+      <div 
+        className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`}
+        ref={navRef}
       >
-        <div className="nav-icon-floating">
-          <ProfileIcon active={currentPage === 'profile'} />
-        </div>
-        <span className="nav-label-floating">Профиль</span>
-        {showBadge && (
-          <span className="nav-badge-floating">
-            ${availableEarnings.toFixed(0)}
-          </span>
-        )}
-      </button>
+        {/* Индикатор - всегда видимый */}
+        <div 
+          className="nav-indicator" 
+          ref={indicatorRef}
+          style={{
+            left: indicatorPos.left,
+            width: indicatorPos.width,
+            opacity: 1,
+            visibility: 'visible',
+            display: 'block'
+          }}
+        />
 
-      <button
-        data-tab="home"
-        className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
-        onClick={() => navigateTo('home')}
-        type="button"
-      >
-        <div className="nav-icon-floating nav-icon-exchange">
-          <ExchangeIcon active={currentPage === 'home'} />
-        </div>
-        <span className="nav-label-floating">Обмен</span>
-      </button>
+        <button
+          data-tab="profile"
+          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
+          onClick={() => navigateTo('profile')}
+          type="button"
+        >
+          <div className="nav-icon-floating">
+            <ProfileIcon active={currentPage === 'profile'} />
+          </div>
+          <span className="nav-label-floating">Профиль</span>
+          {showBadge && (
+            <span className="nav-badge-floating">
+              ${availableEarnings.toFixed(0)}
+            </span>
+          )}
+        </button>
 
-      <button
-        data-tab="history"
-        className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
-        onClick={() => navigateTo('history')}
-        type="button"
-      >
-        <div className="nav-icon-floating">
-          <HistoryIcon active={currentPage === 'history'} />
-        </div>
-        <span className="nav-label-floating">История</span>
-      </button>
-    </div>
-  );
-};
+        <button
+          data-tab="home"
+          className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
+          onClick={() => navigateTo('home')}
+          type="button"
+        >
+          <div className="nav-icon-floating nav-icon-exchange">
+            <ExchangeIcon active={currentPage === 'home'} />
+          </div>
+          <span className="nav-label-floating">Обмен</span>
+        </button>
+
+        <button
+          data-tab="history"
+          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
+          onClick={() => navigateTo('history')}
+          type="button"
+        >
+          <div className="nav-icon-floating">
+            <HistoryIcon active={currentPage === 'history'} />
+          </div>
+          <span className="nav-label-floating">История</span>
+        </button>
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (

@@ -563,60 +563,63 @@ const updateIndicatorPosition = useCallback(() => {
   };
 
   // floating nav
-  const Navigation = () => {
-    const availableEarnings = referralData?.stats?.available_earnings || 0;
-    const showBadge = availableEarnings >= 10;
+  // floating nav - ПРОСТОЙ И РАБОЧИЙ
+const Navigation = () => {
+  const availableEarnings = referralData?.stats?.available_earnings || 0;
+  const showBadge = availableEarnings >= 10;
 
-    return (
-      <div 
-        className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`} 
-        ref={navRef}
+  return (
+    <div 
+      className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`}
+      data-active={currentPage}
+      ref={navRef}
+    >
+      {/* индикатор просто белый */}
+      <div className="nav-indicator" ref={indicatorRef} />
+
+      <button
+        data-tab="profile"
+        className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
+        onClick={() => navigateTo('profile')}
+        type="button"
       >
-        <div className="nav-indicator" ref={indicatorRef} />
+        <div className="nav-icon-floating">
+          <ProfileIcon active={currentPage === 'profile'} />
+        </div>
+        <span className="nav-label-floating">Профиль</span>
+        {showBadge && (
+          <span className="nav-badge-floating">
+            ${availableEarnings.toFixed(0)}
+          </span>
+        )}
+      </button>
 
-        <button
-          data-tab="profile"
-          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
-          onClick={() => navigateTo('profile')}
-          type="button"
-        >
-          <div className="nav-icon-floating">
-            <ProfileIcon active={currentPage === 'profile'} />
-          </div>
-          <span className="nav-label-floating">Профиль</span>
-          {showBadge && (
-            <span className="nav-badge-floating">
-              ${availableEarnings.toFixed(0)}
-            </span>
-          )}
-        </button>
+      <button
+        data-tab="home"
+        className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
+        onClick={() => navigateTo('home')}
+        type="button"
+      >
+        <div className="nav-icon-floating nav-icon-exchange">
+          <ExchangeIcon active={currentPage === 'home'} />
+        </div>
+        <span className="nav-label-floating">Обмен</span>
+      </button>
 
-        <button
-          data-tab="home"
-          className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
-          onClick={() => navigateTo('home')}
-          type="button"
-        >
-          <div className="nav-icon-floating nav-icon-exchange">
-            <ExchangeIcon active={currentPage === 'home'} />
-          </div>
-          <span className="nav-label-floating">Обмен</span>
-        </button>
-
-        <button
-          data-tab="history"
-          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
-          onClick={() => navigateTo('history')}
-          type="button"
-        >
-          <div className="nav-icon-floating">
-            <HistoryIcon active={currentPage === 'history'} />
-          </div>
-          <span className="nav-label-floating">История</span>
-        </button>
-      </div>
-    );
-  };
+      <button
+        data-tab="history"
+        className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
+        onClick={() => navigateTo('history')}
+        type="button"
+      >
+        <div className="nav-icon-floating">
+          <HistoryIcon active={currentPage === 'history'} />
+        </div>
+        <span className="nav-label-floating">История</span>
+      </button>
+    </div>
+  );
+};
 
   if (isLoading) {
     return (

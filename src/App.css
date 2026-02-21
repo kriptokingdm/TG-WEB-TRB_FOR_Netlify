@@ -1,94 +1,8 @@
-/* App.css */
-
-:root {
-  --tg-theme-bg-color: #1a1d21;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #212428;
-  --tg-theme-section-bg-color: #3a3d42;
-
-  --tg-success-color: #34c759;
-  --tg-error-color: #ff3b30;
-  --tg-warning-color: #ff9500;
-  --tg-info-color: #5e5ce6;
-
-  --tg-card-bg: #212428;
-  --tg-input-bg: #2a2d32;
-  --tg-border-color: #3a3d42;
-  --tg-hover-color: #2c2f34;
-}
-
-/* light */
-:root:not([data-theme]) {
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-text-color: #000000;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-button-color: #3390ec;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f8f9fa;
-  --tg-theme-section-bg-color: #e0e0e0;
-
-  --tg-card-bg: #f8f9fa;
-  --tg-input-bg: #ffffff;
-  --tg-border-color: #e0e0e0;
-  --tg-hover-color: #e9ecef;
-}
-
-/* reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-/* app */
-.app {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
-  background: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
-  overflow: hidden;
-}
-
-.app-wrapper {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-.app-content {
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-}
-
 /* =========================
-   FLOATING NAV (Telegram-like)
+   FLOATING NAV - ПРОСТО И РАБОЧЕ
    ========================= */
 
-/* container */
 .floating-nav {
-  --indicator-left: 0px;
-  --indicator-width: 0px;
-
   position: fixed;
   left: 50%;
   bottom: calc(10px + env(safe-area-inset-bottom, 0px));
@@ -99,9 +13,9 @@ html, body, #root {
   padding: 6px;
   border-radius: 50px;
 
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-around;
 
   z-index: 10000;
 
@@ -112,7 +26,6 @@ html, body, #root {
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 
-  will-change: transform, opacity;
   transition: opacity .25s ease, transform .25s ease;
 }
 
@@ -123,55 +36,50 @@ html, body, #root {
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
-/* indicator (pill) - ВСЕГДА ВИДИМЫЙ */
+/* индикатор - просто белый полупрозрачный */
 .nav-indicator {
   position: absolute;
   top: 6px;
-  left: var(--indicator-left);
-  width: var(--indicator-width);
   height: calc(58px - 12px);
+  width: 33.33%; /* примерно треть */
   border-radius: 30px;
-
   background: rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-
-  /* АНИМАЦИИ НЕТ */
-  transition: none;
   
-  will-change: left, width;
-
-  /* drag handle */
-  cursor: grab;
-  touch-action: pan-x;
-
-  z-index: 3;
-
+  /* двигаться будет через transform */
+  transition: transform 0.2s ease;
+  z-index: 1;
+  pointer-events: none; /* чтобы не мешал кликам */
+  
   /* ВСЕГДА ВИДИМЫЙ */
   opacity: 1 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
 :root:not([data-theme]) .nav-indicator {
   background: rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
-/* Убираем все классы которые могут скрывать индикатор */
-.floating-nav:not(.ready) .nav-indicator,
-.floating-nav.ready .nav-indicator {
-  opacity: 1 !important;
+/* позиции для каждой вкладки */
+.floating-nav[data-active="profile"] .nav-indicator {
+  transform: translateX(0);
 }
 
-.floating-nav.dragging .nav-indicator {
-  cursor: grabbing;
-  transition: none;
+.floating-nav[data-active="home"] .nav-indicator {
+  transform: translateX(100%);
 }
 
-/* buttons */
+.floating-nav[data-active="history"] .nav-indicator {
+  transform: translateX(200%);
+}
+
+/* кнопки */
 .nav-item-floating {
   position: relative;
   z-index: 2;
+  flex: 1;
   height: 100%;
-  width: 100%;
 
   display: flex;
   flex-direction: column;
@@ -189,23 +97,17 @@ html, body, #root {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  cursor: pointer;
 }
 
-.nav-item-floating:focus,
-.nav-item-floating:focus-visible {
-  outline: none;
-}
-
-.nav-item-floating:active {
-  transform: scale(0.98);
-}
-
-/* active state */
 .nav-item-floating.active {
+  color: white;
+}
+
+:root:not([data-theme]) .nav-item-floating.active {
   color: var(--tg-theme-button-color);
 }
 
-/* icon wrapper */
 .nav-icon-floating {
   width: 22px;
   height: 22px;
@@ -220,20 +122,17 @@ html, body, #root {
   display: block;
 }
 
-/* exchange icon fix */
 .nav-icon-exchange svg {
   width: 26px !important;
   height: 26px !important;
 }
 
-/* label */
 .nav-label-floating {
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
 }
 
-/* badge */
 .nav-badge-floating {
   position: absolute;
   top: 6px;
@@ -253,125 +152,9 @@ html, body, #root {
   opacity: 0;
   pointer-events: none;
   transform: translateX(-50%) translateY(16px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .floating-nav.keyboard-visible {
   opacity: 1;
   pointer-events: auto;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* loader */
-.app-loading {
-  position: fixed;
-  inset: 0;
-  background: var(--tg-theme-bg-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.loading-spinner {
-  width: 44px;
-  height: 44px;
-  border: 2.5px solid rgba(51, 144, 236, 0.15);
-  border-top-color: var(--tg-theme-button-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 14px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.app-loading p {
-  font-size: 14px;
-  color: var(--tg-theme-hint-color);
-}
-
-/* toast */
-.telegram-toast {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--tg-card-bg);
-  border-radius: 14px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.22);
-  z-index: 10001;
-  border: 1px solid var(--tg-border-color);
-  max-width: 92%;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.telegram-toast-icon {
-  font-size: 16px;
-}
-.telegram-toast-text {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* remove ugly white selection */
-button, a, div {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Убираем все условия для opacity */
-.floating-nav:not(.ready) .nav-indicator,
-.floating-nav.ready .nav-indicator,
-.floating-nav .nav-indicator {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-}
-
-/* small screens */
-@media (max-width: 360px) {
-  .floating-nav {
-    height: 56px;
-    border-radius: 16px;
-  }
-  .nav-indicator {
-    border-radius: 13px;
-  }
-}
-
-/* ==================== ИСПРАВЛЕНИЯ ДЛЯ НАВИГАЦИИ ==================== */
-
-/* Убираем дерганье при перетаскивании */
-.floating-nav.dragging {
-  transition: none;
-}
-
-.floating-nav.dragging .nav-indicator {
-  transition: none;
-  cursor: grabbing;
-}
-
-/* АНИМАЦИИ НЕТ */
-.floating-nav:not(.dragging) .nav-indicator {
-  transition: none;
-}
-
-/* Защита от случайных нажатий */
-.floating-nav {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Фикс для iOS */
-@media (hover: none) and (pointer: coarse) {
-  .nav-indicator {
-    touch-action: pan-x pinch-zoom;
-  }
 }

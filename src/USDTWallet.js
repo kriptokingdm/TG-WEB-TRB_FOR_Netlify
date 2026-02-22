@@ -385,18 +385,19 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
         {/* DEPOSIT - ТЕПЕРЬ С MEMO! */}
         {/* DEPOSIT - БЕЗ MEMO */}
+{/* DEPOSIT - ПРОСТАЯ ВЕРСИЯ БЕЗ MEMO */}
+{/* DEPOSIT - ФИНАЛЬНАЯ ВЕРСИЯ */}
 {activeTab === 'deposit' && (
   <div className="tg-section">
     <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
       <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
 
-      {/* АДРЕС */}
       <div className="tg-address-container">
         <div className="tg-address-label" style={{ color: tgColors.hint }}>
-          Ваш уникальный адрес для пополнения (BEP20)
+          Ваш адрес для пополнения (BEP20)
         </div>
         <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-          <code style={{ color: tgColors.text, wordBreak: 'break-all', fontSize: '14px' }}>
+          <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
             {addressData?.address || 'Загрузка...'}
           </code>
           <button
@@ -408,20 +409,14 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             Копировать
           </button>
         </div>
-        <p style={{ color: tgColors.hint, fontSize: '13px', marginTop: '8px' }}>
-          ⚠️ Это ваш личный адрес. Отправляйте USDT только на него.
-        </p>
       </div>
 
-      {/* ИНСТРУКЦИЯ */}
-      <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-        <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Как пополнить:</h4>
-        <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6, margin: 0, paddingLeft: 20 }}>
-          <li>Отправляйте <strong>только USDT в сети BEP20</strong></li>
-          <li>Используйте адрес: <code style={{ background: tgColors.secondaryBg, padding: '2px 6px', borderRadius: '6px' }}>{addressData?.address?.slice(0, 10)}...{addressData?.address?.slice(-8)}</code></li>
+      <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)', marginTop: '20px' }}>
+        <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
+        <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6 }}>
+          <li>Отправляйте только USDT в сети BEP20</li>
           <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
-          <li>Средства зачисляются автоматически после 3 подтверждений сети</li>
-          <li>Обычное время: 1-5 минут</li>
+          <li>Средства зачисляются автоматически</li>
         </ol>
       </div>
     </div>

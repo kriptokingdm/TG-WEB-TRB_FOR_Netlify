@@ -1,4 +1,4 @@
-// USDTWalletTG.js - Telegram Web App style (ИСПРАВЛЕННАЯ ВЕРСИЯ ПОД ТВОЮ БД)
+// USDTWalletTG.js - Telegram Web App style (С MEMO И ВИБРАЦИЕЙ)
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './USDTWallet.css';
 
@@ -8,6 +8,13 @@ const API_BASE_URL = 'https://tethrab.shop';
 function withTimeout(ms, controller) {
   const id = setTimeout(() => controller.abort(), ms);
   return () => clearTimeout(id);
+}
+
+// Функция для вибрации
+function vibrate(pattern = 10) {
+  if (window.navigator && window.navigator.vibrate) {
+    window.navigator.vibrate(pattern);
+  }
 }
 
 async function fetchJSON(url, { method = 'GET', headers, body, timeoutMs = 8000 } = {}) {
@@ -63,23 +70,16 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   // 👇 Инициализируем с дефолтными значениями
   const [balance, setBalance] = useState(0);
-  const [balanceData, setBalanceData] = useState({
-    available: 0,
-    reserved: 0,
-    total: 0,
-    totalDeposited: 0,
-    totalWithdrawn: 0,
-    currency: 'USDT',
-    updated_at: null,
-  });
-
+  
   const [addressData, setAddressData] = useState({
     address: '',
-    network: 'TRC20',
+    memo: '', // ДОБАВИЛИ MEMO
+    network: 'BEP20', // Меняем на BEP20 по умолчанию
     currency: 'USDT',
     qrCode: '',
     min_deposit: 10,
-    max_deposit: 10000
+    max_deposit: 10000,
+    instructions: ''
   });
 
   const [withdrawals, setWithdrawals] = useState([]);
@@ -90,7 +90,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   const [withdrawData, setWithdrawData] = useState({
     amount: '',
     address: '',
-    network: 'TRC20',
+    network: 'BEP20', // Меняем на BEP20
   });
 
   const [showQR, setShowQR] = useState(false);
@@ -112,6 +112,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   );
 
   const showToastMessage = (message, type = 'info') => {
+    vibrate(10); // ВИБРАЦИЯ при тосте
     setToast({ message, type });
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
@@ -133,7 +134,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       // Параллельная загрузка
       const [bal, addr, wds] = await Promise.allSettled([
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`, { timeoutMs: 8000 }),
-        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=TRC20`, { timeoutMs: 8000 }),
+        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
       ]);
 
@@ -144,32 +145,23 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       // Обработка баланса
       if (bal.status === 'fulfilled' && bal.value.ok && bal.value.json?.success) {
         const data = bal.value.json;
-        // Сервер возвращает { success: true, balance: 1400.5, currency: 'USDT' }
         setBalance(data.balance || 0);
-        setBalanceData({
-          available: data.balance || 0,
-          reserved: 0,
-          total: data.balance || 0,
-          totalDeposited: 0,
-          totalWithdrawn: 0,
-          currency: data.currency || 'USDT',
-          updated_at: new Date().toISOString(),
-        });
       } else {
         console.log('⚠️ Не удалось загрузить баланс');
       }
 
-      // Обработка адреса
+      // Обработка адреса - ТЕПЕРЬ С MEMO!
       if (addr.status === 'fulfilled' && addr.value.ok && addr.value.json?.success) {
         const data = addr.value.json;
-        // Сервер возвращает { success: true, address: "...", network: "TRC20", ... }
         setAddressData({
           address: data.address || '',
-          network: data.network || 'TRC20',
+          memo: data.memo || '', // СОХРАНЯЕМ MEMO
+          network: data.network || 'BEP20',
           currency: data.currency || 'USDT',
           qrCode: data.qrCode || '',
           min_deposit: data.min_deposit || 10,
-          max_deposit: data.max_deposit || 10000
+          max_deposit: data.max_deposit || 10000,
+          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address} с комментарием (memo): ${data.memo}`
         });
       } else {
         console.log('⚠️ Не удалось загрузить адрес');
@@ -178,7 +170,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       // Обработка выводов
       if (wds.status === 'fulfilled' && wds.value.ok && wds.value.json?.success) {
         const data = wds.value.json;
-        // Сервер возвращает { success: true, withdrawals: [...] }
         const list = data.withdrawals || [];
         setWithdrawals(list);
         console.log(`✅ Загружено ${list.length} выводов`);
@@ -205,18 +196,26 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   }, [telegramId]);
 
   // --- actions -------------------------------------------------------------
-  const copyToClipboard = async (text) => {
+  const copyToClipboard = async (text, type = 'адрес') => {
     if (!text) return;
+    vibrate(5); // ВИБРАЦИЯ при копировании
     try {
       await navigator.clipboard.writeText(text);
-      showToastMessage('Скопировано', 'ok');
+      showToastMessage(`${type} скопирован`, 'ok');
     } catch {
       showToastMessage('Не удалось скопировать', 'error');
     }
   };
 
+  const copyAll = () => {
+    vibrate(8);
+    const text = `Address: ${addressData.address}\nMemo: ${addressData.memo}`;
+    copyToClipboard(text, 'адрес и memo');
+  };
+
   const handleWithdraw = async (e) => {
     e.preventDefault();
+    vibrate(10);
 
     const amount = Number(withdrawData.amount);
     if (!amount || amount < 10) {
@@ -251,7 +250,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
       if (res.ok && data?.success) {
         showToastMessage('Запрос на вывод создан ✅', 'ok');
-        setWithdrawData({ amount: '', address: '', network: 'TRC20' });
+        setWithdrawData({ amount: '', address: '', network: 'BEP20' });
         await loadData({ silent: true });
         setActiveTab('history');
       } else {
@@ -263,7 +262,15 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     }
   };
 
-  const onRefresh = () => loadData({ silent: true });
+  const onRefresh = () => {
+    vibrate(5);
+    loadData({ silent: true });
+  };
+
+  const onTabChange = (tab) => {
+    vibrate(5);
+    setActiveTab(tab);
+  };
 
   // --- UI states -----------------------------------------------------------
   if (isLoading && activeTab === 'balance') {
@@ -286,7 +293,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
       {/* Header */}
       <div className="tg-header" style={{ backgroundColor: tgColors.bg, borderBottomColor: tgColors.secondaryBg }}>
-        <button className="tg-back-btn" onClick={onBack} aria-label="Назад">
+        <button className="tg-back-btn" onClick={() => { vibrate(5); onBack(); }} aria-label="Назад">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round" />
             <path d="M12 19L5 12L12 5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round" />
@@ -321,7 +328,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           <button
             key={tab.key}
             className={`tg-tab ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => onTabChange(tab.key)}
             style={{
               color: activeTab === tab.key ? tgColors.button : tgColors.hint,
               borderBottomColor: activeTab === tab.key ? tgColors.button : 'transparent',
@@ -352,20 +359,12 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                   <span style={{ color: tgColors.hint }}>Доступно для вывода</span>
                   <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance)}</span>
                 </div>
-                <div className="tg-balance-row" style={{ borderBottomColor: 'rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: tgColors.hint }}>Всего пополнено</span>
-                  <span style={{ color: tgColors.text }}>—</span>
-                </div>
-                <div className="tg-balance-row">
-                  <span style={{ color: tgColors.hint }}>Всего выведено</span>
-                  <span style={{ color: tgColors.text }}>—</span>
-                </div>
               </div>
 
               <div className="tg-actions">
                 <button
                   className="tg-action-btn primary"
-                  onClick={() => setActiveTab('deposit')}
+                  onClick={() => onTabChange('deposit')}
                   style={{ backgroundColor: tgColors.button, color: tgColors.buttonText }}
                 >
                   Пополнить
@@ -373,7 +372,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
                 <button
                   className="tg-action-btn secondary"
-                  onClick={() => setActiveTab('withdraw')}
+                  onClick={() => onTabChange('withdraw')}
                   disabled={balance < 10}
                   style={{ borderColor: tgColors.hint, color: tgColors.text }}
                 >
@@ -384,25 +383,24 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           </div>
         )}
 
-        {/* DEPOSIT */}
+        {/* DEPOSIT - ТЕПЕРЬ С MEMO! */}
         {activeTab === 'deposit' && (
           <div className="tg-section">
             <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <h3 style={{ color: tgColors.text, marginBottom: 16 }}>Ваш адрес для пополнения</h3>
+              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
 
+              {/* АДРЕС */}
               <div className="tg-address-container">
                 <div className="tg-address-label" style={{ color: tgColors.hint }}>
-                  USDT ({addressData?.network || 'TRC20'})
+                  Адрес кошелька (BEP20)
                 </div>
-
                 <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
                   <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
                     {addressData?.address || 'Загрузка...'}
                   </code>
-
                   <button
                     className="tg-copy-btn"
-                    onClick={() => copyToClipboard(addressData?.address || '')}
+                    onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
                     style={{ color: tgColors.button }}
                     disabled={!addressData?.address}
                   >
@@ -411,50 +409,65 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 </div>
               </div>
 
-              <div className="tg-qr-section">
-                {showQR && addressData?.qrCode ? (
-                  <div className="tg-qr-container" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                    <img
-                      src={addressData.qrCode}
-                      alt="QR"
-                      className="tg-qr-img"
-                      onClick={() => setShowQR(false)}
-                    />
-                    <p style={{ color: tgColors.hint, fontSize: 14 }}>Нажмите на QR, чтобы скрыть</p>
+              {/* MEMO - НОВЫЙ БЛОК! */}
+              {addressData?.memo && (
+                <div className="tg-address-container">
+                  <div className="tg-address-label" style={{ color: tgColors.hint }}>
+                    Memo (обязательно!)
                   </div>
-                ) : (
-                  <button
-                    className="tg-qr-btn"
-                    onClick={() => setShowQR(true)}
-                    style={{ color: tgColors.button, borderColor: 'rgba(0,0,0,0.10)' }}
-                    disabled={!addressData?.qrCode}
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M1 1H5V5H1V1ZM1 19H5V23H1V19ZM19 1H23V5H19V1ZM19 19H23V23H19V19ZM7 7H11V11H7V7ZM7 13H11V17H7V13ZM13 7H17V11H13V7ZM13 13H17V17H13V13Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                    Показать QR код
-                  </button>
-                )}
-              </div>
+                  <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)', background: 'rgba(51,144,236,0.05)' }}>
+                    <code style={{ color: tgColors.text, wordBreak: 'break-all', fontWeight: 'bold' }}>
+                      {addressData.memo}
+                    </code>
+                    <button
+                      className="tg-copy-btn"
+                      onClick={() => copyToClipboard(addressData?.memo || '', 'memo')}
+                      style={{ color: tgColors.button }}
+                    >
+                      Копировать memo
+                    </button>
+                  </div>
+                </div>
+              )}
 
+              {/* КНОПКА КОПИРОВАТЬ ВСЁ */}
+              {addressData?.address && addressData?.memo && (
+                <button
+                  className="tg-copy-all-btn"
+                  onClick={copyAll}
+                  style={{
+                    backgroundColor: tgColors.button,
+                    color: tgColors.buttonText,
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '14px',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    marginBottom: '20px',
+                    width: '100%'
+                  }}
+                >
+                  📋 Копировать адрес и memo
+                </button>
+              )}
+
+              {/* ИНСТРУКЦИЯ */}
               <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
+                <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Как пополнить:</h4>
                 <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6, margin: 0, paddingLeft: 20 }}>
-                  <li>Отправляйте только USDT в сети {addressData?.network || 'TRC20'}</li>
+                  <li>Отправляйте <strong>только USDT (BEP20)</strong></li>
+                  <li><strong style={{ color: '#ff3b30' }}>ОБЯЗАТЕЛЬНО</strong> укажите memo: <code style={{ background: tgColors.secondaryBg, padding: '2px 6px', borderRadius: '6px' }}>{addressData?.memo || '...'}</code></li>
                   <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
-                  <li>Максимальная сумма: {addressData?.max_deposit || 10000} USDT</li>
-                  <li>Депозит обрабатывается автоматически</li>
-                  <li>Обычное время зачисления: 5–30 минут</li>
+                  <li>Депозит зачисляется автоматически</li>
+                  <li>Обычное время: 1-5 минут</li>
                 </ol>
               </div>
             </div>
           </div>
         )}
 
-        {/* WITHDRAW */}
+        {/* WITHDRAW - ТЕПЕРЬ BEP20 ПО УМОЛЧАНИЮ */}
         {activeTab === 'withdraw' && (
           <div className="tg-section">
             <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
@@ -490,9 +503,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                     onChange={(e) => setWithdrawData({ ...withdrawData, network: e.target.value })}
                     style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                   >
+                    <option value="BEP20">BEP20 (Binance) - рекомендуется</option>
                     <option value="TRC20">TRC20 (Tron)</option>
-                    <option value="BEP20">BEP20 (BSC)</option>
-                    <option value="ERC20">ERC20 (Ethereum)</option>
+                    <option value="ERC20">ERC20 (Ethereum) - дорого</option>
                   </select>
                 </div>
 

@@ -384,88 +384,49 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         )}
 
         {/* DEPOSIT - ТЕПЕРЬ С MEMO! */}
-        {activeTab === 'deposit' && (
-          <div className="tg-section">
-            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
+        {/* DEPOSIT - БЕЗ MEMO */}
+{activeTab === 'deposit' && (
+  <div className="tg-section">
+    <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+      <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
 
-              {/* АДРЕС */}
-              <div className="tg-address-container">
-                <div className="tg-address-label" style={{ color: tgColors.hint }}>
-                  Адрес кошелька (BEP20)
-                </div>
-                <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                  <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
-                    {addressData?.address || 'Загрузка...'}
-                  </code>
-                  <button
-                    className="tg-copy-btn"
-                    onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
-                    style={{ color: tgColors.button }}
-                    disabled={!addressData?.address}
-                  >
-                    Копировать
-                  </button>
-                </div>
-              </div>
+      {/* АДРЕС */}
+      <div className="tg-address-container">
+        <div className="tg-address-label" style={{ color: tgColors.hint }}>
+          Ваш уникальный адрес для пополнения (BEP20)
+        </div>
+        <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
+          <code style={{ color: tgColors.text, wordBreak: 'break-all', fontSize: '14px' }}>
+            {addressData?.address || 'Загрузка...'}
+          </code>
+          <button
+            className="tg-copy-btn"
+            onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
+            style={{ color: tgColors.button }}
+            disabled={!addressData?.address}
+          >
+            Копировать
+          </button>
+        </div>
+        <p style={{ color: tgColors.hint, fontSize: '13px', marginTop: '8px' }}>
+          ⚠️ Это ваш личный адрес. Отправляйте USDT только на него.
+        </p>
+      </div>
 
-              {/* MEMO - НОВЫЙ БЛОК! */}
-              {addressData?.memo && (
-                <div className="tg-address-container">
-                  <div className="tg-address-label" style={{ color: tgColors.hint }}>
-                    Memo (обязательно!)
-                  </div>
-                  <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)', background: 'rgba(51,144,236,0.05)' }}>
-                    <code style={{ color: tgColors.text, wordBreak: 'break-all', fontWeight: 'bold' }}>
-                      {addressData.memo}
-                    </code>
-                    <button
-                      className="tg-copy-btn"
-                      onClick={() => copyToClipboard(addressData?.memo || '', 'memo')}
-                      style={{ color: tgColors.button }}
-                    >
-                      Копировать memo
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* КНОПКА КОПИРОВАТЬ ВСЁ */}
-              {addressData?.address && addressData?.memo && (
-                <button
-                  className="tg-copy-all-btn"
-                  onClick={copyAll}
-                  style={{
-                    backgroundColor: tgColors.button,
-                    color: tgColors.buttonText,
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '14px',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    marginBottom: '20px',
-                    width: '100%'
-                  }}
-                >
-                  📋 Копировать адрес и memo
-                </button>
-              )}
-
-              {/* ИНСТРУКЦИЯ */}
-              <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Как пополнить:</h4>
-                <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6, margin: 0, paddingLeft: 20 }}>
-                  <li>Отправляйте <strong>только USDT (BEP20)</strong></li>
-                  <li><strong style={{ color: '#ff3b30' }}>ОБЯЗАТЕЛЬНО</strong> укажите memo: <code style={{ background: tgColors.secondaryBg, padding: '2px 6px', borderRadius: '6px' }}>{addressData?.memo || '...'}</code></li>
-                  <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
-                  <li>Депозит зачисляется автоматически</li>
-                  <li>Обычное время: 1-5 минут</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* ИНСТРУКЦИЯ */}
+      <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
+        <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Как пополнить:</h4>
+        <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6, margin: 0, paddingLeft: 20 }}>
+          <li>Отправляйте <strong>только USDT в сети BEP20</strong></li>
+          <li>Используйте адрес: <code style={{ background: tgColors.secondaryBg, padding: '2px 6px', borderRadius: '6px' }}>{addressData?.address?.slice(0, 10)}...{addressData?.address?.slice(-8)}</code></li>
+          <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
+          <li>Средства зачисляются автоматически после 3 подтверждений сети</li>
+          <li>Обычное время: 1-5 минут</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* WITHDRAW - ТЕПЕРЬ BEP20 ПО УМОЛЧАНИЮ */}
         {activeTab === 'withdraw' && (

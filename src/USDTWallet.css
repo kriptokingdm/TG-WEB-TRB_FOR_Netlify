@@ -820,3 +820,87 @@
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ SELECTED-NAME ==================== */
+
+/* Контейнер для выбора банка */
+.bank-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid var(--tg-border);
+}
+
+/* Кнопки выбора банка - ИСПРАВЛЕНО ВЫРАВНИВАНИЕ */
+.bank-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 10px; /* Уменьшил вертикальные отступы */
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+  font-size: 15px;
+  
+  /* Фиксируем высоту для ровного выравнивания */
+  height: 48px;
+  line-height: 1;
+}
+
+.bank-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.bank-option.selected svg path {
+  fill: white;
+}
+
+.bank-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}
+
+/* Иконки в кнопках - фиксируем размер */
+.bank-option svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Текст в кнопках */
+.bank-option span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  height: 22px; /* Такая же высота как у иконки */
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .bank-option {
+    height: 44px;
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+  
+  .bank-option svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .bank-option span {
+    height: 20px;
+  }
+}

@@ -722,3 +722,73 @@
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
+
+/* === Контент шире (по 5%) === */
+.tg-content-wide {
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-top: 14px;
+}
+
+/* === Центрируем заголовок карточек === */
+.tg-card-title {
+  text-align: center;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hint);
+}
+
+/* === Карточки чуть шире и массивнее === */
+.tg-card {
+  border-radius: 20px;
+  padding: 18px;
+}
+
+/* === Кнопки действия Telegram цвет === */
+.tg-big-action {
+  height: 80px;
+  border-radius: 18px;
+  border: 1px solid var(--tg-theme-button-color, #3390ec);
+  background: rgba(51,144,236,0.15);
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.tg-big-action:active {
+  background: var(--tg-theme-button-color, #3390ec);
+  color: white;
+  transform: scale(0.97);
+}
+
+.tg-big-action-secondary {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--stroke);
+}
+
+/* === Отдельная кнопка истории === */
+.tg-history-button {
+  width: 100%;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tg-history-button:active {
+  background: rgba(51,144,236,0.15);
+  transform: scale(0.98);
+}
+
+.tg-history-arrow {
+  font-size: 20px;
+  opacity: 0.6;
+}

@@ -353,7 +353,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       {toast && <div className={`tg-toast tg-toast-${toast.type}`}>{toast.message}</div>}
 
       {/* HEADER (минимальный, под тёмный стиль) */}
-      <div className="tg-topbar">
+      {/* <div className="tg-topbar">
         <button className="tg-topbar-btn" onClick={() => { vibrate(5); onBack?.(); }} aria-label="Назад">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -369,10 +369,10 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           </span>
           {isRefreshing ? <span className="tg-dot" /> : null}
         </button>
-      </div>
+      </div> */}
 
       {/* CONTENT */}
-      <div className="tg-content tg-content-tight">
+      <div className="tg-content tg-content-wide">
         {/* HOME (как на скрине) */}
         {activeTab === 'home' && (
           <div className="tg-section">
@@ -406,12 +406,23 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
             {/* HISTORY PREVIEW CARD */}
             <div className="tg-card tg-card-history">
-              <button className="tg-history-head" onClick={() => go('history')} type="button">
-                <span className="tg-card-title">История транзакций</span>
-                <span className="tg-history-filter">
-                  <FilterSvg />
-                </span>
-              </button>
+              <button 
+  className="tg-history-button" 
+  onClick={() => { vibrate(10); go('history'); }}
+  type="button"
+>
+  <span>История транзакций</span>
+  <span className="tg-history-arrow">›</span>
+</button>
+
+<button 
+  className="tg-history-button" 
+  onClick={() => { vibrate(10); go('history'); }}
+  type="button"
+>
+  <span>История транзакций</span>
+  <span className="tg-history-arrow">›</span>
+</button>
 
               {(!previewOps || previewOps.length === 0) ? (
                 <div className="tg-history-empty">Нет операций</div>

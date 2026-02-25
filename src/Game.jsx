@@ -59,12 +59,22 @@ export default function Game() {
     return () => cancelAnimationFrame(raf);
   }, [highScore]);
 
-  // прыжок только когда игра уже запущена
-  const onTap = () => {
+  const getTapX = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
+    const x = ((clientX - rect.left) / rect.width) * GAME_WIDTH; // в координатах канваса
+    return Math.max(0, Math.min(GAME_WIDTH, x));
+  };
+
+  // Тап = прыжок в сторону тапа (во время игры)
+  const onTap = (e) => {
     const g = gameRef.current;
     if (!g.started || !g.player.alive) return;
 
-    jumpAction(g);
+    const tapX = getTapX(e);
+    jumpAction(g, tapX);
+
     g._dirty = true;
     setGame({ ...g, player: { ...g.player } });
   };
@@ -120,14 +130,13 @@ export default function Game() {
             onPointerDown={onTap}
           />
 
-          {/* START OVERLAY */}
           {!game.started && game.player.alive && (
             <div className="dj-overlay">
               <div className="dj-card">
-                <div className="dj-card-title">Wall Doodle</div>
+                <div className="dj-card-title">Start</div>
                 <div className="dj-card-text">
-                  Прыгай от стен и лети вверх.<br />
-                  Тап по экрану = прыжок.
+                  Тапай слева/справа — прыжок летит в сторону тапа.<br />
+                  Стены не липнут (wrap как Doodle Jump).
                 </div>
 
                 <button className="dj-btn dj-btn-primary" onClick={onStart}>
@@ -139,7 +148,6 @@ export default function Game() {
             </div>
           )}
 
-          {/* GAME OVER OVERLAY */}
           {!game.player.alive && (
             <div className="dj-overlay">
               <div className="dj-card">
@@ -152,14 +160,12 @@ export default function Game() {
                 <button className="dj-btn dj-btn-primary" onClick={onRestart}>
                   ↻ PLAY AGAIN
                 </button>
-
-                <div className="dj-card-hint">Tap работает только во время игры</div>
               </div>
             </div>
           )}
 
           {game.started && game.player.alive && (
-            <div className="dj-hud-hint">tap to jump</div>
+            <div className="dj-hud-hint">tap left/right to steer</div>
           )}
         </div>
       </div>

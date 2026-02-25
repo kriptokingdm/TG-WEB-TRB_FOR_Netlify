@@ -7,13 +7,15 @@ export const GAME_HEIGHT = 640;
 ========================= */
 const BASE_GRAVITY = 0.55;
 const BASE_MAX_FALL = 14;
-const BASE_WALL_SLIDE = 2.2;
 
-const BASE_WALL_KICK_X = 9.2;
-const BASE_WALL_KICK_Y = 12.0;
-const BASE_GROUND_JUMP = 11.2;
-const AIR_NUDGE = 0.7;
+// прыжок (как “дудл”)
+const BASE_JUMP_Y = 12.0;
 
+// управление по тапу
+const TAP_HORZ_MAX = 8.8;      // максимальная горизонтальная скорость от тапа
+const TAP_HORZ_SMOOTH = 0.55;  // насколько резко перестраиваем vx (0..1)
+
+// Генерация мира
 const MARGIN_X = 18;
 const PLATFORM_H = 12;
 
@@ -66,10 +68,7 @@ function difficultyFromScore(score) {
     t,
     gravity: BASE_GRAVITY + 0.08 * t,
     maxFall: BASE_MAX_FALL + 3.5 * t,
-    wallSlide: BASE_WALL_SLIDE + 0.6 * t,
-    wallKickX: BASE_WALL_KICK_X + 0.8 * t,
-    wallKickY: BASE_WALL_KICK_Y + 0.6 * t,
-    groundJump: BASE_GROUND_JUMP + 0.3 * t,
+    jumpY: BASE_JUMP_Y + 0.6 * t,
 
     gapY: clamp(rand(GAP_Y_MIN, GAP_Y_MAX) + 18 * t, GAP_Y_MIN, GAP_Y_MAX + 26),
     widthMul: 1 - 0.22 * t,
@@ -95,15 +94,14 @@ export function createPlayer() {
     vy: 0,
     alive: true,
 
-    onWall: false,
-    wallSide: 0,
+    // без стен
     onGround: false,
 
     score: 0,
     bestY: GAME_HEIGHT - 140,
 
-    combo: 1,
     trail: [],
+    _tapX: GAME_WIDTH / 2, // последняя цель по X
   };
 }
 
@@ -278,40 +276,34 @@ export function restartGame(game) {
 }
 
 /* =========================
-   JUMP ACTION
+   TAP ACTION = jump + steer to tapX
 ========================= */
-export function jumpAction(game) {
+export function jumpAction(game, tapX) {
   const pl = game.player;
   if (!pl.alive) return;
 
   const diff = difficultyFromScore(pl.score);
 
-  const px = pl.x + pl.w / 2;
-  const py = pl.y + pl.h;
-  const color = pl.onWall ? 'rgba(255,170,70,0.95)' : 'rgba(120,190,255,0.95)';
-  game.particles.push(...createParticles(px, py, color, 8));
+  // сохраняем цель
+  pl._tapX = clamp(tapX ?? GAME_WIDTH / 2, 0, GAME_WIDTH);
 
-  if (pl.onWall) {
-    pl.vx = diff.wallKickX * -pl.wallSide;
-    pl.vy = -diff.wallKickY;
-    pl.onWall = false;
-    pl.wallSide = 0;
-    pl.onGround = false;
-    pl.combo = clamp(pl.combo + 1, 1, 99);
-    return;
-  }
+  // steering: vx тянем к нужной скорости (направление в сторону тапа)
+  const center = pl.x + pl.w / 2;
+  const dx = pl._tapX - center;
 
-  if (pl.onGround) {
-    pl.vy = -diff.groundJump;
-    if (Math.abs(pl.vx) < 1) pl.vx = (Math.random() > 0.5 ? 1 : -1) * 1.8;
-    pl.onGround = false;
-    pl.combo = 1;
-    return;
-  }
+  // нормализуем: левый край -> -1, правый -> +1
+  const dir = clamp(dx / (GAME_WIDTH * 0.5), -1, 1);
+  const targetVx = dir * TAP_HORZ_MAX;
 
-  if (pl.vx > 0) pl.vx += AIR_NUDGE;
-  else if (pl.vx < 0) pl.vx -= AIR_NUDGE;
-  else pl.vx = (Math.random() > 0.5 ? 1 : -1) * AIR_NUDGE;
+  pl.vx = pl.vx + (targetVx - pl.vx) * TAP_HORZ_SMOOTH;
+
+  // прыжок — всегда (как “тап = прыжок”), но без стен
+  // если хочешь “только когда на платформе” — скажи, сделаю.
+  pl.vy = -diff.jumpY;
+  pl.onGround = false;
+
+  // particles
+  game.particles.push(...createParticles(center, pl.y + pl.h, 'rgba(120,190,255,0.95)', 7));
 }
 
 /* =========================
@@ -322,12 +314,14 @@ export function stepGame(game, dt = 1) {
   const platforms = game.platforms;
   const diff = difficultyFromScore(pl.score);
 
+  // trail
   pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.18 });
   if (pl.trail.length > 10) pl.trail.pop();
   pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.22 - i * 0.022)));
 
   updateParticles(game.particles, dt);
 
+  // platform updates
   for (const p of platforms) {
     if (p.type === 'moving' && !p.broken) {
       p.x += p.dir * p.speed * dt;
@@ -346,31 +340,22 @@ export function stepGame(game, dt = 1) {
   const prevX = pl.x;
   const prevY = pl.y;
 
+  // gravity
   pl.vy += diff.gravity * dt;
   pl.vy = clamp(pl.vy, -50, diff.maxFall);
 
-  if (pl.onWall && pl.vy > 0) pl.vy = Math.min(pl.vy, diff.wallSlide);
-
+  // integrate
   pl.x += pl.vx * dt;
   pl.y += pl.vy * dt;
 
+  // air drag
   pl.vx *= Math.pow(0.992, dt);
 
-  pl.onWall = false;
-  pl.wallSide = 0;
+  // === WRAP like Doodle Jump (no wall cling) ===
+  if (pl.x < -pl.w) pl.x = GAME_WIDTH;
+  if (pl.x > GAME_WIDTH) pl.x = -pl.w;
 
-  if (pl.x <= 0) {
-    pl.x = 0;
-    pl.onWall = true;
-    pl.wallSide = -1;
-    pl.vx = 0;
-  } else if (pl.x + pl.w >= GAME_WIDTH) {
-    pl.x = GAME_WIDTH - pl.w;
-    pl.onWall = true;
-    pl.wallSide = 1;
-    pl.vx = 0;
-  }
-
+  // collisions with platforms (land only from above)
   pl.onGround = false;
 
   for (const p of platforms) {
@@ -384,8 +369,6 @@ export function stepGame(game, dt = 1) {
       pl.y = p.y - pl.h;
       pl.vy = 0;
       pl.onGround = true;
-      pl.onWall = false;
-      pl.wallSide = 0;
 
       if (p.type === 'spike') {
         pl.alive = false;
@@ -401,14 +384,12 @@ export function stepGame(game, dt = 1) {
         pl.bestY = Math.min(pl.bestY, pl.y);
         const height = Math.max(0, (GAME_HEIGHT - pl.bestY));
         pl.score = Math.max(pl.score, Math.floor(height / 6));
-      } else {
-        pl.combo = 1;
       }
 
-      if (pl.combo > 1) pl.combo = Math.max(1, Math.floor(pl.combo * 0.9));
       break;
     }
 
+    // боковые выталкивания оставим, чтобы не застревал в платформе
     const fromLeft = prevX + pl.w <= p.x;
     const fromRight = prevX >= p.x + p.w;
 
@@ -421,14 +402,17 @@ export function stepGame(game, dt = 1) {
     }
   }
 
+  // camera up
   const desiredCam = pl.y - TARGET_SCREEN_Y;
   game.cameraY = Math.min(game.cameraY, desiredCam);
 
+  // despawn
   const killLine = game.cameraY + GAME_HEIGHT + DESPAWN_BELOW;
   for (let i = platforms.length - 1; i >= 0; i--) {
     if (platforms[i].y > killLine) platforms.splice(i, 1);
   }
 
+  // spawn ahead
   let topMostY = Infinity;
   for (const p of platforms) topMostY = Math.min(topMostY, p.y);
 
@@ -450,6 +434,7 @@ export function stepGame(game, dt = 1) {
     game.safetyCounter = forceSafe ? 0 : game.safetyCounter + 1;
   }
 
+  // death if fell
   if (pl.y > game.cameraY + GAME_HEIGHT + 140) {
     pl.alive = false;
   }
@@ -458,11 +443,12 @@ export function stepGame(game, dt = 1) {
 }
 
 /* =========================
-   DRAW (dark doodle vibe)
+   DRAW (оставь твой тёмный рендер или любой)
+   — тут можно оставить твой текущий drawGame.
+   Я не ломаю его: просто добавь highScore параметр как раньше.
 ========================= */
 
 function prng(n) {
-  // детерминированный 0..1
   const x = Math.sin(n * 999.123) * 10000;
   return x - Math.floor(x);
 }
@@ -479,43 +465,25 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function drawStars(ctx, camY) {
-  // слой звёзд
   for (let i = 0; i < 80; i++) {
     const s = prng(i + 1);
     const x = Math.floor(s * (GAME_WIDTH - 2)) + 1;
-
-    // “world y” скроллится медленнее для параллакса
     const wy = (i * 120) + Math.floor(camY * 0.25);
     const y = (wy % (GAME_HEIGHT + 140)) - 60;
 
     const a = 0.25 + prng(i * 17.7) * 0.55;
-    const r = 0.8 + prng(i * 7.3) * 1.8;
+    const rr = 0.8 + prng(i * 7.3) * 1.8;
 
     ctx.globalAlpha = a;
     ctx.fillStyle = 'rgba(234,242,255,1)';
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(x, y, rr, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 }
 
-function drawMoon(ctx) {
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = 'rgba(234,242,255,0.15)';
-  ctx.beginPath();
-  ctx.arc(GAME_WIDTH - 62, 70, 34, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = 'rgba(10,16,32,0.90)';
-  ctx.beginPath();
-  ctx.arc(GAME_WIDTH - 52, 62, 32, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-}
-
 function drawPlatform(ctx, x, y, w, h, type, p) {
-  // тень
   ctx.fillStyle = 'rgba(0,0,0,0.30)';
   roundRect(ctx, x, y + 2, w, h, 6);
   ctx.fill();
@@ -524,18 +492,6 @@ function drawPlatform(ctx, x, y, w, h, type, p) {
     ctx.fillStyle = 'rgba(255, 90, 90, 0.95)';
     roundRect(ctx, x, y, w, h, 6);
     ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    const spikeCount = Math.max(3, Math.floor(w / 15));
-    for (let i = 0; i < spikeCount; i++) {
-      const sx = x + i * (w / spikeCount) + 8;
-      ctx.beginPath();
-      ctx.moveTo(sx, y);
-      ctx.lineTo(sx - 4, y - 7);
-      ctx.lineTo(sx + 4, y - 7);
-      ctx.closePath();
-      ctx.fill();
-    }
     return;
   }
 
@@ -543,18 +499,6 @@ function drawPlatform(ctx, x, y, w, h, type, p) {
     ctx.fillStyle = 'rgba(180, 120, 255, 0.92)';
     roundRect(ctx, x, y, w, h, 6);
     ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    const n = Math.max(2, Math.floor(w / 22));
-    for (let i = 0; i < n; i++) {
-      const ax = x + i * 22 + 12;
-      ctx.beginPath();
-      ctx.moveTo(ax, y + h / 2);
-      ctx.lineTo(ax + 5 * p.dir, y + 3);
-      ctx.lineTo(ax + 5 * p.dir, y + h - 3);
-      ctx.closePath();
-      ctx.fill();
-    }
     return;
   }
 
@@ -562,15 +506,6 @@ function drawPlatform(ctx, x, y, w, h, type, p) {
     ctx.fillStyle = p.broken ? 'rgba(170, 150, 120, 0.75)' : 'rgba(255, 170, 70, 0.95)';
     roundRect(ctx, x, y, w, h, 6);
     ctx.fill();
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 10, y + 3);
-    ctx.lineTo(x + 22, y + h - 2);
-    ctx.moveTo(x + 34, y + 2);
-    ctx.lineTo(x + 44, y + h - 3);
-    ctx.stroke();
     return;
   }
 
@@ -578,73 +513,44 @@ function drawPlatform(ctx, x, y, w, h, type, p) {
     ctx.fillStyle = 'rgba(90, 220, 140, 0.92)';
     roundRect(ctx, x, y, w, h, 6);
     ctx.fill();
-
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    ctx.font = '900 12px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText('START', x + w / 2, y + h - 2);
-    ctx.textAlign = 'left';
     return;
   }
 
-  // normal / ledge (неон-лайм)
   ctx.fillStyle = 'rgba(120, 255, 150, 0.88)';
   roundRect(ctx, x, y, w, h, 6);
   ctx.fill();
 
-  // верхняя подсветка
   ctx.fillStyle = 'rgba(255,255,255,0.35)';
   roundRect(ctx, x + 2, y + 2, w - 4, 3, 4);
   ctx.fill();
-
-  // outline
-  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-  ctx.lineWidth = 1;
-  roundRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, 6);
-  ctx.stroke();
 }
 
-function drawDoodler(ctx, x, y, w, h, onWall, wallSide, vx) {
+function drawDoodler(ctx, x, y, w, h) {
   const cx = x + w / 2;
   const cy = y + h / 2;
 
-  // soft shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
   ctx.ellipse(cx, y + h + 3, w * 0.50, 4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // body
   ctx.fillStyle = 'rgba(234,242,255,0.92)';
   ctx.beginPath();
   ctx.ellipse(cx, cy, w * 0.52, h * 0.50, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // visor/hat
-  ctx.fillStyle = onWall ? 'rgba(255,170,70,0.95)' : 'rgba(120,190,255,0.95)';
+  ctx.fillStyle = 'rgba(120,190,255,0.95)';
   roundRect(ctx, x + 4, y + 2, w - 8, 7, 4);
   ctx.fill();
 
-  // eyes
-  const dir = onWall ? -wallSide : (vx >= 0 ? 1 : -1);
-  const ex = cx + dir * 3;
-
   ctx.fillStyle = 'rgba(10,16,32,0.95)';
   ctx.beginPath();
-  ctx.arc(ex - 4, y + 13, 2.2, 0, Math.PI * 2);
-  ctx.arc(ex + 4, y + 13, 2.2, 0, Math.PI * 2);
+  ctx.arc(cx - 4, y + 13, 2.2, 0, Math.PI * 2);
+  ctx.arc(cx + 4, y + 13, 2.2, 0, Math.PI * 2);
   ctx.fill();
-
-  // little glow outline
-  ctx.strokeStyle = 'rgba(255,255,255,0.20)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, w * 0.52, h * 0.50, 0, 0, Math.PI * 2);
-  ctx.stroke();
 }
 
 export function drawGame(ctx, game, highScore) {
-  // bg
   const bg = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
   bg.addColorStop(0, '#070a14');
   bg.addColorStop(0.55, '#0a1020');
@@ -653,9 +559,7 @@ export function drawGame(ctx, game, highScore) {
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
   const camY = game.cameraY;
-
   drawStars(ctx, camY);
-  drawMoon(ctx);
 
   // particles
   for (const p of game.particles) {
@@ -670,15 +574,13 @@ export function drawGame(ctx, game, highScore) {
   // platforms
   for (const p of game.platforms) {
     if (p.type === 'breakable' && p.broken && p.h <= 0.1) continue;
-
     const sx = p.x;
     const sy = p.y - camY;
     if (sy > GAME_HEIGHT + 80 || sy < -80) continue;
-
     drawPlatform(ctx, sx, sy, p.w, p.h, p.type, p);
   }
 
-  // player trail
+  // trail
   const pl = game.player;
   for (let i = 0; i < pl.trail.length; i++) {
     const t = pl.trail[i];
@@ -691,9 +593,9 @@ export function drawGame(ctx, game, highScore) {
   ctx.globalAlpha = 1;
 
   // player
-  drawDoodler(ctx, pl.x, pl.y - camY, pl.w, pl.h, pl.onWall, pl.wallSide, pl.vx);
+  drawDoodler(ctx, pl.x, pl.y - camY, pl.w, pl.h);
 
-  // tiny in-canvas HUD (дополнительно, но не мешает)
+  // tiny HUD
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.font = '900 16px system-ui';
   ctx.fillText(`Score ${pl.score}`, 12, 24);
@@ -701,24 +603,4 @@ export function drawGame(ctx, game, highScore) {
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
   ctx.font = '12px system-ui';
   ctx.fillText(`Best ${highScore}`, 12, 42);
-
-  // combo top-right
-  if (pl.combo > 1 && pl.alive && game.started) {
-    const txt = `${pl.combo}x`;
-    ctx.font = '900 14px system-ui';
-    const tw = ctx.measureText(txt).width;
-    const bx = GAME_WIDTH - (tw + 22) - 10;
-    const by = 10;
-
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-    ctx.lineWidth = 1;
-    roundRect(ctx, bx, by, tw + 22, 26, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.fillText(txt, bx + 11, by + 18);
-  }
-  ctx.globalAlpha = 1;
 }

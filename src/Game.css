@@ -1,4 +1,4 @@
-/* Game.css (Doodle Jump style) */
+/* Game.css - Dark Doodle Jump vibe */
 
 .dj-page{
   min-height: 100vh;
@@ -7,60 +7,58 @@
   justify-content:center;
   padding: 18px;
   background:
-    radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,0.9), rgba(255,255,255,0) 60%),
-    linear-gradient(180deg, #bfe9ff 0%, #e9fbff 35%, #f7fff0 100%);
+    radial-gradient(900px 500px at 30% 15%, rgba(120, 190, 255, 0.10), transparent 60%),
+    radial-gradient(800px 450px at 70% 10%, rgba(180, 120, 255, 0.10), transparent 60%),
+    linear-gradient(180deg, #070a14 0%, #0a1020 40%, #05060d 100%);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #eaf2ff;
 }
 
 .dj-shell{
-  width: 380px;
+  width: 390px;
   max-width: calc(100vw - 24px);
   display:flex;
   flex-direction:column;
   gap: 12px;
 }
 
-/* верхний HUD */
-.dj-header{
+.dj-topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap: 10px;
   padding: 10px 12px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.75);
-  border: 2px solid rgba(30, 90, 30, 0.12);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
   backdrop-filter: blur(10px);
 }
 
-.dj-title{
+.dj-logo{
   text-align:center;
-  font-weight: 900;
+  font-weight: 1000;
   letter-spacing: -0.6px;
-  line-height: 0.95;
-  font-size: 20px;
-  color: #195a2a;
-  text-shadow: 0 2px 0 rgba(255,255,255,0.8);
-  position: relative;
-  padding: 4px 10px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
-  border: 2px dashed rgba(25, 90, 42, 0.18);
+  line-height: 1;
+  font-size: 18px;
+  color: rgba(234,242,255,0.92);
 }
-
-.dj-sub{
-  display:block;
+.dj-logo span{
+  display:inline-block;
+  margin-left: 6px;
+  color: rgba(120,190,255,0.95);
+}
+.dj-logo-sub{
   margin-top: 6px;
   font-size: 11px;
-  font-weight: 700;
-  color: rgba(25,90,42,0.75);
-  letter-spacing: 0.4px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+  color: rgba(234,242,255,0.55);
 }
 
-.dj-badge{
-  min-width: 92px;
+.dj-stat{
+  min-width: 86px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -68,40 +66,39 @@
   gap: 2px;
   padding: 8px 10px;
   border-radius: 16px;
-  background: linear-gradient(180deg, #fff, #f4ffef);
-  border: 2px solid rgba(25, 90, 42, 0.15);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
 }
 
-.dj-badge-label{
+.dj-stat-label{
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.8px;
-  color: rgba(25,90,42,0.75);
+  color: rgba(234,242,255,0.55);
 }
 
-.dj-badge-value{
+.dj-stat-value{
   font-size: 18px;
   font-weight: 1000;
-  color: #195a2a;
+  color: rgba(234,242,255,0.95);
 }
 
-/* игровой контейнер */
+/* Game container */
 .dj-container{
   position:relative;
   width: 360px;
   height: 640px;
   margin: 0 auto;
-  border-radius: 26px;
+  border-radius: 24px;
   overflow:hidden;
   touch-action: none;
   user-select:none;
 
-  border: 3px solid rgba(25, 90, 42, 0.20);
-  background: #cfefff;
+  background: #0b1020;
+  border: 1px solid rgba(255,255,255,0.12);
   box-shadow:
-    0 18px 45px rgba(0,0,0,0.18),
-    inset 0 0 0 2px rgba(255,255,255,0.6);
+    0 22px 60px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
 }
 
 .dj-container canvas{
@@ -111,7 +108,7 @@
   cursor: pointer;
 }
 
-/* оверлей старт / game over */
+/* Overlay */
 .dj-overlay{
   position:absolute;
   inset:0;
@@ -119,105 +116,87 @@
   align-items:center;
   justify-content:center;
   padding: 18px;
-  background: radial-gradient(800px 600px at 50% 30%, rgba(255,255,255,0.85), rgba(255,255,255,0.35));
+  background:
+    radial-gradient(700px 450px at 50% 35%, rgba(255,255,255,0.08), rgba(0,0,0,0.65));
+  backdrop-filter: blur(6px);
 }
 
 .dj-card{
   width: 100%;
-  max-width: 310px;
-  background: rgba(255,255,255,0.92);
-  border-radius: 20px;
-  border: 3px solid rgba(25, 90, 42, 0.18);
-  box-shadow: 0 18px 60px rgba(0,0,0,0.18);
-  padding: 16px 16px 14px;
+  max-width: 320px;
+  background: rgba(10, 14, 26, 0.88);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.60);
+  padding: 16px;
   text-align:center;
-  backdrop-filter: blur(8px);
 }
 
 .dj-card-title{
   font-size: 26px;
   font-weight: 1000;
   letter-spacing: -0.6px;
-  color: #195a2a;
-  text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+  color: rgba(234,242,255,0.96);
 }
 
 .dj-danger{
-  color: #b91c1c;
+  color: rgba(255, 120, 120, 0.95);
 }
 
 .dj-card-text{
   margin-top: 10px;
   font-size: 14px;
-  line-height: 1.5;
-  color: rgba(10, 40, 18, 0.8);
+  line-height: 1.55;
+  color: rgba(234,242,255,0.72);
 }
 
-.dj-pill{
-  margin: 14px auto 0;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 1000;
+.dj-card-hint{
+  margin-top: 12px;
   font-size: 12px;
-  letter-spacing: 0.8px;
-  color: #0a2b12;
-  background: linear-gradient(180deg, #f7ffef, #e8ffd6);
-  border: 2px dashed rgba(25, 90, 42, 0.28);
-  animation: djPulse 1.4s infinite ease-in-out;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(234,242,255,0.45);
 }
 
-@keyframes djPulse{
-  0%{ transform: translateY(0); opacity: .75;}
-  50%{ transform: translateY(-2px); opacity: 1;}
-  100%{ transform: translateY(0); opacity: .75;}
-}
-
-.dj-restart{
+.dj-btn{
   margin-top: 14px;
   width: 100%;
   padding: 14px 16px;
   border: none;
-  border-radius: 16px;
+  border-radius: 14px;
   cursor: pointer;
   font-weight: 1000;
   font-size: 16px;
   letter-spacing: -0.2px;
-
-  color: #0b2a12;
-  background: linear-gradient(180deg, #b7ff7a, #79e64a);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.14);
-  border: 2px solid rgba(25, 90, 42, 0.22);
-  transition: transform 0.12s ease, filter 0.12s ease;
+  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
 }
 
-.dj-restart:hover{
-  transform: translateY(-1px);
-  filter: brightness(1.02);
-}
-.dj-restart:active{
+.dj-btn:active{
   transform: translateY(1px) scale(0.99);
 }
 
-/* нижняя подсказка */
-.dj-hint{
+.dj-btn-primary{
+  color: #06101f;
+  background: linear-gradient(180deg, rgba(120,190,255,1), rgba(120,190,255,0.72));
+  box-shadow: 0 16px 30px rgba(120,190,255,0.22);
+}
+
+.dj-btn-primary:hover{
+  filter: brightness(1.05);
+}
+
+/* In-game hint */
+.dj-hud-hint{
   position:absolute;
   left: 12px;
   right: 12px;
   bottom: 10px;
   text-align:center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.6px;
-  color: rgba(10,40,18,0.55);
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+  color: rgba(234,242,255,0.35);
   pointer-events:none;
-}
-
-/* mobile */
-@media (max-width: 420px){
-  .dj-shell{ width: 360px; }
-  .dj-container{ width: 360px; height: 640px; }
 }

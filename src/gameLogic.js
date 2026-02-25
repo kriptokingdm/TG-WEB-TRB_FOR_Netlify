@@ -3,19 +3,17 @@ export const GAME_WIDTH = 360;
 export const GAME_HEIGHT = 640;
 
 /* =========================
-   BASE PHYSICS (будет скейлиться сложностью)
+   BASE PHYSICS
 ========================= */
 const BASE_GRAVITY = 0.55;
 const BASE_MAX_FALL = 14;
 const BASE_WALL_SLIDE = 2.2;
 
-// Прыжки
 const BASE_WALL_KICK_X = 9.2;
 const BASE_WALL_KICK_Y = 12.0;
 const BASE_GROUND_JUMP = 11.2;
 const AIR_NUDGE = 0.7;
 
-// Генерация мира
 const MARGIN_X = 18;
 const PLATFORM_H = 12;
 
@@ -29,10 +27,8 @@ const GAP_Y_MIN = 78;
 const GAP_Y_MAX = 118;
 
 const TARGET_SCREEN_Y = GAME_HEIGHT * 0.35;
-
 const DESPAWN_BELOW = 260;
 const SPAWN_AHEAD = 240;
-
 const SAFETY_EVERY = 5;
 
 /* =========================
@@ -114,7 +110,6 @@ export function createPlayer() {
 /* =========================
    PLATFORMS
 ========================= */
-
 function createStartPlatform(y) {
   return {
     id: id(),
@@ -160,6 +155,7 @@ function pickPlatformType(diff, preferLedge) {
   const spike = diff.spikeChance;
   const moving = diff.movingChance;
   const brk = diff.breakChance;
+
   const baseNormal = preferLedge ? 0.78 : 0.62;
 
   return pickWeighted([
@@ -292,7 +288,7 @@ export function jumpAction(game) {
 
   const px = pl.x + pl.w / 2;
   const py = pl.y + pl.h;
-  const color = pl.onWall ? '#ff8a00' : '#2ea8ff';
+  const color = pl.onWall ? 'rgba(255,170,70,0.95)' : 'rgba(120,190,255,0.95)';
   game.particles.push(...createParticles(px, py, color, 8));
 
   if (pl.onWall) {
@@ -326,14 +322,12 @@ export function stepGame(game, dt = 1) {
   const platforms = game.platforms;
   const diff = difficultyFromScore(pl.score);
 
-  // trail
-  pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.20 });
+  pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.18 });
   if (pl.trail.length > 10) pl.trail.pop();
-  pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.26 - i * 0.024)));
+  pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.22 - i * 0.022)));
 
   updateParticles(game.particles, dt);
 
-  // platform updates
   for (const p of platforms) {
     if (p.type === 'moving' && !p.broken) {
       p.x += p.dir * p.speed * dt;
@@ -349,7 +343,6 @@ export function stepGame(game, dt = 1) {
     }
   }
 
-  // physics
   const prevX = pl.x;
   const prevY = pl.y;
 
@@ -363,7 +356,6 @@ export function stepGame(game, dt = 1) {
 
   pl.vx *= Math.pow(0.992, dt);
 
-  // walls bounds
   pl.onWall = false;
   pl.wallSide = 0;
 
@@ -379,7 +371,6 @@ export function stepGame(game, dt = 1) {
     pl.vx = 0;
   }
 
-  // collisions
   pl.onGround = false;
 
   for (const p of platforms) {
@@ -403,7 +394,7 @@ export function stepGame(game, dt = 1) {
 
       if (p.type === 'breakable' && !p.broken) {
         p.broken = true;
-        game.particles.push(...createParticles(pl.x + pl.w / 2, pl.y + pl.h, '#ff8a00', 10));
+        game.particles.push(...createParticles(pl.x + pl.w / 2, pl.y + pl.h, 'rgba(255,170,70,0.95)', 10));
       }
 
       if (p.type !== 'start') {
@@ -415,7 +406,6 @@ export function stepGame(game, dt = 1) {
       }
 
       if (pl.combo > 1) pl.combo = Math.max(1, Math.floor(pl.combo * 0.9));
-
       break;
     }
 
@@ -431,17 +421,14 @@ export function stepGame(game, dt = 1) {
     }
   }
 
-  // camera (only up)
   const desiredCam = pl.y - TARGET_SCREEN_Y;
   game.cameraY = Math.min(game.cameraY, desiredCam);
 
-  // despawn below camera
   const killLine = game.cameraY + GAME_HEIGHT + DESPAWN_BELOW;
   for (let i = platforms.length - 1; i >= 0; i--) {
     if (platforms[i].y > killLine) platforms.splice(i, 1);
   }
 
-  // spawn ahead
   let topMostY = Infinity;
   for (const p of platforms) topMostY = Math.min(topMostY, p.y);
 
@@ -463,7 +450,6 @@ export function stepGame(game, dt = 1) {
     game.safetyCounter = forceSafe ? 0 : game.safetyCounter + 1;
   }
 
-  // death
   if (pl.y > game.cameraY + GAME_HEIGHT + 140) {
     pl.alive = false;
   }
@@ -472,39 +458,81 @@ export function stepGame(game, dt = 1) {
 }
 
 /* =========================
-   DRAW (Doodle Jump look)
+   DRAW (dark doodle vibe)
 ========================= */
 
-function drawCloud(ctx, x, y, s, alpha = 1) {
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = 'rgba(255,255,255,0.95)';
-  ctx.beginPath();
-  ctx.arc(x, y, 12 * s, 0, Math.PI * 2);
-  ctx.arc(x + 14 * s, y - 6 * s, 14 * s, 0, Math.PI * 2);
-  ctx.arc(x + 28 * s, y, 12 * s, 0, Math.PI * 2);
-  ctx.arc(x + 14 * s, y + 6 * s, 13 * s, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.fill();
+function prng(n) {
+  // детерминированный 0..1
+  const x = Math.sin(n * 999.123) * 10000;
+  return x - Math.floor(x);
+}
 
+function roundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function drawStars(ctx, camY) {
+  // слой звёзд
+  for (let i = 0; i < 80; i++) {
+    const s = prng(i + 1);
+    const x = Math.floor(s * (GAME_WIDTH - 2)) + 1;
+
+    // “world y” скроллится медленнее для параллакса
+    const wy = (i * 120) + Math.floor(camY * 0.25);
+    const y = (wy % (GAME_HEIGHT + 140)) - 60;
+
+    const a = 0.25 + prng(i * 17.7) * 0.55;
+    const r = 0.8 + prng(i * 7.3) * 1.8;
+
+    ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(234,242,255,1)';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.globalAlpha = 1;
 }
 
-function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
-  // base shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.fillRect(x, y + 2, w, h);
+function drawMoon(ctx) {
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = 'rgba(234,242,255,0.15)';
+  ctx.beginPath();
+  ctx.arc(GAME_WIDTH - 62, 70, 34, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(10,16,32,0.90)';
+  ctx.beginPath();
+  ctx.arc(GAME_WIDTH - 52, 62, 32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawPlatform(ctx, x, y, w, h, type, p) {
+  // тень
+  ctx.fillStyle = 'rgba(0,0,0,0.30)';
+  roundRect(ctx, x, y + 2, w, h, 6);
+  ctx.fill();
 
   if (type === 'spike') {
-    ctx.fillStyle = '#ff3b30';
-    ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillStyle = 'rgba(255, 90, 90, 0.95)';
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     const spikeCount = Math.max(3, Math.floor(w / 15));
     for (let i = 0; i < spikeCount; i++) {
       const sx = x + i * (w / spikeCount) + 8;
       ctx.beginPath();
       ctx.moveTo(sx, y);
-      ctx.lineTo(sx - 4, y - 8);
-      ctx.lineTo(sx + 4, y - 8);
+      ctx.lineTo(sx - 4, y - 7);
+      ctx.lineTo(sx + 4, y - 7);
       ctx.closePath();
       ctx.fill();
     }
@@ -512,12 +540,13 @@ function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
   }
 
   if (type === 'moving') {
-    // purple moving platform
-    ctx.fillStyle = '#7c3aed';
-    ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    const arrowCount = Math.max(2, Math.floor(w / 22));
-    for (let i = 0; i < arrowCount; i++) {
+    ctx.fillStyle = 'rgba(180, 120, 255, 0.92)';
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    const n = Math.max(2, Math.floor(w / 22));
+    for (let i = 0; i < n; i++) {
       const ax = x + i * 22 + 12;
       ctx.beginPath();
       ctx.moveTo(ax, y + h / 2);
@@ -530,8 +559,10 @@ function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
   }
 
   if (type === 'breakable') {
-    ctx.fillStyle = p.broken ? '#b89b6a' : '#f59e0b';
-    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = p.broken ? 'rgba(170, 150, 120, 0.75)' : 'rgba(255, 170, 70, 0.95)';
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.fill();
+
     ctx.strokeStyle = 'rgba(0,0,0,0.25)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -544,9 +575,11 @@ function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
   }
 
   if (type === 'start') {
-    ctx.fillStyle = '#22c55e';
-    ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fillStyle = 'rgba(90, 220, 140, 0.92)';
+    roundRect(ctx, x, y, w, h, 6);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.font = '900 12px system-ui';
     ctx.textAlign = 'center';
     ctx.fillText('START', x + w / 2, y + h - 2);
@@ -554,98 +587,75 @@ function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
     return;
   }
 
-  // normal/ledge — классические зелёные
-  ctx.fillStyle = '#29b34a';
-  ctx.fillRect(x, y, w, h);
+  // normal / ledge (неон-лайм)
+  ctx.fillStyle = 'rgba(120, 255, 150, 0.88)';
+  roundRect(ctx, x, y, w, h, 6);
+  ctx.fill();
 
-  // светлая полоска сверху как в doodle jump
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.fillRect(x, y, w, 3);
+  // верхняя подсветка
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  roundRect(ctx, x + 2, y + 2, w - 4, 3, 4);
+  ctx.fill();
 
-  // тонкий контур
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  // outline
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  roundRect(ctx, x + 0.5, y + 0.5, w - 1, h - 1, 6);
+  ctx.stroke();
 }
 
 function drawDoodler(ctx, x, y, w, h, onWall, wallSide, vx) {
-  // тело (овал)
   const cx = x + w / 2;
   const cy = y + h / 2;
 
-  // тень
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  // soft shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath();
-  ctx.ellipse(cx + 1, y + h + 2, w * 0.45, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, y + h + 3, w * 0.50, 4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // main body
-  ctx.fillStyle = '#ffd54a';
+  // body
+  ctx.fillStyle = 'rgba(234,242,255,0.92)';
   ctx.beginPath();
   ctx.ellipse(cx, cy, w * 0.52, h * 0.50, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // belly stripes
-  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(x + 6, cy);
-  ctx.lineTo(x + w - 6, cy);
-  ctx.stroke();
-
-  // legs
-  ctx.fillStyle = '#ff7a18';
-  ctx.fillRect(x + 5, y + h - 6, 6, 6);
-  ctx.fillRect(x + w - 11, y + h - 6, 6, 6);
-
-  // hat
-  ctx.fillStyle = '#3b82f6';
-  ctx.fillRect(x + 4, y + 3, w - 8, 6);
-  ctx.fillStyle = '#1d4ed8';
-  ctx.fillRect(x + 7, y, w - 14, 5);
+  // visor/hat
+  ctx.fillStyle = onWall ? 'rgba(255,170,70,0.95)' : 'rgba(120,190,255,0.95)';
+  roundRect(ctx, x + 4, y + 2, w - 8, 7, 4);
+  ctx.fill();
 
   // eyes
   const dir = onWall ? -wallSide : (vx >= 0 ? 1 : -1);
   const ex = cx + dir * 3;
 
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = 'rgba(10,16,32,0.95)';
   ctx.beginPath();
-  ctx.arc(ex - 4, y + 12, 3, 0, Math.PI * 2);
-  ctx.arc(ex + 4, y + 12, 3, 0, Math.PI * 2);
+  ctx.arc(ex - 4, y + 13, 2.2, 0, Math.PI * 2);
+  ctx.arc(ex + 4, y + 13, 2.2, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#111';
+  // little glow outline
+  ctx.strokeStyle = 'rgba(255,255,255,0.20)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(ex - 4 + dir * 1, y + 12, 1.4, 0, Math.PI * 2);
-  ctx.arc(ex + 4 + dir * 1, y + 12, 1.4, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.ellipse(cx, cy, w * 0.52, h * 0.50, 0, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
-export function drawGame(ctx, game) {
-  // sky gradient
+export function drawGame(ctx, game, highScore) {
+  // bg
   const bg = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  bg.addColorStop(0, '#bfe9ff');
-  bg.addColorStop(0.55, '#e9fbff');
-  bg.addColorStop(1, '#f3ffe8');
+  bg.addColorStop(0, '#070a14');
+  bg.addColorStop(0.55, '#0a1020');
+  bg.addColorStop(1, '#05060d');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
   const camY = game.cameraY;
 
-  // clouds (parallax-ish): based on cameraY
-  // рисуем немного облаков "по сетке", чтобы не хранить их в стейте
-  for (let i = -2; i < 12; i++) {
-    const worldY = Math.floor((camY + i * 120) / 120) * 120;
-    const seed = (worldY * 9301 + 49297) % 233280;
-    const r = seed / 233280;
-
-    const x = 20 + r * (GAME_WIDTH - 80);
-    const y = worldY - camY + 40;
-    const s = 0.75 + (r * 0.6);
-    const a = 0.35 + (r * 0.35);
-
-    drawCloud(ctx, x, y, s, a);
-  }
+  drawStars(ctx, camY);
+  drawMoon(ctx);
 
   // particles
   for (const p of game.particles) {
@@ -657,13 +667,6 @@ export function drawGame(ctx, game) {
   }
   ctx.globalAlpha = 1;
 
-  // walls hint subtle
-  if (game.started && game.player.alive && game.player.onWall) {
-    ctx.fillStyle = 'rgba(0,0,0,0.06)';
-    const wx = game.player.wallSide === -1 ? 0 : GAME_WIDTH - 8;
-    ctx.fillRect(wx, 0, 8, GAME_HEIGHT);
-  }
-
   // platforms
   for (const p of game.platforms) {
     if (p.type === 'breakable' && p.broken && p.h <= 0.1) continue;
@@ -672,7 +675,7 @@ export function drawGame(ctx, game) {
     const sy = p.y - camY;
     if (sy > GAME_HEIGHT + 80 || sy < -80) continue;
 
-    drawPlatformDoodle(ctx, sx, sy, p.w, p.h, p.type, p);
+    drawPlatform(ctx, sx, sy, p.w, p.h, p.type, p);
   }
 
   // player trail
@@ -680,49 +683,42 @@ export function drawGame(ctx, game) {
   for (let i = 0; i < pl.trail.length; i++) {
     const t = pl.trail[i];
     ctx.globalAlpha = t.a;
-    ctx.fillStyle = 'rgba(46,168,255,0.35)';
+    ctx.fillStyle = 'rgba(120,190,255,0.18)';
     ctx.beginPath();
-    ctx.ellipse(t.x + pl.w / 2, (t.y - camY) + pl.h / 2, pl.w * 0.40, pl.h * 0.38, 0, 0, Math.PI * 2);
+    ctx.ellipse(t.x + pl.w / 2, (t.y - camY) + pl.h / 2, pl.w * 0.44, pl.h * 0.40, 0, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 
   // player
-  const px = pl.x;
-  const py = pl.y - camY;
-  drawDoodler(ctx, px, py, pl.w, pl.h, pl.onWall, pl.wallSide, pl.vx);
+  drawDoodler(ctx, pl.x, pl.y - camY, pl.w, pl.h, pl.onWall, pl.wallSide, pl.vx);
 
-  // combo small pop (top-right)
+  // tiny in-canvas HUD (дополнительно, но не мешает)
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = '900 16px system-ui';
+  ctx.fillText(`Score ${pl.score}`, 12, 24);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = '12px system-ui';
+  ctx.fillText(`Best ${highScore}`, 12, 42);
+
+  // combo top-right
   if (pl.combo > 1 && pl.alive && game.started) {
     const txt = `${pl.combo}x`;
-    ctx.font = '900 16px system-ui';
-    const w = ctx.measureText(txt).width;
-
-    const padX = 10;
-    const padY = 6;
-    const bx = GAME_WIDTH - (w + padX * 2) - 10;
+    ctx.font = '900 14px system-ui';
+    const tw = ctx.measureText(txt).width;
+    const bx = GAME_WIDTH - (tw + 22) - 10;
     const by = 10;
-    const bh = 28;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, tw + 22, 26, 12);
+    ctx.fill();
+    ctx.stroke();
 
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.strokeStyle = 'rgba(25,90,42,0.18)';
-    ctx.lineWidth = 2;
-    roundRect(ctx, bx, by, w + padX * 2, bh, 12, true, true);
-
-    ctx.fillStyle = '#195a2a';
-    ctx.fillText(txt, bx + padX, by + 19);
+    ctx.fillText(txt, bx + 11, by + 18);
   }
-}
-
-function roundRect(ctx, x, y, w, h, r, fill, stroke) {
-  const rr = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rr);
-  ctx.arcTo(x + w, y + h, x, y + h, rr);
-  ctx.arcTo(x, y + h, x, y, rr);
-  ctx.arcTo(x, y, x + w, y, rr);
-  ctx.closePath();
-  if (fill) ctx.fill();
-  if (stroke) ctx.stroke();
+  ctx.globalAlpha = 1;
 }

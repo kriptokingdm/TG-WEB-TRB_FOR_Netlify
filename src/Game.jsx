@@ -48,7 +48,7 @@ export default function Game() {
       }
 
       // рендер
-      drawGame(ctx, g, highScore);
+      drawGame(ctx, g);
 
       // синхронизируем React-стейт редко (чтобы не лагало)
       if (g._dirty) {
@@ -61,7 +61,7 @@ export default function Game() {
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [highScore]);
+  }, []);
 
   const onTap = () => {
     const g = gameRef.current;
@@ -96,25 +96,69 @@ export default function Game() {
   };
 
   return (
-     <div className="wk-page">
-    <div className="wk-container">
-      <canvas
-        ref={canvasRef}
-        width={GAME_WIDTH}
-        height={GAME_HEIGHT}
-        onPointerDown={onTap}
-      />
+    <div className="dj-page">
+      <div className="dj-shell">
+        <div className="dj-header">
+          <div className="dj-badge">
+            <span className="dj-badge-label">SCORE</span>
+            <span className="dj-badge-value">{game.player.score}</span>
+          </div>
 
-      {!game.player.alive && (
-        <button className="wk-restart" onClick={onRestart}>
-          Play Again
-        </button>
-      )}
+          <div className="dj-title">
+            DOODLE<br />JUMP
+            <span className="dj-sub">wall kick edition</span>
+          </div>
 
-      {!game.started && game.player.alive && (
-        <div className="wk-start-hint">Tap anywhere to start</div>
-      )}
-    </div>
+          <div className="dj-badge">
+            <span className="dj-badge-label">BEST</span>
+            <span className="dj-badge-value">
+              {Math.max(highScore, game.player.score)}
+            </span>
+          </div>
+        </div>
+
+        <div className="dj-container">
+          <canvas
+            ref={canvasRef}
+            width={GAME_WIDTH}
+            height={GAME_HEIGHT}
+            onPointerDown={onTap}
+          />
+
+          {!game.started && game.player.alive && (
+            <div className="dj-overlay">
+              <div className="dj-card">
+                <div className="dj-card-title">Tap to Start</div>
+                <div className="dj-card-text">
+                  Прыгай от стен как в Doodle Jump ✨
+                </div>
+                <div className="dj-pill">TAP ANYWHERE</div>
+              </div>
+            </div>
+          )}
+
+          {!game.player.alive && (
+            <div className="dj-overlay">
+              <div className="dj-card">
+                <div className="dj-card-title dj-danger">Game Over</div>
+                <div className="dj-card-text">
+                  Score: <b>{game.player.score}</b>
+                  <br />
+                  Best: <b>{Math.max(highScore, game.player.score)}</b>
+                </div>
+
+                <button className="dj-restart" onClick={onRestart}>
+                  Play Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="dj-hint">
+            {game.started && game.player.alive ? 'Tap to jump' : ' '}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

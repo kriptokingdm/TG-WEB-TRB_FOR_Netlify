@@ -11,7 +11,7 @@ const BASE_WALL_SLIDE = 2.2;
 
 // Прыжки
 const BASE_WALL_KICK_X = 9.2;
-const BASE_WALL_KICK_Y = 12.0; // вверх
+const BASE_WALL_KICK_Y = 12.0;
 const BASE_GROUND_JUMP = 11.2;
 const AIR_NUDGE = 0.7;
 
@@ -19,26 +19,20 @@ const AIR_NUDGE = 0.7;
 const MARGIN_X = 18;
 const PLATFORM_H = 12;
 
-// Платформы-уступы (короткие "ступеньки" у стен как в Wall Kickers)
 const LEDGE_W_MIN = 34;
 const LEDGE_W_MAX = 68;
 
-// “обычные” платформы (чуть длиннее)
 const PLATFORM_W_MIN = 54;
 const PLATFORM_W_MAX = 96;
 
-// Гап по Y (будет увеличиваться с прогрессом, но без тупиков)
 const GAP_Y_MIN = 78;
 const GAP_Y_MAX = 118;
 
-// Сколько держать игрока в верхней трети
 const TARGET_SCREEN_Y = GAME_HEIGHT * 0.35;
 
-// Спавн/деспавн
 const DESPAWN_BELOW = 260;
 const SPAWN_AHEAD = 240;
 
-// Safety: гарантируем “спасательную” платформу
 const SAFETY_EVERY = 5;
 
 /* =========================
@@ -51,7 +45,6 @@ function clamp(v, a, b) {
   return Math.max(a, Math.min(b, v));
 }
 function pickWeighted(items) {
-  // items: [{v, w}]
   let sum = 0;
   for (const it of items) sum += it.w;
   let r = Math.random() * sum;
@@ -69,14 +62,9 @@ function id() {
 }
 
 /* =========================
-   DIFFICULTY (по score/высоте)
-   - больше spike/moving
-   - меньше ширина
-   - больше gap
-   - чуть сильнее гравитация/скорости
+   DIFFICULTY
 ========================= */
 function difficultyFromScore(score) {
-  // 0..1.2 примерно
   const t = clamp(score / 350, 0, 1);
   return {
     t,
@@ -84,7 +72,7 @@ function difficultyFromScore(score) {
     maxFall: BASE_MAX_FALL + 3.5 * t,
     wallSlide: BASE_WALL_SLIDE + 0.6 * t,
     wallKickX: BASE_WALL_KICK_X + 0.8 * t,
-    wallKickY: BASE_WALL_KICK_Y + 0.6 * t, // чуть выше на сложности
+    wallKickY: BASE_WALL_KICK_Y + 0.6 * t,
     groundJump: BASE_GROUND_JUMP + 0.3 * t,
 
     gapY: clamp(rand(GAP_Y_MIN, GAP_Y_MAX) + 18 * t, GAP_Y_MIN, GAP_Y_MAX + 26),
@@ -104,7 +92,7 @@ function difficultyFromScore(score) {
 export function createPlayer() {
   return {
     x: GAME_WIDTH / 2 - 12,
-    y: GAME_HEIGHT - 140, // world Y
+    y: GAME_HEIGHT - 140,
     w: 24,
     h: 24,
     vx: 0,
@@ -112,7 +100,7 @@ export function createPlayer() {
     alive: true,
 
     onWall: false,
-    wallSide: 0, // -1 left, 1 right
+    wallSide: 0,
     onGround: false,
 
     score: 0,
@@ -125,13 +113,6 @@ export function createPlayer() {
 
 /* =========================
    PLATFORMS
-   Типы:
-   - ledge: короткая у стены (основа Wall Kickers)
-   - normal: обычная
-   - moving: движется по X
-   - breakable: ломается
-   - spike: убивает при касании сверху
-   - start: стартовая
 ========================= */
 
 function createStartPlatform(y) {
@@ -151,20 +132,13 @@ function createStartPlatform(y) {
 }
 
 function createLedge(y, side, diff, forceSafe = false) {
-  // side: -1 left wall, 1 right wall
   const w = clamp(rand(LEDGE_W_MIN, LEDGE_W_MAX) * diff.widthMul, 26, LEDGE_W_MAX);
   const x = side === -1 ? MARGIN_X : (GAME_WIDTH - MARGIN_X - w);
-
-  const type = forceSafe
-    ? 'ledge'
-    : pickPlatformType(diff, /*preferLedge*/ true);
-
+  const type = forceSafe ? 'ledge' : pickPlatformType(diff, true);
   return buildPlatform({ x, y, w, type, diff, safe: forceSafe });
 }
 
 function createCenterishPlatform(y, sideHint, diff, forceSafe = false) {
-  // иногда нужны “не у стены”, но так, чтобы не было тупика.
-  // sideHint влияет на позицию (чтобы траектория читалась)
   const w = clamp(rand(PLATFORM_W_MIN, PLATFORM_W_MAX) * diff.widthMul, 42, PLATFORM_W_MAX);
   const rangeLeft = MARGIN_X + 20;
   const rangeRight = GAME_WIDTH - MARGIN_X - 20 - w;
@@ -178,21 +152,14 @@ function createCenterishPlatform(y, sideHint, diff, forceSafe = false) {
     x = rand(rangeLeft, rangeRight);
   }
 
-  const type = forceSafe
-    ? 'normal'
-    : pickPlatformType(diff, /*preferLedge*/ false);
-
+  const type = forceSafe ? 'normal' : pickPlatformType(diff, false);
   return buildPlatform({ x, y, w, type, diff, safe: forceSafe });
 }
 
 function pickPlatformType(diff, preferLedge) {
-  // Чем выше сложность — тем больше moving/spike/breakable
   const spike = diff.spikeChance;
   const moving = diff.movingChance;
   const brk = diff.breakChance;
-
-  // ledge — это форма, а type — поведение. Для ledge чаще делаем normal/ledge,
-  // чтобы игра была честной.
   const baseNormal = preferLedge ? 0.78 : 0.62;
 
   return pickWeighted([
@@ -215,9 +182,8 @@ function buildPlatform({ x, y, w, type, diff, safe }) {
     crumble: 0,
     dir: Math.random() > 0.5 ? 1 : -1,
     speed: rand(0.6, 1.35) * diff.movingSpeedMul,
-    safe: !!safe, // safe=true => никогда не spike
+    safe: !!safe,
   };
-
   if (p.safe && p.type === 'spike') p.type = 'normal';
   return p;
 }
@@ -230,12 +196,10 @@ export function generatePlatforms(count = 18, startY = GAME_HEIGHT - 90) {
   let side = Math.random() > 0.5 ? 1 : -1;
   let safetyCounter = 0;
 
-  // Ранние платформы — больше ledge, чтобы сразу “wall kick” чувствовался
   for (let i = 0; i < count; i++) {
     const diff = difficultyFromScore(0);
     const gap = diff.gapY;
 
-    // чередуем стороны почти всегда
     side *= -1;
 
     const forceSafe = safetyCounter >= SAFETY_EVERY;
@@ -295,7 +259,6 @@ export function createGame() {
     platforms: generatePlatforms(),
     particles: [],
 
-    // генератор
     nextSide: Math.random() > 0.5 ? 1 : -1,
     safetyCounter: 0,
 
@@ -319,7 +282,7 @@ export function restartGame(game) {
 }
 
 /* =========================
-   JUMP ACTION (Wall kick feel)
+   JUMP ACTION
 ========================= */
 export function jumpAction(game) {
   const pl = game.player;
@@ -327,10 +290,9 @@ export function jumpAction(game) {
 
   const diff = difficultyFromScore(pl.score);
 
-  // particles
   const px = pl.x + pl.w / 2;
   const py = pl.y + pl.h;
-  const color = pl.onWall ? '#ff9500' : '#3390ec';
+  const color = pl.onWall ? '#ff8a00' : '#2ea8ff';
   game.particles.push(...createParticles(px, py, color, 8));
 
   if (pl.onWall) {
@@ -351,7 +313,6 @@ export function jumpAction(game) {
     return;
   }
 
-  // air nudge (лёгкий контроль)
   if (pl.vx > 0) pl.vx += AIR_NUDGE;
   else if (pl.vx < 0) pl.vx -= AIR_NUDGE;
   else pl.vx = (Math.random() > 0.5 ? 1 : -1) * AIR_NUDGE;
@@ -366,9 +327,9 @@ export function stepGame(game, dt = 1) {
   const diff = difficultyFromScore(pl.score);
 
   // trail
-  pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.22 });
+  pl.trail.unshift({ x: pl.x, y: pl.y, a: 0.20 });
   if (pl.trail.length > 10) pl.trail.pop();
-  pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.26 - i * 0.022)));
+  pl.trail.forEach((t, i) => (t.a = Math.max(0, 0.26 - i * 0.024)));
 
   updateParticles(game.particles, dt);
 
@@ -400,7 +361,6 @@ export function stepGame(game, dt = 1) {
   pl.x += pl.vx * dt;
   pl.y += pl.vy * dt;
 
-  // air drag
   pl.vx *= Math.pow(0.992, dt);
 
   // walls bounds
@@ -424,10 +384,8 @@ export function stepGame(game, dt = 1) {
 
   for (const p of platforms) {
     if (p.type === 'breakable' && p.broken && p.h <= 0.1) continue;
-
     if (!aabb(pl.x, pl.y, pl.w, pl.h, p.x, p.y, p.w, p.h)) continue;
 
-    // landing check
     const wasAbove = prevY + pl.h <= p.y + 1;
     const movingDown = pl.vy > 0;
 
@@ -445,10 +403,9 @@ export function stepGame(game, dt = 1) {
 
       if (p.type === 'breakable' && !p.broken) {
         p.broken = true;
-        game.particles.push(...createParticles(pl.x + pl.w / 2, pl.y + pl.h, '#ff9500', 10));
+        game.particles.push(...createParticles(pl.x + pl.w / 2, pl.y + pl.h, '#ff8a00', 10));
       }
 
-      // score by bestY
       if (p.type !== 'start') {
         pl.bestY = Math.min(pl.bestY, pl.y);
         const height = Math.max(0, (GAME_HEIGHT - pl.bestY));
@@ -457,13 +414,11 @@ export function stepGame(game, dt = 1) {
         pl.combo = 1;
       }
 
-      // landing resets combo a bit (как “разрядка”)
       if (pl.combo > 1) pl.combo = Math.max(1, Math.floor(pl.combo * 0.9));
 
       break;
     }
 
-    // side push-out
     const fromLeft = prevX + pl.w <= p.x;
     const fromRight = prevX >= p.x + p.w;
 
@@ -476,7 +431,7 @@ export function stepGame(game, dt = 1) {
     }
   }
 
-  // camera (только вверх)
+  // camera (only up)
   const desiredCam = pl.y - TARGET_SCREEN_Y;
   game.cameraY = Math.min(game.cameraY, desiredCam);
 
@@ -486,7 +441,7 @@ export function stepGame(game, dt = 1) {
     if (platforms[i].y > killLine) platforms.splice(i, 1);
   }
 
-  // spawn ahead (top)
+  // spawn ahead
   let topMostY = Infinity;
   for (const p of platforms) topMostY = Math.min(topMostY, p.y);
 
@@ -495,25 +450,20 @@ export function stepGame(game, dt = 1) {
   while (topMostY > wantTop) {
     topMostY -= diff.gapY;
 
-    // Генерация без тупиков:
-    // 1) почти всегда чередуем стороны
-    // 2) иногда вставляем “центр”, но рядом со стороной
     game.nextSide *= -1;
 
     const forceSafe = game.safetyCounter >= SAFETY_EVERY;
-    const mostlyLedge = Math.random() < 0.78; // как Wall Kickers
+    const mostlyLedge = Math.random() < 0.78;
 
-    // ограничиваем типы платформ если сложность низкая
     const p = mostlyLedge
       ? createLedge(topMostY, game.nextSide, diff, forceSafe)
       : createCenterishPlatform(topMostY, game.nextSide, diff, forceSafe);
 
     platforms.push(p);
-
     game.safetyCounter = forceSafe ? 0 : game.safetyCounter + 1;
   }
 
-  // death if fell below screen
+  // death
   if (pl.y > game.cameraY + GAME_HEIGHT + 140) {
     pl.alive = false;
   }
@@ -522,28 +472,180 @@ export function stepGame(game, dt = 1) {
 }
 
 /* =========================
-   DRAW
+   DRAW (Doodle Jump look)
 ========================= */
-export function drawGame(ctx, game, highScore) {
-  // bg gradient
+
+function drawCloud(ctx, x, y, s, alpha = 1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath();
+  ctx.arc(x, y, 12 * s, 0, Math.PI * 2);
+  ctx.arc(x + 14 * s, y - 6 * s, 14 * s, 0, Math.PI * 2);
+  ctx.arc(x + 28 * s, y, 12 * s, 0, Math.PI * 2);
+  ctx.arc(x + 14 * s, y + 6 * s, 13 * s, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+}
+
+function drawPlatformDoodle(ctx, x, y, w, h, type, p) {
+  // base shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(x, y + 2, w, h);
+
+  if (type === 'spike') {
+    ctx.fillStyle = '#ff3b30';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    const spikeCount = Math.max(3, Math.floor(w / 15));
+    for (let i = 0; i < spikeCount; i++) {
+      const sx = x + i * (w / spikeCount) + 8;
+      ctx.beginPath();
+      ctx.moveTo(sx, y);
+      ctx.lineTo(sx - 4, y - 8);
+      ctx.lineTo(sx + 4, y - 8);
+      ctx.closePath();
+      ctx.fill();
+    }
+    return;
+  }
+
+  if (type === 'moving') {
+    // purple moving platform
+    ctx.fillStyle = '#7c3aed';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    const arrowCount = Math.max(2, Math.floor(w / 22));
+    for (let i = 0; i < arrowCount; i++) {
+      const ax = x + i * 22 + 12;
+      ctx.beginPath();
+      ctx.moveTo(ax, y + h / 2);
+      ctx.lineTo(ax + 5 * p.dir, y + 3);
+      ctx.lineTo(ax + 5 * p.dir, y + h - 3);
+      ctx.closePath();
+      ctx.fill();
+    }
+    return;
+  }
+
+  if (type === 'breakable') {
+    ctx.fillStyle = p.broken ? '#b89b6a' : '#f59e0b';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + 3);
+    ctx.lineTo(x + 22, y + h - 2);
+    ctx.moveTo(x + 34, y + 2);
+    ctx.lineTo(x + 44, y + h - 3);
+    ctx.stroke();
+    return;
+  }
+
+  if (type === 'start') {
+    ctx.fillStyle = '#22c55e';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.font = '900 12px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('START', x + w / 2, y + h - 2);
+    ctx.textAlign = 'left';
+    return;
+  }
+
+  // normal/ledge — классические зелёные
+  ctx.fillStyle = '#29b34a';
+  ctx.fillRect(x, y, w, h);
+
+  // светлая полоска сверху как в doodle jump
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.fillRect(x, y, w, 3);
+
+  // тонкий контур
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+}
+
+function drawDoodler(ctx, x, y, w, h, onWall, wallSide, vx) {
+  // тело (овал)
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+
+  // тень
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath();
+  ctx.ellipse(cx + 1, y + h + 2, w * 0.45, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // main body
+  ctx.fillStyle = '#ffd54a';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, w * 0.52, h * 0.50, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // belly stripes
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 6, cy);
+  ctx.lineTo(x + w - 6, cy);
+  ctx.stroke();
+
+  // legs
+  ctx.fillStyle = '#ff7a18';
+  ctx.fillRect(x + 5, y + h - 6, 6, 6);
+  ctx.fillRect(x + w - 11, y + h - 6, 6, 6);
+
+  // hat
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillRect(x + 4, y + 3, w - 8, 6);
+  ctx.fillStyle = '#1d4ed8';
+  ctx.fillRect(x + 7, y, w - 14, 5);
+
+  // eyes
+  const dir = onWall ? -wallSide : (vx >= 0 ? 1 : -1);
+  const ex = cx + dir * 3;
+
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(ex - 4, y + 12, 3, 0, Math.PI * 2);
+  ctx.arc(ex + 4, y + 12, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.arc(ex - 4 + dir * 1, y + 12, 1.4, 0, Math.PI * 2);
+  ctx.arc(ex + 4 + dir * 1, y + 12, 1.4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+export function drawGame(ctx, game) {
+  // sky gradient
   const bg = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  bg.addColorStop(0, '#11162a');
-  bg.addColorStop(0.5, '#101b35');
-  bg.addColorStop(1, '#0b2a4b');
+  bg.addColorStop(0, '#bfe9ff');
+  bg.addColorStop(0.55, '#e9fbff');
+  bg.addColorStop(1, '#f3ffe8');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-  // grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < GAME_WIDTH; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, GAME_HEIGHT); ctx.stroke();
-  }
-  for (let y = 0; y < GAME_HEIGHT; y += 40) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(GAME_WIDTH, y); ctx.stroke();
-  }
-
   const camY = game.cameraY;
+
+  // clouds (parallax-ish): based on cameraY
+  // рисуем немного облаков "по сетке", чтобы не хранить их в стейте
+  for (let i = -2; i < 12; i++) {
+    const worldY = Math.floor((camY + i * 120) / 120) * 120;
+    const seed = (worldY * 9301 + 49297) % 233280;
+    const r = seed / 233280;
+
+    const x = 20 + r * (GAME_WIDTH - 80);
+    const y = worldY - camY + 40;
+    const s = 0.75 + (r * 0.6);
+    const a = 0.35 + (r * 0.35);
+
+    drawCloud(ctx, x, y, s, a);
+  }
 
   // particles
   for (const p of game.particles) {
@@ -555,6 +657,13 @@ export function drawGame(ctx, game, highScore) {
   }
   ctx.globalAlpha = 1;
 
+  // walls hint subtle
+  if (game.started && game.player.alive && game.player.onWall) {
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    const wx = game.player.wallSide === -1 ? 0 : GAME_WIDTH - 8;
+    ctx.fillRect(wx, 0, 8, GAME_HEIGHT);
+  }
+
   // platforms
   for (const p of game.platforms) {
     if (p.type === 'breakable' && p.broken && p.h <= 0.1) continue;
@@ -563,68 +672,7 @@ export function drawGame(ctx, game, highScore) {
     const sy = p.y - camY;
     if (sy > GAME_HEIGHT + 80 || sy < -80) continue;
 
-    // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.28)';
-    ctx.fillRect(sx, sy + 2, p.w, p.h);
-
-    if (p.type === 'spike') {
-      ctx.fillStyle = '#ff3b30';
-      ctx.fillRect(sx, sy, p.w, p.h);
-
-      ctx.fillStyle = '#ff6b66';
-      const spikeCount = Math.max(3, Math.floor(p.w / 15));
-      for (let i = 0; i < spikeCount; i++) {
-        const spikeX = sx + i * (p.w / spikeCount) + 8;
-        ctx.beginPath();
-        ctx.moveTo(spikeX, sy);
-        ctx.lineTo(spikeX - 4, sy - 8);
-        ctx.lineTo(spikeX + 4, sy - 8);
-        ctx.closePath();
-        ctx.fill();
-      }
-    } else if (p.type === 'breakable') {
-      ctx.fillStyle = p.broken ? '#7b7b82' : '#ff9500';
-      ctx.fillRect(sx, sy, p.w, p.h);
-
-      if (!p.broken) {
-        ctx.strokeStyle = '#cc5500';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(sx + 14, sy + 3);
-        ctx.lineTo(sx + 26, sy + 10);
-        ctx.moveTo(sx + 36, sy + 4);
-        ctx.lineTo(sx + 48, sy + 9);
-        ctx.stroke();
-      }
-    } else if (p.type === 'moving') {
-      ctx.fillStyle = '#5856d6';
-      ctx.fillRect(sx, sy, p.w, p.h);
-
-      ctx.fillStyle = '#4846c6';
-      const arrowCount = Math.max(2, Math.floor(p.w / 20));
-      for (let i = 0; i < arrowCount; i++) {
-        const ax = sx + i * 20 + 10;
-        ctx.beginPath();
-        ctx.moveTo(ax, sy + 6);
-        ctx.lineTo(ax + 4 * p.dir, sy + 3);
-        ctx.lineTo(ax + 4 * p.dir, sy + 9);
-        ctx.closePath();
-        ctx.fill();
-      }
-    } else if (p.type === 'start') {
-      ctx.fillStyle = '#34c759';
-      ctx.fillRect(sx, sy, p.w, p.h);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 12px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText('START', sx + p.w / 2, sy + 10);
-      ctx.textAlign = 'left';
-    } else {
-      // normal/ledge
-      // чуть разный цвет, чтобы “ledge” читался визуально
-      ctx.fillStyle = '#8e8e93';
-      ctx.fillRect(sx, sy, p.w, p.h);
-    }
+    drawPlatformDoodle(ctx, sx, sy, p.w, p.h, p.type, p);
   }
 
   // player trail
@@ -632,72 +680,49 @@ export function drawGame(ctx, game, highScore) {
   for (let i = 0; i < pl.trail.length; i++) {
     const t = pl.trail[i];
     ctx.globalAlpha = t.a;
-    ctx.fillStyle = '#3390ec';
-    ctx.fillRect(t.x, t.y - camY, pl.w, pl.h);
+    ctx.fillStyle = 'rgba(46,168,255,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(t.x + pl.w / 2, (t.y - camY) + pl.h / 2, pl.w * 0.40, pl.h * 0.38, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.globalAlpha = 1;
 
   // player
   const px = pl.x;
   const py = pl.y - camY;
-  ctx.fillStyle = pl.onWall ? '#ff9500' : '#3390ec';
-  ctx.fillRect(px, py, pl.w, pl.h);
+  drawDoodler(ctx, px, py, pl.w, pl.h, pl.onWall, pl.wallSide, pl.vx);
 
-  // eye
-  ctx.fillStyle = '#fff';
-  const eyeOffset = pl.onWall ? pl.wallSide * 4 : (pl.vx >= 0 ? 4 : -4);
-  ctx.fillRect(px + pl.w / 2 + eyeOffset - 2, py + 8, 4, 4);
+  // combo small pop (top-right)
+  if (pl.combo > 1 && pl.alive && game.started) {
+    const txt = `${pl.combo}x`;
+    ctx.font = '900 16px system-ui';
+    const w = ctx.measureText(txt).width;
 
-  // wall indicator
-  if (pl.onWall) {
-    ctx.fillStyle = 'rgba(255,149,0,0.20)';
-    const wx = pl.wallSide === -1 ? 0 : GAME_WIDTH - 10;
-    ctx.fillRect(wx, 0, 10, GAME_HEIGHT);
-  }
+    const padX = 10;
+    const padY = 6;
+    const bx = GAME_WIDTH - (w + padX * 2) - 10;
+    const by = 10;
+    const bh = 28;
 
-  // UI
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 18px system-ui';
-  ctx.fillText(`Score: ${pl.score}`, 12, 26);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.strokeStyle = 'rgba(25,90,42,0.18)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, bx, by, w + padX * 2, bh, 12, true, true);
 
-  ctx.font = '14px system-ui';
-  ctx.fillText(`High: ${highScore}`, 12, 48);
-
-  if (pl.combo > 1) {
-    ctx.fillStyle = `hsl(${Math.min(pl.combo * 14, 70)}, 100%, 60%)`;
-    ctx.font = 'bold 16px system-ui';
-    ctx.fillText(`${pl.combo}x`, GAME_WIDTH - 55, 30);
-  }
-
-  // overlays
-  if (!game.started) {
-    overlay(ctx, highScore, 'WALL KICKERS', 'Tap to jump from walls', 'TAP TO START');
-  }
-  if (!pl.alive) {
-    overlay(ctx, highScore, 'GAME OVER', `Score: ${pl.score}`, 'Press Restart');
+    ctx.fillStyle = '#195a2a';
+    ctx.fillText(txt, bx + padX, by + 19);
   }
 }
 
-function overlay(ctx, highScore, title, line1, line2) {
-  ctx.fillStyle = 'rgba(0,0,0,0.78)';
-  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-  ctx.fillStyle = title === 'GAME OVER' ? '#ff3b30' : '#fff';
-  ctx.font = 'bold 28px system-ui';
-  ctx.textAlign = 'center';
-  ctx.fillText(title, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60);
-
-  ctx.fillStyle = '#fff';
-  ctx.font = '18px system-ui';
-  ctx.fillText(line1, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
-
-  ctx.fillStyle = '#3390ec';
-  ctx.font = 'bold 20px system-ui';
-  ctx.fillText(line2, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30);
-
-  ctx.fillStyle = '#8e8e93';
-  ctx.font = '14px system-ui';
-  ctx.fillText(`Best Score: ${highScore}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 70);
-
-  ctx.textAlign = 'left';
+function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
 }

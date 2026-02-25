@@ -64,17 +64,23 @@ function formatDate(dateStr) {
   });
 }
 
+// Функция для форматирования адреса
+const formatAddress = (address) => {
+  if (!address) return '';
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 7)}...${address.slice(-4)}`;
+};
+
 // --- component -------------------------------------------------------------
 export default function USDTWalletTG({ telegramId, onBack }) {
   const [activeTab, setActiveTab] = useState('balance');
 
-  // 👇 Инициализируем с дефолтными значениями
   const [balance, setBalance] = useState(0);
   
   const [addressData, setAddressData] = useState({
     address: '',
-    memo: '', // ДОБАВИЛИ MEMO
-    network: 'BEP20', // Меняем на BEP20 по умолчанию
+    memo: '',
+    network: 'BEP20',
     currency: 'USDT',
     qrCode: '',
     min_deposit: 10,
@@ -83,6 +89,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   });
 
   const [withdrawals, setWithdrawals] = useState([]);
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -90,7 +97,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   const [withdrawData, setWithdrawData] = useState({
     amount: '',
     address: '',
-    network: 'BEP20', // Меняем на BEP20
+    network: 'BEP20',
   });
 
   const [showQR, setShowQR] = useState(false);
@@ -112,11 +119,24 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   );
 
   const showToastMessage = (message, type = 'info') => {
-    vibrate(10); // ВИБРАЦИЯ при тосте
+    vibrate(10);
     setToast({ message, type });
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
   };
+
+  // --- Загрузка сохраненных адресов из localStorage ---
+  useEffect(() => {
+    const saved = localStorage.getItem('userCryptoAddresses');
+    if (saved) {
+      try {
+        const addresses = JSON.parse(saved);
+        setSavedAddresses(addresses || []);
+      } catch (e) {
+        console.error('Ошибка загрузки адресов:', e);
+      }
+    }
+  }, []);
 
   // --- API loaders ---------------------------------------------------------
   const loadData = async ({ silent = false } = {}) => {
@@ -131,7 +151,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     else setIsRefreshing(true);
 
     try {
-      // Параллельная загрузка
       const [bal, addr, wds] = await Promise.allSettled([
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`, { timeoutMs: 8000 }),
@@ -142,39 +161,31 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       console.log('📊 Ответ адреса:', addr.status === 'fulfilled' ? addr.value.json : 'Ошибка');
       console.log('📊 Ответ выводов:', wds.status === 'fulfilled' ? wds.value.json : 'Ошибка');
 
-      // Обработка баланса
       if (bal.status === 'fulfilled' && bal.value.ok && bal.value.json?.success) {
         const data = bal.value.json;
         setBalance(data.balance || 0);
-      } else {
-        console.log('⚠️ Не удалось загрузить баланс');
       }
 
-      // Обработка адреса - ТЕПЕРЬ С MEMO!
       if (addr.status === 'fulfilled' && addr.value.ok && addr.value.json?.success) {
         const data = addr.value.json;
         setAddressData({
           address: data.address || '',
-          memo: data.memo || '', // СОХРАНЯЕМ MEMO
+          memo: data.memo || '',
           network: data.network || 'BEP20',
           currency: data.currency || 'USDT',
           qrCode: data.qrCode || '',
           min_deposit: data.min_deposit || 10,
           max_deposit: data.max_deposit || 10000,
-          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address} с комментарием (memo): ${data.memo}`
+          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address}`
         });
-      } else {
-        console.log('⚠️ Не удалось загрузить адрес');
       }
 
-      // Обработка выводов
       if (wds.status === 'fulfilled' && wds.value.ok && wds.value.json?.success) {
         const data = wds.value.json;
         const list = data.withdrawals || [];
         setWithdrawals(list);
         console.log(`✅ Загружено ${list.length} выводов`);
       } else {
-        console.log('⚠️ Не удалось загрузить выводы');
         setWithdrawals([]);
       }
 
@@ -190,7 +201,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   useEffect(() => {
     loadData({ silent: false });
     
-    // автообновление баланса раз в 15 сек
     const id = setInterval(() => loadData({ silent: true }), 15000);
     return () => clearInterval(id);
   }, [telegramId]);
@@ -198,7 +208,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   // --- actions -------------------------------------------------------------
   const copyToClipboard = async (text, type = 'адрес') => {
     if (!text) return;
-    vibrate(5); // ВИБРАЦИЯ при копировании
+    vibrate(5);
     try {
       await navigator.clipboard.writeText(text);
       showToastMessage(`${type} скопирован`, 'ok');
@@ -383,47 +393,70 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           </div>
         )}
 
-        {/* DEPOSIT - ТЕПЕРЬ С MEMO! */}
-        {/* DEPOSIT - БЕЗ MEMO */}
-{/* DEPOSIT - ПРОСТАЯ ВЕРСИЯ БЕЗ MEMO */}
-{/* DEPOSIT - ФИНАЛЬНАЯ ВЕРСИЯ */}
-{activeTab === 'deposit' && (
-  <div className="tg-section">
-    <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-      <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
+        {/* DEPOSIT - ИСПРАВЛЕННЫЙ */}
+        {activeTab === 'deposit' && (
+          <div className="tg-section">
+            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
+              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
 
-      <div className="tg-address-container">
-        <div className="tg-address-label" style={{ color: tgColors.hint }}>
-          Ваш адрес для пополнения (BEP20)
-        </div>
-        <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-          <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
-            {addressData?.address || 'Загрузка...'}
-          </code>
-          <button
-            className="tg-copy-btn"
-            onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
-            style={{ color: tgColors.button }}
-            disabled={!addressData?.address}
-          >
-            Копировать
-          </button>
-        </div>
-      </div>
+              <div className="tg-address-container">
+                <div className="tg-address-label" style={{ color: tgColors.hint }}>
+                  Ваш адрес для пополнения (BEP20)
+                </div>
+                <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
+                  <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
+                    {addressData?.address || 'Загрузка...'}
+                  </code>
+                  <button
+                    className="tg-copy-btn"
+                    onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
+                    style={{ color: tgColors.button }}
+                    disabled={!addressData?.address}
+                  >
+                    Копировать
+                  </button>
+                </div>
+              </div>
 
-      <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)', marginTop: '20px' }}>
-        <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
-        <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6 }}>
-          <li>Отправляйте только USDT в сети BEP20</li>
-          <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
-          <li>Средства зачисляются автоматически</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-)}
+              {/* Сохраненные адреса */}
+              {savedAddresses.length > 0 && (
+                <div className="tg-saved-addresses">
+                  <h4 className="tg-saved-title" style={{ color: tgColors.hint }}>
+                    СОХРАНЕННЫЕ АДРЕСА:
+                  </h4>
+                  <div className="tg-saved-list">
+                    {savedAddresses.map((addr) => (
+                      <div key={addr.id} className="tg-saved-item">
+                        <div className="tg-saved-info">
+                          <span className="tg-saved-name">{addr.name}</span>
+                          <span className="tg-saved-address">{formatAddress(addr.address)}</span>
+                        </div>
+                        <button
+                          className="tg-saved-copy"
+                          onClick={() => copyToClipboard(addr.address, 'адрес')}
+                          style={{ color: tgColors.button }}
+                        >
+                          Копировать
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-        {/* WITHDRAW - ТЕПЕРЬ BEP20 ПО УМОЛЧАНИЮ */}
+              <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)', marginTop: '20px' }}>
+                <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
+                <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6 }}>
+                  <li>Отправляйте только USDT в сети BEP20</li>
+                  <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
+                  <li>Средства зачисляются автоматически</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* WITHDRAW */}
         {activeTab === 'withdraw' && (
           <div className="tg-section">
             <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
@@ -521,7 +554,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                         </div>
 
                         <div className="tg-history-address" style={{ color: tgColors.hint }}>
-                          {wd.address ? wd.address.slice(0, 20) : '—'}
+                          {wd.address ? formatAddress(wd.address) : '—'}
                         </div>
 
                         <div className={`tg-history-status status-${wd.status || 'pending'}`}>

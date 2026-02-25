@@ -550,3 +550,205 @@
 [data-theme="dark"] .tg-address-value[style*="background: rgba(51,144,236,0.05)"] code {
   color: #58a6ff !important;
 }
+
+/* ==================== СОХРАНЕННЫЕ АДРЕСА ==================== */
+.tg-saved-addresses {
+  margin-top: 24px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] .tg-saved-addresses {
+  background: var(--tg-theme-bg-color, #1c1c1e);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.tg-saved-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+.tg-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tg-saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border-radius: 12px;
+  gap: 12px;
+}
+
+[data-theme="dark"] .tg-saved-item {
+  background: rgba(255,255,255,0.08);
+}
+
+.tg-saved-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tg-saved-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tg-theme-text-color, #000000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.tg-saved-address {
+  font-size: 12px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  background: var(--tg-theme-bg-color, #ffffff);
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .tg-saved-address {
+  background: rgba(0,0,0,0.2);
+}
+
+.tg-saved-copy {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tg-saved-copy:active {
+  opacity: 0.7;
+  transform: scale(0.96);
+}
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ КНОПКИ НАЗАД ==================== */
+.tg-back-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tg-theme-link-color, #3390ec);
+  width: 40px;
+  height: 40px;
+}
+
+.tg-back-btn svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ ЗНАЧКА ВЫБОРА ==================== */
+.tg-address-value {
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid;
+  background: var(--tg-theme-bg-color, #ffffff);
+  min-height: 60px;
+}
+
+.tg-address-value code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  word-break: break-all;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.tg-copy-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+}
+
+.tg-copy-btn:active {
+  opacity: 0.7;
+  transform: scale(0.96);
+}
+
+/* Адаптивность для узких экранов */
+@media (max-width: 480px) {
+  .tg-saved-name {
+    max-width: 100px;
+  }
+  
+  .tg-saved-address {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  .tg-saved-copy {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .tg-address-value {
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .tg-address-value code {
+    font-size: 12px;
+    width: 100%;
+  }
+  
+  .tg-copy-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .tg-saved-name {
+    max-width: 80px;
+  }
+  
+  .tg-saved-item {
+    padding: 10px;
+    gap: 8px;
+  }
+}

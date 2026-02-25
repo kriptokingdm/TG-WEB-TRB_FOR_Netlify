@@ -845,7 +845,7 @@ button.bank-option {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  padding: 0 10px !important;
+  padding: 0 !important;
   background: transparent !important;
   border: none !important;
   border-radius: 14px !important;
@@ -855,11 +855,10 @@ button.bank-option {
   font-weight: 500 !important;
   font-size: 15px !important;
   
-  /* Фиксированная высота для ровного выравнивания */
+  /* Фиксированная высота */
   height: 48px !important;
   min-height: 48px !important;
   max-height: 48px !important;
-  line-height: 48px !important;
 }
 
 .bank-option.selected,
@@ -887,11 +886,15 @@ button.bank-option {
 /* Текст в кнопках */
 .bank-option span,
 .payment-section-new .bank-option span {
-  display: inline-block !important;
-  line-height: 1 !important;
-  height: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 22px !important; /* Такая же высота как у иконки */
+  line-height: 22px !important; /* Линия равна высоте */
   margin: 0 !important;
   padding: 0 !important;
+  font-size: 15px !important;
+  transform: translateY(0) !important; /* Убираем возможные смещения */
   vertical-align: middle !important;
 }
 
@@ -903,7 +906,6 @@ button.bank-option {
     height: 44px !important;
     min-height: 44px !important;
     max-height: 44px !important;
-    line-height: 44px !important;
     font-size: 14px !important;
   }
   
@@ -911,5 +913,12 @@ button.bank-option {
   .payment-section-new .bank-option svg {
     width: 20px !important;
     height: 20px !important;
+  }
+
+  .bank-option span,
+  .payment-section-new .bank-option span {
+    height: 20px !important;
+    line-height: 20px !important;
+    font-size: 14px !important;
   }
 }

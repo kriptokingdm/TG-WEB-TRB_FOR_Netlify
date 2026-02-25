@@ -128,6 +128,13 @@ const formatAddress = (address) => {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 };
 
+// ==================== ФУНКЦИЯ ДЛЯ ФОРМАТИРОВАНИЯ ИМЕНИ ====================
+const formatName = (name) => {
+  if (!name) return '';
+  if (name.length <= 10) return name;
+  return `${name.slice(0, 10)}...`;
+};
+
 function Home({ navigateTo, telegramUser, showToast }) {
   console.log('🏠 Home загружен');
 
@@ -237,14 +244,18 @@ function Home({ navigateTo, telegramUser, showToast }) {
       const num = parseFloat(value);
       if (!isNaN(num)) {
         if (isBuyMode) {
-          if (num < limits.minBuy || num > limits.maxBuy) {
-            setError(`Минимальная сумма: ${limits.minBuy} RUB`);
+          if (num < limits.minBuy) {
+            setError(`Минимальная сумма: ${limits.minBuy.toLocaleString()} RUB`);
+          } else if (num > limits.maxBuy) {
+            setError(`Максимальная сумма: ${limits.maxBuy.toLocaleString()} RUB`);
           } else {
             setError('');
           }
         } else {
-          if (num < limits.minSell || num > limits.maxSell) {
+          if (num < limits.minSell) {
             setError(`Минимальная сумма: ${limits.minSell} USDT`);
+          } else if (num > limits.maxSell) {
+            setError(`Максимальная сумма: ${limits.maxSell.toLocaleString()} USDT`);
           } else {
             setError('');
           }
@@ -374,7 +385,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
     if (isBuyMode) {
       if (num < limits.minBuy || num > limits.maxBuy) {
-        showMessage('error', `❌ Сумма от ${limits.minBuy} до ${limits.maxBuy} RUB`);
+        showMessage('error', `❌ Сумма от ${limits.minBuy.toLocaleString()} до ${limits.maxBuy.toLocaleString()} RUB`);
         return;
       }
       if (!selectedCrypto) {
@@ -383,7 +394,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
       }
     } else {
       if (num < limits.minSell || num > limits.maxSell) {
-        showMessage('error', `❌ Сумма от ${limits.minSell} до ${limits.maxSell} USDT`);
+        showMessage('error', `❌ Сумма от ${limits.minSell} до ${limits.maxSell.toLocaleString()} USDT`);
         return;
       }
       if (!selectedPayment) {
@@ -715,7 +726,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
                          onClick={() => setSelectedCrypto(c)}>
                       <div className="crypto-info">
                         <div className="crypto-header">
-                          <span className="crypto-name">{c.name}</span>
+                          <span className="crypto-name" title={c.name}>{formatName(c.name)}</span>
                           <span className="crypto-network-badge">{c.network}</span>
                         </div>
                         <div className="crypto-address">
@@ -740,41 +751,17 @@ function Home({ navigateTo, telegramUser, showToast }) {
               <h3 className="section-title">Реквизиты для RUB</h3>
               
               {/* Простые кнопки вместо select */}
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <div className="bank-selector">
                 <button
                   onClick={() => setBankName('СБП')}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    borderRadius: '14px',
-                    border: 'none',
-                    background: bankName === 'СБП' ? 'var(--tg-button)' : 'var(--tg-secondary-bg)',
-                    color: bankName === 'СБП' ? 'white' : 'var(--tg-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer'
-                  }}
+                  className={`bank-option ${bankName === 'СБП' ? 'selected' : ''}`}
                 >
                   <SBPIcon />
                   <span>СБП</span>
                 </button>
                 <button
                   onClick={() => setBankName('Карта')}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    borderRadius: '14px',
-                    border: 'none',
-                    background: bankName === 'Карта' ? 'var(--tg-button)' : 'var(--tg-secondary-bg)',
-                    color: bankName === 'Карта' ? 'white' : 'var(--tg-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer'
-                  }}
+                  className={`bank-option ${bankName === 'Карта' ? 'selected' : ''}`}
                 >
                   <CardIcon />
                   <span>Карта</span>

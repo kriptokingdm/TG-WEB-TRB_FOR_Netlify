@@ -1714,3 +1714,172 @@
     font-size: 12px;
   }
 }
+
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ КРИПТО-ЭЛЕМЕНТОВ ==================== */
+
+/* Фикс для иконок на узких экранах */
+.crypto-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  gap: 12px;
+  min-width: 0; /* Важно для flex-детей */
+}
+
+.crypto-info {
+  flex: 1;
+  min-width: 0; /* Позволяет тексту сжиматься */
+  overflow: hidden;
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.crypto-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* Ограничиваем ширину */
+}
+
+.crypto-network-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-button);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0; /* Не даем сжиматься */
+}
+
+.crypto-address {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-hint);
+  word-break: break-all;
+  background: var(--tg-secondary-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0; /* Не даем сжиматься */
+  margin-left: 4px;
+}
+
+.action-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 6px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+  flex-shrink: 0; /* Не даем сжиматься */
+}
+
+.action-btn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Для очень узких экранов */
+@media (max-width: 380px) {
+  .crypto-name {
+    max-width: 80px;
+  }
+  
+  .crypto-network-badge {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  
+  .crypto-address {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .action-btn {
+    padding: 4px !important;
+  }
+  
+  .action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Банк селектор - исправляем инлайн стили на классы */
+.bank-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid var(--tg-border);
+}
+
+.bank-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.bank-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.bank-option.selected svg path {
+  fill: white;
+}
+
+.bank-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}

@@ -1,4 +1,6 @@
-// USDTWalletTG.js - Telegram Web App style (С MEMO И ВИБРАЦИЕЙ)
+// USDTWalletTG.js
+// Telegram Web App стиль "как на скрине" (Roboto, мемо/вибрация сохранены, логика/бекенд не ломаем)
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './USDTWallet.css';
 
@@ -10,7 +12,6 @@ function withTimeout(ms, controller) {
   return () => clearTimeout(id);
 }
 
-// Функция для вибрации
 function vibrate(pattern = 10) {
   if (window.navigator && window.navigator.vibrate) {
     window.navigator.vibrate(pattern);
@@ -52,31 +53,90 @@ function formatUSDT(amount) {
   return `${(Number.isFinite(n) ? n : 0).toFixed(2)} USDT`;
 }
 
+function formatMoneyUSD(amount) {
+  const n = Number(amount || 0);
+  const v = Number.isFinite(n) ? n : 0;
+  return `$ ${v.toFixed(2)}`;
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  // под скрин: 12.10.2026 13:25
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}.${mm}.${yyyy} ${hh}:${mi}`;
 }
 
-// Функция для форматирования адреса
 const formatAddress = (address) => {
   if (!address) return '';
   if (address.length <= 10) return address;
   return `${address.slice(0, 7)}...${address.slice(-4)}`;
 };
 
+// --- icons ----------------------------------------------------------------
+function IconRefresh({ color = 'currentColor' }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path d="M21 3V7.5H16.5" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconArrowDown({ color = 'currentColor' }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 4V16" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M7 12L12 17L17 12" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconArrowUp({ color = 'currentColor' }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 20V8" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M7 12L12 7L17 12" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FilterSvg() {
+  // твой SVG 1:1
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g clipPath="url(#clip0_2237_409)">
+        <path
+          d="M11.6667 21H16.3333V18.6667H11.6667V21ZM3.5 7V9.33333H24.5V7H3.5ZM7 15.1667H21V12.8333H7V15.1667Z"
+          fill="white"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_2237_409">
+          <rect width="28" height="28" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+}
+
 // --- component -------------------------------------------------------------
 export default function USDTWalletTG({ telegramId, onBack }) {
-  const [activeTab, setActiveTab] = useState('balance');
+  // screen: "home" как на скрине + отдельные вкладки deposit/withdraw/history
+  const [activeTab, setActiveTab] = useState('home');
 
   const [balance, setBalance] = useState(0);
-  
+
   const [addressData, setAddressData] = useState({
     address: '',
     memo: '',
@@ -85,7 +145,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     qrCode: '',
     min_deposit: 10,
     max_deposit: 10000,
-    instructions: ''
+    instructions: '',
   });
 
   const [withdrawals, setWithdrawals] = useState([]);
@@ -100,19 +160,17 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     network: 'BEP20',
   });
 
-  const [showQR, setShowQR] = useState(false);
   const [toast, setToast] = useState(null);
-
   const toastTimerRef = useRef(null);
 
   const tgColors = useMemo(
     () => ({
-      bg: 'var(--tg-theme-bg-color, #ffffff)',
-      secondaryBg: 'var(--tg-theme-secondary-bg-color, #f1f1f1)',
-      text: 'var(--tg-theme-text-color, #000000)',
-      hint: 'var(--tg-theme-hint-color, #8e8e93)',
+      bg: 'var(--tg-theme-bg-color, #0f1115)',
+      secondaryBg: 'var(--tg-theme-secondary-bg-color, #171a22)',
+      text: 'var(--tg-theme-text-color, #ffffff)',
+      hint: 'var(--tg-theme-hint-color, rgba(255,255,255,0.60))',
       link: 'var(--tg-theme-link-color, #3390ec)',
-      button: 'var(--tg-theme-button-color, #3390ec)',
+      button: 'var(--tg-theme-button-color, #2b66ff)',
       buttonText: 'var(--tg-theme-button-text-color, #ffffff)',
     }),
     []
@@ -125,7 +183,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
   };
 
-  // --- Загрузка сохраненных адресов из localStorage ---
+  // --- saved addresses -----------------------------------------------------
   useEffect(() => {
     const saved = localStorage.getItem('userCryptoAddresses');
     if (saved) {
@@ -140,12 +198,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   // --- API loaders ---------------------------------------------------------
   const loadData = async ({ silent = false } = {}) => {
-    if (!telegramId) {
-      console.log('❌ Нет telegramId');
-      return;
-    }
-
-    console.log(`📥 Загрузка данных кошелька для ${telegramId}...`);
+    if (!telegramId) return;
 
     if (!silent) setIsLoading(true);
     else setIsRefreshing(true);
@@ -156,10 +209,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
       ]);
-
-      console.log('📊 Ответ баланса:', bal.status === 'fulfilled' ? bal.value.json : 'Ошибка');
-      console.log('📊 Ответ адреса:', addr.status === 'fulfilled' ? addr.value.json : 'Ошибка');
-      console.log('📊 Ответ выводов:', wds.status === 'fulfilled' ? wds.value.json : 'Ошибка');
 
       if (bal.status === 'fulfilled' && bal.value.ok && bal.value.json?.success) {
         const data = bal.value.json;
@@ -176,7 +225,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           qrCode: data.qrCode || '',
           min_deposit: data.min_deposit || 10,
           max_deposit: data.max_deposit || 10000,
-          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address}`
+          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address}`,
         });
       }
 
@@ -184,11 +233,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         const data = wds.value.json;
         const list = data.withdrawals || [];
         setWithdrawals(list);
-        console.log(`✅ Загружено ${list.length} выводов`);
       } else {
         setWithdrawals([]);
       }
-
     } catch (e) {
       console.error('❌ loadData error:', e);
       showToastMessage('Ошибка загрузки', 'error');
@@ -200,7 +247,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   useEffect(() => {
     loadData({ silent: false });
-    
     const id = setInterval(() => loadData({ silent: true }), 15000);
     return () => clearInterval(id);
   }, [telegramId]);
@@ -277,153 +323,177 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     loadData({ silent: true });
   };
 
-  const onTabChange = (tab) => {
+  const go = (tab) => {
     vibrate(5);
     setActiveTab(tab);
   };
 
+  // last items (на главном экране)
+  const previewOps = useMemo(() => {
+    const list = Array.isArray(withdrawals) ? withdrawals.slice() : [];
+    list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    return list.slice(0, 3);
+  }, [withdrawals]);
+
   // --- UI states -----------------------------------------------------------
-  if (isLoading && activeTab === 'balance') {
+  if (isLoading && activeTab === 'home') {
     return (
-      <div className="tg-loading" style={{ background: tgColors.bg }}>
+      <div className="tg-loading tg-dark" style={{ background: tgColors.bg }}>
         <div className="tg-spinner" style={{ borderColor: tgColors.hint }} />
-        <p style={{ color: tgColors.hint }}>Загрузка кошелька...</p>
+        <p style={{ color: tgColors.hint, fontFamily: 'Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif' }}>
+          Загрузка кошелька...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="tg-container" style={{ backgroundColor: tgColors.bg, color: tgColors.text }}>
+    <div className="tg-container tg-dark" style={{ backgroundColor: tgColors.bg, color: tgColors.text }}>
       {/* Toast */}
-      {toast && (
-        <div className={`tg-toast tg-toast-${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
+      {toast && <div className={`tg-toast tg-toast-${toast.type}`}>{toast.message}</div>}
 
-      {/* Header */}
-      <div className="tg-header" style={{ backgroundColor: tgColors.bg, borderBottomColor: tgColors.secondaryBg }}>
-        <button className="tg-back-btn" onClick={() => { vibrate(5); onBack(); }} aria-label="Назад">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round" />
-            <path d="M12 19L5 12L12 5" stroke={tgColors.text} strokeWidth="2" strokeLinecap="round" />
+      {/* HEADER (минимальный, под тёмный стиль) */}
+      <div className="tg-topbar">
+        <button className="tg-topbar-btn" onClick={() => { vibrate(5); onBack?.(); }} aria-label="Назад">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
 
-        <h2 className="tg-title" style={{ color: tgColors.text }}>
-          USDT Кошелёк
-        </h2>
+        <div className="tg-topbar-title">Кошелёк</div>
 
-        <button className="tg-icon-btn" onClick={onRefresh} aria-label="Обновить">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <path d="M21 3V7.5H16.5" stroke="currentColor" strokeWidth="2" />
-          </svg>
+        <button className="tg-topbar-btn" onClick={onRefresh} aria-label="Обновить">
+          <span className="tg-topbar-refresh">
+            <IconRefresh />
+          </span>
           {isRefreshing ? <span className="tg-dot" /> : null}
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="tg-tabs" style={{ borderBottomColor: tgColors.secondaryBg }}>
-        {[
-          { key: 'balance', label: '💎 Баланс' },
-          { key: 'deposit', label: '📥 Пополнить' },
-          { key: 'withdraw', label: '📤 Вывести' },
-          { key: 'history', label: '📋 История' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            className={`tg-tab ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => onTabChange(tab.key)}
-            style={{
-              color: activeTab === tab.key ? tgColors.button : tgColors.hint,
-              borderBottomColor: activeTab === tab.key ? tgColors.button : 'transparent',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="tg-content">
-        {/* BALANCE */}
-        {activeTab === 'balance' && (
+      {/* CONTENT */}
+      <div className="tg-content tg-content-tight">
+        {/* HOME (как на скрине) */}
+        {activeTab === 'home' && (
           <div className="tg-section">
-            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <div className="tg-balance-main">
-                <div className="tg-balance-total" style={{ color: tgColors.text }}>
-                  {formatUSDT(balance)}
-                </div>
-                <div className="tg-balance-label" style={{ color: tgColors.hint }}>
-                  Баланс USDT
-                </div>
-              </div>
-
-              <div className="tg-balance-details">
-                <div className="tg-balance-row" style={{ borderBottomColor: 'rgba(0,0,0,0.06)' }}>
-                  <span style={{ color: tgColors.hint }}>Доступно для вывода</span>
-                  <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance)}</span>
-                </div>
-              </div>
-
-              <div className="tg-actions">
-                <button
-                  className="tg-action-btn primary"
-                  onClick={() => onTabChange('deposit')}
-                  style={{ backgroundColor: tgColors.button, color: tgColors.buttonText }}
-                >
-                  Пополнить
-                </button>
-
-                <button
-                  className="tg-action-btn secondary"
-                  onClick={() => onTabChange('withdraw')}
-                  disabled={balance < 10}
-                  style={{ borderColor: tgColors.hint, color: tgColors.text }}
-                >
-                  Вывести
+            {/* BALANCE CARD */}
+            <div className="tg-card tg-card-balance">
+              <div className="tg-card-head">
+                <div className="tg-card-title">Баланс кошелька</div>
+                <button className="tg-mini-icon" onClick={onRefresh} aria-label="Обновить баланс">
+                  <IconRefresh />
                 </button>
               </div>
+
+              <div className="tg-balance-amount">{formatMoneyUSD(balance)}</div>
+
+              <div className="tg-big-actions">
+                <button className="tg-big-action" onClick={() => go('deposit')} type="button">
+                  <span className="tg-big-ico">
+                    <IconArrowDown />
+                  </span>
+                  <span className="tg-big-label">Внести</span>
+                </button>
+
+                <button className="tg-big-action tg-big-action-secondary" onClick={() => go('withdraw')} type="button">
+                  <span className="tg-big-ico">
+                    <IconArrowUp />
+                  </span>
+                  <span className="tg-big-label">Вывести</span>
+                </button>
+              </div>
+            </div>
+
+            {/* HISTORY PREVIEW CARD */}
+            <div className="tg-card tg-card-history">
+              <button className="tg-history-head" onClick={() => go('history')} type="button">
+                <span className="tg-card-title">История транзакций</span>
+                <span className="tg-history-filter">
+                  <FilterSvg />
+                </span>
+              </button>
+
+              {(!previewOps || previewOps.length === 0) ? (
+                <div className="tg-history-empty">Нет операций</div>
+              ) : (
+                <div className="tg-history-mini-list">
+                  {previewOps.map((wd) => {
+                    const isOut = true;
+                    const title = 'Вывод';
+                    const sign = isOut ? '-' : '+';
+                    return (
+                      <div className="tg-mini-row" key={wd.id || `${wd.created_at}-${wd.amount}`}>
+                        <div className={`tg-mini-ico ${isOut ? 'out' : 'in'}`}>
+                          {isOut ? <IconArrowUp /> : <IconArrowDown />}
+                        </div>
+
+                        <div className="tg-mini-mid">
+                          <div className="tg-mini-title">{title}</div>
+                          <div className="tg-mini-date">{formatDate(wd.created_at)}</div>
+                        </div>
+
+                        <div className="tg-mini-right">
+                          <div className={`tg-mini-amt ${isOut ? 'neg' : 'pos'}`}>
+                            {sign}{formatUSDT(wd.amount).replace(' USDT', '')} USDT
+                          </div>
+                          <div className="tg-mini-sub">{formatMoneyUSD(wd.amount)}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <button className="tg-history-more" onClick={() => go('history')} type="button">
+                Смотреть всю историю
+              </button>
             </div>
           </div>
         )}
 
-        {/* DEPOSIT - ИСПРАВЛЕННЫЙ */}
+        {/* DEPOSIT */}
         {activeTab === 'deposit' && (
           <div className="tg-section">
-            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Пополнение USDT</h3>
+            <div className="tg-card tg-card-page">
+              <div className="tg-page-head">
+                <button className="tg-back-pill" onClick={() => go('home')} type="button">Назад</button>
+                <div className="tg-page-title">Пополнение</div>
+                <div style={{ width: 64 }} />
+              </div>
 
-              <div className="tg-address-container">
-                <div className="tg-address-label" style={{ color: tgColors.hint }}>
-                  Ваш адрес для пополнения (BEP20)
-                </div>
-                <div className="tg-address-value" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                  <code style={{ color: tgColors.text, wordBreak: 'break-all' }}>
-                    {addressData?.address || 'Загрузка...'}
-                  </code>
-                  <button
-                    className="tg-copy-btn"
-                    onClick={() => copyToClipboard(addressData?.address || '', 'адрес')}
-                    style={{ color: tgColors.button }}
-                    disabled={!addressData?.address}
-                  >
+              <div className="tg-page-sub">Ваш адрес для пополнения (BEP20)</div>
+
+              <div className="tg-address-block">
+                <code className="tg-address-code">{addressData?.address || 'Загрузка...'}</code>
+                <div className="tg-address-actions">
+                  <button className="tg-pill" onClick={() => copyToClipboard(addressData?.address || '', 'адрес')} disabled={!addressData?.address}>
                     Копировать
                   </button>
                 </div>
               </div>
 
-              {/* Сохраненные адреса */}
+              {addressData?.memo ? (
+                <>
+                  <div className="tg-page-sub">Memo</div>
+                  <div className="tg-address-block tg-address-block-memo">
+                    <code className="tg-address-code">{addressData.memo}</code>
+                    <div className="tg-address-actions">
+                      <button className="tg-pill" onClick={() => copyToClipboard(addressData?.memo || '', 'memo')} disabled={!addressData?.memo}>
+                        Копировать
+                      </button>
+                    </div>
+                  </div>
+
+                  <button className="tg-wide-pill" onClick={copyAll} type="button">
+                    Скопировать адрес + memo
+                  </button>
+                </>
+              ) : null}
+
+              {/* Сохраненные адреса (как было) */}
               {savedAddresses.length > 0 && (
                 <div className="tg-saved-addresses">
-                  <h4 className="tg-saved-title" style={{ color: tgColors.hint }}>
-                    СОХРАНЕННЫЕ АДРЕСА:
-                  </h4>
+                  <div className="tg-saved-title">СОХРАНЕННЫЕ АДРЕСА</div>
                   <div className="tg-saved-list">
                     {savedAddresses.map((addr) => (
                       <div key={addr.id} className="tg-saved-item">
@@ -431,11 +501,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                           <span className="tg-saved-name">{addr.name}</span>
                           <span className="tg-saved-address">{formatAddress(addr.address)}</span>
                         </div>
-                        <button
-                          className="tg-saved-copy"
-                          onClick={() => copyToClipboard(addr.address, 'адрес')}
-                          style={{ color: tgColors.button }}
-                        >
+                        <button className="tg-saved-copy" onClick={() => copyToClipboard(addr.address, 'адрес')} type="button">
                           Копировать
                         </button>
                       </div>
@@ -444,9 +510,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 </div>
               )}
 
-              <div className="tg-instructions" style={{ borderColor: 'rgba(0,0,0,0.10)', marginTop: '20px' }}>
-                <h4 style={{ color: tgColors.text, marginBottom: 12 }}>📝 Инструкция</h4>
-                <ol style={{ color: tgColors.text, fontSize: 14, lineHeight: 1.6 }}>
+              <div className="tg-note">
+                <div className="tg-note-title">Инструкция</div>
+                <ol className="tg-note-list">
                   <li>Отправляйте только USDT в сети BEP20</li>
                   <li>Минимальная сумма: {addressData?.min_deposit || 10} USDT</li>
                   <li>Средства зачисляются автоматически</li>
@@ -459,16 +525,20 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         {/* WITHDRAW */}
         {activeTab === 'withdraw' && (
           <div className="tg-section">
-            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>Вывод USDT</h3>
+            <div className="tg-card tg-card-page">
+              <div className="tg-page-head">
+                <button className="tg-back-pill" onClick={() => go('home')} type="button">Назад</button>
+                <div className="tg-page-title">Вывод</div>
+                <div style={{ width: 64 }} />
+              </div>
 
-              <div className="tg-withdraw-info" style={{ color: tgColors.hint, marginBottom: 20 }}>
-                Доступно: <span style={{ color: tgColors.text, fontWeight: 600 }}>{formatUSDT(balance)}</span>
+              <div className="tg-available">
+                Доступно: <span className="tg-available-amt">{formatUSDT(balance)}</span>
               </div>
 
               <form onSubmit={handleWithdraw} className="tg-form">
                 <div className="tg-form-group">
-                  <label style={{ color: tgColors.hint, fontSize: 14 }}>Сумма (USDT)</label>
+                  <label>Сумма (USDT)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -477,20 +547,16 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                     value={withdrawData.amount}
                     onChange={(e) => setWithdrawData({ ...withdrawData, amount: e.target.value })}
                     placeholder="10.00"
-                    style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                     required
                   />
-                  <div className="tg-form-hint" style={{ color: tgColors.hint }}>
-                    Минимум: 10 USDT
-                  </div>
+                  <div className="tg-form-hint">Минимум: 10 USDT</div>
                 </div>
 
                 <div className="tg-form-group">
-                  <label style={{ color: tgColors.hint, fontSize: 14 }}>Сеть</label>
+                  <label>Сеть</label>
                   <select
                     value={withdrawData.network}
                     onChange={(e) => setWithdrawData({ ...withdrawData, network: e.target.value })}
-                    style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                   >
                     <option value="BEP20">BEP20 (Binance) - рекомендуется</option>
                     <option value="TRC20">TRC20 (Tron)</option>
@@ -499,77 +565,68 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 </div>
 
                 <div className="tg-form-group">
-                  <label style={{ color: tgColors.hint, fontSize: 14 }}>Адрес кошелька</label>
+                  <label>Адрес кошелька</label>
                   <textarea
                     value={withdrawData.address}
                     onChange={(e) => setWithdrawData({ ...withdrawData, address: e.target.value })}
                     placeholder="Введите адрес для вывода"
                     rows="3"
-                    style={{ backgroundColor: tgColors.bg, color: tgColors.text, borderColor: 'rgba(0,0,0,0.18)' }}
                     required
                   />
                 </div>
 
-                <div className="tg-withdraw-note" style={{ color: tgColors.hint, fontSize: 13 }}>
-                  ⚠️ Проверьте адрес перед отправкой. Ошибки необратимы.
-                </div>
+                <div className="tg-warn">⚠️ Проверьте адрес перед отправкой. Ошибки необратимы.</div>
 
                 <button
                   type="submit"
-                  className="tg-submit-btn"
+                  className="tg-primary"
                   disabled={!withdrawData.amount || !withdrawData.address}
-                  style={{
-                    backgroundColor: withdrawData.amount && withdrawData.address ? tgColors.button : tgColors.hint,
-                    color: tgColors.buttonText,
-                    opacity: withdrawData.amount && withdrawData.address ? 1 : 0.5,
-                  }}
                 >
-                  📤 Отправить на вывод
+                  Отправить
                 </button>
               </form>
             </div>
           </div>
         )}
 
-        {/* HISTORY */}
+        {/* HISTORY (полная) */}
         {activeTab === 'history' && (
           <div className="tg-section">
-            <div className="tg-card" style={{ backgroundColor: tgColors.secondaryBg }}>
-              <h3 style={{ color: tgColors.text, marginBottom: 20 }}>История операций</h3>
+            <div className="tg-card tg-card-page">
+              <div className="tg-page-head">
+                <button className="tg-back-pill" onClick={() => go('home')} type="button">Назад</button>
+                <div className="tg-page-title">История</div>
+                <div style={{ width: 64 }} />
+              </div>
 
               {!withdrawals || withdrawals.length === 0 ? (
-                <div className="tg-empty" style={{ color: tgColors.hint }}>
-                  📭 Нет операций
-                </div>
+                <div className="tg-history-empty">Нет операций</div>
               ) : (
-                <div className="tg-history-list">
-                  {withdrawals.map((wd) => (
-                    <div key={wd.id || Math.random()} className="tg-history-item" style={{ borderColor: 'rgba(0,0,0,0.10)' }}>
-                      <div className="tg-history-icon">📤</div>
+                <div className="tg-history-full">
+                  {withdrawals
+                    .slice()
+                    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+                    .map((wd) => (
+                      <div key={wd.id || `${wd.created_at}-${wd.amount}`} className="tg-full-row">
+                        <div className="tg-full-left">
+                          <div className="tg-full-title">Вывод</div>
+                          <div className="tg-full-sub">
+                            {formatDate(wd.created_at)} • {wd.address ? formatAddress(wd.address) : '—'}
+                          </div>
 
-                      <div className="tg-history-details">
-                        <div className="tg-history-top">
-                          <span style={{ color: tgColors.text, fontWeight: 600 }}>Вывод USDT</span>
-                          <span style={{ color: tgColors.hint, fontSize: 12 }}>{formatDate(wd.created_at)}</span>
+                          <div className={`tg-status status-${wd.status || 'pending'}`}>
+                            {(!wd.status || wd.status === 'pending') && '⏳ Ожидание'}
+                            {wd.status === 'completed' && '✅ Выполнено'}
+                            {wd.status === 'rejected' && '❌ Отклонено'}
+                            {wd.status === 'processing' && '🔄 В обработке'}
+                          </div>
                         </div>
 
-                        <div className="tg-history-address" style={{ color: tgColors.hint }}>
-                          {wd.address ? formatAddress(wd.address) : '—'}
-                        </div>
-
-                        <div className={`tg-history-status status-${wd.status || 'pending'}`}>
-                          {(!wd.status || wd.status === 'pending') && '⏳ Ожидание'}
-                          {wd.status === 'completed' && '✅ Выполнено'}
-                          {wd.status === 'rejected' && '❌ Отклонено'}
-                          {wd.status === 'processing' && '🔄 В обработке'}
+                        <div className="tg-full-right">
+                          <div className="tg-full-amt">-{formatUSDT(wd.amount)}</div>
                         </div>
                       </div>
-
-                      <div className="tg-history-amount">
-                        -{formatUSDT(wd.amount)}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>

@@ -823,10 +823,11 @@
 
 
 
-  .selected-info{
+.selected-info{
   display: flex;
-  align-items: center;   /* вертикальное выравнивание текста с иконкой */
-  gap: 8px;              /* расстояние между иконкой и текстом */
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px; /* отступ снизу — поменяй на нужное значение */
 }
 
 /* чтобы сама иконка не "прыгала" по высоте */

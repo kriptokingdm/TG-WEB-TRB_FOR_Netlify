@@ -1,7 +1,4 @@
-// USDTWalletTG.js (FULL)
-// 1:1 по скрину: одна главная страница (баланс + 2 кнопки + история-превью)
-// + отдельные экраны deposit / withdraw / history (как раньше)
-// Робото везде, без topbar, вибрация на нажатия, цвета от Telegram темы
+// USDTWalletTG.js (FULL, FIXED - no syntax errors)
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./USDTWallet.css";
@@ -38,6 +35,7 @@ async function fetchJSON(url, { method = "GET", headers, body, timeoutMs = 8000 
     } catch {
       json = null;
     }
+
     return { ok: res.ok, status: res.status, json, raw: text };
   } catch (e) {
     const aborted = e?.name === "AbortError";
@@ -95,7 +93,13 @@ function IconArrowDown() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 4V16" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M7 12L12 17L17 12" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M7 12L12 17L17 12"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -104,7 +108,13 @@ function IconArrowUp() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 20V8" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M7 12L12 7L17 12" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M7 12L12 7L17 12"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -113,12 +123,17 @@ function IconCheckCircle() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M8.5 12.5L10.8 14.8L15.6 10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M8.5 12.5L10.8 14.8L15.6 10"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-// твой SVG фильтра (справа в истории)
 function FilterSvg() {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -139,11 +154,9 @@ function FilterSvg() {
 
 // --- component -------------------------------------------------------------
 export default function USDTWalletTG({ telegramId, onBack }) {
-  // home как на скрине + отдельные экраны
   const [activeTab, setActiveTab] = useState("home");
 
   const [balance, setBalance] = useState(0);
-
   const [addressData, setAddressData] = useState({
     address: "",
     memo: "",
@@ -177,12 +190,11 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     toastTimerRef.current = setTimeout(() => setToast(null), 2200);
   };
 
-  // Лёгкая вибрация на любой тап в мини-аппе (кроме скролла)
+  // лёгкая вибрация на интерактивные элементы
   useEffect(() => {
     const handler = (e) => {
       const t = e.target;
       if (!t) return;
-      // только интерактивные элементы
       const interactive = t.closest?.("button, a, input, select, textarea, [role='button']");
       if (interactive) vibrate(6);
     };
@@ -190,7 +202,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     return () => document.removeEventListener("click", handler, { capture: true });
   }, []);
 
-  // --- saved addresses -----------------------------------------------------
+  // saved addresses
   useEffect(() => {
     const saved = localStorage.getItem("userCryptoAddresses");
     if (saved) {
@@ -203,7 +215,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     }
   }, []);
 
-  // --- API loaders ---------------------------------------------------------
+  // load
   const loadData = async ({ silent = false } = {}) => {
     if (!telegramId) return;
 
@@ -255,7 +267,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     return () => clearInterval(id);
   }, [telegramId]);
 
-  // --- actions -------------------------------------------------------------
+  // actions
   const copyToClipboard = async (text, type = "адрес") => {
     if (!text) return;
     vibrate(6);
@@ -322,10 +334,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   const go = (tab) => setActiveTab(tab);
 
-  // --- history preview rows: делаем 3 строки как на скрине -----------------
-  // По бэку у нас есть withdrawals. Депозитов/чеков может не быть.
-  // Поэтому: 1) если в объекте wd.type есть — используем
-  // 2) иначе withdrawals считаем "Вывод"
+  // mini history: 3 отдельных блока
   const miniOps = useMemo(() => {
     const list = Array.isArray(withdrawals) ? withdrawals.slice() : [];
     list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
@@ -334,10 +343,8 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       let kind = "withdraw";
       if (t.includes("deposit") || t.includes("пополн")) kind = "deposit";
       else if (t.includes("check") || t.includes("чек")) kind = "check";
-      else kind = "withdraw";
 
       const usdt = Number(x.amount || 0);
-      // рубли — если бэк отдаёт
       const rub =
         x.rub_amount ?? x.rubAmount ?? x.amount_rub ?? x.amountRub ?? x.rub ?? x.rubles ?? null;
 
@@ -347,11 +354,12 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         created_at: x.created_at,
         usdt,
         rub,
+        address: x.address || "",
       };
     });
   }, [withdrawals]);
 
-  // --- UI states -----------------------------------------------------------
+  // UI loading
   if (isLoading && activeTab === "home") {
     return (
       <div className="tg-loading tg-ui" role="status">
@@ -363,19 +371,22 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   return (
     <div className="tg-container tg-ui">
-      {/* Toast */}
       {toast && <div className={`tg-toast tg-toast-${toast.type}`}>{toast.message}</div>}
 
-      {/* CONTENT */}
-      <div className="tg-content">
-        {/* HOME (как на скрине) */}
+      <div className="tg-content tg-content-wide">
+        {/* HOME */}
         {activeTab === "home" && (
           <div className="tg-stack">
-            {/* BALANCE CARD */}
+            {/* BALANCE */}
             <div className="tg-card">
-              <div className="tg-card-header">
-                <div className="tg-card-title">Баланс кошелька</div>
-                <button className="tg-icon-btn" onClick={() => loadData({ silent: true })} aria-label="Обновить">
+              <div className="tg-balance-head">
+                <div className="tg-balance-title">Баланс кошелька</div>
+                <button
+                  className="tg-icon-btn"
+                  onClick={() => loadData({ silent: true })}
+                  aria-label="Обновить"
+                  type="button"
+                >
                   <IconRefresh />
                 </button>
               </div>
@@ -399,14 +410,14 @@ export default function USDTWalletTG({ telegramId, onBack }) {
               </div>
             </div>
 
-            {/* HISTORY CARD */}
+            {/* HISTORY */}
             <div className="tg-card">
-              <div className="tg-card-header">
-                <div className="tg-card-title">История транзакций</div>
-                <button className="tg-icon-btn" onClick={() => go("history")} aria-label="История">
+              <button className="tg-card-title-btn" onClick={() => go("history")} type="button">
+                <span className="tg-card-title-center">История транзакций</span>
+                <span className="tg-card-title-right">
                   <FilterSvg />
-                </button>
-              </div>
+                </span>
+              </button>
 
               <div className="tg-history">
                 {miniOps.length === 0 ? (
@@ -421,40 +432,32 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                     const sign = isDeposit ? "+" : isCheck ? "-/+" : "-";
                     const icon = isDeposit ? <IconArrowDown /> : isCheck ? <IconCheckCircle /> : <IconArrowUp />;
 
-                    // USDT строка справа (как на скрине: +100.00 USDT)
                     const usdtText = `${sign}${formatUSDTnum(op.usdt)} USDT`;
-                    // ₽ строка — если есть в данных, иначе скрываем
-                    const rubText = op.rub != null && op.rub !== "" ? `${Number(op.rub).toLocaleString("ru-RU")} ₽` : "";
+                    const rubText =
+                      op.rub != null && op.rub !== ""
+                        ? `${Number(op.rub).toLocaleString("ru-RU")} ₽`
+                        : "";
 
                     return (
-                      <button
-                        key={op.id}
-                        className="tg-history-row"
-                        type="button"
-                        onClick={() => go("history")}
-                      >
-                        <span className={`tg-row-icon ${isDeposit ? "in" : isCheck ? "check" : "out"}`}>
+                      <button key={op.id} className="tg-tx-card" type="button" onClick={() => go("history")}>
+                        <span className={`tg-tx-icon ${isDeposit ? "in" : isCheck ? "check" : "out"}`}>
                           {icon}
                         </span>
 
-                        <span className="tg-row-mid">
-                          <span className="tg-row-title">{title}</span>
-                          <span className="tg-row-date">{formatDate(op.created_at)}</span>
+                        <span className="tg-tx-mid">
+                          <span className="tg-tx-title">{title}</span>
+                          <span className="tg-tx-date">{formatDate(op.created_at)}</span>
                         </span>
 
-                        <span className="tg-row-right">
-                          <span className={`tg-row-usdt ${isDeposit ? "pos" : "neg"}`}>{usdtText}</span>
-                          {rubText ? <span className="tg-row-rub">{rubText}</span> : null}
+                        <span className="tg-tx-right">
+                          <span className="tg-tx-usdt">{usdtText}</span>
+                          {rubText ? <span className="tg-tx-rub">{rubText}</span> : null}
                         </span>
                       </button>
                     );
                   })
                 )}
               </div>
-
-              <button className="tg-history-more" onClick={() => go("history")} type="button">
-                Смотреть всю историю
-              </button>
             </div>
           </div>
         )}
@@ -614,7 +617,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             </div>
 
             <div className="tg-card">
-              {(!withdrawals || withdrawals.length === 0) ? (
+              {!withdrawals || withdrawals.length === 0 ? (
                 <div className="tg-empty">Нет операций</div>
               ) : (
                 <div className="tg-history-full">
@@ -628,6 +631,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                           <div className="tg-full-sub">
                             {formatDate(wd.created_at)} • {wd.address ? formatAddress(wd.address) : "—"}
                           </div>
+
                           <div className={`tg-status status-${wd.status || "pending"}`}>
                             {(!wd.status || wd.status === "pending") && "⏳ Ожидание"}
                             {wd.status === "completed" && "✅ Выполнено"}
@@ -646,10 +650,14 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             </div>
           </div>
         )}
-
-        {/* footer back (если надо) */}
-        {onBack && activeTab !== "home" ? null : null}
       </div>
+
+      {/* optional: back to profile */}
+      {onBack ? (
+        <button className="tg-float-back" onClick={() => { vibrate(6); onBack(); }} type="button">
+          Назад в профиль
+        </button>
+      ) : null}
     </div>
   );
 }

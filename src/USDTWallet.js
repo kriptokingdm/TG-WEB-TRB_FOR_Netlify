@@ -1,4 +1,4 @@
-// USDTWalletTG.js (FULL, UPDATED)
+// USDTWalletTG.js (FULL, FIXED - no syntax errors)
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./USDTWallet.css";
@@ -334,7 +334,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
   const go = (tab) => setActiveTab(tab);
 
-  // mini history
+  // mini history: 3 отдельных блока
   const miniOps = useMemo(() => {
     const list = Array.isArray(withdrawals) ? withdrawals.slice() : [];
     list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
@@ -359,6 +359,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     });
   }, [withdrawals]);
 
+  // UI loading
   if (isLoading && activeTab === "home") {
     return (
       <div className="tg-loading tg-ui" role="status">
@@ -378,10 +379,8 @@ export default function USDTWalletTG({ telegramId, onBack }) {
           <div className="tg-stack">
             {/* BALANCE */}
             <div className="tg-card">
-              {/* ВАЖНО: заголовок absolute-centered */}
               <div className="tg-balance-head">
                 <div className="tg-balance-title">Баланс кошелька</div>
-
                 <button
                   className="tg-icon-btn"
                   onClick={() => loadData({ silent: true })}
@@ -396,12 +395,16 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
               <div className="tg-actions">
                 <button className="tg-big-action tg-big-action-primary" onClick={() => go("deposit")} type="button">
-                  <span className="tg-big-icon"><IconArrowDown /></span>
+                  <span className="tg-big-icon">
+                    <IconArrowDown />
+                  </span>
                   <span className="tg-big-text">Внести</span>
                 </button>
 
                 <button className="tg-big-action tg-big-action-secondary" onClick={() => go("withdraw")} type="button">
-                  <span className="tg-big-icon"><IconArrowUp /></span>
+                  <span className="tg-big-icon">
+                    <IconArrowUp />
+                  </span>
                   <span className="tg-big-text">Вывести</span>
                 </button>
               </div>
@@ -422,6 +425,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 ) : (
                   miniOps.map((op) => {
                     const isDeposit = op.kind === "deposit";
+                    const isWithdraw = op.kind === "withdraw";
                     const isCheck = op.kind === "check";
 
                     const title = isDeposit ? "Пополнение" : isCheck ? "Чек" : "Вывод";
@@ -462,7 +466,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         {activeTab === "deposit" && (
           <div className="tg-stack">
             <div className="tg-page-top">
-              <button className="tg-back" onClick={() => go("home")} type="button">Назад</button>
+              <button className="tg-back" onClick={() => go("home")} type="button">
+                Назад
+              </button>
               <div className="tg-page-title">Пополнение</div>
               <div className="tg-page-spacer" />
             </div>
@@ -472,7 +478,12 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
               <div className="tg-addr">
                 <code className="tg-addr-code">{addressData?.address || "Загрузка..."}</code>
-                <button className="tg-pill" onClick={() => copyToClipboard(addressData?.address || "", "адрес")} disabled={!addressData?.address} type="button">
+                <button
+                  className="tg-pill"
+                  onClick={() => copyToClipboard(addressData?.address || "", "адрес")}
+                  disabled={!addressData?.address}
+                  type="button"
+                >
                   Копировать
                 </button>
               </div>
@@ -482,7 +493,12 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                   <div className="tg-subtitle">Memo</div>
                   <div className="tg-addr tg-addr-memo">
                     <code className="tg-addr-code">{addressData.memo}</code>
-                    <button className="tg-pill" onClick={() => copyToClipboard(addressData?.memo || "", "memo")} disabled={!addressData?.memo} type="button">
+                    <button
+                      className="tg-pill"
+                      onClick={() => copyToClipboard(addressData?.memo || "", "memo")}
+                      disabled={!addressData?.memo}
+                      type="button"
+                    >
                       Копировать
                     </button>
                   </div>
@@ -528,7 +544,9 @@ export default function USDTWalletTG({ telegramId, onBack }) {
         {activeTab === "withdraw" && (
           <div className="tg-stack">
             <div className="tg-page-top">
-              <button className="tg-back" onClick={() => go("home")} type="button">Назад</button>
+              <button className="tg-back" onClick={() => go("home")} type="button">
+                Назад
+              </button>
               <div className="tg-page-title">Вывод</div>
               <div className="tg-page-spacer" />
             </div>
@@ -556,7 +574,10 @@ export default function USDTWalletTG({ telegramId, onBack }) {
 
                 <div className="tg-form-group">
                   <label>Сеть</label>
-                  <select value={withdrawData.network} onChange={(e) => setWithdrawData({ ...withdrawData, network: e.target.value })}>
+                  <select
+                    value={withdrawData.network}
+                    onChange={(e) => setWithdrawData({ ...withdrawData, network: e.target.value })}
+                  >
                     <option value="BEP20">BEP20 (Binance) - рекомендуется</option>
                     <option value="TRC20">TRC20 (Tron)</option>
                     <option value="ERC20">ERC20 (Ethereum) - дорого</option>
@@ -583,7 +604,60 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             </div>
           </div>
         )}
+
+        {/* HISTORY FULL */}
+        {activeTab === "history" && (
+          <div className="tg-stack">
+            <div className="tg-page-top">
+              <button className="tg-back" onClick={() => go("home")} type="button">
+                Назад
+              </button>
+              <div className="tg-page-title">История</div>
+              <div className="tg-page-spacer" />
+            </div>
+
+            <div className="tg-card">
+              {!withdrawals || withdrawals.length === 0 ? (
+                <div className="tg-empty">Нет операций</div>
+              ) : (
+                <div className="tg-history-full">
+                  {withdrawals
+                    .slice()
+                    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+                    .map((wd) => (
+                      <div key={wd.id || `${wd.created_at}-${wd.amount}`} className="tg-full-row">
+                        <div className="tg-full-left">
+                          <div className="tg-full-title">Вывод</div>
+                          <div className="tg-full-sub">
+                            {formatDate(wd.created_at)} • {wd.address ? formatAddress(wd.address) : "—"}
+                          </div>
+
+                          <div className={`tg-status status-${wd.status || "pending"}`}>
+                            {(!wd.status || wd.status === "pending") && "⏳ Ожидание"}
+                            {wd.status === "completed" && "✅ Выполнено"}
+                            {wd.status === "rejected" && "❌ Отклонено"}
+                            {wd.status === "processing" && "🔄 В обработке"}
+                          </div>
+                        </div>
+
+                        <div className="tg-full-right">
+                          <div className="tg-full-amt">-{formatUSDTnum(wd.amount)} USDT</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* optional: back to profile */}
+      {onBack ? (
+        <button className="tg-float-back" onClick={() => { vibrate(6); onBack(); }} type="button">
+          Назад в профиль
+        </button>
+      ) : null}
     </div>
   );
 }

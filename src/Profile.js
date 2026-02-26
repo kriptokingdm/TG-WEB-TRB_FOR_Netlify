@@ -242,8 +242,8 @@ function Profile({ navigateTo, telegramUser }) {
               className={`tg-seg-btn ${activeTab === 'usdt' ? 'active' : ''}`}
               onClick={() => { haptic('selection'); setActiveTab('usdt'); }}
             >
-              <Icon><USDTSVG /></Icon>
-              USDT
+              {/* <Icon><USDTSVG /></Icon> */}
+              Кошелек
               {usdtBalanceData?.available > 0 ? (
                 <span className="tg-seg-sub">{formatUSDT(usdtBalanceData.available)}</span>
               ) : null}

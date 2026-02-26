@@ -1,8 +1,7 @@
-/* USDTWallet.css (FULL) — по скрину + правки:
-   - tg-content шире (не маленькое окно)
-   - заголовок истории — отдельная кнопка, текст по центру
-   - каждая транзакция — отдельный блок (как на скрине)
-   - Roboto везде, цвета TG темы */
+/* USDTWallet.css (FULL) */
+/* 1:1 по скрину: тёмные карточки, заголовки по центру, отступы 5%,
+   кнопки "Внести/Вывести", история со строками как на скрине.
+   Цвета берём из TG темы, Roboto везде. */
 
 .tg-container {
   min-height: 100vh;
@@ -11,20 +10,14 @@
   color: var(--tg-theme-text-color, #ffffff);
 }
 
-/* ШИРИНА: делаем реально широко. На телефоне почти во всю ширину, но с мягкими краями */
-.tg-content-wide {
-  width: min(560px, 100%);
-  margin: 0 auto;
-  padding: 16px 12px;
+/* Layout: по 5% поля */
+.tg-content {
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-top: 16px;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
-/* если у тебя родитель давит ширину — добавь ещё это */
-.tg-content {
-  width: 100%;
-}
-
-/* stack */
 .tg-stack {
   display: flex;
   flex-direction: column;
@@ -40,20 +33,21 @@
   box-shadow: 0 14px 36px rgba(0,0,0,0.35);
 }
 
-/* BALANCE header like screenshot */
-.tg-balance-head {
+/* Card header: title centered, icons right */
+.tg-card-header {
   display: grid;
-  grid-template-columns: 1fr 36px;
+  grid-template-columns: 36px 1fr 36px; /* левый спейсер / заголовок / иконка */
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
 }
 
-.tg-balance-title {
+.tg-card-title {
   text-align: center;
   font-size: 16px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.95);
+  font-weight: 800;
+  color: var(--tg-theme-text-color, #ffffff);
+  letter-spacing: -0.2px;
 }
 
 .tg-icon-btn {
@@ -68,6 +62,10 @@
   color: rgba(255,255,255,0.92);
   cursor: pointer;
   justify-self: end;
+}
+
+.tg-icon-btn svg {
+  display: block;
 }
 
 .tg-icon-btn:active {
@@ -95,7 +93,7 @@
   height: 86px;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.14);
+  background: rgba(255,255,255,0.03);
   color: var(--tg-theme-text-color, #fff);
   cursor: pointer;
   display: grid;
@@ -105,58 +103,34 @@
   transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.tg-big-icon { display: inline-flex; }
-.tg-big-text { font-size: 16px; font-weight: 900; }
-
-.tg-big-action-primary {
-  border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 55%, rgba(255,255,255,0.12));
-  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 18%, rgba(0,0,0,0.14));
-  box-shadow: 0 10px 26px color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 22%, transparent);
-}
-
-.tg-big-action-secondary {
-  background: rgba(0,0,0,0.14);
-}
-
-.tg-big-action:active { transform: scale(0.98); }
-
-/* ====== History title button (как на скрине) ====== */
-.tg-card-title-btn {
-  width: 100%;
-  height: 48px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.12);
-  display: grid;
-  grid-template-columns: 1fr 44px;
-  align-items: center;
-  padding: 0 12px;
-  cursor: pointer;
-  margin-bottom: 10px;
-  color: inherit;
-}
-
-.tg-card-title-btn:active {
-  transform: scale(0.99);
-  background: rgba(255,255,255,0.04);
-}
-
-.tg-card-title-center {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.95);
-}
-
-.tg-card-title-right {
+.tg-big-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
+}
+
+.tg-big-text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.tg-big-action-primary {
+  border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 55%, rgba(255,255,255,0.12));
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 18%, rgba(255,255,255,0.03));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 20%, transparent);
+}
+
+.tg-big-action-secondary {
+  background: rgba(0,0,0,0.10);
+}
+
+.tg-big-action:active {
+  transform: scale(0.98);
+}
+
+.tg-big-action-primary:active {
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 28%, rgba(255,255,255,0.03));
 }
 
 /* History list */
@@ -164,13 +138,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 6px;
 }
 
-/* ====== TX отдельными блоками (как на скрине) ====== */
-.tg-tx-card {
+.tg-history-row {
   width: 100%;
   border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.10);
   border-radius: 16px;
   padding: 12px;
   display: grid;
@@ -182,12 +156,12 @@
   text-align: left;
 }
 
-.tg-tx-card:active {
+.tg-history-row:active {
   transform: scale(0.99);
   background: rgba(255,255,255,0.04);
 }
 
-.tg-tx-icon {
+.tg-row-icon {
   width: 42px;
   height: 42px;
   border-radius: 14px;
@@ -199,32 +173,39 @@
   color: rgba(255,255,255,0.95);
 }
 
-.tg-tx-icon.in {
+.tg-row-icon.in {
   background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 16%, rgba(255,255,255,0.03));
   border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 40%, rgba(255,255,255,0.10));
 }
 
-.tg-tx-mid {
+.tg-row-icon.out {
+  background: rgba(255,255,255,0.03);
+}
+
+.tg-row-icon.check {
+  background: rgba(255,255,255,0.03);
+}
+
+.tg-row-mid {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.tg-tx-title {
+.tg-row-title {
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.1;
-  color: rgba(255,255,255,0.95);
 }
 
-.tg-tx-date {
+.tg-row-date {
   font-size: 12.5px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
 }
 
-.tg-tx-right {
+.tg-row-right {
   text-align: right;
   display: flex;
   flex-direction: column;
@@ -232,29 +213,48 @@
   align-items: flex-end;
 }
 
-.tg-tx-usdt {
+.tg-row-usdt {
   font-size: 14px;
   font-weight: 900;
   white-space: nowrap;
-  color: rgba(255,255,255,0.95);
 }
 
-.tg-tx-rub {
+.tg-row-usdt.pos { color: rgba(255,255,255,0.95); }
+.tg-row-usdt.neg { color: rgba(255,255,255,0.95); }
+
+.tg-row-rub {
   font-size: 12.5px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
   white-space: nowrap;
+}
+
+.tg-history-more {
+  margin-top: 10px;
+  width: 100%;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.92);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tg-history-more:active {
+  transform: scale(0.99);
+  opacity: 0.95;
 }
 
 /* Empty */
 .tg-empty {
   padding: 18px 6px;
   text-align: center;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
 }
 
-/* pages top */
+/* Pages (deposit/withdraw/history) */
 .tg-page-top {
   display: grid;
   grid-template-columns: 72px 1fr 72px;
@@ -286,7 +286,7 @@
 /* subtitles */
 .tg-subtitle {
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
   margin-bottom: 8px;
 }
@@ -294,7 +294,7 @@
 /* address blocks */
 .tg-addr {
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.10);
   border-radius: 16px;
   padding: 12px;
   display: grid;
@@ -303,9 +303,11 @@
   align-items: center;
 }
 
+.tg-addr + .tg-subtitle { margin-top: 14px; }
+
 .tg-addr-memo {
   border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 35%, rgba(255,255,255,0.10));
-  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, rgba(0,0,0,0.12));
+  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, rgba(0,0,0,0.10));
 }
 
 .tg-addr-code {
@@ -327,6 +329,11 @@
   cursor: pointer;
 }
 
+.tg-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .tg-wide {
   margin-top: 12px;
   width: 100%;
@@ -344,11 +351,13 @@
 /* form */
 .tg-available {
   margin-bottom: 12px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
 }
 
-.tg-available-amt { color: rgba(255,255,255,0.95); }
+.tg-available-amt {
+  color: rgba(255,255,255,0.95);
+}
 
 .tg-form {
   display: flex;
@@ -373,7 +382,7 @@
 .tg-form-group textarea {
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.10);
   padding: 12px;
   color: rgba(255,255,255,0.92);
   font-size: 15px;
@@ -381,9 +390,15 @@
   font-family: inherit;
 }
 
+.tg-form-group input:focus,
+.tg-form-group select:focus,
+.tg-form-group textarea:focus {
+  border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 55%, rgba(255,255,255,0.10));
+}
+
 .tg-form-hint {
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
   color: rgba(255,255,255,0.45);
 }
 
@@ -393,7 +408,7 @@
   border: 1px solid rgba(255, 183, 77, 0.25);
   background: rgba(255, 183, 77, 0.10);
   color: rgba(255,255,255,0.90);
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .tg-submit {
@@ -406,7 +421,72 @@
   cursor: pointer;
 }
 
-.tg-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+.tg-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tg-submit:active:not(:disabled) { transform: scale(0.99); }
+
+/* history full */
+.tg-history-full {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tg-full-row {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tg-full-title {
+  font-weight: 900;
+  color: rgba(255,255,255,0.95);
+  font-size: 14px;
+}
+
+.tg-full-sub {
+  margin-top: 4px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.tg-full-right {
+  text-align: right;
+  display: flex;
+  align-items: center;
+}
+
+.tg-full-amt {
+  font-weight: 900;
+  font-size: 14px;
+  color: rgba(255,255,255,0.95);
+  white-space: nowrap;
+}
+
+.tg-status {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,0.92);
+}
+
+.status-pending { border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.10); }
+.status-completed { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.10); }
+.status-rejected { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.10); }
+.status-processing { border-color: rgba(51,144,236,0.25); background: rgba(51,144,236,0.10); }
 
 /* Toast */
 .tg-toast {
@@ -457,9 +537,8 @@
   color: rgba(255,255,255,0.60);
 }
 
-/* Mobile tweaks */
+/* Responsive tweaks */
 @media (max-width: 420px) {
-  .tg-content-wide { padding-left: 10px; padding-right: 10px; }
   .tg-balance { font-size: 40px; }
   .tg-big-action { height: 82px; }
 }

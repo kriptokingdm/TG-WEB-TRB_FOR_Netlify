@@ -1,9 +1,4 @@
-/* USDTWallet.css (FULL) — по скрину + правки:
-   - tg-content шире (не маленькое окно)
-   - заголовок истории — отдельная кнопка, текст по центру
-   - каждая транзакция — отдельный блок (как на скрине)
-   - Roboto везде, цвета TG темы
-   - карточки без фона (полупрозрачные) */
+/* USDTWallet.css (FULL) — финальная версия */
 
 .tg-container {
   min-height: 100vh;
@@ -12,7 +7,7 @@
   color: var(--tg-theme-text-color, #ffffff);
 }
 
-/* ШИРИНА: делаем реально широко. На телефоне почти во всю ширину, но с мягкими краями */
+/* ШИРИНА: делаем реально широко */
 .tg-content-wide {
   width: 100%;
   max-width: 600px;
@@ -21,36 +16,32 @@
   padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
-/* для очень маленьких экранов */
 @media (max-width: 480px) {
   .tg-content-wide {
     padding: 16px;
   }
 }
 
-/* если у тебя родитель давит ширину — добавь ещё это */
 .tg-content {
   width: 100%;
 }
 
-/* stack */
 .tg-stack {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Card base - без фона, только полупрозрачная обводка */
+/* Card base - БЕЗ ОКАНТОВКИ, только легкая тень */
 .tg-card {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   border-radius: 24px;
   padding: 20px 16px;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* BALANCE header like screenshot */
+/* BALANCE header */
 .tg-balance-head {
   display: grid;
   grid-template-columns: 1fr 40px;
@@ -68,24 +59,25 @@
   opacity: 0.95;
 }
 
+/* Иконка обновления - БЕЗ РАМКИ */
 .tg-icon-btn {
   width: 40px;
   height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--tg-theme-text-color, #ffffff);
   cursor: pointer;
   justify-self: end;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
+  opacity: 0.8;
 }
 
 .tg-icon-btn:active {
+  opacity: 0.6;
   transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Balance */
@@ -108,8 +100,7 @@
 
 .tg-big-action {
   height: 90px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(0, 0, 0, 0.2);
   color: var(--tg-theme-text-color, #fff);
   cursor: pointer;
@@ -122,6 +113,7 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  border-radius: 20px;
 }
 
 .tg-big-icon { 
@@ -135,7 +127,6 @@
 }
 
 .tg-big-action-primary {
-  border-color: rgba(51, 144, 236, 0.3);
   background: rgba(51, 144, 236, 0.1);
   box-shadow: 0 8px 20px rgba(51, 144, 236, 0.15);
 }
@@ -149,47 +140,51 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* ====== History title button (как на скрине) ====== */
+/* ====== History title button ====== */
 .tg-card-title-btn {
   width: 100%;
   height: 54px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.15);
-  display: grid;
-  grid-template-columns: 1fr 48px;
+  border: none;
+  background: transparent;
+  display: flex;
   align-items: center;
-  padding: 0 16px;
+  justify-content: space-between;
+  padding: 0;
   cursor: pointer;
   margin-bottom: 16px;
   color: inherit;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.tg-card-title-btn:active {
-  transform: scale(0.99);
-  background: rgba(255, 255, 255, 0.05);
+  position: relative;
 }
 
 .tg-card-title-center {
+  flex: 1;
   text-align: center;
   font-size: 17px;
   font-weight: 700;
   color: var(--tg-theme-text-color, #ffffff);
   letter-spacing: 0.2px;
+  margin: 0;
 }
 
+/* Правая часть с иконкой - БЕЗ РАМКИ */
 .tg-card-title-right {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
+  width: 40px;
   height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  background: transparent;
   color: var(--tg-theme-button-color, #3390ec);
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* Левая часть для баланса (пустая) */
+.tg-card-title-left {
+  width: 40px;
+  flex-shrink: 0;
+  visibility: hidden;
 }
 
 /* History list */
@@ -199,10 +194,10 @@
   gap: 12px;
 }
 
-/* ====== TX отдельными блоками (как на скрине) ====== */
+/* ====== TX отдельными блоками ====== */
 .tg-tx-card {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   background: rgba(0, 0, 0, 0.15);
   border-radius: 18px;
   padding: 14px;
@@ -216,6 +211,7 @@
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tg-tx-card:active {
@@ -227,7 +223,7 @@
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(255, 255, 255, 0.03);
   display: inline-flex;
   align-items: center;
@@ -237,19 +233,16 @@
 
 .tg-tx-icon.in {
   background: rgba(51, 144, 236, 0.1);
-  border-color: rgba(51, 144, 236, 0.3);
   color: #3390ec;
 }
 
 .tg-tx-icon.out {
   background: rgba(255, 59, 48, 0.1);
-  border-color: rgba(255, 59, 48, 0.3);
   color: #ff3b30;
 }
 
 .tg-tx-icon.check {
   background: rgba(52, 199, 89, 0.1);
-  border-color: rgba(52, 199, 89, 0.3);
   color: #34c759;
 }
 
@@ -315,8 +308,7 @@
 
 .tg-back {
   height: 42px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(255, 255, 255, 0.03);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 600;
@@ -324,6 +316,7 @@
   font-size: 15px;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  border-radius: 16px;
 }
 
 .tg-back:active { 
@@ -339,8 +332,6 @@
   letter-spacing: 0.2px;
 }
 
-.tg-page-spacer {}
-
 /* subtitles */
 .tg-subtitle {
   font-size: 14px;
@@ -352,7 +343,7 @@
 
 /* address blocks */
 .tg-addr {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(0, 0, 0, 0.15);
   border-radius: 18px;
   padding: 14px;
@@ -363,10 +354,10 @@
   margin-bottom: 12px;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tg-addr-memo {
-  border-color: rgba(51, 144, 236, 0.3);
   background: rgba(51, 144, 236, 0.05);
 }
 
@@ -381,8 +372,7 @@
 .tg-pill {
   height: 42px;
   padding: 0 18px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(255, 255, 255, 0.03);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 600;
@@ -391,6 +381,7 @@
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   white-space: nowrap;
+  border-radius: 16px;
 }
 
 .tg-pill:active {
@@ -401,8 +392,7 @@
   margin-top: 16px;
   width: 100%;
   height: 52px;
-  border-radius: 18px;
-  border: 1px solid rgba(51, 144, 236, 0.3);
+  border: none;
   background: rgba(51, 144, 236, 0.1);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 700;
@@ -411,6 +401,7 @@
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   transition: all 0.2s ease;
+  border-radius: 18px;
 }
 
 .tg-wide:active { 
@@ -424,9 +415,10 @@
   background: rgba(0, 0, 0, 0.15);
   border-radius: 18px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tg-saved-title {
@@ -452,7 +444,6 @@
   background: rgba(255, 255, 255, 0.03);
   border-radius: 14px;
   gap: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .tg-saved-info {
@@ -488,7 +479,7 @@
 
 .tg-saved-copy {
   background: rgba(51, 144, 236, 0.1);
-  border: 1px solid rgba(51, 144, 236, 0.3);
+  border: none;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -508,11 +499,12 @@
 .tg-note {
   border-radius: 18px;
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   background: rgba(0, 0, 0, 0.15);
   margin-top: 20px;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tg-note-title {
@@ -569,7 +561,7 @@
 .tg-form-group select,
 .tg-form-group textarea {
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(0, 0, 0, 0.15);
   padding: 14px;
   color: var(--tg-theme-text-color, #ffffff);
@@ -578,13 +570,14 @@
   font-family: inherit;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tg-form-group input:focus,
 .tg-form-group select:focus,
 .tg-form-group textarea:focus {
-  border-color: var(--tg-theme-button-color, #3390ec);
   background: rgba(51, 144, 236, 0.05);
+  box-shadow: 0 0 0 2px rgba(51, 144, 236, 0.3);
 }
 
 .tg-form-hint {
@@ -596,7 +589,7 @@
 .tg-warn {
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 183, 77, 0.3);
+  border: none;
   background: rgba(255, 183, 77, 0.08);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 600;
@@ -608,7 +601,7 @@
 .tg-submit {
   height: 56px;
   border-radius: 18px;
-  border: 1px solid rgba(51, 144, 236, 0.3);
+  border: none;
   background: rgba(51, 144, 236, 0.1);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 700;
@@ -627,7 +620,6 @@
 .tg-submit:disabled { 
   opacity: 0.4; 
   cursor: not-allowed;
-  border-color: rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -645,9 +637,10 @@
   padding: 16px;
   background: rgba(0, 0, 0, 0.15);
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .tg-full-left {
@@ -690,31 +683,26 @@
   font-weight: 700;
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .status-pending {
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .status-completed {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
-  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .status-rejected {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .status-processing {
   background: rgba(51, 144, 236, 0.15);
   color: #3390ec;
-  border-color: rgba(51, 144, 236, 0.3);
 }
 
 /* Toast */
@@ -735,20 +723,16 @@
   text-align: center;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tg-toast-ok { 
   background: rgba(16, 185, 129, 0.9);
-  border-color: rgba(16, 185, 129, 0.5);
 }
 .tg-toast-warn { 
   background: rgba(245, 158, 11, 0.9);
-  border-color: rgba(245, 158, 11, 0.5);
 }
 .tg-toast-error { 
   background: rgba(239, 68, 68, 0.9);
-  border-color: rgba(239, 68, 68, 0.5);
 }
 
 /* Loading */
@@ -789,7 +773,7 @@
   transform: translateX(-50%);
   padding: 14px 28px;
   border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   background: rgba(0, 0, 0, 0.7);
   color: var(--tg-theme-text-color, #ffffff);
   font-weight: 700;
@@ -807,7 +791,7 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
-/* Dark theme - уже применено выше */
+/* Dark theme */
 [data-theme="dark"] {
   --tg-theme-bg-color: #0f1115;
   --tg-theme-text-color: #ffffff;

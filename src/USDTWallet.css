@@ -1,8 +1,4 @@
-/* USDTWallet.css (FULL) — по скрину + правки:
-   - tg-content шире (не маленькое окно)
-   - заголовок истории — отдельная кнопка, текст по центру
-   - каждая транзакция — отдельный блок (как на скрине)
-   - Roboto везде, цвета TG темы */
+/* USDTWallet.css (FULL, UPDATED) */
 
 .tg-container {
   min-height: 100vh;
@@ -11,71 +7,74 @@
   color: var(--tg-theme-text-color, #ffffff);
 }
 
-/* ШИРИНА: делаем реально широко. На телефоне почти во всю ширину, но с мягкими краями */
+/* wider container */
 .tg-content-wide {
-  width: min(560px, 100%);
+  width: min(620px, 100%);
   margin: 0 auto;
   padding: 16px 12px;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
-/* если у тебя родитель давит ширину — добавь ещё это */
-.tg-content {
-  width: 100%;
-}
-
-/* stack */
 .tg-stack {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* Card base */
+/* tg-card WITHOUT background (как ты просил) */
 .tg-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+  background: transparent;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 18px;
   padding: 14px;
-  box-shadow: 0 14px 36px rgba(0,0,0,0.35);
 }
 
-/* BALANCE header like screenshot */
-.tg-balance-head {
-  display: grid;
-  grid-template-columns: 1fr 36px;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.tg-balance-title {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.95);
-}
-
+/* ===== icons buttons: no square ===== */
 .tg-icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: rgba(255,255,255,0.92);
   cursor: pointer;
-  justify-self: end;
 }
 
 .tg-icon-btn:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+  transform: scale(0.95);
+  opacity: 0.85;
 }
 
-/* Balance */
+/* ===== BALANCE HEADER centered real ===== */
+.tg-balance-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* центр */
+  height: 32px;
+  margin-bottom: 8px;
+}
+
+.tg-balance-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.95);
+  white-space: nowrap;
+}
+
+.tg-balance-head .tg-icon-btn {
+  position: absolute;
+  right: 0;
+}
+
+/* Balance amount */
 .tg-balance {
   text-align: center;
   font-size: 44px;
@@ -84,7 +83,7 @@
   padding: 10px 0 14px;
 }
 
-/* Big actions */
+/* Actions */
 .tg-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -120,7 +119,7 @@
 
 .tg-big-action:active { transform: scale(0.98); }
 
-/* ====== History title button (как на скрине) ====== */
+/* ===== History title as button ===== */
 .tg-card-title-btn {
   width: 100%;
   height: 48px;
@@ -128,12 +127,13 @@
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(0,0,0,0.12);
   display: grid;
-  grid-template-columns: 1fr 44px;
+  grid-template-columns: 1fr 28px;
   align-items: center;
   padding: 0 12px;
   cursor: pointer;
   margin-bottom: 10px;
   color: inherit;
+  position: relative;
 }
 
 .tg-card-title-btn:active {
@@ -142,22 +142,30 @@
 }
 
 .tg-card-title-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   font-size: 16px;
   font-weight: 900;
   color: rgba(255,255,255,0.95);
+  white-space: nowrap;
 }
 
+/* right icon: JUST button without bg */
 .tg-card-title-right {
+  justify-self: end;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.92);
 }
+
+.tg-card-title-right svg { display: block; }
 
 /* History list */
 .tg-history {
@@ -166,7 +174,6 @@
   gap: 10px;
 }
 
-/* ====== TX отдельными блоками (как на скрине) ====== */
 .tg-tx-card {
   width: 100%;
   border: 1px solid rgba(255,255,255,0.08);
@@ -254,182 +261,6 @@
   color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
 }
 
-/* pages top */
-.tg-page-top {
-  display: grid;
-  grid-template-columns: 72px 1fr 72px;
-  align-items: center;
-  gap: 10px;
-}
-
-.tg-back {
-  height: 38px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.92);
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tg-back:active { transform: scale(0.99); }
-
-.tg-page-title {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.95);
-}
-
-.tg-page-spacer {}
-
-/* subtitles */
-.tg-subtitle {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
-  margin-bottom: 8px;
-}
-
-/* address blocks */
-.tg-addr {
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.12);
-  border-radius: 16px;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-
-.tg-addr-memo {
-  border-color: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 35%, rgba(255,255,255,0.10));
-  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 10%, rgba(0,0,0,0.12));
-}
-
-.tg-addr-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
-  line-height: 1.35;
-  word-break: break-all;
-  color: rgba(255,255,255,0.92);
-}
-
-.tg-pill {
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.92);
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tg-wide {
-  margin-top: 12px;
-  width: 100%;
-  height: 48px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 40%, rgba(255,255,255,0.10));
-  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 14%, rgba(255,255,255,0.03));
-  color: rgba(255,255,255,0.95);
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tg-wide:active { transform: scale(0.99); }
-
-/* form */
-.tg-available {
-  margin-bottom: 12px;
-  font-weight: 900;
-  color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
-}
-
-.tg-available-amt { color: rgba(255,255,255,0.95); }
-
-.tg-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.tg-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.tg-form-group label {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--tg-theme-hint-color, rgba(255,255,255,0.60));
-}
-
-.tg-form-group input,
-.tg-form-group select,
-.tg-form-group textarea {
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.12);
-  padding: 12px;
-  color: rgba(255,255,255,0.92);
-  font-size: 15px;
-  outline: none;
-  font-family: inherit;
-}
-
-.tg-form-hint {
-  font-size: 12px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.45);
-}
-
-.tg-warn {
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 183, 77, 0.25);
-  background: rgba(255, 183, 77, 0.10);
-  color: rgba(255,255,255,0.90);
-  font-weight: 900;
-}
-
-.tg-submit {
-  height: 52px;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 45%, rgba(255,255,255,0.10));
-  background: color-mix(in srgb, var(--tg-theme-button-color, #3390ec) 16%, rgba(255,255,255,0.03));
-  color: rgba(255,255,255,0.95);
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.tg-submit:disabled { opacity: 0.45; cursor: not-allowed; }
-
-/* Toast */
-.tg-toast {
-  position: fixed;
-  left: 50%;
-  top: 72px;
-  transform: translateX(-50%);
-  z-index: 200;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 900;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-  background: rgba(0, 0, 0, 0.78);
-  color: #fff;
-  max-width: calc(100% - 32px);
-  text-align: center;
-}
-
-.tg-toast-ok { background: rgba(16, 185, 129, 0.90); }
-.tg-toast-warn { background: rgba(245, 158, 11, 0.92); }
-.tg-toast-error { background: rgba(239, 68, 68, 0.92); }
-
 /* Loading */
 .tg-loading {
   min-height: 240px;
@@ -459,7 +290,7 @@
 
 /* Mobile tweaks */
 @media (max-width: 420px) {
-  .tg-content-wide { padding-left: 10px; padding-right: 10px; }
+  .tg-content-wide { width: 100%; padding-left: 10px; padding-right: 10px; }
   .tg-balance { font-size: 40px; }
   .tg-big-action { height: 82px; }
 }

@@ -509,24 +509,24 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                 </>
               ) : null}
 
-              {savedAddresses.length > 0 && (
-                <div className="tg-saved-addresses">
-                  <div className="tg-saved-title">СОХРАНЕННЫЕ АДРЕСА</div>
-                  <div className="tg-saved-list">
-                    {savedAddresses.map((addr) => (
-                      <div key={addr.id} className="tg-saved-item">
-                        <div className="tg-saved-info">
-                          <span className="tg-saved-name">{addr.name}</span>
-                          <span className="tg-saved-address">{formatAddress(addr.address)}</span>
-                        </div>
-                        <button className="tg-saved-copy" onClick={() => copyToClipboard(addr.address, "адрес")} type="button">
-                          Копировать
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* {savedAddresses.length > 0 && (
+                // <div className="tg-saved-addresses">
+                //   <div className="tg-saved-title">СОХРАНЕННЫЕ АДРЕСА</div>
+                //   <div className="tg-saved-list">
+                //     {savedAddresses.map((addr) => (
+                //       <div key={addr.id} className="tg-saved-item">
+                //         <div className="tg-saved-info">
+                //           <span className="tg-saved-name">{addr.name}</span>
+                //           <span className="tg-saved-address">{formatAddress(addr.address)}</span>
+                //         </div>
+                //         <button className="tg-saved-copy" onClick={() => copyToClipboard(addr.address, "адрес")} type="button">
+                //           Копировать
+                //         </button>
+                //       </div>
+                //     ))}
+                //   </div>
+                // </div>
+              )} */}
 
               <div className="tg-note">
                 <div className="tg-note-title">Инструкция</div>

@@ -1,4 +1,4 @@
-// PinCode.js - Компонент для ввода 6-значного PIN-кода (с сервером)
+// PinCode.js - Компонент для ввода 6-значного PIN-кода (ИСПРАВЛЕННЫЙ)
 import React, { useState, useEffect, useRef } from 'react';
 import './PinCode.css';
 
@@ -21,13 +21,6 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   const [lockTime, setLockTime] = useState(null);
   
   const inputRefs = useRef([]);
-
-  // Проверяем, есть ли PIN на сервере
-  useEffect(() => {
-    if (mode === 'enter') {
-      // Можно сделать проверку, но пока просто показываем ввод
-    }
-  }, [mode]);
 
   // Автофокус
   useEffect(() => {
@@ -83,7 +76,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
     }
   };
 
-  // Создание PIN
+  // СОЗДАНИЕ PIN
   const handleCreate = async () => {
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
@@ -99,6 +92,8 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
     setLoading(true);
     try {
+      console.log('📤 Отправка запроса на создание PIN:', { userId, pin: pinString });
+      
       const response = await fetch(`${API_BASE_URL}/api/pin/set`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,6 +101,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       });
 
       const data = await response.json();
+      console.log('📥 Ответ сервера:', data);
 
       if (data.success) {
         vibrate(12);
@@ -114,21 +110,24 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
           onSuccess();
         }, 1000);
       } else {
-        setError(data.error);
+        setError(data.error || 'Ошибка создания PIN');
       }
     } catch (error) {
+      console.error('❌ Ошибка:', error);
       setError('Ошибка соединения');
     } finally {
       setLoading(false);
     }
   };
 
-  // Проверка PIN
+  // ПРОВЕРКА PIN
   const handleVerify = async () => {
     const pinString = pin.join('');
     
     setLoading(true);
     try {
+      console.log('📤 Отправка запроса на проверку PIN:', { userId, pin: pinString });
+      
       const response = await fetch(`${API_BASE_URL}/api/pin/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,6 +135,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       });
 
       const data = await response.json();
+      console.log('📥 Ответ сервера:', data);
 
       if (data.success) {
         vibrate(12);
@@ -150,16 +150,17 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
         }, 1000);
       } else {
         vibrate(20);
-        setError(data.error);
+        setError(data.error || 'Неверный PIN');
         setPin(['', '', '', '', '', '']);
         if (data.attempts_left !== undefined) {
           setAttemptsLeft(data.attempts_left);
         }
-        if (data.error.includes('через')) {
+        if (data.error && data.error.includes('через')) {
           setLockTime(new Date());
         }
       }
     } catch (error) {
+      console.error('❌ Ошибка:', error);
       setError('Ошибка соединения');
     } finally {
       setLoading(false);

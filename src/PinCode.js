@@ -31,7 +31,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
   // Автофокус
   useEffect(() => {
-    const currentStep = step === 'create' ? pin : confirmPin;
+    const currentStep = step === 'create' || step === 'enter' ? pin : confirmPin;
     const emptyIndex = currentStep.findIndex(d => d === '');
     if (emptyIndex !== -1 && inputRefs.current[emptyIndex]) {
       inputRefs.current[emptyIndex].focus();
@@ -42,39 +42,35 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
     vibrate(6);
     
     if (type === 'pin') {
-  const newPin = [...pin];
-  newPin[index] = digit;
-  setPin(newPin);
-  
-  // Если заполнили все 6 цифр в режиме создания
-  if (index === 5 && step === 'create') {
-    // Убеждаемся, что у нас 6 цифр
-    const fullPin = newPin.join('');
-    console.log('✅ Первый PIN введён полностью:', fullPin);
-    
-    setTimeout(() => {
-      setStep('confirm');
-      // ВАЖНО: создаём массив из 6 пустых строк
-      setConfirmPin(['', '', '', '', '', '']);
-    }, 100);
-  }
-  
-  // Если заполнили все 6 цифр в режиме ввода
-  if (index === 5 && step === 'enter') {
-    setTimeout(() => handleVerify(), 100);
-  }
-} else if (type === 'confirm') {
-  const newConfirm = [...confirmPin];
-  newConfirm[index] = digit;
-  setConfirmPin(newConfirm);
-  
-  // Если заполнили все 6 цифр подтверждения
-  if (index === 5) {
-    const fullConfirm = newConfirm.join('');
-    console.log('✅ Второй PIN введён полностью:', fullConfirm);
-    setTimeout(() => handleCreate(), 100);
-  }
-}
+      const newPin = [...pin];
+      newPin[index] = digit;
+      setPin(newPin);
+      
+      // Если заполнили все 6 цифр в режиме создания
+      if (index === 5 && step === 'create') {
+        console.log('✅ Первый PIN введён полностью:', newPin.join(''));
+        setTimeout(() => {
+          setStep('confirm');
+          // ВАЖНО: создаём новый массив из 6 пустых строк
+          setConfirmPin(['', '', '', '', '', '']);
+        }, 100);
+      }
+      
+      // Если заполнили все 6 цифр в режиме ввода
+      if (index === 5 && step === 'enter') {
+        setTimeout(() => handleVerify(), 100);
+      }
+    } else if (type === 'confirm') {
+      const newConfirm = [...confirmPin];
+      newConfirm[index] = digit;
+      setConfirmPin(newConfirm);
+      
+      // Если заполнили все 6 цифр подтверждения
+      if (index === 5) {
+        console.log('✅ Второй PIN введён полностью:', newConfirm.join(''));
+        setTimeout(() => handleCreate(), 100);
+      }
+    }
   };
 
   const handleDelete = (type) => {
@@ -108,7 +104,15 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
     
-    console.log('📝 Сравнение PIN:', pinString, confirmString);
+    console.log('📝 Сравнение PIN (первый):', pinString);
+    console.log('📝 Сравнение PIN (второй):', confirmString);
+    console.log('📝 Длина первого:', pinString.length);
+    console.log('📝 Длина второго:', confirmString.length);
+    
+    if (pinString.length !== 6 || confirmString.length !== 6) {
+      setError('Ошибка: PIN должен быть 6 цифр');
+      return;
+    }
     
     if (pinString !== confirmString) {
       vibrate(20);

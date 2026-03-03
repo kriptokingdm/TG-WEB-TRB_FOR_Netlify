@@ -59,15 +59,20 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
   return (
     <div className="settings-container">
 
-      {/* Хедер (системный стиль) */}
+      {/* Хедер в стиле Telegram */}
       <div className="settings-header">
-        <h1>Настройки</h1>
+        <button className="settings-back-btn" onClick={() => navigateTo('profile')}>
+          ←
+        </button>
+        <h1 className="settings-title">Настройки</h1>
+        <div className="settings-placeholder"></div>
       </div>
 
       <div className="settings-content">
 
-        {/* ==================== БЕЗОПАСНОСТЬ ==================== */}
+        {/* СЕКЦИЯ: БЕЗОПАСНОСТЬ */}
         <div className="settings-section">
+          <div className="settings-section-header">БЕЗОПАСНОСТЬ</div>
           <div className="settings-list">
             
             {/* КНОПКА ПИН-КОДА */}
@@ -78,45 +83,54 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
                 setShowPin(true);
               }}
             >
+              <div className="settings-item-icon">🔐</div>
               <div className="settings-item-text">
-                <div className="title">🔐 ПИН-код</div>
+                <div className="title">ПИН-код</div>
                 <div className="desc">
                   {localStorage.getItem(`user_pin_${telegramUser?.id}`) 
                     ? 'Изменить код безопасности' 
                     : 'Установить код для защиты операций'}
                 </div>
               </div>
-              <div className="settings-item-arrow">›</div>
+              <div className="settings-item-arrow">
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+                  <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
             </button>
 
           </div>
         </div>
 
-        {/* ==================== УВЕДОМЛЕНИЯ ==================== */}
+        {/* СЕКЦИЯ: УВЕДОМЛЕНИЯ */}
         <div className="settings-section">
+          <div className="settings-section-header">УВЕДОМЛЕНИЯ</div>
           <div className="settings-list">
 
             <button className="settings-item" onClick={toggleHints}>
+              <div className="settings-item-icon">💬</div>
               <div className="settings-item-text">
                 <div className="title">Скрывать подсказки</div>
                 <div className="desc">Не показывать обучающие сообщения</div>
               </div>
-              <div className={`switch ${localHideHints ? 'on' : ''}`}>
-                <span />
+              <div className={`settings-switch ${localHideHints ? 'active' : ''}`}>
+                <span className="settings-switch-handle" />
               </div>
             </button>
 
           </div>
         </div>
 
-        {/* ==================== АККАУНТ ==================== */}
+        {/* СЕКЦИЯ: АККАУНТ */}
         <div className="settings-section">
+          <div className="settings-section-header">АККАУНТ</div>
           <div className="settings-list">
 
             <button
               className="settings-item"
               onClick={() => copyToClipboard(telegramUser?.id, 'ID пользователя')}
             >
+              <div className="settings-item-icon">🆔</div>
               <div className="settings-item-text">
                 <div className="title">ID пользователя</div>
                 <div className="desc">{telegramUser?.id || '—'}</div>
@@ -127,22 +141,28 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
               className="settings-item"
               onClick={() => navigateTo('profile')}
             >
+              <div className="settings-item-icon">👤</div>
               <div className="settings-item-text">
                 <div className="title">Мой профиль</div>
                 <div className="desc">Рефералы и статистика</div>
               </div>
-              <div className="settings-item-arrow">›</div>
+              <div className="settings-item-arrow">
+                <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+                  <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
             </button>
 
             <button
-              className="settings-item danger"
+              className="settings-item settings-item-danger"
               onClick={() => {
-                if (confirm('Выйти из аккаунта?')) {
+                if (window.confirm('Вы уверены, что хотите выйти?')) {
                   localStorage.clear();
                   window.location.reload();
                 }
               }}
             >
+              <div className="settings-item-icon">🚪</div>
               <div className="settings-item-text">
                 <div className="title">Выйти</div>
                 <div className="desc">Завершить сессию</div>
@@ -152,9 +172,9 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
           </div>
         </div>
 
-        {/* ==================== ИНФО ==================== */}
-        <div className="settings-footer">
-          <div>© 2024 TetherRabbit</div>
+        {/* Версия приложения */}
+        <div className="settings-version">
+          <span>Версия 1.0.0</span>
         </div>
 
       </div>

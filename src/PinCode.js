@@ -154,39 +154,45 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   };
 
   // ПРОВЕРКА PIN
-  const handleVerify = async () => {
-    // ПРОВЕРЯЕМ userId перед отправкой
-    if (!userId) {
-      setError('Ошибка: пользователь не идентифицирован');
-      return;
-    }
+  // ПРОВЕРКА PIN
+const handleVerify = async () => {
+  if (!userId) {
+    setError('Ошибка: пользователь не идентифицирован');
+    return;
+  }
 
-    const pinString = pin.join('');
+  const pinString = pin.join('');
+  
+  setLoading(true);
+  try {
+    console.log('📤 Отправка запроса на проверку PIN:', { userId, pin: pinString });
     
-    setLoading(true);
-    try {
-      console.log('📤 Отправка запроса на проверку PIN:', { userId, pin: pinString });
+    const response = await fetch(`${API_BASE_URL}/api/pin/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, pin: pinString })
+    });
+
+    const data = await response.json();
+    console.log('📥 Ответ сервера:', data);
+
+    if (data.success) {
+      vibrate(12);
+      setSuccess(true);
       
-      const response = await fetch(`${API_BASE_URL}/api/pin/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, pin: pinString })
-      });
-
-      const data = await response.json();
-      console.log('📥 Ответ сервера:', data);
-
-      if (data.success) {
-        vibrate(12);
-        setSuccess(true);
-        
-        // Сохраняем токен в localStorage
-        localStorage.setItem(`user_token_${userId}`, data.token);
-        localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
-        
-        setTimeout(() => {
-          onSuccess(data.token);
-        }, 1000);
+      localStorage.setItem(`user_token_${userId}`, data.token);
+      localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
+      
+      setTimeout(() => {
+        onSuccess(data.token);
+      }, 1000);
+    } else {
+      // ЕСЛИ PIN НЕ НАЙДЕН (404) - ПРЕДЛАГАЕМ СОЗДАТЬ
+      if (data.error && data.error.includes('PIN not set')) {
+        setError('PIN-код не установлен. Создайте новый.');
+        setStep('create');
+        setPin(['', '', '', '', '', '']);
+        setConfirmPin(['', '', '', '', '', '']);
       } else {
         vibrate(20);
         setError(data.error || 'Неверный PIN');
@@ -198,13 +204,14 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
           setLockTime(new Date());
         }
       }
-    } catch (error) {
-      console.error('❌ Ошибка:', error);
-      setError('Ошибка соединения');
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('❌ Ошибка:', error);
+    setError('Ошибка соединения');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Рендер клавиатуры
   const renderKeypad = (type) => {

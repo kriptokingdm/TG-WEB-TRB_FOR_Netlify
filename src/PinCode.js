@@ -11,6 +11,13 @@ const vibrate = (pattern = 10) => {
 };
 
 const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) => {
+  // ЛОГИРУЕМ userId при монтировании компонента
+  useEffect(() => {
+    console.log('🔍 PinCode получил userId:', userId);
+    console.log('📌 Режим:', mode);
+    console.log('🎯 Действие:', requiredAction);
+  }, [userId, mode, requiredAction]);
+
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [confirmPin, setConfirmPin] = useState(['', '', '', '', '', '']);
   const [step, setStep] = useState(mode === 'setup' ? 'create' : 'enter');
@@ -78,6 +85,12 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
   // СОЗДАНИЕ PIN
   const handleCreate = async () => {
+    // ПРОВЕРЯЕМ userId перед отправкой
+    if (!userId) {
+      setError('Ошибка: пользователь не идентифицирован');
+      return;
+    }
+
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
     
@@ -122,6 +135,12 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
   // ПРОВЕРКА PIN
   const handleVerify = async () => {
+    // ПРОВЕРЯЕМ userId перед отправкой
+    if (!userId) {
+      setError('Ошибка: пользователь не идентифицирован');
+      return;
+    }
+
     const pinString = pin.join('');
     
     setLoading(true);

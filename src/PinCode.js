@@ -40,41 +40,50 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   }, [pin, confirmPin, step]);
 
   const handleDigitPress = (digit, index, type) => {
-    vibrate(6);
+  vibrate(6);
+  
+  if (type === 'pin') {
+    const newPin = [...pin];
+    newPin[index] = digit;
+    setPin(newPin);
     
-    if (type === 'pin') {
-      const newPin = [...pin];
-      newPin[index] = digit;
-      setPin(newPin);
-      
-      // Если заполнили все 6 цифр в режиме создания
-      if (index === 5 && step === 'create') {
-        const fullPin = newPin.join('');
-        console.log('✅ Первый PIN введён полностью:', fullPin);
-        setFirstPinValue(fullPin);
-        setTimeout(() => {
-          setStep('confirm');
-          setConfirmPin(['', '', '', '', '', '']);
-        }, 100);
-      }
-      
-      // Если заполнили все 6 цифр в режиме ввода
-      if (index === 5 && step === 'enter') {
-        setTimeout(() => handleVerify(), 100);
-      }
-    } else if (type === 'confirm') {
-      const newConfirm = [...confirmPin];
-      newConfirm[index] = digit;
-      setConfirmPin(newConfirm);
-      
-      // Если заполнили все 6 цифр подтверждения
-      if (index === 5) {
-        const fullConfirm = newConfirm.join('');
-        console.log('✅ Второй PIN введён полностью:', fullConfirm);
-        setTimeout(() => handleCreate(fullConfirm), 50);
-      }
+    // Проверяем, заполнены ли ВСЕ 6 цифр
+    const filledCount = newPin.filter(d => d !== '').length;
+    console.log(`🔢 Введено цифр: ${filledCount}/6`);
+    
+    // Если заполнили все 6 цифр в режиме создания
+    if (filledCount === 6 && step === 'create') {
+      const fullPin = newPin.join('');
+      console.log('✅ Первый PIN введён полностью:', fullPin);
+      setFirstPinValue(fullPin);
+      setTimeout(() => {
+        setStep('confirm');
+        setConfirmPin(['', '', '', '', '', '']);
+      }, 100);
     }
-  };
+    
+    // Если заполнили все 6 цифр в режиме ввода
+    if (filledCount === 6 && step === 'enter') {
+      const fullPin = newPin.join('');
+      console.log('✅ PIN для проверки:', fullPin);
+      setTimeout(() => handleVerify(), 100);
+    }
+  } else if (type === 'confirm') {
+    const newConfirm = [...confirmPin];
+    newConfirm[index] = digit;
+    setConfirmPin(newConfirm);
+    
+    const filledCount = newConfirm.filter(d => d !== '').length;
+    console.log(`🔢 Подтверждение: ${filledCount}/6`);
+    
+    // Если заполнили все 6 цифр подтверждения
+    if (filledCount === 6) {
+      const fullConfirm = newConfirm.join('');
+      console.log('✅ Второй PIN введён полностью:', fullConfirm);
+      setTimeout(() => handleCreate(fullConfirm), 50);
+    }
+  }
+};
 
   const handleDelete = (type) => {
     vibrate(8);
@@ -155,6 +164,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
   // ПРОВЕРКА PIN
   // ПРОВЕРКА PIN
+// ПРОВЕРКА PIN
 const handleVerify = async () => {
   if (!userId) {
     setError('Ошибка: пользователь не идентифицирован');
@@ -162,7 +172,16 @@ const handleVerify = async () => {
   }
 
   const pinString = pin.join('');
+  console.log('🔍 Собираем PIN из массива:', pin);
+  console.log('🔍 Получили строку:', pinString);
+  console.log('🔍 Длина строки:', pinString.length);
   
+  if (pinString.length !== 6) {
+    setError('PIN должен содержать 6 цифр');
+    setPin(['', '', '', '', '', '']);
+    return;
+  }
+
   setLoading(true);
   try {
     console.log('📤 Отправка запроса на проверку PIN:', { userId, pin: pinString });
@@ -187,22 +206,14 @@ const handleVerify = async () => {
         onSuccess(data.token);
       }, 1000);
     } else {
-      // ЕСЛИ PIN НЕ НАЙДЕН (404) - ПРЕДЛАГАЕМ СОЗДАТЬ
-      if (data.error && data.error.includes('PIN not set')) {
-        setError('PIN-код не установлен. Создайте новый.');
-        setStep('create');
-        setPin(['', '', '', '', '', '']);
-        setConfirmPin(['', '', '', '', '', '']);
-      } else {
-        vibrate(20);
-        setError(data.error || 'Неверный PIN');
-        setPin(['', '', '', '', '', '']);
-        if (data.attempts_left !== undefined) {
-          setAttemptsLeft(data.attempts_left);
-        }
-        if (data.error && data.error.includes('через')) {
-          setLockTime(new Date());
-        }
+      vibrate(20);
+      setError(data.error || 'Неверный PIN');
+      setPin(['', '', '', '', '', '']);
+      if (data.attempts_left !== undefined) {
+        setAttemptsLeft(data.attempts_left);
+      }
+      if (data.error && data.error.includes('через')) {
+        setLockTime(new Date());
       }
     }
   } catch (error) {

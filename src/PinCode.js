@@ -1,35 +1,35 @@
-// PinCode.js - Компонент для ввода 6-значного PIN-кода
+// PinCode.js - Компонент для ввода 6-значного PIN-кода (с сервером)
 import React, { useState, useEffect, useRef } from 'react';
 import './PinCode.css';
 
-// Функция для вибрации
+const API_BASE_URL = 'https://tethrab.shop';
+
 const vibrate = (pattern = 10) => {
   if (window.navigator && window.navigator.vibrate) {
     window.navigator.vibrate(pattern);
   }
 };
 
-const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
+const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) => {
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [confirmPin, setConfirmPin] = useState(['', '', '', '', '', '']);
   const [step, setStep] = useState(mode === 'setup' ? 'create' : 'enter');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [attemptsLeft, setAttemptsLeft] = useState(5);
+  const [lockTime, setLockTime] = useState(null);
   
   const inputRefs = useRef([]);
 
-  // Загружаем PIN из localStorage при монтировании
+  // Проверяем, есть ли PIN на сервере
   useEffect(() => {
     if (mode === 'enter') {
-      const savedPin = localStorage.getItem(`user_pin_${userId}`);
-      if (!savedPin) {
-        setError('ПИН-код не установлен. Сначала создайте его.');
-        setStep('create');
-      }
+      // Можно сделать проверку, но пока просто показываем ввод
     }
-  }, [mode, userId]);
+  }, [mode]);
 
-  // Автофокус на следующий инпут
+  // Автофокус
   useEffect(() => {
     const currentStep = step === 'create' ? pin : confirmPin;
     const emptyIndex = currentStep.findIndex(d => d === '');
@@ -38,7 +38,6 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
     }
   }, [pin, confirmPin, step]);
 
-  // Обработка ввода цифры
   const handleDigitPress = (digit, index, type) => {
     vibrate(6);
     
@@ -47,7 +46,6 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       newPin[index] = digit;
       setPin(newPin);
       
-      // Если это последняя цифра, переходим к подтверждению
       if (index === 5 && step === 'create') {
         setTimeout(() => setStep('confirm'), 100);
       }
@@ -56,14 +54,15 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       newConfirm[index] = digit;
       setConfirmPin(newConfirm);
       
-      // Если это последняя цифра, проверяем совпадение
       if (index === 5 && step === 'confirm') {
-        setTimeout(() => handleConfirm(), 100);
+        setTimeout(() => handleCreate(), 100);
+      }
+      if (index === 5 && step === 'enter') {
+        setTimeout(() => handleVerify(), 100);
       }
     }
   };
 
-  // Обработка удаления
   const handleDelete = (type) => {
     vibrate(8);
     
@@ -84,8 +83,8 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
     }
   };
 
-  // Подтверждение ПИН-кода
-  const handleConfirm = () => {
+  // Создание PIN
+  const handleCreate = async () => {
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
     
@@ -97,41 +96,77 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       setStep('create');
       return;
     }
-    
-    // Сохраняем в localStorage
-    localStorage.setItem(`user_pin_${userId}`, pinString);
-    
-    vibrate(12);
-    setSuccess(true);
-    setTimeout(() => {
-      onSuccess();
-    }, 1000);
-  };
 
-  // Ввод существующего ПИН-кода
-  const handleEnter = () => {
-    const pinString = pin.join('');
-    const savedPin = localStorage.getItem(`user_pin_${userId}`);
-    
-    if (pinString === savedPin) {
-      vibrate(12);
-      setSuccess(true);
-      setTimeout(() => {
-        onSuccess();
-      }, 1000);
-    } else {
-      vibrate(20);
-      setError('Неверный ПИН-код');
-      setPin(['', '', '', '', '', '']);
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/pin/set`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, pin: pinString })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        vibrate(12);
+        setSuccess(true);
+        setTimeout(() => {
+          onSuccess();
+        }, 1000);
+      } else {
+        setError(data.error);
+      }
+    } catch (error) {
+      setError('Ошибка соединения');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Очистка ошибки при вводе
-  useEffect(() => {
-    if (error) setError('');
-  }, [pin, confirmPin]);
+  // Проверка PIN
+  const handleVerify = async () => {
+    const pinString = pin.join('');
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/pin/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, pin: pinString })
+      });
 
-  // Рендер цифровой клавиатуры
+      const data = await response.json();
+
+      if (data.success) {
+        vibrate(12);
+        setSuccess(true);
+        
+        // Сохраняем токен в localStorage
+        localStorage.setItem(`user_token_${userId}`, data.token);
+        localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
+        
+        setTimeout(() => {
+          onSuccess(data.token);
+        }, 1000);
+      } else {
+        vibrate(20);
+        setError(data.error);
+        setPin(['', '', '', '', '', '']);
+        if (data.attempts_left !== undefined) {
+          setAttemptsLeft(data.attempts_left);
+        }
+        if (data.error.includes('через')) {
+          setLockTime(new Date());
+        }
+      }
+    } catch (error) {
+      setError('Ошибка соединения');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Рендер клавиатуры
   const renderKeypad = (type) => {
     const buttons = [];
     for (let i = 1; i <= 9; i++) {
@@ -139,6 +174,7 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
         <button
           key={i}
           className="pin-key"
+          disabled={loading || lockTime}
           onClick={() => {
             const currentStep = step === 'create' ? pin : confirmPin;
             const emptyIndex = currentStep.findIndex(d => d === '');
@@ -160,6 +196,7 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       <button
         key="0"
         className="pin-key"
+        disabled={loading || lockTime}
         onClick={() => {
           const currentStep = step === 'create' ? pin : confirmPin;
           const emptyIndex = currentStep.findIndex(d => d === '');
@@ -176,6 +213,7 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       <button
         key="delete"
         className="pin-key delete"
+        disabled={loading || lockTime}
         onClick={() => handleDelete(type)}
       >
         ⌫
@@ -185,7 +223,6 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
     return buttons;
   };
 
-  // Если успех — показываем анимацию
   if (success) {
     return (
       <div className="pin-container">
@@ -199,7 +236,13 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
         
         <div className="pin-success">
           <div className="pin-success-icon">✓</div>
-          <p>ПИН-код подтверждён</p>
+          <p>
+            {mode === 'setup' 
+              ? 'ПИН-код установлен' 
+              : requiredAction 
+                ? `Доступ к ${requiredAction} разрешён` 
+                : 'ПИН-код подтверждён'}
+          </p>
         </div>
       </div>
     );
@@ -209,7 +252,7 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
     <div className="pin-container">
       {/* Header */}
       <div className="pin-header">
-        <button className="pin-back" onClick={onBack}>
+        <button className="pin-back" onClick={onBack} disabled={loading}>
           ← Назад
         </button>
         <h2 className="pin-title">
@@ -224,7 +267,9 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       <p className="pin-instruction">
         {step === 'create' && 'Придумайте 6-значный код'}
         {step === 'confirm' && 'Введите код ещё раз'}
-        {mode === 'enter' && step === 'enter' && 'Введите ваш ПИН-код'}
+        {mode === 'enter' && step === 'enter' && (
+          lockTime ? 'Доступ заблокирован' : 'Введите ваш ПИН-код'
+        )}
       </p>
 
       {/* Индикаторы ПИН-кода */}
@@ -240,20 +285,20 @@ const PinCode = ({ onSuccess, onBack, mode = 'setup', userId }) => {
       {/* Ошибка */}
       {error && <p className="pin-error">{error}</p>}
 
+      {/* Осталось попыток */}
+      {mode === 'enter' && step === 'enter' && attemptsLeft < 5 && !lockTime && (
+        <p className="pin-attempts">
+          Осталось попыток: {attemptsLeft}
+        </p>
+      )}
+
       {/* Клавиатура */}
       <div className="pin-keypad">
         {renderKeypad(step === 'create' ? 'create' : 'confirm')}
       </div>
 
-      {/* Кнопка подтверждения (для режима ввода) */}
-      {mode === 'enter' && step === 'enter' && pin.every(d => d !== '') && (
-        <button
-          className="pin-submit"
-          onClick={handleEnter}
-        >
-          Подтвердить
-        </button>
-      )}
+      {/* Загрузка */}
+      {loading && <div className="pin-loading">Проверка...</div>}
     </div>
   );
 };

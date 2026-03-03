@@ -1,11 +1,16 @@
+// SettingsApp.js - Полная версия с PIN-защитой
 import React, { useState, useEffect } from 'react';
 import './SettingsApp.css';
 import PinCode from './PinCode';
+
+const API_BASE_URL = 'https://tethrab.shop';
 
 function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHideHints }) {
   const [localHideHints, setLocalHideHints] = useState(hideHints);
   const [showPin, setShowPin] = useState(false);
   const [pinMode, setPinMode] = useState('enter');
+  const [pinAction, setPinAction] = useState(null);
+  const [pinActionName, setPinActionName] = useState('');
   const [pinVerified, setPinVerified] = useState(false);
 
   // Синхронизируем с App.js
@@ -13,12 +18,25 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
     setLocalHideHints(hideHints);
   }, [hideHints]);
 
-  // Проверяем, установлен ли ПИН-код при загрузке
+  // Проверяем, установлен ли PIN на сервере
   useEffect(() => {
-    const hasPin = localStorage.getItem(`user_pin_${telegramUser?.id}`);
-    if (!hasPin) {
-      setPinMode('setup');
-    }
+    const checkPinExists = async () => {
+      if (!telegramUser?.id) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/pin/check/${telegramUser.id}`);
+        const data = await response.json();
+        
+        if (!data.exists) {
+          // Если PIN не установлен, предлагаем создать при первом входе в защищённую зону
+          console.log('PIN не установлен');
+        }
+      } catch (error) {
+        console.error('Ошибка проверки PIN:', error);
+      }
+    };
+    
+    checkPinExists();
   }, [telegramUser?.id]);
 
   const toggleHints = () => {
@@ -38,18 +56,98 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
     showToast(`✅ ${label} скопирован`, 'success');
   };
 
-  const handlePinSuccess = () => {
-    setShowPin(false);
-    setPinVerified(true);
-    showToast('✅ ПИН-код подтверждён', 'success');
+  // ==================== ЗАЩИТА ДЕЙСТВИЙ ====================
+  const handleProtectedAction = (action, actionName) => {
+    const token = localStorage.getItem(`user_token_${telegramUser?.id}`);
+    const expires = localStorage.getItem(`user_token_expires_${telegramUser?.id}`);
+    
+    // Если токен есть и не истёк (меньше 15 минут)
+    if (token && expires && Date.now() < parseInt(expires)) {
+      // Проверяем токен на сервере
+      fetch(`${API_BASE_URL}/api/pin/check-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: telegramUser?.id, 
+          token: token 
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          action();
+        } else {
+          // Токен недействителен - запрашиваем PIN
+          setPinAction(() => action);
+          setPinActionName(actionName);
+          setPinMode('enter');
+          setShowPin(true);
+        }
+      })
+      .catch(() => {
+        // Ошибка сети - всё равно запрашиваем PIN для безопасности
+        setPinAction(() => action);
+        setPinActionName(actionName);
+        setPinMode('enter');
+        setShowPin(true);
+      });
+    } else {
+      // Запрашиваем PIN
+      setPinAction(() => action);
+      setPinActionName(actionName);
+      setPinMode('enter');
+      setShowPin(true);
+    }
   };
 
-  // Если показываем ПИН-код
+  // Обработчик успешного ввода PIN
+  const handlePinSuccess = (token) => {
+    setShowPin(false);
+    setPinVerified(true);
+    
+    // Если токен получен, сохраняем
+    if (token) {
+      localStorage.setItem(`user_token_${telegramUser?.id}`, token);
+      localStorage.setItem(`user_token_expires_${telegramUser?.id}`, Date.now() + 15 * 60 * 1000);
+    }
+    
+    showToast(`✅ Доступ к ${pinActionName} разрешён`, 'success');
+    
+    // Выполняем защищённое действие
+    if (pinAction) {
+      setTimeout(() => {
+        pinAction();
+      }, 500);
+    }
+  };
+
+  // Сброс PIN
+  const resetPin = () => {
+    if (window.confirm('Сбросить PIN-код? Это действие нельзя отменить.')) {
+      fetch(`${API_BASE_URL}/api/pin/${telegramUser?.id}`, {
+        method: 'DELETE',
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.removeItem(`user_token_${telegramUser?.id}`);
+          localStorage.removeItem(`user_token_expires_${telegramUser?.id}`);
+          showToast('✅ PIN-код сброшен', 'success');
+        }
+      })
+      .catch(() => {
+        showToast('❌ Ошибка сброса', 'error');
+      });
+    }
+  };
+
+  // Если показываем PIN-код
   if (showPin) {
     return (
       <PinCode
         userId={telegramUser?.id}
         mode={pinMode}
+        requiredAction={pinActionName}
         onSuccess={handlePinSuccess}
         onBack={() => setShowPin(false)}
       />
@@ -74,6 +172,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
             <button 
               className="settings-item" 
               onClick={() => {
+                setPinActionName('настройкам безопасности');
                 setPinMode('enter');
                 setShowPin(true);
               }}
@@ -81,13 +180,24 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
               <div className="settings-item-text">
                 <div className="title">🔐 ПИН-код</div>
                 <div className="desc">
-                  {localStorage.getItem(`user_pin_${telegramUser?.id}`) 
-                    ? 'Изменить код безопасности' 
-                    : 'Установить код для защиты операций'}
+                  Управление кодом безопасности
                 </div>
               </div>
               <div className="settings-item-arrow">›</div>
             </button>
+
+            {/* КНОПКА СБРОСА PIN (для админа/владельца) */}
+            {telegramUser?.id === '7879866656' && (
+              <button 
+                className="settings-item danger" 
+                onClick={resetPin}
+              >
+                <div className="settings-item-text">
+                  <div className="title">🔄 Сбросить PIN-код</div>
+                  <div className="desc">Для всех пользователей (только админ)</div>
+                </div>
+              </button>
+            )}
 
           </div>
         </div>
@@ -152,9 +262,57 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
           </div>
         </div>
 
+        {/* ==================== ЗАЩИЩЁННЫЕ ДЕЙСТВИЯ ==================== */}
+        <div className="settings-section">
+          <div className="settings-section-header">ЗАЩИЩЁННЫЕ ДЕЙСТВИЯ</div>
+          <div className="settings-list">
+
+            <button
+              className="settings-item"
+              onClick={() => handleProtectedAction(() => {
+                navigateTo('createCheck');
+              }, 'создание чека')}
+            >
+              <div className="settings-item-text">
+                <div className="title">🎫 Создать чек</div>
+                <div className="desc">Требуется подтверждение PIN-кодом</div>
+              </div>
+              <div className="settings-item-arrow">›</div>
+            </button>
+
+            <button
+              className="settings-item"
+              onClick={() => handleProtectedAction(() => {
+                navigateTo('withdraw');
+              }, 'вывод средств')}
+            >
+              <div className="settings-item-text">
+                <div className="title">💰 Вывод средств</div>
+                <div className="desc">Требуется подтверждение PIN-кодом</div>
+              </div>
+              <div className="settings-item-arrow">›</div>
+            </button>
+
+            <button
+              className="settings-item"
+              onClick={() => handleProtectedAction(() => {
+                navigateTo('p2p');
+              }, 'P2P объявления')}
+            >
+              <div className="settings-item-text">
+                <div className="title">🤝 P2P объявления</div>
+                <div className="desc">Требуется подтверждение PIN-кодом</div>
+              </div>
+              <div className="settings-item-arrow">›</div>
+            </button>
+
+          </div>
+        </div>
+
         {/* ==================== ИНФО ==================== */}
         <div className="settings-footer">
-          <div>© 2024 TetherRabbit</div>
+          <div>© 2025 TetherRabbit</div>
+          <div>Версия 2.0.0</div>
         </div>
 
       </div>

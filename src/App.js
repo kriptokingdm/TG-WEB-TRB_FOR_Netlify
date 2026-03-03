@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // 👈 ДОБАВИЛИ ИМПОРТ
 import './App.css';
 import Home from './Home';
 import History from './History';
@@ -35,9 +36,6 @@ function App() {
   const [hideHints, setHideHints] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 });
-
-
-  <Route path="/pin" element={<PinPage />} />
 
   const navRef = useRef(null);
   const indicatorRef = useRef(null);
@@ -627,23 +625,36 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="app-wrapper">
-        <div className="app-content">
-          {renderPage()}
-          {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
+    <BrowserRouter>
+      <div className="app">
+        <div className="app-wrapper">
+          <div className="app-content">
+            <Routes>
+              <Route path="/" element={<Navigate to="/profile" replace />} />
+              <Route path="/profile" element={<Profile telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/home" element={<Home telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/history" element={<History telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/help" element={<Help telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/settings" element={<SettingsApp telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/game" element={<Game telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
+              <Route path="/pin" element={<PinPage />} />
+              <Route path="*" element={<Navigate to="/profile" replace />} />
+            </Routes>
 
-          {toast && (
-            <div className={`telegram-toast ${toast.type}`}>
-              <span className="telegram-toast-icon">
-                {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
-              </span>
-              <span className="telegram-toast-text">{toast.message}</span>
-            </div>
-          )}
+            {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
+
+            {toast && (
+              <div className={`telegram-toast ${toast.type}`}>
+                <span className="telegram-toast-icon">
+                  {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+                </span>
+                <span className="telegram-toast-text">{toast.message}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PinCode from './PinCode';
+import './PinCode.css'; // 👈 Импортируем те же стили
 
 const API_BASE_URL = 'https://tethrab.shop';
 
@@ -9,9 +10,21 @@ function PinPage() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
+  const [theme, setTheme] = useState('light');
 
   const userId = searchParams.get('userId');
   const action = searchParams.get('action');
+
+  // Получаем тему из Telegram
+  useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      const theme = tg.colorScheme || 'light';
+      setTheme(theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      console.log('🎨 Тема Telegram:', theme);
+    }
+  }, []);
 
   useEffect(() => {
     console.log('🔍 PinPage загружена:', { userId, action });
@@ -19,22 +32,28 @@ function PinPage() {
 
   const handlePinSuccess = async (token) => {
     setStatus('success');
-    setMessage('PIN подтверждён! Создаю чек...');
+    setMessage('PIN подтверждён! Закрываю окно...');
 
-    // Сохраняем токен в localStorage
-    if (token) {
-      localStorage.setItem(`user_token_${userId}`, token);
-      localStorage.setItem(`user_token_expires_${userId}`, Date.now() + 15 * 60 * 1000);
+    // Отправляем результат обратно в бота
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.sendData(JSON.stringify({
+        success: true,
+        token: token
+      }));
     }
 
-    // Перенаправляем обратно в бота с подтверждением
+    // Закрываем WebApp
     setTimeout(() => {
-      window.Telegram?.WebApp?.close();
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close();
+      }
     }, 1500);
   };
 
   const handlePinBack = () => {
-    window.Telegram?.WebApp?.close();
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.close();
+    }
   };
 
   if (status === 'loading') {
@@ -50,35 +69,19 @@ function PinPage() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      background: 'var(--tg-theme-bg-color, #ffffff)',
-      color: 'var(--tg-theme-text-color, #000000)',
-      padding: '20px',
-      textAlign: 'center'
-    }}>
-      <div style={{
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        background: status === 'success' ? '#34c759' : '#ff3b30',
-        color: 'white',
-        fontSize: '30px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '20px'
-      }}>
-        {status === 'success' ? '✓' : '✗'}
+    <div className="pin-container">
+      <div className="pin-header">
+        <button className="pin-back" onClick={handlePinBack}>← Назад</button>
+        <h2 className="pin-title">
+          {status === 'success' ? 'Успешно!' : 'Проверка PIN'}
+        </h2>
+        <div className="pin-spacer"></div>
       </div>
-      <h2>{message}</h2>
-      <p style={{ marginTop: '20px', color: 'var(--tg-theme-hint-color)' }}>
-        Вернитесь в бота через несколько секунд...
-      </p>
+      
+      <div className="pin-success">
+        <div className="pin-success-icon">✓</div>
+        <p>{message}</p>
+      </div>
     </div>
   );
 }

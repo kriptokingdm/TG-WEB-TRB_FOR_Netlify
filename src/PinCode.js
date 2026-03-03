@@ -49,10 +49,13 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       // Если заполнили все 6 цифр в режиме создания
       if (index === 5 && step === 'create') {
         console.log('✅ Первый PIN введён полностью:', newPin.join(''));
+        // Сразу сохраняем первый PIN в переменную
+        const firstPin = newPin.join('');
         setTimeout(() => {
           setStep('confirm');
-          // ВАЖНО: создаём новый массив из 6 пустых строк
           setConfirmPin(['', '', '', '', '', '']);
+          // Сохраняем первый PIN в памяти
+          window.firstPin = firstPin;
         }, 100);
       }
       
@@ -68,7 +71,8 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       // Если заполнили все 6 цифр подтверждения
       if (index === 5) {
         console.log('✅ Второй PIN введён полностью:', newConfirm.join(''));
-        setTimeout(() => handleCreate(), 100);
+        // Используем setTimeout, чтобы гарантировать, что состояние обновилось
+        setTimeout(() => handleCreate(), 50);
       }
     }
   };
@@ -101,37 +105,35 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       return;
     }
 
+    // Берём PIN из состояния и из памяти
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
+    const savedFirstPin = window.firstPin || pinString;
     
-    console.log('📝 Сравнение PIN (первый):', pinString);
-    console.log('📝 Сравнение PIN (второй):', confirmString);
-    console.log('📝 Длина первого:', pinString.length);
-    console.log('📝 Длина второго:', confirmString.length);
+    console.log('📝 PIN из первого ввода:', savedFirstPin);
+    console.log('📝 PIN из подтверждения:', confirmString);
+    console.log('📝 PIN из состояния (первый):', pinString);
     
-    if (pinString.length !== 6 || confirmString.length !== 6) {
-      setError('Ошибка: PIN должен быть 6 цифр');
-      return;
-    }
-    
-    if (pinString !== confirmString) {
+    // Используем сохранённый первый PIN для сравнения
+    if (savedFirstPin !== confirmString) {
       vibrate(20);
       setError('ПИН-коды не совпадают');
       // Возвращаемся к первому шагу
       setStep('create');
       setPin(['', '', '', '', '', '']);
       setConfirmPin(['', '', '', '', '', '']);
+      window.firstPin = null;
       return;
     }
 
     setLoading(true);
     try {
-      console.log('📤 Отправка запроса на создание PIN:', { userId, pin: pinString });
+      console.log('📤 Отправка запроса на создание PIN:', { userId, pin: savedFirstPin });
       
       const response = await fetch(`${API_BASE_URL}/api/pin/set`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, pin: pinString })
+        body: JSON.stringify({ userId, pin: savedFirstPin })
       });
 
       const data = await response.json();
@@ -140,6 +142,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
       if (data.success) {
         vibrate(12);
         setSuccess(true);
+        window.firstPin = null;
         setTimeout(() => {
           onSuccess();
         }, 1000);
@@ -149,6 +152,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
         setStep('create');
         setPin(['', '', '', '', '', '']);
         setConfirmPin(['', '', '', '', '', '']);
+        window.firstPin = null;
       }
     } catch (error) {
       console.error('❌ Ошибка:', error);

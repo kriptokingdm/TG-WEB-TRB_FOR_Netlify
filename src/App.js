@@ -7,6 +7,7 @@ import Help from './Help';
 import SettingsApp from './SettingsApp';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
+import PinPage from './PinPage';
 
 // URL API
 const API_BASE_URL = 'https://tethrab.shop';
@@ -34,6 +35,9 @@ function App() {
   const [hideHints, setHideHints] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 });
+
+
+  <Route path="/pin" element={<PinPage />} />
 
   const navRef = useRef(null);
   const indicatorRef = useRef(null);

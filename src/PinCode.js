@@ -1,4 +1,4 @@
-// PinCode.js - Компонент для ввода 6-значного PIN-кода (ИСПРАВЛЕННЫЙ)
+// PinCode.js - Компонент для ввода 6-значного PIN-кода (ФИНАЛЬНАЯ ВЕРСИЯ)
 import React, { useState, useEffect, useRef } from 'react';
 import './PinCode.css';
 
@@ -11,7 +11,7 @@ const vibrate = (pattern = 10) => {
 };
 
 const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) => {
-  // ЛОГИРУЕМ userId при монтировании компонента
+  // Логируем userId при монтировании компонента
   useEffect(() => {
     console.log('🔍 PinCode получил userId:', userId);
     console.log('📌 Режим:', mode);
@@ -41,24 +41,32 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   const handleDigitPress = (digit, index, type) => {
     vibrate(6);
     
-    if (type === 'create') {
+    if (type === 'pin') {
       const newPin = [...pin];
       newPin[index] = digit;
       setPin(newPin);
       
+      // Если заполнили все 6 цифр в режиме создания
       if (index === 5 && step === 'create') {
-        setTimeout(() => setStep('confirm'), 100);
+        setTimeout(() => {
+          setStep('confirm');
+          // Очищаем поле подтверждения
+          setConfirmPin(['', '', '', '', '', '']);
+        }, 100);
       }
-    } else {
+      
+      // Если заполнили все 6 цифр в режиме ввода
+      if (index === 5 && step === 'enter') {
+        setTimeout(() => handleVerify(), 100);
+      }
+    } else if (type === 'confirm') {
       const newConfirm = [...confirmPin];
       newConfirm[index] = digit;
       setConfirmPin(newConfirm);
       
-      if (index === 5 && step === 'confirm') {
+      // Если заполнили все 6 цифр подтверждения
+      if (index === 5) {
         setTimeout(() => handleCreate(), 100);
-      }
-      if (index === 5 && step === 'enter') {
-        setTimeout(() => handleVerify(), 100);
       }
     }
   };
@@ -66,7 +74,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   const handleDelete = (type) => {
     vibrate(8);
     
-    if (type === 'create') {
+    if (type === 'pin') {
       const lastIndex = pin.findLastIndex(d => d !== '');
       if (lastIndex !== -1) {
         const newPin = [...pin];
@@ -94,12 +102,15 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
     const pinString = pin.join('');
     const confirmString = confirmPin.join('');
     
+    console.log('📝 Сравнение PIN:', pinString, confirmString);
+    
     if (pinString !== confirmString) {
       vibrate(20);
       setError('ПИН-коды не совпадают');
+      // Возвращаемся к первому шагу
+      setStep('create');
       setPin(['', '', '', '', '', '']);
       setConfirmPin(['', '', '', '', '', '']);
-      setStep('create');
       return;
     }
 
@@ -124,6 +135,10 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
         }, 1000);
       } else {
         setError(data.error || 'Ошибка создания PIN');
+        // Возвращаемся к первому шагу
+        setStep('create');
+        setPin(['', '', '', '', '', '']);
+        setConfirmPin(['', '', '', '', '', '']);
       }
     } catch (error) {
       console.error('❌ Ошибка:', error);
@@ -196,7 +211,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
           className="pin-key"
           disabled={loading || lockTime}
           onClick={() => {
-            const currentStep = step === 'create' ? pin : confirmPin;
+            const currentStep = type === 'pin' ? pin : confirmPin;
             const emptyIndex = currentStep.findIndex(d => d === '');
             if (emptyIndex !== -1) {
               handleDigitPress(i.toString(), emptyIndex, type);
@@ -218,7 +233,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
         className="pin-key"
         disabled={loading || lockTime}
         onClick={() => {
-          const currentStep = step === 'create' ? pin : confirmPin;
+          const currentStep = type === 'pin' ? pin : confirmPin;
           const emptyIndex = currentStep.findIndex(d => d === '');
           if (emptyIndex !== -1) {
             handleDigitPress('0', emptyIndex, type);
@@ -294,7 +309,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
       {/* Индикаторы ПИН-кода */}
       <div className="pin-dots">
-        {(step === 'create' ? pin : confirmPin).map((digit, index) => (
+        {(step === 'create' || step === 'enter' ? pin : confirmPin).map((digit, index) => (
           <div
             key={index}
             className={`pin-dot ${digit !== '' ? 'filled' : ''}`}
@@ -314,7 +329,7 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
 
       {/* Клавиатура */}
       <div className="pin-keypad">
-        {renderKeypad(step === 'create' ? 'create' : 'confirm')}
+        {renderKeypad(step === 'create' || step === 'enter' ? 'pin' : 'confirm')}
       </div>
 
       {/* Загрузка */}

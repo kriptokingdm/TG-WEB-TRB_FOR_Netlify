@@ -42,33 +42,39 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
     vibrate(6);
     
     if (type === 'pin') {
-      const newPin = [...pin];
-      newPin[index] = digit;
-      setPin(newPin);
-      
-      // Если заполнили все 6 цифр в режиме создания
-      if (index === 5 && step === 'create') {
-        setTimeout(() => {
-          setStep('confirm');
-          // Очищаем поле подтверждения
-          setConfirmPin(['', '', '', '', '', '']);
-        }, 100);
-      }
-      
-      // Если заполнили все 6 цифр в режиме ввода
-      if (index === 5 && step === 'enter') {
-        setTimeout(() => handleVerify(), 100);
-      }
-    } else if (type === 'confirm') {
-      const newConfirm = [...confirmPin];
-      newConfirm[index] = digit;
-      setConfirmPin(newConfirm);
-      
-      // Если заполнили все 6 цифр подтверждения
-      if (index === 5) {
-        setTimeout(() => handleCreate(), 100);
-      }
-    }
+  const newPin = [...pin];
+  newPin[index] = digit;
+  setPin(newPin);
+  
+  // Если заполнили все 6 цифр в режиме создания
+  if (index === 5 && step === 'create') {
+    // Убеждаемся, что у нас 6 цифр
+    const fullPin = newPin.join('');
+    console.log('✅ Первый PIN введён полностью:', fullPin);
+    
+    setTimeout(() => {
+      setStep('confirm');
+      // ВАЖНО: создаём массив из 6 пустых строк
+      setConfirmPin(['', '', '', '', '', '']);
+    }, 100);
+  }
+  
+  // Если заполнили все 6 цифр в режиме ввода
+  if (index === 5 && step === 'enter') {
+    setTimeout(() => handleVerify(), 100);
+  }
+} else if (type === 'confirm') {
+  const newConfirm = [...confirmPin];
+  newConfirm[index] = digit;
+  setConfirmPin(newConfirm);
+  
+  // Если заполнили все 6 цифр подтверждения
+  if (index === 5) {
+    const fullConfirm = newConfirm.join('');
+    console.log('✅ Второй PIN введён полностью:', fullConfirm);
+    setTimeout(() => handleCreate(), 100);
+  }
+}
   };
 
   const handleDelete = (type) => {

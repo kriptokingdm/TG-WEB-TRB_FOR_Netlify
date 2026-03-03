@@ -14,6 +14,12 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
   const [pinVerified, setPinVerified] = useState(false);
   const [hasPin, setHasPin] = useState(null); // null - не знаем, true/false - знаем
 
+  // Логируем telegramUser
+  useEffect(() => {
+    console.log('👤 telegramUser в SettingsApp:', telegramUser);
+    console.log('🆔 userId:', telegramUser?.id);
+  }, [telegramUser]);
+
   // Синхронизируем с App.js
   useEffect(() => {
     setLocalHideHints(hideHints);
@@ -22,9 +28,13 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
   // Проверяем, установлен ли PIN на сервере
   useEffect(() => {
     const checkPinExists = async () => {
-      if (!telegramUser?.id) return;
+      if (!telegramUser?.id) {
+        console.log('⚠️ telegramUser.id отсутствует, проверка PIN отложена');
+        return;
+      }
       
       try {
+        console.log('🔍 Проверка PIN для пользователя:', telegramUser.id);
         const response = await fetch(`${API_BASE_URL}/api/pin/check/${telegramUser.id}`);
         const data = await response.json();
         setHasPin(data.exists);
@@ -57,8 +67,13 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
 
   // ==================== ЗАЩИТА ДЕЙСТВИЙ ====================
   const handleProtectedAction = (action, actionName) => {
-    const token = localStorage.getItem(`user_token_${telegramUser?.id}`);
-    const expires = localStorage.getItem(`user_token_expires_${telegramUser?.id}`);
+    if (!telegramUser?.id) {
+      showToast('❌ Ошибка: пользователь не идентифицирован', 'error');
+      return;
+    }
+
+    const token = localStorage.getItem(`user_token_${telegramUser.id}`);
+    const expires = localStorage.getItem(`user_token_expires_${telegramUser.id}`);
     
     // Если токен есть и не истёк (меньше 15 минут)
     if (token && expires && Date.now() < parseInt(expires)) {
@@ -67,7 +82,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          userId: telegramUser?.id, 
+          userId: telegramUser.id, 
           token: token 
         })
       })
@@ -112,9 +127,9 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
     setPinVerified(true);
     
     // Если токен получен, сохраняем
-    if (token) {
-      localStorage.setItem(`user_token_${telegramUser?.id}`, token);
-      localStorage.setItem(`user_token_expires_${telegramUser?.id}`, Date.now() + 15 * 60 * 1000);
+    if (token && telegramUser?.id) {
+      localStorage.setItem(`user_token_${telegramUser.id}`, token);
+      localStorage.setItem(`user_token_expires_${telegramUser.id}`, Date.now() + 15 * 60 * 1000);
     }
     
     showToast(`✅ Доступ к ${pinActionName} разрешён`, 'success');
@@ -134,15 +149,17 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
 
   // Сброс PIN (только для админа)
   const resetPin = () => {
+    if (!telegramUser?.id) return;
+    
     if (window.confirm('Сбросить PIN-код? Это действие нельзя отменить.')) {
-      fetch(`${API_BASE_URL}/api/pin/${telegramUser?.id}`, {
+      fetch(`${API_BASE_URL}/api/pin/${telegramUser.id}`, {
         method: 'DELETE',
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          localStorage.removeItem(`user_token_${telegramUser?.id}`);
-          localStorage.removeItem(`user_token_expires_${telegramUser?.id}`);
+          localStorage.removeItem(`user_token_${telegramUser.id}`);
+          localStorage.removeItem(`user_token_expires_${telegramUser.id}`);
           setHasPin(false);
           showToast('✅ PIN-код сброшен', 'success');
         }
@@ -184,6 +201,10 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
             <button 
               className="settings-item" 
               onClick={() => {
+                if (!telegramUser?.id) {
+                  showToast('❌ Ошибка: пользователь не идентифицирован', 'error');
+                  return;
+                }
                 setPinActionName('настройкам безопасности');
                 if (hasPin === false) {
                   setPinMode('setup');

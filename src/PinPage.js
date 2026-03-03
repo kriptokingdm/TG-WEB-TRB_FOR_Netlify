@@ -1,19 +1,28 @@
 // PinPage.js - Страница для ввода PIN-кода перед созданием чека
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import PinCode from './PinCode';
-import './PinCode.css'; // 👈 Импортируем те же стили
+import './PinCode.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
 function PinPage() {
-  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [theme, setTheme] = useState('light');
+  const [userId, setUserId] = useState(null);
+  const [action, setAction] = useState(null);
 
-  const userId = searchParams.get('userId');
-  const action = searchParams.get('action');
+  // Получаем параметры из URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userIdParam = urlParams.get('userId');
+    const actionParam = urlParams.get('action');
+    
+    console.log('🔍 PinPage загружена:', { userId: userIdParam, action: actionParam });
+    
+    setUserId(userIdParam);
+    setAction(actionParam);
+  }, []);
 
   // Получаем тему из Telegram
   useEffect(() => {
@@ -22,13 +31,9 @@ function PinPage() {
       const theme = tg.colorScheme || 'light';
       setTheme(theme);
       document.documentElement.setAttribute('data-theme', theme);
-      console.log('🎨 Тема Telegram:', theme);
+      console.log('🎨 Тема Telegram изменилась:', theme);
     }
   }, []);
-
-  useEffect(() => {
-    console.log('🔍 PinPage загружена:', { userId, action });
-  }, [userId, action]);
 
   const handlePinSuccess = async (token) => {
     setStatus('success');

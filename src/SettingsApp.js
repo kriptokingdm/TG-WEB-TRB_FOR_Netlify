@@ -1,4 +1,4 @@
-// SettingsApp.js - Полная версия с PIN-защитой
+// SettingsApp.js - Полная версия с PIN-защитой и проверкой наличия PIN
 import React, { useState, useEffect } from 'react';
 import './SettingsApp.css';
 import PinCode from './PinCode';
@@ -12,6 +12,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
   const [pinAction, setPinAction] = useState(null);
   const [pinActionName, setPinActionName] = useState('');
   const [pinVerified, setPinVerified] = useState(false);
+  const [hasPin, setHasPin] = useState(null); // null - не знаем, true/false - знаем
 
   // Синхронизируем с App.js
   useEffect(() => {
@@ -26,13 +27,11 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
       try {
         const response = await fetch(`${API_BASE_URL}/api/pin/check/${telegramUser.id}`);
         const data = await response.json();
-        
-        if (!data.exists) {
-          // Если PIN не установлен, предлагаем создать при первом входе в защищённую зону
-          console.log('PIN не установлен');
-        }
+        setHasPin(data.exists);
+        console.log('📌 PIN существует:', data.exists);
       } catch (error) {
-        console.error('Ошибка проверки PIN:', error);
+        console.error('❌ Ошибка проверки PIN:', error);
+        setHasPin(false); // По умолчанию считаем что нет
       }
     };
     
@@ -75,29 +74,36 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          // Токен валиден - сразу выполняем действие
           action();
         } else {
           // Токен недействителен - запрашиваем PIN
-          setPinAction(() => action);
-          setPinActionName(actionName);
-          setPinMode('enter');
-          setShowPin(true);
+          openPinScreen(action, actionName);
         }
       })
       .catch(() => {
-        // Ошибка сети - всё равно запрашиваем PIN для безопасности
-        setPinAction(() => action);
-        setPinActionName(actionName);
-        setPinMode('enter');
-        setShowPin(true);
+        // Ошибка сети - запрашиваем PIN для безопасности
+        openPinScreen(action, actionName);
       });
     } else {
-      // Запрашиваем PIN
-      setPinAction(() => action);
-      setPinActionName(actionName);
-      setPinMode('enter');
-      setShowPin(true);
+      // Нет токена или истёк - запрашиваем PIN
+      openPinScreen(action, actionName);
     }
+  };
+
+  // Открытие экрана PIN с правильным режимом
+  const openPinScreen = (action, actionName) => {
+    setPinAction(() => action);
+    setPinActionName(actionName);
+    
+    // Если PIN ещё не установлен - режим создания, иначе - ввод
+    if (hasPin === false) {
+      setPinMode('setup');
+    } else {
+      setPinMode('enter');
+    }
+    
+    setShowPin(true);
   };
 
   // Обработчик успешного ввода PIN
@@ -113,6 +119,11 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
     
     showToast(`✅ Доступ к ${pinActionName} разрешён`, 'success');
     
+    // Обновляем статус наличия PIN
+    if (pinMode === 'setup') {
+      setHasPin(true);
+    }
+    
     // Выполняем защищённое действие
     if (pinAction) {
       setTimeout(() => {
@@ -121,7 +132,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
     }
   };
 
-  // Сброс PIN
+  // Сброс PIN (только для админа)
   const resetPin = () => {
     if (window.confirm('Сбросить PIN-код? Это действие нельзя отменить.')) {
       fetch(`${API_BASE_URL}/api/pin/${telegramUser?.id}`, {
@@ -132,6 +143,7 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
         if (data.success) {
           localStorage.removeItem(`user_token_${telegramUser?.id}`);
           localStorage.removeItem(`user_token_expires_${telegramUser?.id}`);
+          setHasPin(false);
           showToast('✅ PIN-код сброшен', 'success');
         }
       })
@@ -173,14 +185,22 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
               className="settings-item" 
               onClick={() => {
                 setPinActionName('настройкам безопасности');
-                setPinMode('enter');
+                if (hasPin === false) {
+                  setPinMode('setup');
+                } else {
+                  setPinMode('enter');
+                }
                 setShowPin(true);
               }}
             >
               <div className="settings-item-text">
                 <div className="title">🔐 ПИН-код</div>
                 <div className="desc">
-                  Управление кодом безопасности
+                  {hasPin === false 
+                    ? 'Установить код безопасности' 
+                    : hasPin === true 
+                      ? 'Изменить код безопасности' 
+                      : 'Загрузка...'}
                 </div>
               </div>
               <div className="settings-item-arrow">›</div>

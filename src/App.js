@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // 👈 ДОБАВИЛИ ИМПОРТ
 import './App.css';
 import Home from './Home';
 import History from './History';
@@ -348,7 +347,7 @@ function App() {
   const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
   const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
 
-  // Обновление позиций вкладок - ПРОСТО И ПОНЯТНО
+  // Обновление позиций вкладок
   const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -377,7 +376,6 @@ function App() {
     const activeIndex = pageToIndex(currentPage);
     const targetRect = rects[activeIndex];
     
-    // Сохраняем в state для индикатора
     setIndicatorPos({
       left: targetRect.left,
       width: targetRect.width
@@ -495,7 +493,6 @@ function App() {
         vibrate();
         navigateTo(targetPage);
       } else {
-        // Возвращаем на место если не сменили
         const targetRect = rects[closestIndex];
         setIndicatorPos({
           left: targetRect.left,
@@ -538,6 +535,11 @@ function App() {
       updateHideHints
     };
 
+    // ОТДЕЛЬНО ОБРАБАТЫВАЕМ PIN-СТРАНИЦУ
+    if (window.location.pathname === '/pin') {
+      return <PinPage />;
+    }
+
     switch (currentPage) {
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
@@ -558,7 +560,6 @@ function App() {
         className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`}
         ref={navRef}
       >
-        {/* Индикатор - всегда видимый */}
         <div 
           className="nav-indicator" 
           ref={indicatorRef}
@@ -625,36 +626,23 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <div className="app">
-        <div className="app-wrapper">
-          <div className="app-content">
-            <Routes>
-              <Route path="/" element={<Navigate to="/profile" replace />} />
-              <Route path="/profile" element={<Profile telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/home" element={<Home telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/history" element={<History telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/help" element={<Help telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/settings" element={<SettingsApp telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/game" element={<Game telegramUser={telegramUser} navigateTo={navigateTo} API_BASE_URL={API_BASE_URL} showToast={showToast} toggleTheme={toggleTheme} isDarkMode={isDarkMode} hideHints={hideHints} updateHideHints={updateHideHints} />} />
-              <Route path="/pin" element={<PinPage />} />
-              <Route path="*" element={<Navigate to="/profile" replace />} />
-            </Routes>
+    <div className="app">
+      <div className="app-wrapper">
+        <div className="app-content">
+          {renderPage()}
+          {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
 
-            {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
-
-            {toast && (
-              <div className={`telegram-toast ${toast.type}`}>
-                <span className="telegram-toast-icon">
-                  {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
-                </span>
-                <span className="telegram-toast-text">{toast.message}</span>
-              </div>
-            )}
-          </div>
+          {toast && (
+            <div className={`telegram-toast ${toast.type}`}>
+              <span className="telegram-toast-icon">
+                {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+              </span>
+              <span className="telegram-toast-text">{toast.message}</span>
+            </div>
+          )}
         </div>
       </div>
-    </BrowserRouter>
+    </div>
   );
 }
 

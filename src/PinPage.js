@@ -36,24 +36,38 @@ function PinPage() {
   }, []);
 
   const handlePinSuccess = async (token) => {
+    console.log('✅ PIN успешно подтверждён, токен:', token);
     setStatus('success');
-    setMessage('PIN подтверждён! Закрываю окно...');
+    setMessage('PIN подтверждён! Дождитесь закрытия окна...');
+
+    // Подготавливаем данные для отправки
+    const dataToSend = {
+        success: true,
+        token: token
+    };
+    
+    console.log('📤 Отправка данных в бота:', dataToSend);
+    console.log('📤 Данные как строка:', JSON.stringify(dataToSend));
 
     // Отправляем результат обратно в бота
     if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.sendData(JSON.stringify({
-        success: true,
-        token: token
-      }));
+        try {
+            window.Telegram.WebApp.sendData(JSON.stringify(dataToSend));
+            console.log('✅ Данные отправлены в бота');
+        } catch (e) {
+            console.error('❌ Ошибка отправки данных:', e);
+        }
+    } else {
+        console.error('❌ Telegram.WebApp не доступен');
     }
 
     // Закрываем WebApp
     setTimeout(() => {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close();
-      }
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.close();
+        }
     }, 1500);
-  };
+};
 
   const handlePinBack = () => {
     if (window.Telegram?.WebApp) {

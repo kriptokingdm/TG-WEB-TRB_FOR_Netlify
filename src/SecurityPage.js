@@ -1,6 +1,6 @@
 // SecurityPage.js - Страница безопасности с PIN и восстановлением
 import React, { useState, useEffect } from 'react';
-import PinCode from './PinCode'; // 👈 ВАЖНО! ИМПОРТИРУЕМ PINCODE
+import PinCode from './PinCode';
 import './PinCode.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
@@ -12,7 +12,7 @@ const vibrate = (pattern = 10) => {
 };
 
 const SecurityPage = ({ userId, onBack }) => {
-  const [mode, setMode] = useState('main'); // main, pin, recovery
+  const [mode, setMode] = useState('main');
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
@@ -22,27 +22,47 @@ const SecurityPage = ({ userId, onBack }) => {
   const [step, setStep] = useState('question');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasPin, setHasPin] = useState(null);
+
+  // Проверяем есть ли PIN у пользователя
+  useEffect(() => {
+    const checkPin = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/pin/check/${userId}`);
+        const data = await response.json();
+        setHasPin(data.exists);
+        console.log('📌 PIN существует:', data.exists);
+      } catch (error) {
+        console.error('❌ Ошибка проверки PIN:', error);
+      }
+    };
+    checkPin();
+  }, [userId]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        setLoading(true);
-        console.log('📥 Загрузка вопросов для пользователя:', userId);
         const response = await fetch(`${API_BASE_URL}/api/security/questions`);
         const data = await response.json();
         console.log('📥 Ответ от API:', data);
         if (data.success) setQuestions(data.questions);
       } catch (error) {
         console.error('❌ Ошибка загрузки вопросов:', error);
-        setError('Не удалось загрузить вопросы. Проверьте соединение.');
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchQuestions();
-  }, [userId]);
+  }, []);
+
+  const handlePinSuccess = (token) => {
+    setMode('main');
+    setHasPin(true);
+    vibrate(12);
+    // После установки PIN, предложить настроить вопрос
+    setTimeout(() => {
+      setMode('recovery');
+    }, 1500);
+  };
 
   const handleRecovery = async () => {
     if (!selectedQuestion || !answer) {
@@ -50,8 +70,8 @@ const SecurityPage = ({ userId, onBack }) => {
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/security/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,8 +102,8 @@ const SecurityPage = ({ userId, onBack }) => {
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/security/reset-pin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -109,19 +129,6 @@ const SecurityPage = ({ userId, onBack }) => {
     }
   };
 
-  if (loading && mode === 'recovery') {
-    return (
-      <div className="pin-container">
-        <div className="pin-header">
-          <button className="pin-back" onClick={() => setMode('main')}>← Назад</button>
-          <h2 className="pin-title">Загрузка...</h2>
-          <div className="pin-spacer"></div>
-        </div>
-        <div className="pin-loading">Пожалуйста, подождите</div>
-      </div>
-    );
-  }
-
   if (success) {
     return (
       <div className="pin-container">
@@ -142,9 +149,9 @@ const SecurityPage = ({ userId, onBack }) => {
     return (
       <PinCode
         userId={userId}
-        mode="enter"
+        mode={hasPin === false ? 'setup' : 'enter'} // 👈 ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ!
         requiredAction="безопасности"
-        onSuccess={() => setMode('main')}
+        onSuccess={handlePinSuccess}
         onBack={() => setMode('main')}
       />
     );
@@ -287,7 +294,13 @@ const SecurityPage = ({ userId, onBack }) => {
           <span className="security-icon">🔐</span>
           <span className="security-text">
             <strong>ПИН-код</strong>
-            <small>Установить или изменить код</small>
+            <small>
+              {hasPin === false 
+                ? 'Установить код безопасности' 
+                : hasPin === true 
+                  ? 'Изменить код безопасности' 
+                  : 'Загрузка...'}
+            </small>
           </span>
           <span className="security-arrow">›</span>
         </button>

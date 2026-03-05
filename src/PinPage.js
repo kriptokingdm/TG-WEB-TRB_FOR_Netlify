@@ -51,14 +51,15 @@ function PinPage() {
 
     if (window.Telegram?.WebApp) {
         try {
+            // Отправляем данные
             window.Telegram.WebApp.sendData(jsonString);
             console.log('✅ Данные отправлены в бота');
             
-            // НЕ закрываем сразу, даём время боту обработать
+            // Ждём 3 секунды чтобы данные точно ушли
             setTimeout(() => {
-                console.log('📤 Закрываю окно через 2 секунды');
+                console.log('📤 Закрываю окно');
                 window.Telegram.WebApp.close();
-            }, 2000);
+            }, 3000);
             
         } catch (e) {
             console.error('❌ Ошибка отправки данных:', e);

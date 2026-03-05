@@ -1,5 +1,6 @@
 // SecurityPage.js - Страница безопасности с PIN и восстановлением
 import React, { useState, useEffect } from 'react';
+import PinCode from './PinCode'; // 👈 ВАЖНО! ИМПОРТИРУЕМ PINCODE
 import './PinCode.css';
 
 const API_BASE_URL = 'https://tethrab.shop';
@@ -15,22 +16,33 @@ const SecurityPage = ({ userId, onBack }) => {
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
-  const [userQuestion, setUserQuestion] = useState(null);
   const [resetToken, setResetToken] = useState(null);
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
-  const [step, setStep] = useState('question'); // question, newPin
+  const [step, setStep] = useState('question');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Загружаем список вопросов
-    fetch(`${API_BASE_URL}/api/security/questions`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchQuestions = async () => {
+      try {
+        setLoading(true);
+        console.log('📥 Загрузка вопросов для пользователя:', userId);
+        const response = await fetch(`${API_BASE_URL}/api/security/questions`);
+        const data = await response.json();
+        console.log('📥 Ответ от API:', data);
         if (data.success) setQuestions(data.questions);
-      });
-  }, []);
+      } catch (error) {
+        console.error('❌ Ошибка загрузки вопросов:', error);
+        setError('Не удалось загрузить вопросы. Проверьте соединение.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [userId]);
 
   const handleRecovery = async () => {
     if (!selectedQuestion || !answer) {
@@ -39,6 +51,7 @@ const SecurityPage = ({ userId, onBack }) => {
     }
 
     try {
+      setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/security/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,6 +59,7 @@ const SecurityPage = ({ userId, onBack }) => {
       });
 
       const data = await response.json();
+      console.log('📥 Ответ verify:', data);
       
       if (data.success) {
         setResetToken(data.resetToken);
@@ -55,17 +69,21 @@ const SecurityPage = ({ userId, onBack }) => {
         setError('Неверный ответ');
       }
     } catch (err) {
+      console.error('❌ Ошибка verify:', err);
       setError('Ошибка соединения');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSetNewPin = async () => {
     if (newPin.length !== 6 || newPin !== confirmPin) {
-      setError('Пин-коды не совпадают или не 6 цифр');
+      setError('ПИН-коды не совпадают или не 6 цифр');
       return;
     }
 
     try {
+      setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/security/reset-pin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,6 +91,7 @@ const SecurityPage = ({ userId, onBack }) => {
       });
 
       const data = await response.json();
+      console.log('📥 Ответ reset:', data);
       
       if (data.success) {
         setSuccess(true);
@@ -83,9 +102,25 @@ const SecurityPage = ({ userId, onBack }) => {
         setError('Ошибка сброса');
       }
     } catch (err) {
+      console.error('❌ Ошибка reset:', err);
       setError('Ошибка соединения');
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading && mode === 'recovery') {
+    return (
+      <div className="pin-container">
+        <div className="pin-header">
+          <button className="pin-back" onClick={() => setMode('main')}>← Назад</button>
+          <h2 className="pin-title">Загрузка...</h2>
+          <div className="pin-spacer"></div>
+        </div>
+        <div className="pin-loading">Пожалуйста, подождите</div>
+      </div>
+    );
+  }
 
   if (success) {
     return (
@@ -97,7 +132,7 @@ const SecurityPage = ({ userId, onBack }) => {
         </div>
         <div className="pin-success">
           <div className="pin-success-icon">✓</div>
-          <p>Пин-код успешно изменён!</p>
+          <p>ПИН-код успешно изменён!</p>
         </div>
       </div>
     );
@@ -127,6 +162,8 @@ const SecurityPage = ({ userId, onBack }) => {
 
           <p className="pin-instruction">Выберите вопрос и дайте ответ</p>
 
+          {error && <p className="pin-error">{error}</p>}
+
           <div className="security-questions">
             {questions.map(q => (
               <button
@@ -147,14 +184,12 @@ const SecurityPage = ({ userId, onBack }) => {
             onChange={(e) => setAnswer(e.target.value)}
           />
 
-          {error && <p className="pin-error">{error}</p>}
-
           <button
             className="security-submit"
             onClick={handleRecovery}
-            disabled={!selectedQuestion || !answer}
+            disabled={!selectedQuestion || !answer || loading}
           >
-            Проверить ответ
+            {loading ? 'Проверка...' : 'Проверить ответ'}
           </button>
         </div>
       );
@@ -206,12 +241,29 @@ const SecurityPage = ({ userId, onBack }) => {
             ))}
           </div>
 
+          <div className="pin-keypad">
+            <button
+              key="delete"
+              className="pin-key delete"
+              onClick={() => {
+                vibrate();
+                if (confirmPin.length > 0) {
+                  setConfirmPin(confirmPin.slice(0, -1));
+                } else if (newPin.length > 0) {
+                  setNewPin(newPin.slice(0, -1));
+                }
+              }}
+            >
+              ⌫
+            </button>
+          </div>
+
           <button
             className="security-submit"
             onClick={handleSetNewPin}
-            disabled={newPin.length !== 6 || confirmPin.length !== 6}
+            disabled={newPin.length !== 6 || confirmPin.length !== 6 || loading}
           >
-            Установить новый PIN
+            {loading ? 'Установка...' : 'Установить новый PIN'}
           </button>
         </div>
       );

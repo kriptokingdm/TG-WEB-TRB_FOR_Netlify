@@ -10,7 +10,7 @@ const vibrate = (pattern = 10) => {
   }
 };
 
-const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) => {
+const PinCode = ({ userId, onSuccess, onError, onBack, mode = 'setup', requiredAction, showRecovery, onRecovery }) => {
   // Логируем userId при монтировании компонента
   useEffect(() => {
     console.log('🔍 PinCode получил userId:', userId);
@@ -40,98 +40,106 @@ const PinCode = ({ userId, onSuccess, onBack, mode = 'setup', requiredAction }) 
   }, [pin, confirmPin, step]);
 
   const handleDigitPress = (digit, index, type) => {
-  vibrate(6);
-  
-  if (type === 'pin') {
-    // Сначала создаём новый массив с добавленной цифрой
-    const newPin = [...pin];
-    newPin[index] = digit;
+    vibrate(6);
     
-    // Сразу считаем заполненные
-    const filledCount = newPin.filter(d => d !== '').length;
-    console.log(`🔢 Введено цифр: ${filledCount}/6`);
-    
-    // Обновляем состояние
-    setPin(newPin);
-    
-    // Если заполнили все 6 цифр в режиме ввода
-    if (filledCount === 6 && step === 'enter') {
-      const fullPin = newPin.join('');
-      console.log('✅ PIN для проверки:', fullPin);
-      // Используем setTimeout, чтобы дать состоянию обновиться
-      setTimeout(() => {
-        // Здесь мы должны использовать fullPin, а не обращаться к pin
-        handleVerifyWithPin(fullPin);
-      }, 50);
+    if (type === 'pin') {
+      // Сначала создаём новый массив с добавленной цифрой
+      const newPin = [...pin];
+      newPin[index] = digit;
+      
+      // Сразу считаем заполненные
+      const filledCount = newPin.filter(d => d !== '').length;
+      console.log(`🔢 Введено цифр: ${filledCount}/6`);
+      
+      // Обновляем состояние
+      setPin(newPin);
+      
+      // Если заполнили все 6 цифр в режиме ввода
+      if (filledCount === 6 && step === 'enter') {
+        const fullPin = newPin.join('');
+        console.log('✅ PIN для проверки:', fullPin);
+        // Используем setTimeout, чтобы дать состоянию обновиться
+        setTimeout(() => {
+          // Здесь мы должны использовать fullPin, а не обращаться к pin
+          handleVerifyWithPin(fullPin);
+        }, 50);
+      }
+      
+      // Если заполнили все 6 цифр в режиме создания
+      if (filledCount === 6 && step === 'create') {
+        const fullPin = newPin.join('');
+        console.log('✅ Первый PIN введён полностью:', fullPin);
+        setFirstPinValue(fullPin);
+        setTimeout(() => {
+          setStep('confirm');
+          setConfirmPin(['', '', '', '', '', '']);
+        }, 100);
+      }
+    } else if (type === 'confirm') {
+      const newConfirm = [...confirmPin];
+      newConfirm[index] = digit;
+      setConfirmPin(newConfirm);
+      
+      const filledCount = newConfirm.filter(d => d !== '').length;
+      console.log(`🔢 Подтверждение: ${filledCount}/6`);
+      
+      if (filledCount === 6) {
+        const fullConfirm = newConfirm.join('');
+        console.log('✅ Второй PIN введён полностью:', fullConfirm);
+        setTimeout(() => handleCreate(fullConfirm), 50);
+      }
     }
-    
-    // Если заполнили все 6 цифр в режиме создания
-    if (filledCount === 6 && step === 'create') {
-      const fullPin = newPin.join('');
-      console.log('✅ Первый PIN введён полностью:', fullPin);
-      setFirstPinValue(fullPin);
-      setTimeout(() => {
-        setStep('confirm');
-        setConfirmPin(['', '', '', '', '', '']);
-      }, 100);
+  };
+
+  // Функция для проверки с переданным PIN
+  const handleVerifyWithPin = (pinValue) => {
+    if (!userId) {
+      setError('Ошибка: пользователь не идентифицирован');
+      return;
     }
-  } else if (type === 'confirm') {
-    const newConfirm = [...confirmPin];
-    newConfirm[index] = digit;
-    setConfirmPin(newConfirm);
-    
-    const filledCount = newConfirm.filter(d => d !== '').length;
-    console.log(`🔢 Подтверждение: ${filledCount}/6`);
-    
-    if (filledCount === 6) {
-      const fullConfirm = newConfirm.join('');
-      console.log('✅ Второй PIN введён полностью:', fullConfirm);
-      setTimeout(() => handleCreate(fullConfirm), 50);
-    }
-  }
-};
 
-// Новая функция для проверки с переданным PIN
-const handleVerifyWithPin = (pinValue) => {
-  if (!userId) {
-    setError('Ошибка: пользователь не идентифицирован');
-    return;
-  }
-
-  if (pinValue.length !== 6) {
-    setError('PIN должен содержать 6 цифр');
-    setPin(['', '', '', '', '', '']);
-    return;
-  }
-
-  setLoading(true);
-  fetch(`${API_BASE_URL}/api/pin/verify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, pin: pinValue })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log('📥 Ответ сервера:', data);
-    if (data.success) {
-      vibrate(12);
-      setSuccess(true);
-      localStorage.setItem(`user_token_${userId}`, data.token);
-      localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
-      setTimeout(() => onSuccess(data.token), 1000);
-    } else {
-      vibrate(20);
-      setError(data.error || 'Неверный PIN');
+    if (pinValue.length !== 6) {
+      setError('PIN должен содержать 6 цифр');
       setPin(['', '', '', '', '', '']);
+      return;
     }
-  })
-  .catch(() => {
-    setError('Ошибка соединения');
-  })
-  .finally(() => {
-    setLoading(false);
-  });
-};
+
+    setLoading(true);
+    fetch(`${API_BASE_URL}/api/pin/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, pin: pinValue })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log('📥 Ответ сервера:', data);
+      if (data.success) {
+        vibrate(12);
+        setSuccess(true);
+        localStorage.setItem(`user_token_${userId}`, data.token);
+        localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
+        setTimeout(() => onSuccess(data.token), 1000);
+      } else {
+        vibrate(20);
+        setError(data.error || 'Неверный PIN');
+        setPin(['', '', '', '', '', '']);
+        if (onError) onError(data);
+        if (data.attempts_left !== undefined) {
+          setAttemptsLeft(data.attempts_left);
+        }
+        if (data.error && data.error.includes('через')) {
+          setLockTime(new Date());
+        }
+      }
+    })
+    .catch((error) => {
+      console.error('❌ Ошибка:', error);
+      setError('Ошибка соединения');
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  };
 
   const handleDelete = (type) => {
     vibrate(8);
@@ -209,68 +217,6 @@ const handleVerifyWithPin = (pinValue) => {
       setLoading(false);
     }
   };
-
-  // ПРОВЕРКА PIN
-  // ПРОВЕРКА PIN
-// ПРОВЕРКА PIN
-const handleVerify = async () => {
-  if (!userId) {
-    setError('Ошибка: пользователь не идентифицирован');
-    return;
-  }
-
-  const pinString = pin.join('');
-  console.log('🔍 Собираем PIN из массива:', pin);
-  console.log('🔍 Получили строку:', pinString);
-  console.log('🔍 Длина строки:', pinString.length);
-  
-  if (pinString.length !== 6) {
-    setError('PIN должен содержать 6 цифр');
-    setPin(['', '', '', '', '', '']);
-    return;
-  }
-
-  setLoading(true);
-  try {
-    console.log('📤 Отправка запроса на проверку PIN:', { userId, pin: pinString });
-    
-    const response = await fetch(`${API_BASE_URL}/api/pin/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, pin: pinString })
-    });
-
-    const data = await response.json();
-    console.log('📥 Ответ сервера:', data);
-
-    if (data.success) {
-      vibrate(12);
-      setSuccess(true);
-      
-      localStorage.setItem(`user_token_${userId}`, data.token);
-      localStorage.setItem(`user_token_expires_${userId}`, Date.now() + data.expires_in * 1000);
-      
-      setTimeout(() => {
-        onSuccess(data.token);
-      }, 1000);
-    } else {
-      vibrate(20);
-      setError(data.error || 'Неверный PIN');
-      setPin(['', '', '', '', '', '']);
-      if (data.attempts_left !== undefined) {
-        setAttemptsLeft(data.attempts_left);
-      }
-      if (data.error && data.error.includes('через')) {
-        setLockTime(new Date());
-      }
-    }
-  } catch (error) {
-    console.error('❌ Ошибка:', error);
-    setError('Ошибка соединения');
-  } finally {
-    setLoading(false);
-  }
-};
 
   // Рендер клавиатуры
   const renderKeypad = (type) => {
@@ -396,6 +342,15 @@ const handleVerify = async () => {
         <p className="pin-attempts">
           Осталось попыток: {attemptsLeft}
         </p>
+      )}
+
+      {/* Ссылка на восстановление */}
+      {showRecovery && step === 'enter' && (
+        <div className="security-recovery-link">
+          <button className="security-recovery-btn" onClick={onRecovery}>
+            Забыли PIN? Восстановить доступ
+          </button>
+        </div>
       )}
 
       {/* Клавиатура */}

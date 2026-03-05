@@ -1,4 +1,4 @@
-// SecurityPage.js - Страница безопасности с PIN и восстановлением
+// SecurityPage.js - Полная система безопасности
 import React, { useState, useEffect } from 'react';
 import PinCode from './PinCode';
 import './PinCode.css';
@@ -24,28 +24,39 @@ const SecurityPage = ({ userId, onBack }) => {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasPin, setHasPin] = useState(null);
+  const [hasQuestion, setHasQuestion] = useState(false);
+  const [pinAttempts, setPinAttempts] = useState(0);
+  const [showRecovery, setShowRecovery] = useState(false);
 
-  // Проверяем есть ли PIN у пользователя
+  // Проверяем есть ли PIN и вопрос у пользователя
   useEffect(() => {
-    const checkPin = async () => {
+    const checkUserData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/pin/check/${userId}`);
-        const data = await response.json();
-        setHasPin(data.exists);
-        console.log('📌 PIN существует:', data.exists);
+        // Проверяем PIN
+        const pinResponse = await fetch(`${API_BASE_URL}/api/pin/check/${userId}`);
+        const pinData = await pinResponse.json();
+        setHasPin(pinData.exists);
+
+        // Проверяем вопрос
+        const questionResponse = await fetch(`${API_BASE_URL}/api/security/user/${userId}`);
+        const questionData = await questionResponse.json();
+        setHasQuestion(questionData.hasQuestion);
+        
+        console.log('📌 PIN существует:', pinData.exists);
+        console.log('📌 Вопрос существует:', questionData.hasQuestion);
       } catch (error) {
-        console.error('❌ Ошибка проверки PIN:', error);
+        console.error('❌ Ошибка проверки:', error);
       }
     };
-    checkPin();
+    checkUserData();
   }, [userId]);
 
+  // Загружаем список вопросов
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/security/questions`);
         const data = await response.json();
-        console.log('📥 Ответ от API:', data);
         if (data.success) setQuestions(data.questions);
       } catch (error) {
         console.error('❌ Ошибка загрузки вопросов:', error);
@@ -54,16 +65,70 @@ const SecurityPage = ({ userId, onBack }) => {
     fetchQuestions();
   }, []);
 
+  // Успешный PIN-код
   const handlePinSuccess = (token) => {
-    setMode('main');
-    setHasPin(true);
     vibrate(12);
-    // После установки PIN, предложить настроить вопрос
-    setTimeout(() => {
-      setMode('recovery');
-    }, 1500);
+    
+    // Если у пользователя уже есть вопрос - просто закрываем
+    if (hasQuestion) {
+      setSuccess(true);
+      setTimeout(() => onBack(), 1500);
+    } else {
+      // Если нет вопроса - предлагаем установить
+      setMode('setupQuestion');
+      setSuccess(false);
+    }
   };
 
+  // Неудачный PIN-код
+  // Обработчик ошибок от PinCode
+const handlePinError = (errorData) => {
+  setPinAttempts(prev => prev + 1);
+  
+  if (errorData.error === 'Invalid PIN' && errorData.attempts_left) {
+    if (errorData.attempts_left === 0) {
+      setShowRecovery(true);
+    }
+  } else if (pinAttempts >= 2) { // После 3 неудачных попыток показываем восстановление
+    setShowRecovery(true);
+  }
+};
+
+  // Сохранение секретного вопроса
+  const handleSaveQuestion = async () => {
+    if (!selectedQuestion || !answer) {
+      setError('Выберите вопрос и введите ответ');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/security/set`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId, 
+          questionId: selectedQuestion,
+          answer 
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess(true);
+        setTimeout(() => onBack(), 2000);
+      } else {
+        setError(data.error || 'Ошибка сохранения');
+      }
+    } catch (err) {
+      setError('Ошибка соединения');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Восстановление PIN через вопрос
   const handleRecovery = async () => {
     if (!selectedQuestion || !answer) {
       setError('Выберите вопрос и введите ответ');
@@ -79,7 +144,6 @@ const SecurityPage = ({ userId, onBack }) => {
       });
 
       const data = await response.json();
-      console.log('📥 Ответ verify:', data);
       
       if (data.success) {
         setResetToken(data.resetToken);
@@ -89,13 +153,13 @@ const SecurityPage = ({ userId, onBack }) => {
         setError('Неверный ответ');
       }
     } catch (err) {
-      console.error('❌ Ошибка verify:', err);
       setError('Ошибка соединения');
     } finally {
       setLoading(false);
     }
   };
 
+  // Установка нового PIN после восстановления
   const handleSetNewPin = async () => {
     if (newPin.length !== 6 || newPin !== confirmPin) {
       setError('ПИН-коды не совпадают или не 6 цифр');
@@ -111,23 +175,21 @@ const SecurityPage = ({ userId, onBack }) => {
       });
 
       const data = await response.json();
-      console.log('📥 Ответ reset:', data);
       
       if (data.success) {
         setSuccess(true);
-        setTimeout(() => {
-          onBack();
-        }, 2000);
+        setTimeout(() => onBack(), 2000);
       } else {
         setError('Ошибка сброса');
       }
     } catch (err) {
-      console.error('❌ Ошибка reset:', err);
       setError('Ошибка соединения');
     } finally {
       setLoading(false);
     }
   };
+
+  
 
   if (success) {
     return (
@@ -139,35 +201,96 @@ const SecurityPage = ({ userId, onBack }) => {
         </div>
         <div className="pin-success">
           <div className="pin-success-icon">✓</div>
-          <p>ПИН-код успешно изменён!</p>
+          <p>Операция выполнена успешно!</p>
         </div>
       </div>
     );
   }
 
-  if (mode === 'pin') {
+  // Режим создания/ввода PIN
+  if (mode === 'pin' || mode === 'main' && hasPin === false) {
     return (
       <PinCode
         userId={userId}
-        mode={hasPin === false ? 'setup' : 'enter'} // 👈 ВОТ ГЛАВНОЕ ИСПРАВЛЕНИЕ!
+        mode={hasPin === false ? 'setup' : 'enter'}
         requiredAction="безопасности"
         onSuccess={handlePinSuccess}
+        onError={handlePinError}
         onBack={() => setMode('main')}
+        showRecovery={showRecovery}
+        onRecovery={() => setMode('recovery')}
       />
     );
   }
 
+  // Режим установки вопроса (после создания PIN)
+  if (mode === 'setupQuestion') {
+    return (
+      <div className="pin-container">
+        <div className="pin-header">
+          <button className="pin-back" onClick={() => setMode('main')}>← Назад</button>
+          <h2 className="pin-title">Настройка безопасности</h2>
+          <div className="pin-spacer"></div>
+        </div>
+
+        <p className="pin-instruction">
+          Для восстановления PIN-кода выберите вопрос и дайте ответ
+        </p>
+
+        {error && <p className="pin-error">{error}</p>}
+
+        <div className="security-questions">
+          {questions.map(q => (
+            <button
+              key={q.id}
+              className={`security-question-btn ${selectedQuestion === q.id ? 'selected' : ''}`}
+              onClick={() => setSelectedQuestion(q.id)}
+            >
+              {q.text}
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="text"
+          className="security-answer"
+          placeholder="Ваш ответ"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+        />
+
+        <button
+          className="security-submit"
+          onClick={handleSaveQuestion}
+          disabled={!selectedQuestion || !answer || loading}
+        >
+          {loading ? 'Сохранение...' : 'Сохранить вопрос'}
+        </button>
+
+        <button
+          className="security-skip"
+          onClick={() => onBack()}
+        >
+          Пропустить (можно настроить позже)
+        </button>
+      </div>
+    );
+  }
+
+  // Режим восстановления (забыл PIN)
   if (mode === 'recovery') {
     if (step === 'question') {
       return (
         <div className="pin-container">
           <div className="pin-header">
             <button className="pin-back" onClick={() => setMode('main')}>← Назад</button>
-            <h2 className="pin-title">Восстановление</h2>
+            <h2 className="pin-title">Восстановление доступа</h2>
             <div className="pin-spacer"></div>
           </div>
 
-          <p className="pin-instruction">Выберите вопрос и дайте ответ</p>
+          <p className="pin-instruction">
+            Ответьте на секретный вопрос, чтобы сбросить PIN-код
+          </p>
 
           {error && <p className="pin-error">{error}</p>}
 
@@ -298,7 +421,9 @@ const SecurityPage = ({ userId, onBack }) => {
               {hasPin === false 
                 ? 'Установить код безопасности' 
                 : hasPin === true 
-                  ? 'Изменить код безопасности' 
+                  ? hasQuestion 
+                    ? 'Изменить код безопасности' 
+                    : 'Установить код и вопрос'
                   : 'Загрузка...'}
             </small>
           </span>
@@ -311,8 +436,8 @@ const SecurityPage = ({ userId, onBack }) => {
         >
           <span className="security-icon">🔄</span>
           <span className="security-text">
-            <strong>Восстановление</strong>
-            <small>Забыли PIN? Восстановите через вопросы</small>
+            <strong>Забыли PIN?</strong>
+            <small>Восстановите доступ через секретный вопрос</small>
           </span>
           <span className="security-arrow">›</span>
         </button>

@@ -107,19 +107,20 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
   };
 
   // Открытие экрана PIN с правильным режимом
-  const openPinScreen = (action, actionName) => {
-    setPinAction(() => action);
-    setPinActionName(actionName);
-    
-    // Если PIN ещё не установлен - режим создания, иначе - ввод
-    if (hasPin === false) {
-      setPinMode('setup');
-    } else {
-      setPinMode('enter');
-    }
-    
-    setShowPin(true);
-  };
+  // Открытие экрана PIN с правильным режимом
+const openPinScreen = (action, actionName) => {
+  setPinAction(() => action);
+  setPinActionName(actionName);
+  
+  // Если PIN ещё не установлен - режим создания, иначе - ввод
+  if (hasPin === false) {
+    setPinMode('setup');  // 👈 ДОЛЖНО БЫТЬ setup, а не enter
+  } else {
+    setPinMode('enter');
+  }
+  
+  setShowPin(true);
+};
 
   // Обработчик успешного ввода PIN
   const handlePinSuccess = (token) => {

@@ -282,3 +282,116 @@
     transform: translate(-50%, 0);
   }
 }
+
+/* SecurityPage стили */
+.security-main {
+  padding: 20px;
+}
+
+.security-main-btn {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: none;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+.security-main-btn:active {
+  background: var(--tg-hover-color, #e9ecef);
+}
+
+.security-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 50%;
+}
+
+.security-text {
+  flex: 1;
+  text-align: left;
+}
+
+.security-text strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.security-text small {
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  display: block;
+}
+
+.security-arrow {
+  font-size: 20px;
+  color: var(--tg-theme-hint-color, #8e8e93);
+  padding-right: 8px;
+}
+
+.security-questions {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.security-question-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+  border: 2px solid transparent;
+  border-radius: 16px;
+  font-size: 15px;
+  color: var(--tg-theme-text-color, #000000);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.security-question-btn.selected {
+  border-color: var(--tg-theme-button-color, #3390ec);
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.security-answer {
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  padding: 16px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border: 1px solid var(--tg-border-color, #e0e0e0);
+  border-radius: 16px;
+  font-size: 16px;
+  color: var(--tg-theme-text-color, #000000);
+}
+
+.security-submit {
+  width: calc(100% - 40px);
+  margin: 20px;
+  padding: 16px;
+  background: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.security-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -8,6 +8,7 @@ import SettingsApp from './SettingsApp';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
+import SecurityPage from './SecurityPage';
 
 // URL API
 const API_BASE_URL = 'https://tethrab.shop';
@@ -547,6 +548,11 @@ function App() {
       case 'settings': return <SettingsApp key="settings" {...commonProps} />;
       case 'game': return <Game key="game" {...commonProps} />;
       default: return <Home key="home" {...commonProps} />;
+      case 'security': return <SecurityPage 
+  key="security" 
+  userId={telegramUser?.id} 
+  onBack={() => navigateTo('settings')} 
+/>;
     }
   };
 

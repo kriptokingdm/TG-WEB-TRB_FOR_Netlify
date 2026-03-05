@@ -194,54 +194,37 @@ function SettingsApp({ navigateTo, telegramUser, showToast, hideHints, updateHid
       <div className="settings-content">
 
         {/* ==================== БЕЗОПАСНОСТЬ ==================== */}
-        <div className="settings-section">
-          <div className="settings-list">
-            
-            {/* КНОПКА ПИН-КОДА */}
-            <button 
-              className="settings-item" 
-              onClick={() => {
-                if (!telegramUser?.id) {
-                  showToast('❌ Ошибка: пользователь не идентифицирован', 'error');
-                  return;
-                }
-                setPinActionName('настройкам безопасности');
-                if (hasPin === false) {
-                  setPinMode('setup');
-                } else {
-                  setPinMode('enter');
-                }
-                setShowPin(true);
-              }}
-            >
-              <div className="settings-item-text">
-                <div className="title">🔐 ПИН-код</div>
-                <div className="desc">
-                  {hasPin === false 
-                    ? 'Установить код безопасности' 
-                    : hasPin === true 
-                      ? 'Изменить код безопасности' 
-                      : 'Загрузка...'}
-                </div>
-              </div>
-              <div className="settings-item-arrow">›</div>
-            </button>
+        {/* ==================== БЕЗОПАСНОСТЬ ==================== */}
+<div className="settings-section">
+  <div className="settings-list">
+    
+    {/* КНОПКА БЕЗОПАСНОСТИ */}
+    <button 
+      className="settings-item" 
+      onClick={() => navigateTo('security')}
+    >
+      <div className="settings-item-text">
+        <div className="title">🔐 Безопасность</div>
+        <div className="desc">ПИН-код и восстановление доступа</div>
+      </div>
+      <div className="settings-item-arrow">›</div>
+    </button>
 
-            {/* КНОПКА СБРОСА PIN (для админа/владельца) */}
-            {telegramUser?.id === '7879866656' && (
-              <button 
-                className="settings-item danger" 
-                onClick={resetPin}
-              >
-                <div className="settings-item-text">
-                  <div className="title">🔄 Сбросить PIN-код</div>
-                  <div className="desc">Для всех пользователей (только админ)</div>
-                </div>
-              </button>
-            )}
-
-          </div>
+    {/* КНОПКА СБРОСА PIN (для админа/владельца) */}
+    {telegramUser?.id === '7879866656' && (
+      <button 
+        className="settings-item danger" 
+        onClick={resetPin}
+      >
+        <div className="settings-item-text">
+          <div className="title">🔄 Сбросить PIN-код</div>
+          <div className="desc">Для всех пользователей (только админ)</div>
         </div>
+      </button>
+    )}
+
+  </div>
+</div>
 
         {/* ==================== УВЕДОМЛЕНИЯ ==================== */}
         <div className="settings-section">

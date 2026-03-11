@@ -1,15 +1,14 @@
-// PinPage.js - Страница для ввода PIN-кода (исправлено для iOS)
+// PinPage.js - Страница для ввода PIN-кода (СПЕЦИАЛЬНО ДЛЯ iOS)
 import React, { useState, useEffect } from 'react';
 import PinCode from './PinCode';
 import './PinCode.css';
-
-const API_BASE_URL = 'https://tethrab.shop';
 
 function PinPage() {
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
   const [userId, setUserId] = useState(null);
   const [action, setAction] = useState(null);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,12 +22,18 @@ function PinPage() {
 
   const handlePinSuccess = async (token) => {
     console.log('✅ PIN успешно подтверждён, токен:', token);
+    
+    if (sent) return;
+    setSent(true);
+    
     setStatus('success');
-    setMessage('PIN подтверждён! Закрываю окно...');
+    setMessage('PIN подтверждён!');
 
     const dataToSend = {
       success: true,
-      token: token
+      token: token,
+      userId: userId,
+      action: action
     };
     
     const jsonString = JSON.stringify(dataToSend);
@@ -36,24 +41,20 @@ function PinPage() {
 
     if (window.Telegram?.WebApp) {
       try {
-        // Отправляем данные несколько раз для надежности
+        // iOS ХАК: отправляем и сразу закрываем
         window.Telegram.WebApp.sendData(jsonString);
-        console.log('✅ Данные отправлены в бота');
+        console.log('✅ Данные отправлены');
         
-        // iOS требует больше времени
-        setTimeout(() => {
-          console.log('📤 Повторная отправка...');
-          window.Telegram.WebApp.sendData(jsonString);
-        }, 100);
-        
+        // iPhone требует больше времени
         setTimeout(() => {
           console.log('📤 Закрываю окно');
           window.Telegram.WebApp.close();
-        }, 2000); // Увеличили до 2 секунд
+        }, 500);
         
       } catch (e) {
-        console.error('❌ Ошибка отправки данных:', e);
-        setTimeout(() => window.Telegram.WebApp.close(), 1000);
+        console.error('❌ Ошибка отправки:', e);
+        setMessage('Ошибка');
+        setTimeout(() => window.Telegram.WebApp.close(), 500);
       }
     }
   };
@@ -80,9 +81,7 @@ function PinPage() {
     <div className="pin-container">
       <div className="pin-header">
         <button className="pin-back" onClick={handlePinBack}>← Назад</button>
-        <h2 className="pin-title">
-          {status === 'success' ? 'Успешно!' : 'Проверка PIN'}
-        </h2>
+        <h2 className="pin-title">Успешно!</h2>
         <div className="pin-spacer"></div>
       </div>
       

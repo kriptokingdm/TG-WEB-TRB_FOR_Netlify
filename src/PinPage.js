@@ -36,36 +36,36 @@ function PinPage() {
   }, []);
 
  const handlePinSuccess = async (token) => {
-    console.log('✅ PIN успешно подтверждён, токен:', token);
-    setStatus('success');
-    setMessage('PIN подтверждён! Создаю чек...');
+  console.log('✅ PIN успешно подтверждён, токен:', token);
+  setStatus('success');
+  setMessage('PIN подтверждён! Закрываю окно...');
 
-    // Подготавливаем данные для отправки
-    const dataToSend = {
-        success: true,
-        token: token
-    };
-    
-    const jsonString = JSON.stringify(dataToSend);
-    console.log('📤 Отправка данных в бота:', jsonString);
+  // Подготавливаем данные для отправки
+  const dataToSend = {
+    success: true,
+    token: token
+  };
+  
+  const jsonString = JSON.stringify(dataToSend);
+  console.log('📤 Отправка данных в бота:', jsonString);
 
-    if (window.Telegram?.WebApp) {
-        try {
-            // Отправляем данные
-            window.Telegram.WebApp.sendData(jsonString);
-            console.log('✅ Данные отправлены в бота');
-            
-            // Ждём 3 секунды чтобы данные точно ушли
-            setTimeout(() => {
-                console.log('📤 Закрываю окно');
-                window.Telegram.WebApp.close();
-            }, 3000);
-            
-        } catch (e) {
-            console.error('❌ Ошибка отправки данных:', e);
-            setTimeout(() => window.Telegram.WebApp.close(), 1000);
-        }
+  if (window.Telegram?.WebApp) {
+    try {
+      // Отправляем данные
+      window.Telegram.WebApp.sendData(jsonString);
+      console.log('✅ Данные отправлены в бота');
+      
+      // НЕ ЗАКРЫВАЕМ СРАЗУ! Даём время на отправку
+      setTimeout(() => {
+        console.log('📤 Закрываю окно');
+        window.Telegram.WebApp.close();
+      }, 2000); // Увеличили до 2 секунд
+      
+    } catch (e) {
+      console.error('❌ Ошибка отправки данных:', e);
+      setTimeout(() => window.Telegram.WebApp.close(), 1000);
     }
+  }
 };
 
   const handlePinBack = () => {

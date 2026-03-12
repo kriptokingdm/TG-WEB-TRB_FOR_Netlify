@@ -1,4 +1,3 @@
-// PinPage.js - Максимально простой и стабильный для iPhone / Telegram WebApp
 import React, { useEffect, useMemo, useState } from 'react';
 import PinCode from './PinCode';
 import './PinCode.css';
@@ -6,18 +5,23 @@ import './PinCode.css';
 function PinPage() {
   const [userId, setUserId] = useState('');
   const [action, setAction] = useState('create_check');
+  const [debug, setDebug] = useState('init');
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
 
-    if (tg) {
-      try {
+    try {
+      if (tg) {
         tg.ready();
         tg.expand();
-      } catch (e) {
-        console.error('Telegram WebApp init error:', e);
+        setDebug('Telegram WebApp ready');
+      } else {
+        setDebug('Telegram WebApp NOT found');
       }
+    } catch (e) {
+      console.error(e);
+      setDebug(`WebApp init error: ${e.message}`);
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -30,49 +34,49 @@ function PinPage() {
   }, []);
 
   const requiredActionText = useMemo(() => {
-    switch (action) {
-      case 'create_check':
-        return 'создание чека';
-      default:
-        return 'подтверждение действия';
-    }
+    if (action === 'create_check') return 'создание чека';
+    return 'подтверждение действия';
   }, [action]);
 
-  const handlePinSuccess = (token) => {
-    console.log('✅ PIN подтверждён', { action, userId });
-
+  const handlePinSuccess = async (token) => {
     const tg = window.Telegram?.WebApp;
 
     const payload = {
       success: true,
       action,
       userId,
-      token
+      token,
+      ts: Date.now()
     };
-
-    if (!tg) {
-      console.error('❌ Telegram WebApp недоступен');
-      alert('Ошибка: Telegram WebApp недоступен');
-      return;
-    }
 
     try {
       const json = JSON.stringify(payload);
-      console.log('📤 Отправка данных в бот:', json);
+      console.log('SEND DATA:', json);
+      setDebug(`sending: ${json}`);
+
+      if (!tg) {
+        setDebug('ERROR: Telegram WebApp missing');
+        alert('Telegram WebApp недоступен');
+        return;
+      }
 
       tg.sendData(json);
 
-      // Небольшая задержка полезна на iPhone, чтобы данные успели уйти
+      // На iPhone нельзя закрывать сразу
+      setDebug('data sent, waiting before close...');
+
       setTimeout(() => {
         try {
           tg.close();
         } catch (e) {
-          console.error('Ошибка закрытия WebApp:', e);
+          console.error('close error', e);
+          setDebug(`close error: ${e.message}`);
         }
-      }, 300);
+      }, 1200);
     } catch (error) {
-      console.error('❌ Ошибка отправки данных в бот:', error);
-      alert('Ошибка отправки данных');
+      console.error('sendData error', error);
+      setDebug(`send error: ${error.message}`);
+      alert(`Ошибка отправки: ${error.message}`);
     }
   };
 
@@ -82,7 +86,7 @@ function PinPage() {
       try {
         tg.close();
       } catch (e) {
-        console.error('Ошибка закрытия WebApp:', e);
+        console.error(e);
       }
     } else {
       window.history.back();
@@ -90,21 +94,31 @@ function PinPage() {
   };
 
   if (!isReady) {
-    return (
-      <div style={{ padding: 20, textAlign: 'center' }}>
-        Загрузка...
-      </div>
-    );
+    return <div style={{ padding: 20 }}>Загрузка...</div>;
   }
 
   return (
-    <PinCode
-      userId={userId}
-      mode="enter"
-      requiredAction={requiredActionText}
-      onSuccess={handlePinSuccess}
-      onBack={handleBack}
-    />
+    <div>
+      <PinCode
+        userId={userId}
+        mode="enter"
+        requiredAction={requiredActionText}
+        onSuccess={handlePinSuccess}
+        onBack={handleBack}
+      />
+
+      <div
+        style={{
+          marginTop: 20,
+          padding: 12,
+          fontSize: 12,
+          color: '#666',
+          wordBreak: 'break-word'
+        }}
+      >
+        debug: {debug}
+      </div>
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ function PinPage() {
   const [action, setAction] = useState('create_check');
   const [debug, setDebug] = useState('init');
   const [isReady, setIsReady] = useState(false);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -20,7 +21,7 @@ function PinPage() {
         setDebug('Telegram WebApp NOT found');
       }
     } catch (e) {
-      console.error(e);
+      console.error('WebApp init error:', e);
       setDebug(`WebApp init error: ${e.message}`);
     }
 
@@ -38,7 +39,7 @@ function PinPage() {
     return 'подтверждение действия';
   }, [action]);
 
-  const handlePinSuccess = async (token) => {
+  const handlePinSuccess = (token) => {
     const tg = window.Telegram?.WebApp;
 
     const payload = {
@@ -51,7 +52,7 @@ function PinPage() {
 
     try {
       const json = JSON.stringify(payload);
-      console.log('SEND DATA:', json);
+      console.log('📤 SEND DATA:', json);
       setDebug(`sending: ${json}`);
 
       if (!tg) {
@@ -62,19 +63,10 @@ function PinPage() {
 
       tg.sendData(json);
 
-      // На iPhone нельзя закрывать сразу
-      setDebug('data sent, waiting before close...');
-
-      setTimeout(() => {
-        try {
-          tg.close();
-        } catch (e) {
-          console.error('close error', e);
-          setDebug(`close error: ${e.message}`);
-        }
-      }, 1200);
+      setSent(true);
+      setDebug('data sent successfully, now return to chat manually');
     } catch (error) {
-      console.error('sendData error', error);
+      console.error('sendData error:', error);
       setDebug(`send error: ${error.message}`);
       alert(`Ошибка отправки: ${error.message}`);
     }
@@ -86,7 +78,7 @@ function PinPage() {
       try {
         tg.close();
       } catch (e) {
-        console.error(e);
+        console.error('close error:', e);
       }
     } else {
       window.history.back();
@@ -94,7 +86,55 @@ function PinPage() {
   };
 
   if (!isReady) {
-    return <div style={{ padding: 20 }}>Загрузка...</div>;
+    return (
+      <div style={{ padding: 20, textAlign: 'center' }}>
+        Загрузка...
+      </div>
+    );
+  }
+
+  if (sent) {
+    return (
+      <div style={{ padding: 20, textAlign: 'center' }}>
+        <h3>✅ PIN подтверждён</h3>
+        <p style={{ marginTop: 12 }}>
+          Данные отправлены в бота.
+        </p>
+        <p style={{ marginTop: 8, fontSize: 13, color: '#666' }}>
+          Если вы на iPhone, не закрывайте окно мгновенно.
+          Подождите 2–3 секунды и нажмите кнопку ниже.
+        </p>
+
+        <button
+          onClick={handleBack}
+          style={{
+            marginTop: 20,
+            padding: '12px 18px',
+            borderRadius: 10,
+            border: 'none',
+            background: '#2AABEE',
+            color: '#fff',
+            fontSize: 16,
+            cursor: 'pointer'
+          }}
+        >
+          Закрыть
+        </button>
+
+        <div
+          style={{
+            marginTop: 20,
+            padding: 12,
+            fontSize: 12,
+            color: '#666',
+            wordBreak: 'break-word',
+            textAlign: 'left'
+          }}
+        >
+          debug: {debug}
+        </div>
+      </div>
+    );
   }
 
   return (

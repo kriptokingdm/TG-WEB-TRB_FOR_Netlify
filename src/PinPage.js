@@ -1,141 +1,124 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import PinCode from './PinCode';
-import './PinCode.css';
+import React, { useEffect, useState } from 'react';
 
-const BUILD_VERSION = 'PIN_BUILD_2026_03_12_1838';
+const BUILD_VERSION = 'IOS_TEST_001';
 
 function PinPage() {
+  const [debug, setDebug] = useState('init');
   const [userId, setUserId] = useState('');
   const [action, setAction] = useState('create_check');
-  const [debug, setDebug] = useState('init');
-  const [isReady, setIsReady] = useState(false);
-  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
 
-    try {
-      if (tg) {
+    if (tg) {
+      try {
         tg.ready();
         tg.expand();
-        setDebug(`Telegram WebApp ready | ${BUILD_VERSION}`);
-      } else {
-        setDebug(`Telegram WebApp NOT found | ${BUILD_VERSION}`);
+        setDebug(`WebApp ready | ${BUILD_VERSION}`);
+      } catch (e) {
+        setDebug(`WebApp init error: ${e.message}`);
       }
-    } catch (e) {
-      console.error('WebApp init error:', e);
-      setDebug(`WebApp init error: ${e.message} | ${BUILD_VERSION}`);
+    } else {
+      setDebug(`WebApp NOT FOUND | ${BUILD_VERSION}`);
     }
 
     const params = new URLSearchParams(window.location.search);
-    const queryUserId = params.get('userId') || '';
-    const queryAction = params.get('action') || 'create_check';
-
-    setUserId(queryUserId);
-    setAction(queryAction);
-    setIsReady(true);
+    setUserId(params.get('userId') || '');
+    setAction(params.get('action') || 'create_check');
   }, []);
 
-  const requiredActionText = useMemo(() => {
-    if (action === 'create_check') return 'создание чека';
-    return 'подтверждение действия';
-  }, [action]);
-
-  const handlePinSuccess = (token) => {
+  const sendTestData = () => {
     const tg = window.Telegram?.WebApp;
+
+    if (!tg) {
+      alert('Telegram WebApp not found');
+      setDebug('send failed: no Telegram WebApp');
+      return;
+    }
 
     const payload = {
       success: true,
       action,
       userId,
-      token,
+      token: 'TEST_TOKEN_FROM_IPHONE',
       ts: Date.now(),
       build: BUILD_VERSION
     };
 
     try {
       const json = JSON.stringify(payload);
-      console.log('SEND DATA:', json);
-      setDebug(`sending: ${json}`);
-
-      if (!tg) {
-        setDebug(`ERROR: Telegram WebApp missing | ${BUILD_VERSION}`);
-        alert('Telegram WebApp недоступен');
-        return;
-      }
-
       tg.sendData(json);
-      setSent(true);
-      setDebug(`data sent successfully | ${BUILD_VERSION}`);
-    } catch (error) {
-      console.error('sendData error:', error);
-      setDebug(`send error: ${error.message} | ${BUILD_VERSION}`);
-      alert(`Ошибка отправки: ${error.message}`);
+      setDebug(`DATA SENT: ${json}`);
+    } catch (e) {
+      setDebug(`sendData error: ${e.message}`);
+      alert(e.message);
     }
   };
 
-  const handleBack = () => {
+  const closeApp = () => {
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-      try {
-        tg.close();
-      } catch (e) {
-        console.error('close error:', e);
-      }
-    } else {
-      window.history.back();
-    }
+    if (tg) tg.close();
   };
-
-  if (!isReady) {
-    return <div style={{ padding: 20 }}>Загрузка...</div>;
-  }
-
-  if (sent) {
-    return (
-      <div style={{ padding: 20, textAlign: 'center' }}>
-        <h3>✅ PIN подтверждён</h3>
-        <p>Данные отправлены в бота.</p>
-        <p style={{ fontSize: 12, color: '#666' }}>
-          Версия: {BUILD_VERSION}
-        </p>
-        <button
-          onClick={handleBack}
-          style={{
-            marginTop: 20,
-            padding: '12px 18px',
-            borderRadius: 10,
-            border: 'none',
-            background: '#2AABEE',
-            color: '#fff',
-            fontSize: 16
-          }}
-        >
-          Закрыть
-        </button>
-
-        <div style={{ marginTop: 20, fontSize: 12, color: '#666', wordBreak: 'break-word' }}>
-          debug: {debug}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div>
-      <PinCode
-        userId={userId}
-        mode="enter"
-        requiredAction={requiredActionText}
-        onSuccess={handlePinSuccess}
-        onBack={handleBack}
-      />
+    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
+      <h2>TEST PIN PAGE</h2>
 
-      <div style={{ marginTop: 20, padding: 12, fontSize: 12, color: '#666', wordBreak: 'break-word' }}>
-        version: {BUILD_VERSION}
-        <br />
-        debug: {debug}
+      <div style={{ marginBottom: 12 }}>
+        <b>Version:</b> {BUILD_VERSION}
       </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <b>User ID:</b> {userId || 'empty'}
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <b>Action:</b> {action}
+      </div>
+
+      <div
+        style={{
+          marginBottom: 20,
+          padding: 12,
+          background: '#f3f3f3',
+          borderRadius: 8,
+          wordBreak: 'break-word',
+          fontSize: 12
+        }}
+      >
+        {debug}
+      </div>
+
+      <button
+        onClick={sendTestData}
+        style={{
+          width: '100%',
+          padding: 16,
+          borderRadius: 10,
+          border: 'none',
+          background: '#2AABEE',
+          color: '#fff',
+          fontSize: 16,
+          marginBottom: 12
+        }}
+      >
+        SEND TEST DATA
+      </button>
+
+      <button
+        onClick={closeApp}
+        style={{
+          width: '100%',
+          padding: 16,
+          borderRadius: 10,
+          border: '1px solid #ccc',
+          background: '#fff',
+          color: '#000',
+          fontSize: 16
+        }}
+      >
+        CLOSE
+      </button>
     </div>
   );
 }

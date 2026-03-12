@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import PinCode from './PinCode';
 import './PinCode.css';
 
+const BUILD_VERSION = 'PIN_BUILD_2026_03_12_1838';
+
 function PinPage() {
   const [userId, setUserId] = useState('');
   const [action, setAction] = useState('create_check');
@@ -16,13 +18,13 @@ function PinPage() {
       if (tg) {
         tg.ready();
         tg.expand();
-        setDebug('Telegram WebApp ready');
+        setDebug(`Telegram WebApp ready | ${BUILD_VERSION}`);
       } else {
-        setDebug('Telegram WebApp NOT found');
+        setDebug(`Telegram WebApp NOT found | ${BUILD_VERSION}`);
       }
     } catch (e) {
       console.error('WebApp init error:', e);
-      setDebug(`WebApp init error: ${e.message}`);
+      setDebug(`WebApp init error: ${e.message} | ${BUILD_VERSION}`);
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -47,27 +49,27 @@ function PinPage() {
       action,
       userId,
       token,
-      ts: Date.now()
+      ts: Date.now(),
+      build: BUILD_VERSION
     };
 
     try {
       const json = JSON.stringify(payload);
-      console.log('📤 SEND DATA:', json);
+      console.log('SEND DATA:', json);
       setDebug(`sending: ${json}`);
 
       if (!tg) {
-        setDebug('ERROR: Telegram WebApp missing');
+        setDebug(`ERROR: Telegram WebApp missing | ${BUILD_VERSION}`);
         alert('Telegram WebApp недоступен');
         return;
       }
 
       tg.sendData(json);
-
       setSent(true);
-      setDebug('data sent successfully, now return to chat manually');
+      setDebug(`data sent successfully | ${BUILD_VERSION}`);
     } catch (error) {
       console.error('sendData error:', error);
-      setDebug(`send error: ${error.message}`);
+      setDebug(`send error: ${error.message} | ${BUILD_VERSION}`);
       alert(`Ошибка отправки: ${error.message}`);
     }
   };
@@ -86,25 +88,17 @@ function PinPage() {
   };
 
   if (!isReady) {
-    return (
-      <div style={{ padding: 20, textAlign: 'center' }}>
-        Загрузка...
-      </div>
-    );
+    return <div style={{ padding: 20 }}>Загрузка...</div>;
   }
 
   if (sent) {
     return (
       <div style={{ padding: 20, textAlign: 'center' }}>
         <h3>✅ PIN подтверждён</h3>
-        <p style={{ marginTop: 12 }}>
-          Данные отправлены в бота.
+        <p>Данные отправлены в бота.</p>
+        <p style={{ fontSize: 12, color: '#666' }}>
+          Версия: {BUILD_VERSION}
         </p>
-        <p style={{ marginTop: 8, fontSize: 13, color: '#666' }}>
-          Если вы на iPhone, не закрывайте окно мгновенно.
-          Подождите 2–3 секунды и нажмите кнопку ниже.
-        </p>
-
         <button
           onClick={handleBack}
           style={{
@@ -114,23 +108,13 @@ function PinPage() {
             border: 'none',
             background: '#2AABEE',
             color: '#fff',
-            fontSize: 16,
-            cursor: 'pointer'
+            fontSize: 16
           }}
         >
           Закрыть
         </button>
 
-        <div
-          style={{
-            marginTop: 20,
-            padding: 12,
-            fontSize: 12,
-            color: '#666',
-            wordBreak: 'break-word',
-            textAlign: 'left'
-          }}
-        >
+        <div style={{ marginTop: 20, fontSize: 12, color: '#666', wordBreak: 'break-word' }}>
           debug: {debug}
         </div>
       </div>
@@ -147,15 +131,9 @@ function PinPage() {
         onBack={handleBack}
       />
 
-      <div
-        style={{
-          marginTop: 20,
-          padding: 12,
-          fontSize: 12,
-          color: '#666',
-          wordBreak: 'break-word'
-        }}
-      >
+      <div style={{ marginTop: 20, padding: 12, fontSize: 12, color: '#666', wordBreak: 'break-word' }}>
+        version: {BUILD_VERSION}
+        <br />
         debug: {debug}
       </div>
     </div>

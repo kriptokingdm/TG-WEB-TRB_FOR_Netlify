@@ -42,37 +42,32 @@ function PinPage() {
   }, [action]);
 
   const handlePinSuccess = (token) => {
-    const tg = window.Telegram?.WebApp;
-
-    const payload = {
-      success: true,
-      action,
-      userId,
-      token,
-      ts: Date.now(),
-      build: BUILD_VERSION
-    };
-
-    try {
-      const json = JSON.stringify(payload);
-      console.log('📤 SEND DATA:', json);
-      setDebug(`sending: ${json}`);
-
-      if (!tg) {
-        setDebug(`ERROR: Telegram WebApp missing | ${BUILD_VERSION}`);
-        alert('Telegram WebApp недоступен');
-        return;
+  console.log('✅ PIN подтверждён');
+  
+  if (window.Telegram?.WebApp) {
+    // Очищаем старые токены
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('user_token_')) {
+        localStorage.removeItem(key);
       }
-
-      tg.sendData(json);
-      setSent(true);
-      setDebug(`data sent successfully | ${BUILD_VERSION}`);
-    } catch (error) {
-      console.error('sendData error:', error);
-      setDebug(`send error: ${error.message} | ${BUILD_VERSION}`);
-      alert(`Ошибка отправки: ${error.message}`);
-    }
-  };
+    });
+    
+    // Сохраняем новый токен с меткой времени
+    const now = Date.now();
+    localStorage.setItem(`user_token_${userId}`, token);
+    localStorage.setItem(`user_token_expires_${userId}`, now + 15 * 60 * 1000);
+    
+    // Отправляем данные
+    const data = JSON.stringify({ 
+      success: true, 
+      token: token 
+    });
+    
+    window.Telegram.WebApp.sendData(data);
+    window.Telegram.WebApp.close();
+  }
+};
 
   const handleBack = () => {
     const tg = window.Telegram?.WebApp;

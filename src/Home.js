@@ -212,25 +212,31 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
   // ==================== ЗАПРОС КУРСА ====================
   const fetchExchangeRate = (queryAmount, mode) => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+  if (abortControllerRef.current) abortControllerRef.current.abort();
+  abortControllerRef.current = new AbortController();
 
-    const type = mode ? 'buy' : 'sell';
-    const amount = queryAmount || (mode ? 1000 : 10);
-    
-    simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`)
-      .then(result => {
-        if (result.success) {
-          setCurrentRate(result.rate);
-          setRateLevels(result.levels || []);
-        }
-      })
-      .catch(error => {
-        if (error.name !== 'AbortError') {
-          console.error('❌ Ошибка курса:', error);
-        }
-      });
-  };
+  const type = mode ? 'buy' : 'sell';
+  const amount = queryAmount || (mode ? 1000 : 10);
+  
+  console.log(`📡 Запрос курса: ${type} ${amount}`);
+  
+  simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`)
+    .then(result => {
+      console.log('📦 Ответ API:', result);
+      if (result.success) {
+        setCurrentRate(result.rate);
+        setRateLevels(result.levels || []);
+        console.log(`✅ Курс обновлен: ${result.rate}`);
+      } else {
+        console.error('❌ Ошибка в ответе:', result.error);
+      }
+    })
+    .catch(error => {
+      if (error.name !== 'AbortError') {
+        console.error('❌ Ошибка курса:', error);
+      }
+    });
+};
 
   // ==================== ОБРАБОТЧИКИ ====================
   const handleAmountChange = (e) => {

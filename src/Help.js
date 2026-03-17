@@ -385,9 +385,9 @@ export default function Help({ navigateTo }) {
 
       {/* INFO BOX */}
       <div className="tg-info-box">
-        <div className="tg-info-title">📌 Добро пожаловать в TetherRabbit</div>
+        <div className="tg-info-title">📌 Добро пожаловать в справку TetherRabbit</div>
         <div className="tg-info-text">
-          Безопасная платформа для обмена USDT. Все операции защищены PIN-кодом.
+          Здесь вы найдете ответы на интересующие Вас вопросы.
         </div>
       </div>
 

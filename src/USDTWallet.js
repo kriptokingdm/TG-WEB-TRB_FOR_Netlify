@@ -477,7 +477,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       <div className="tg-container tg-ui">
         <div className="tg-content-wide">
           <div className="tg-page-top">
-            <button className="tg-back" onClick={goBack} type="button">Назад</button>
+            {/* <button className="tg-back" onClick={goBack} type="button">Назад</button> */}
             <div className="tg-page-title">Детали операции</div>
             <div className="tg-page-spacer" />
           </div>

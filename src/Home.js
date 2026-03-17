@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import './Home.css';
 import { API_BASE_URL } from './config';
 import AddAddressModal from './AddAddressModal';
-
+const [isRateLoading, setIsRateLoading] = useState(true);
 // ==================== УЛУЧШЕННЫЙ FETCH С ТАЙМАУТОМ ====================
 const simpleFetch = async (endpoint, data = null) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -212,34 +212,35 @@ function Home({ navigateTo, telegramUser, showToast }) {
 
   // ==================== ЗАПРОС КУРСА ====================
   const fetchExchangeRate = async (queryAmount, mode) => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+  setIsRateLoading(true);
+  if (abortControllerRef.current) abortControllerRef.current.abort();
+  abortControllerRef.current = new AbortController();
 
-    const type = mode ? 'buy' : 'sell';
-    const amount = queryAmount || (mode ? 1000 : 10);
+  const type = mode ? 'buy' : 'sell';
+  const amount = queryAmount || (mode ? 1000 : 10);
+  
+  console.log(`📡 Запрос курса: ${type} ${amount}`);
+  
+  try {
+    const result = await simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`);
+    console.log('📦 Ответ API:', result);
     
-    console.log(`📡 Запрос курса: ${type} ${amount}`);
-    
-    try {
-      const result = await simpleFetch(`/api/exchange-rate?amount=${amount}&type=${type}`);
-      console.log('📦 Ответ API:', result);
-      
-      if (result && result.success) {
-        console.log(`🔄 Обновляем курс с ${currentRate} на ${result.rate}`);
-        setCurrentRate(result.rate);
-        if (result.levels) {
-          setRateLevels(result.levels);
-        }
-        console.log(`✅ Курс обновлен: ${result.rate}`);
-      } else {
-        console.error('❌ Ошибка в ответе:', result?.error || 'Нет данных');
+    if (result && result.success) {
+      console.log(`🔄 Обновляем курс с ${currentRate} на ${result.rate}`);
+      setCurrentRate(result.rate);
+      if (result.levels) {
+        setRateLevels(result.levels);
       }
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error('❌ Ошибка курса:', error);
-      }
+      console.log(`✅ Курс обновлен: ${result.rate}`);
     }
-  };
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('❌ Ошибка курса:', error);
+    }
+  } finally {
+    setIsRateLoading(false);
+  }
+};
 
   // ==================== ОБРАБОТЧИКИ ====================
   const handleAmountChange = (e) => {
@@ -663,8 +664,10 @@ function Home({ navigateTo, telegramUser, showToast }) {
                 <div className="currency-content">
                   <span className="currency-name">{isBuyMode ? "RUB" : "USDT"}</span>
                   {isBuyMode && (
-                    <span key={`rate-buy-${currentRate}`} className="currency-rate">{currentRate.toFixed(2)} ₽</span>
-                  )}
+  <span className="currency-rate">
+    {isRateLoading ? '...' : currentRate.toFixed(2)} ₽
+  </span>
+)}
                 </div>
               </div>
 
@@ -855,7 +858,7 @@ function Home({ navigateTo, telegramUser, showToast }) {
         </div>
       )}
     </div>
-  );
+  );  
 }
 
 export default Home;

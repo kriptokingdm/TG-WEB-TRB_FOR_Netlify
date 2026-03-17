@@ -815,3 +815,142 @@
     grid-template-columns: 70px 1fr 70px;
   }
 }
+
+/* Operation detail view */
+.tg-operation-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 20px;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.tg-detail-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  background: rgba(51, 144, 236, 0.1);
+  color: #3390ec;
+}
+
+.tg-detail-icon svg {
+  width: 36px;
+  height: 36px;
+}
+
+.tg-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tg-detail-row:last-child {
+  border-bottom: none;
+}
+
+.tg-detail-label {
+  width: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tg-theme-hint-color, rgba(255,255,255,0.6));
+}
+
+.tg-detail-value {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.tg-address,
+.tg-code {
+  font-family: 'SF Mono', monospace;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.tg-status-small {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tg-detail-close {
+  margin-top: 20px;
+  height: 52px;
+  border-radius: 18px;
+  border: none;
+  background: rgba(51, 144, 236, 0.1);
+  color: var(--tg-theme-text-color, #ffffff);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tg-detail-close:active {
+  transform: scale(0.98);
+  background: rgba(51, 144, 236, 0.15);
+}
+
+/* Full history buttons */
+.tg-full-row-btn {
+  width: 100%;
+  border: none;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.tg-full-row-btn:active {
+  transform: scale(0.99);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tg-full-chevron {
+  color: var(--tg-theme-hint-color, rgba(255,255,255,0.6));
+  margin-left: 8px;
+}
+
+.tg-tx-chevron {
+  color: var(--tg-theme-hint-color, rgba(255,255,255,0.6));
+  margin-left: 4px;
+}
+
+.tg-tx-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status colors */
+.status-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.status-completed { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.status-rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.status-processing { background: rgba(51, 144, 236, 0.15); color: #3390ec; }
+.status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.status-redeemed { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.status-cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.status-expired { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }

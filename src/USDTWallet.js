@@ -1,4 +1,4 @@
-// USDTWalletTG.js (FULL, FIXED - no syntax errors)
+// USDTWalletTG.js (FULL with check history and operation details)
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./USDTWallet.css";
@@ -134,13 +134,21 @@ function IconCheckCircle() {
   );
 }
 
+function IconChevronRight() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <path d="M9 18L15 12L9 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function FilterSvg() {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <g clipPath="url(#clip0_2237_409)">
         <path
           d="M11.6667 21H16.3333V18.6667H11.6667V21ZM3.5 7V9.33333H24.5V7H3.5ZM7 15.1667H21V12.8333H7V15.1667Z"
-          fill="white"
+          fill="currentColor"
         />
       </g>
       <defs>
@@ -155,6 +163,7 @@ function FilterSvg() {
 // --- component -------------------------------------------------------------
 export default function USDTWalletTG({ telegramId, onBack }) {
   const [activeTab, setActiveTab] = useState("home");
+  const [selectedOperation, setSelectedOperation] = useState(null);
 
   const [balance, setBalance] = useState(0);
   const [addressData, setAddressData] = useState({
@@ -169,6 +178,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   });
 
   const [withdrawals, setWithdrawals] = useState([]);
+  const [checks, setChecks] = useState([]);
   const [savedAddresses, setSavedAddresses] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -215,7 +225,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     }
   }, []);
 
-  // load
+  // load data
   const loadData = async ({ silent = false } = {}) => {
     if (!telegramId) return;
 
@@ -223,10 +233,11 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     else setIsRefreshing(true);
 
     try {
-      const [bal, addr, wds] = await Promise.allSettled([
+      const [bal, addr, wds, chks] = await Promise.allSettled([
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`, { timeoutMs: 8000 }),
         fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
+        fetchJSON(`${API_BASE_URL}/api/checks/user/${telegramId}`, { timeoutMs: 8000 }),
       ]);
 
       if (bal.status === "fulfilled" && bal.value.ok && bal.value.json?.success) {
@@ -252,6 +263,12 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       } else {
         setWithdrawals([]);
       }
+
+      if (chks.status === "fulfilled" && chks.value.ok && chks.value.json?.success) {
+        setChecks(chks.value.json.checks || []);
+      } else {
+        setChecks([]);
+      }
     } catch (e) {
       console.error("❌ loadData error:", e);
       showToastMessage("Ошибка загрузки", "error");
@@ -266,6 +283,51 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     const id = setInterval(() => loadData({ silent: true }), 15000);
     return () => clearInterval(id);
   }, [telegramId]);
+
+  // combine all operations
+  const allOperations = useMemo(() => {
+    const ops = [];
+
+    // withdrawals
+    (withdrawals || []).forEach(w => {
+      ops.push({
+        id: w.id || `w-${w.created_at}`,
+        type: "withdraw",
+        amount: Number(w.amount || 0),
+        status: w.status || "pending",
+        created_at: w.created_at,
+        address: w.address,
+        tx_hash: w.tx_hash,
+        network: w.network || "BEP20",
+        raw: w,
+      });
+    });
+
+    // checks
+    (checks || []).forEach(c => {
+      const isCreator = String(c.creator_id) === String(telegramId);
+      ops.push({
+        id: c.id || `c-${c.code}`,
+        type: "check",
+        subType: isCreator ? "check_created" : "check_redeemed",
+        amount: Number(c.amount || 0),
+        status: c.status,
+        created_at: c.created_at,
+        activated_at: c.activated_at,
+        code: c.code,
+        creator_id: c.creator_id,
+        activated_by: c.activated_by,
+        isCreator,
+        raw: c,
+      });
+    });
+
+    // sort by date
+    return ops.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }, [withdrawals, checks, telegramId]);
+
+  // mini history (last 3)
+  const miniOps = useMemo(() => allOperations.slice(0, 3), [allOperations]);
 
   // actions
   const copyToClipboard = async (text, type = "адрес") => {
@@ -332,32 +394,58 @@ export default function USDTWalletTG({ telegramId, onBack }) {
     }
   };
 
-  const go = (tab) => setActiveTab(tab);
+  const go = (tab, operation = null) => {
+    setActiveTab(tab);
+    setSelectedOperation(operation);
+  };
 
-  // mini history: 3 отдельных блока
-  const miniOps = useMemo(() => {
-    const list = Array.isArray(withdrawals) ? withdrawals.slice() : [];
-    list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-    return list.slice(0, 3).map((x) => {
-      const t = (x.type || x.operation || x.kind || "").toLowerCase();
-      let kind = "withdraw";
-      if (t.includes("deposit") || t.includes("пополн")) kind = "deposit";
-      else if (t.includes("check") || t.includes("чек")) kind = "check";
+  const goBack = () => {
+    if (selectedOperation) {
+      setSelectedOperation(null);
+      setActiveTab("history");
+    } else {
+      setActiveTab("home");
+    }
+  };
 
-      const usdt = Number(x.amount || 0);
-      const rub =
-        x.rub_amount ?? x.rubAmount ?? x.amount_rub ?? x.amountRub ?? x.rub ?? x.rubles ?? null;
-
+  // get operation icon and colors
+  const getOperationMeta = (op) => {
+    if (op.type === "withdraw") {
       return {
-        id: x.id || `${x.created_at}-${x.amount}`,
-        kind,
-        created_at: x.created_at,
-        usdt,
-        rub,
-        address: x.address || "",
+        icon: <IconArrowUp />,
+        title: "Вывод",
+        color: "#ff3b30",
+        bgColor: "rgba(255, 59, 48, 0.1)",
+        sign: "-",
       };
-    });
-  }, [withdrawals]);
+    }
+    if (op.type === "check") {
+      if (op.subType === "check_created") {
+        return {
+          icon: <IconArrowUp />,
+          title: "Чек создан",
+          color: "#f59e0b",
+          bgColor: "rgba(245, 158, 11, 0.1)",
+          sign: "-",
+        };
+      } else {
+        return {
+          icon: <IconArrowDown />,
+          title: "Чек активирован",
+          color: "#10b981",
+          bgColor: "rgba(16, 185, 129, 0.1)",
+          sign: "+",
+        };
+      }
+    }
+    return {
+      icon: <IconCheckCircle />,
+      title: "Операция",
+      color: "#3390ec",
+      bgColor: "rgba(51, 144, 236, 0.1)",
+      sign: "",
+    };
+  };
 
   // UI loading
   if (isLoading && activeTab === "home") {
@@ -365,6 +453,108 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       <div className="tg-loading tg-ui" role="status">
         <div className="tg-spinner" />
         <div className="tg-loading-text">Загрузка кошелька...</div>
+      </div>
+    );
+  }
+
+  // Operation details view
+  if (selectedOperation) {
+    const op = selectedOperation;
+    const meta = getOperationMeta(op);
+    const date = formatDate(op.created_at);
+    const statusText = {
+      pending: "⏳ Ожидание",
+      completed: "✅ Выполнено",
+      rejected: "❌ Отклонено",
+      processing: "🔄 В обработке",
+      active: "🟢 Активен",
+      redeemed: "✅ Активирован",
+      cancelled: "❌ Отменен",
+      expired: "⌛ Истек",
+    }[op.status] || op.status;
+
+    return (
+      <div className="tg-container tg-ui">
+        <div className="tg-content-wide">
+          <div className="tg-page-top">
+            <button className="tg-back" onClick={goBack} type="button">Назад</button>
+            <div className="tg-page-title">Детали операции</div>
+            <div className="tg-page-spacer" />
+          </div>
+
+          <div className="tg-card tg-operation-detail">
+            <div className="tg-detail-icon" style={{ background: meta.bgColor, color: meta.color }}>
+              {meta.icon}
+            </div>
+
+            <div className="tg-detail-row">
+              <span className="tg-detail-label">Тип:</span>
+              <span className="tg-detail-value">{meta.title}</span>
+            </div>
+
+            <div className="tg-detail-row">
+              <span className="tg-detail-label">Сумма:</span>
+              <span className="tg-detail-value" style={{ color: meta.color }}>
+                {meta.sign}{formatUSDTnum(op.amount)} USDT
+              </span>
+            </div>
+
+            <div className="tg-detail-row">
+              <span className="tg-detail-label">Дата:</span>
+              <span className="tg-detail-value">{date}</span>
+            </div>
+
+            <div className="tg-detail-row">
+              <span className="tg-detail-label">Статус:</span>
+              <span className="tg-detail-value">
+                <span className={`tg-status-small status-${op.status}`}>{statusText}</span>
+              </span>
+            </div>
+
+            {op.type === "withdraw" && (
+              <>
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Адрес:</span>
+                  <span className="tg-detail-value tg-address">{op.address}</span>
+                </div>
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Сеть:</span>
+                  <span className="tg-detail-value">{op.network}</span>
+                </div>
+                {op.tx_hash && (
+                  <div className="tg-detail-row">
+                    <span className="tg-detail-label">TxID:</span>
+                    <span className="tg-detail-value tg-address">{op.tx_hash}</span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {op.type === "check" && (
+              <>
+                <div className="tg-detail-row">
+                  <span className="tg-detail-label">Код чека:</span>
+                  <span className="tg-detail-value tg-code">{op.code}</span>
+                </div>
+                {op.subType === "check_created" ? (
+                  <div className="tg-detail-row">
+                    <span className="tg-detail-label">Создан для:</span>
+                    <span className="tg-detail-value">любого пользователя</span>
+                  </div>
+                ) : (
+                  <div className="tg-detail-row">
+                    <span className="tg-detail-label">Активирован:</span>
+                    <span className="tg-detail-value">{formatDate(op.activated_at)}</span>
+                  </div>
+                )}
+              </>
+            )}
+
+            <button className="tg-detail-close" onClick={goBack} type="button">
+              Закрыть
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -424,34 +614,31 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                   <div className="tg-empty">Нет операций</div>
                 ) : (
                   miniOps.map((op) => {
-                    const isDeposit = op.kind === "deposit";
-                    const isWithdraw = op.kind === "withdraw";
-                    const isCheck = op.kind === "check";
-
-                    const title = isDeposit ? "Пополнение" : isCheck ? "Чек" : "Вывод";
-                    const sign = isDeposit ? "+" : isCheck ? "-/+" : "-";
-                    const icon = isDeposit ? <IconArrowDown /> : isCheck ? <IconCheckCircle /> : <IconArrowUp />;
-
-                    const usdtText = `${sign}${formatUSDTnum(op.usdt)} USDT`;
-                    const rubText =
-                      op.rub != null && op.rub !== ""
-                        ? `${Number(op.rub).toLocaleString("ru-RU")} ₽`
-                        : "";
+                    const meta = getOperationMeta(op);
+                    const sign = meta.sign;
+                    const usdtText = `${sign}${formatUSDTnum(op.amount)} USDT`;
 
                     return (
-                      <button key={op.id} className="tg-tx-card" type="button" onClick={() => go("history")}>
-                        <span className={`tg-tx-icon ${isDeposit ? "in" : isCheck ? "check" : "out"}`}>
-                          {icon}
+                      <button 
+                        key={op.id} 
+                        className="tg-tx-card" 
+                        type="button" 
+                        onClick={() => go("history", op)}
+                      >
+                        <span className="tg-tx-icon" style={{ background: meta.bgColor, color: meta.color }}>
+                          {meta.icon}
                         </span>
 
                         <span className="tg-tx-mid">
-                          <span className="tg-tx-title">{title}</span>
+                          <span className="tg-tx-title">{meta.title}</span>
                           <span className="tg-tx-date">{formatDate(op.created_at)}</span>
                         </span>
 
                         <span className="tg-tx-right">
                           <span className="tg-tx-usdt">{usdtText}</span>
-                          {rubText ? <span className="tg-tx-rub">{rubText}</span> : null}
+                          <span className="tg-tx-chevron">
+                            <IconChevronRight />
+                          </span>
                         </span>
                       </button>
                     );
@@ -508,25 +695,6 @@ export default function USDTWalletTG({ telegramId, onBack }) {
                   </button>
                 </>
               ) : null}
-
-              {/* {savedAddresses.length > 0 && (
-                // <div className="tg-saved-addresses">
-                //   <div className="tg-saved-title">СОХРАНЕННЫЕ АДРЕСА</div>
-                //   <div className="tg-saved-list">
-                //     {savedAddresses.map((addr) => (
-                //       <div key={addr.id} className="tg-saved-item">
-                //         <div className="tg-saved-info">
-                //           <span className="tg-saved-name">{addr.name}</span>
-                //           <span className="tg-saved-address">{formatAddress(addr.address)}</span>
-                //         </div>
-                //         <button className="tg-saved-copy" onClick={() => copyToClipboard(addr.address, "адрес")} type="button">
-                //           Копировать
-                //         </button>
-                //       </div>
-                //     ))}
-                //   </div>
-                // </div>
-              )} */}
 
               <div className="tg-note">
                 <div className="tg-note-title">Инструкция</div>
@@ -617,34 +785,53 @@ export default function USDTWalletTG({ telegramId, onBack }) {
             </div>
 
             <div className="tg-card">
-              {!withdrawals || withdrawals.length === 0 ? (
+              {allOperations.length === 0 ? (
                 <div className="tg-empty">Нет операций</div>
               ) : (
                 <div className="tg-history-full">
-                  {withdrawals
-                    .slice()
-                    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-                    .map((wd) => (
-                      <div key={wd.id || `${wd.created_at}-${wd.amount}`} className="tg-full-row">
-                        <div className="tg-full-left">
-                          <div className="tg-full-title">Вывод</div>
-                          <div className="tg-full-sub">
-                            {formatDate(wd.created_at)} • {wd.address ? formatAddress(wd.address) : "—"}
-                          </div>
+                  {allOperations.map((op) => {
+                    const meta = getOperationMeta(op);
+                    const sign = meta.sign;
+                    const usdtText = `${sign}${formatUSDTnum(op.amount)} USDT`;
+                    const statusText = {
+                      pending: "⏳",
+                      completed: "✅",
+                      rejected: "❌",
+                      processing: "🔄",
+                      active: "🟢",
+                      redeemed: "✅",
+                      cancelled: "❌",
+                      expired: "⌛",
+                    }[op.status] || "";
 
-                          <div className={`tg-status status-${wd.status || "pending"}`}>
-                            {(!wd.status || wd.status === "pending") && "⏳ Ожидание"}
-                            {wd.status === "completed" && "✅ Выполнено"}
-                            {wd.status === "rejected" && "❌ Отклонено"}
-                            {wd.status === "processing" && "🔄 В обработке"}
+                    return (
+                      <button
+                        key={op.id}
+                        className="tg-full-row-btn"
+                        onClick={() => setSelectedOperation(op)}
+                        type="button"
+                      >
+                        <div className="tg-full-left">
+                          <div className="tg-full-title">
+                            {meta.title} {statusText}
+                          </div>
+                          <div className="tg-full-sub">
+                            {formatDate(op.created_at)}
+                            {op.type === "check" && op.code && ` • ${op.code}`}
                           </div>
                         </div>
 
                         <div className="tg-full-right">
-                          <div className="tg-full-amt">-{formatUSDTnum(wd.amount)} USDT</div>
+                          <div className="tg-full-amt" style={{ color: meta.color }}>
+                            {usdtText}
+                          </div>
+                          <div className="tg-full-chevron">
+                            <IconChevronRight />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -653,7 +840,7 @@ export default function USDTWalletTG({ telegramId, onBack }) {
       </div>
 
       {/* optional: back to profile */}
-      {onBack ? (
+      {onBack && activeTab === "home" ? (
         <button className="tg-float-back" onClick={() => { vibrate(6); onBack(); }} type="button">
           Назад в профиль
         </button>

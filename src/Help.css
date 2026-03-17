@@ -69,6 +69,12 @@ body {
   padding: 0 16px;
   overflow-x: auto;
   margin-bottom: 14px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tg-categories::-webkit-scrollbar {
+  display: none;
 }
 
 .tg-chip {
@@ -89,30 +95,25 @@ body {
 }
 
 /* ===============================
-   GAME BOX
+   INFO BOX
 =============================== */
-.tg-box {
+.tg-info-box {
   margin: 0 16px 16px;
   padding: 16px;
   background: var(--secondary-bg);
   border-radius: 16px;
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s;
 }
 
-.tg-box:active {
-  transform: scale(0.97);
-}
-
-.tg-box-title {
-  font-size: 17px;
+.tg-info-title {
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.tg-box-subtitle {
+.tg-info-text {
   font-size: 14px;
   color: var(--hint);
+  line-height: 1.5;
 }
 
 /* ===============================
@@ -133,6 +134,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.tg-section-header span {
+  font-size: 14px;
+  color: var(--hint);
+  transition: transform 0.2s;
 }
 
 /* ===============================
@@ -182,28 +189,8 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-/* ===============================
-   RULES
-=============================== */
-.tg-rule {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.tg-rule:last-child {
-  border-bottom: none;
-}
-
-.tg-rule-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.tg-rule-content {
-  font-size: 14px;
-  color: var(--hint);
-  line-height: 1.5;
+.tg-list-content div {
+  margin-bottom: 4px;
 }
 
 /* ===============================

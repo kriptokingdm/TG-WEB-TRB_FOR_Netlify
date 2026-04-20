@@ -1,3 +1,4 @@
+// App.js - полный код с P2P
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import './App.css';
 import Home from './Home';
@@ -5,6 +6,7 @@ import History from './History';
 import Profile from './Profile';
 import Help from './Help';
 import SettingsApp from './SettingsApp';
+import P2PMarket from './P2PMarket';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
@@ -280,7 +282,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game'].includes(hash)) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p'].includes(hash)) {
       setCurrentPage(hash);
     }
 
@@ -289,7 +291,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game'].includes(h)) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p'].includes(h)) {
         setCurrentPage(h);
       }
     };
@@ -344,22 +346,36 @@ function App() {
     };
   }, []);
 
-  // page/index helpers
-  const pageToIndex = (p) => (p === 'profile' ? 0 : p === 'home' ? 1 : 2);
-  const indexToPage = (i) => (i === 0 ? 'profile' : i === 1 ? 'home' : 'history');
+  // page/index helpers для 4 вкладок
+  const pageToIndex = (p) => {
+    if (p === 'profile') return 0;
+    if (p === 'p2p') return 1;
+    if (p === 'home') return 2;
+    if (p === 'history') return 3;
+    return 1;
+  };
+  
+  const indexToPage = (i) => {
+    if (i === 0) return 'profile';
+    if (i === 1) return 'p2p';
+    if (i === 2) return 'home';
+    if (i === 3) return 'history';
+    return 'home';
+  };
 
-  // Обновление позиций вкладок
+  // Обновление позиций вкладок для 4 кнопок
   const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
 
     const tabs = [
       nav.querySelector('[data-tab="profile"]'),
+      nav.querySelector('[data-tab="p2p"]'),
       nav.querySelector('[data-tab="home"]'),
       nav.querySelector('[data-tab="history"]')
     ].filter(Boolean);
 
-    if (tabs.length !== 3) return;
+    if (tabs.length !== 4) return;
 
     const navRect = nav.getBoundingClientRect();
     const rects = tabs.map((el) => {
@@ -372,7 +388,7 @@ function App() {
 
     dragStateRef.current.rects = rects;
     dragStateRef.current.minLeft = rects[0].left;
-    dragStateRef.current.maxLeft = rects[2].left;
+    dragStateRef.current.maxLeft = rects[3].left;
 
     const activeIndex = pageToIndex(currentPage);
     const targetRect = rects[activeIndex];
@@ -408,7 +424,7 @@ function App() {
     updateIndicatorPosition();
   }, [currentPage, updateIndicatorPosition]);
 
-  // DRAG эффект
+  // DRAG эффект для 4 вкладок
   useEffect(() => {
     const nav = navRef.current;
     const indicator = indicatorRef.current;
@@ -420,7 +436,7 @@ function App() {
       e.preventDefault();
       
       const rects = dragStateRef.current.rects;
-      if (!rects || rects.length !== 3) return;
+      if (!rects || rects.length !== 4) return;
 
       dragStateRef.current = {
         ...dragStateRef.current,
@@ -451,14 +467,17 @@ function App() {
 
       if (newLeft <= rects[0].left + 5) {
         targetWidth = rects[0].width;
-      } else if (newLeft >= rects[2].left - 5) {
-        targetWidth = rects[2].width;
+      } else if (newLeft >= rects[3].left - 5) {
+        targetWidth = rects[3].width;
       } else if (newLeft < rects[1].left) {
         const progress = (newLeft - rects[0].left) / (rects[1].left - rects[0].left);
         targetWidth = rects[0].width + (rects[1].width - rects[0].width) * progress;
-      } else {
+      } else if (newLeft < rects[2].left) {
         const progress = (newLeft - rects[1].left) / (rects[2].left - rects[1].left);
         targetWidth = rects[1].width + (rects[2].width - rects[1].width) * progress;
+      } else {
+        const progress = (newLeft - rects[2].left) / (rects[3].left - rects[2].left);
+        targetWidth = rects[2].width + (rects[3].width - rects[2].width) * progress;
       }
 
       setIndicatorPos({
@@ -544,19 +563,20 @@ function App() {
     switch (currentPage) {
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
+      case 'p2p': return <P2PMarket key="p2p" {...commonProps} />;
       case 'help': return <Help key="help" {...commonProps} />;
       case 'settings': return <SettingsApp key="settings" {...commonProps} />;
       case 'game': return <Game key="game" {...commonProps} />;
-      default: return <Home key="home" {...commonProps} />;
       case 'security': return <SecurityPage 
-  key="security" 
-  userId={telegramUser?.id} 
-  onBack={() => navigateTo('settings')} 
-/>;
+        key="security" 
+        userId={telegramUser?.id} 
+        onBack={() => navigateTo('settings')} 
+      />;
+      default: return <Home key="home" {...commonProps} />;
     }
   };
 
-  // floating nav
+  // floating nav с 4 кнопками
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
@@ -593,6 +613,18 @@ function App() {
               ${availableEarnings.toFixed(0)}
             </span>
           )}
+        </button>
+
+        <button
+          data-tab="p2p"
+          className={`nav-item-floating ${currentPage === 'p2p' ? 'active' : ''}`}
+          onClick={() => navigateTo('p2p')}
+          type="button"
+        >
+          <div className="nav-icon-floating">
+            🤝
+          </div>
+          <span className="nav-label-floating">P2P</span>
         </button>
 
         <button

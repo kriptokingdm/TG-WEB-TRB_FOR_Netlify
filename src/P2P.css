@@ -1,0 +1,344 @@
+/* src/P2P.css */
+.p2p-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--tg-theme-bg-color);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Контентная область */
+.p2p-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+/* Нижняя навигация - ТОЧНО КАК В APP.JS */
+.p2p-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 380px);
+  height: 58px;
+  padding: 6px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 10000;
+  background: rgba(25, 27, 31, 0.55);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  margin-bottom: env(safe-area-inset-bottom, 10px);
+}
+
+:root:not([data-theme]) .p2p-bottom-nav {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.p2p-bottom-nav-item {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--tg-theme-hint-color);
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: all 0.2s;
+}
+
+.p2p-bottom-nav-item.active {
+  color: white;
+}
+
+:root:not([data-theme]) .p2p-bottom-nav-item.active {
+  color: var(--tg-theme-button-color);
+}
+
+.p2p-bottom-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.p2p-bottom-label {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Вкладки покупка/продажа */
+.p2p-buy-sell-tabs {
+  display: flex;
+  padding: 12px 16px;
+  gap: 12px;
+  background: var(--tg-theme-bg-color);
+}
+
+.p2p-bs-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 30px;
+  background: var(--tg-theme-secondary-bg-color);
+  color: var(--tg-theme-text-color);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.p2p-bs-tab.active {
+  background: var(--tg-theme-button-color);
+  color: white;
+}
+
+/* Карточки объявлений */
+.p2p-orders-list {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.p2p-order-item {
+  padding: 16px;
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 16px;
+  transition: transform 0.1s;
+}
+
+.p2p-order-item:active {
+  transform: scale(0.98);
+}
+
+.p2p-order-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.p2p-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.p2p-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+}
+
+.p2p-user-name {
+  font-weight: 600;
+  color: var(--tg-theme-text-color);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.p2p-user-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.p2p-completion-rate {
+  background: var(--tg-success-color);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.p2p-trades-count {
+  font-size: 11px;
+  color: var(--tg-theme-hint-color);
+}
+
+.p2p-order-rate {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color);
+  margin-bottom: 4px;
+}
+
+.p2p-order-rate span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--tg-theme-hint-color);
+  margin-left: 4px;
+}
+
+.p2p-order-amount {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color);
+  margin-bottom: 10px;
+}
+
+.p2p-order-payment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.p2p-payment-method {
+  padding: 4px 10px;
+  background: var(--tg-border-color);
+  border-radius: 16px;
+  font-size: 11px;
+  color: var(--tg-theme-text-color);
+}
+
+.p2p-order-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.p2p-buy-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--tg-theme-button-color);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.p2p-share-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--tg-border-color);
+  color: var(--tg-theme-text-color);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Модальное окно */
+.p2p-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.p2p-modal-content {
+  width: 90%;
+  max-width: 340px;
+  background: var(--tg-theme-bg-color);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.p2p-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--tg-border-color);
+}
+
+.p2p-modal-body {
+  padding: 16px;
+}
+
+.p2p-trade-info {
+  background: var(--tg-theme-secondary-bg-color);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.p2p-modal-input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--tg-border-color);
+  border-radius: 12px;
+  background: var(--tg-input-bg);
+  color: var(--tg-theme-text-color);
+  margin-bottom: 16px;
+}
+
+.p2p-modal-total {
+  padding: 12px;
+  background: var(--tg-success-color);
+  border-radius: 12px;
+  color: white;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.p2p-modal-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--tg-theme-button-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.p2p-loading, .p2p-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--tg-theme-hint-color);
+}
+
+.p2p-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--tg-border-color);
+  border-top-color: var(--tg-theme-button-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

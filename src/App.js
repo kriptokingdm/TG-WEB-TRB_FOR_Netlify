@@ -564,6 +564,7 @@ function App() {
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
       case 'p2p': return <P2PMarket key="p2p" {...commonProps} />;
+      case 'p2p/create': return <P2PCreate key="p2p-create" {...commonProps} />;  // ← ДОБАВИТЬ ЭТУ СТРОКУ
       case 'help': return <Help key="help" {...commonProps} />;
       case 'settings': return <SettingsApp key="settings" {...commonProps} />;
       case 'game': return <Game key="game" {...commonProps} />;

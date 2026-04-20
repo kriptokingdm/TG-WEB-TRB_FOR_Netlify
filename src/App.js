@@ -1,5 +1,5 @@
-// App.js - полный код с P2P
-import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+// App.js - полный исправленный файл
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import Home from './Home';
 import History from './History';
@@ -7,6 +7,7 @@ import Profile from './Profile';
 import Help from './Help';
 import SettingsApp from './SettingsApp';
 import P2PMarket from './P2PMarket';
+import P2PCreate from './P2PCreate';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
@@ -15,7 +16,7 @@ import SecurityPage from './SecurityPage';
 // URL API
 const API_BASE_URL = 'https://tethrab.shop';
 
-// Функция для вибрации как в Wallet
+// Функция для вибрации
 const vibrate = () => {
   try {
     if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -38,11 +39,11 @@ function App() {
   const [hideHints, setHideHints] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(true);
   const [indicatorPos, setIndicatorPos] = useState({ left: 0, width: 0 });
+  const [showP2P, setShowP2P] = useState(false);
 
   const navRef = useRef(null);
   const indicatorRef = useRef(null);
 
-  // Состояние для перетаскивания
   const dragStateRef = useRef({
     isDragging: false,
     startX: 0,
@@ -53,23 +54,18 @@ function App() {
     pointerId: null
   });
 
-  // Загружаем настройки
   useEffect(() => {
     const saved = localStorage.getItem('hideHints');
     if (saved === 'true') setHideHints(true);
   }, []);
 
-  // Конвертер цвета Telegram в hex
   const telegramColorToHex = useCallback((color) => {
     if (!color && color !== 0) return null;
-
     if (typeof color === 'string') return color.startsWith('#') ? color : `#${color}`;
     if (typeof color === 'number') return `#${color.toString(16).padStart(6, '0')}`;
-
     return null;
   }, []);
 
-  // Определяем темную тему
   const detectDarkMode = useCallback(() => {
     if (window.Telegram?.WebApp?.themeParams?.bg_color) {
       try {
@@ -77,7 +73,6 @@ function App() {
         const bgColor = typeof params.bg_color === 'string'
           ? parseInt(params.bg_color.replace('#', ''), 16)
           : params.bg_color;
-
         const r = (bgColor >> 16) & 0xff;
         const g = (bgColor >> 8) & 0xff;
         const b = bgColor & 0xff;
@@ -85,12 +80,10 @@ function App() {
         return brightness < 180;
       } catch (e) {}
     }
-
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return true;
     return true;
   }, []);
 
-  // Применяем тему
   const applyTheme = useCallback(() => {
     const root = document.documentElement;
     const darkMode = detectDarkMode();
@@ -111,17 +104,14 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#212428');
       root.style.setProperty('--tg-theme-section-bg-color', '#3a3d42');
-
       root.style.setProperty('--tg-success-color', '#34c759');
       root.style.setProperty('--tg-error-color', '#ff3b30');
       root.style.setProperty('--tg-warning-color', '#ff9500');
       root.style.setProperty('--tg-info-color', '#5e5ce6');
-
       root.style.setProperty('--tg-card-bg', '#212428');
       root.style.setProperty('--tg-input-bg', '#2a2d32');
       root.style.setProperty('--tg-border-color', '#3a3d42');
       root.style.setProperty('--tg-hover-color', '#2c2f34');
-
       root.setAttribute('data-theme', 'dark');
     } else {
       root.style.setProperty('--tg-theme-bg-color', '#ffffff');
@@ -131,37 +121,30 @@ function App() {
       root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
       root.style.setProperty('--tg-theme-secondary-bg-color', '#f8f9fa');
       root.style.setProperty('--tg-theme-section-bg-color', '#e0e0e0');
-
       root.style.setProperty('--tg-success-color', '#28a745');
       root.style.setProperty('--tg-error-color', '#dc3545');
       root.style.setProperty('--tg-warning-color', '#ffc107');
       root.style.setProperty('--tg-info-color', '#17a2b8');
-
       root.style.setProperty('--tg-card-bg', '#f8f9fa');
       root.style.setProperty('--tg-input-bg', '#ffffff');
       root.style.setProperty('--tg-border-color', '#e0e0e0');
       root.style.setProperty('--tg-hover-color', '#e9ecef');
-
       root.removeAttribute('data-theme');
     }
-
     localStorage.setItem('themeApplied', 'true');
   }, [detectDarkMode, telegramColorToHex]);
 
-  // Toast
   const showToast = useCallback((message, type = 'info') => {
     if (hideHints && type === 'info') return;
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, [hideHints]);
 
-  // update hints
   const updateHideHints = useCallback((value) => {
     setHideHints(value);
     localStorage.setItem('hideHints', value.toString());
   }, []);
 
-  // toggle theme
   const toggleTheme = useCallback(() => {
     vibrate();
     const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -172,7 +155,6 @@ function App() {
     showToast(`Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`, 'success');
   }, [applyTheme, showToast]);
 
-  // user id
   const getUserId = () => {
     try {
       if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
@@ -189,7 +171,6 @@ function App() {
     }
   };
 
-  // referrals
   const loadReferralData = useCallback(async () => {
     try {
       const userId = getUserId();
@@ -201,13 +182,11 @@ function App() {
     } catch (e) {}
   }, []);
 
-  // navigation с вибрацией
   const navigateTo = useCallback((page) => {
     vibrate();
     setCurrentPage((prev) => {
       if (prev === page) return prev;
       window.location.hash = page;
-
       if (window.Telegram?.WebApp?.BackButton) {
         const tg = window.Telegram.WebApp;
         if (page === 'home') {
@@ -220,7 +199,10 @@ function App() {
     });
   }, []);
 
-  // init tg + app
+  // Открыть/закрыть P2P
+  const openP2P = () => setShowP2P(true);
+  const closeP2P = () => setShowP2P(false);
+
   useEffect(() => {
     const debugUser = { id: '7879866656', telegramId: '7879866656', username: 'TERBCEO', firstName: 'G' };
     localStorage.setItem('currentUser', JSON.stringify(debugUser));
@@ -282,7 +264,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p'].includes(hash)) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create'].includes(hash)) {
       setCurrentPage(hash);
     }
 
@@ -291,7 +273,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p'].includes(h)) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create'].includes(h)) {
         setCurrentPage(h);
       }
     };
@@ -300,7 +282,6 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Обработка клавиатуры
   useEffect(() => {
     let resizeTimeout;
     let lastHeight = window.innerHeight;
@@ -310,7 +291,6 @@ function App() {
       resizeTimeout = setTimeout(() => {
         const newHeight = window.innerHeight;
         const heightDiff = Math.abs(newHeight - lastHeight);
-        
         if (heightDiff > 150) {
           const isKeyboard = newHeight < lastHeight;
           setIsKeyboardVisible(!isKeyboard);
@@ -346,7 +326,6 @@ function App() {
     };
   }, []);
 
-  // page/index helpers для 4 вкладок
   const pageToIndex = (p) => {
     if (p === 'profile') return 0;
     if (p === 'p2p') return 1;
@@ -363,7 +342,6 @@ function App() {
     return 'home';
   };
 
-  // Обновление позиций вкладок для 4 кнопок
   const updateIndicatorPosition = useCallback(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -380,10 +358,7 @@ function App() {
     const navRect = nav.getBoundingClientRect();
     const rects = tabs.map((el) => {
       const r = el.getBoundingClientRect();
-      return {
-        left: r.left - navRect.left,
-        width: r.width
-      };
+      return { left: r.left - navRect.left, width: r.width };
     });
 
     dragStateRef.current.rects = rects;
@@ -391,27 +366,15 @@ function App() {
     dragStateRef.current.maxLeft = rects[3].left;
 
     const activeIndex = pageToIndex(currentPage);
-    const targetRect = rects[activeIndex];
-    
-    setIndicatorPos({
-      left: targetRect.left,
-      width: targetRect.width
-    });
-    
-    console.log('Индикатор на позиции:', targetRect.left);
+    setIndicatorPos({ left: rects[activeIndex].left, width: rects[activeIndex].width });
   }, [currentPage]);
 
-  // Обновляем при монтировании и ресайзе
   useEffect(() => {
     updateIndicatorPosition();
-    
     const timer = setTimeout(updateIndicatorPosition, 100);
-    
     window.addEventListener('resize', updateIndicatorPosition);
-    
     const observer = new ResizeObserver(updateIndicatorPosition);
     if (navRef.current) observer.observe(navRef.current);
-    
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', updateIndicatorPosition);
@@ -419,12 +382,10 @@ function App() {
     };
   }, [updateIndicatorPosition]);
 
-  // Обновляем при смене страницы
   useEffect(() => {
     updateIndicatorPosition();
   }, [currentPage, updateIndicatorPosition]);
 
-  // DRAG эффект для 4 вкладок
   useEffect(() => {
     const nav = navRef.current;
     const indicator = indicatorRef.current;
@@ -432,12 +393,9 @@ function App() {
 
     const onPointerDown = (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      
       e.preventDefault();
-      
       const rects = dragStateRef.current.rects;
       if (!rects || rects.length !== 4) return;
-
       dragStateRef.current = {
         ...dragStateRef.current,
         isDragging: true,
@@ -445,7 +403,6 @@ function App() {
         startLeft: indicatorPos.left,
         pointerId: e.pointerId
       };
-
       nav.classList.add('dragging');
       indicator.setPointerCapture(e.pointerId);
     };
@@ -454,17 +411,11 @@ function App() {
       const state = dragStateRef.current;
       if (!state.isDragging) return;
       if (state.pointerId !== e.pointerId) return;
-
       e.preventDefault();
-
       const dx = e.clientX - state.startX;
-      let newLeft = state.startLeft + dx;
-      
-      newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, newLeft));
-
+      let newLeft = Math.max(state.minLeft, Math.min(state.maxLeft, state.startLeft + dx));
       const rects = state.rects;
       let targetWidth = rects[1].width;
-
       if (newLeft <= rects[0].left + 5) {
         targetWidth = rects[0].width;
       } else if (newLeft >= rects[3].left - 5) {
@@ -479,26 +430,18 @@ function App() {
         const progress = (newLeft - rects[2].left) / (rects[3].left - rects[2].left);
         targetWidth = rects[2].width + (rects[3].width - rects[2].width) * progress;
       }
-
-      setIndicatorPos({
-        left: newLeft,
-        width: targetWidth
-      });
+      setIndicatorPos({ left: newLeft, width: targetWidth });
     };
 
     const onPointerUp = (e) => {
       const state = dragStateRef.current;
       if (!state.isDragging) return;
       if (state.pointerId !== e.pointerId) return;
-
       e.preventDefault();
-
       const rects = state.rects;
       const currentCenter = indicatorPos.left + indicatorPos.width / 2;
-      
       let closestIndex = 1;
       let minDistance = Infinity;
-      
       rects.forEach((rect, index) => {
         const distance = Math.abs(currentCenter - (rect.left + rect.width / 2));
         if (distance < minDistance) {
@@ -506,28 +449,19 @@ function App() {
           closestIndex = index;
         }
       });
-
       const targetPage = indexToPage(closestIndex);
-      
       if (targetPage !== currentPage) {
         vibrate();
         navigateTo(targetPage);
       } else {
-        const targetRect = rects[closestIndex];
-        setIndicatorPos({
-          left: targetRect.left,
-          width: targetRect.width
-        });
+        setIndicatorPos({ left: rects[closestIndex].left, width: rects[closestIndex].width });
       }
-
       dragStateRef.current.isDragging = false;
       nav.classList.remove('dragging');
       indicator.releasePointerCapture(e.pointerId);
     };
 
-    const onPointerCancel = (e) => {
-      onPointerUp(e);
-    };
+    const onPointerCancel = (e) => onPointerUp(e);
 
     indicator.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
@@ -542,7 +476,11 @@ function App() {
     };
   }, [currentPage, indicatorPos, navigateTo]);
 
-  // render pages
+  // Если открыт P2P - показываем его полноэкранно, скрывая основную навигацию
+  if (showP2P) {
+    return <P2PMarket telegramUser={telegramUser} showToast={showToast} onBack={closeP2P} />;
+  }
+
   const renderPage = () => {
     const commonProps = {
       telegramUser,
@@ -555,7 +493,6 @@ function App() {
       updateHideHints
     };
 
-    // ОТДЕЛЬНО ОБРАБАТЫВАЕМ PIN-СТРАНИЦУ
     if (window.location.pathname === '/pin') {
       return <PinPage />;
     }
@@ -563,92 +500,38 @@ function App() {
     switch (currentPage) {
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
-      case 'p2p': return <P2PMarket key="p2p" {...commonProps} />;
-      case 'p2p/create': return <P2PCreate key="p2p-create" {...commonProps} />;  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+      case 'p2p': return <P2PMarket key="p2p" {...commonProps} onBack={closeP2P} />;
+      case 'p2p/create': return <P2PCreate key="p2p-create" {...commonProps} />;
       case 'help': return <Help key="help" {...commonProps} />;
       case 'settings': return <SettingsApp key="settings" {...commonProps} />;
       case 'game': return <Game key="game" {...commonProps} />;
-      case 'security': return <SecurityPage 
-        key="security" 
-        userId={telegramUser?.id} 
-        onBack={() => navigateTo('settings')} 
-      />;
+      case 'security': return <SecurityPage key="security" userId={telegramUser?.id} onBack={() => navigateTo('settings')} />;
       default: return <Home key="home" {...commonProps} />;
     }
   };
 
-  // floating nav с 4 кнопками
   const Navigation = () => {
     const availableEarnings = referralData?.stats?.available_earnings || 0;
     const showBadge = availableEarnings >= 10;
 
     return (
-      <div 
-        className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`}
-        ref={navRef}
-      >
-        <div 
-          className="nav-indicator" 
-          ref={indicatorRef}
-          style={{
-            left: indicatorPos.left,
-            width: indicatorPos.width,
-            opacity: 1,
-            visibility: 'visible',
-            display: 'block'
-          }}
-        />
-
-        <button
-          data-tab="profile"
-          className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`}
-          onClick={() => navigateTo('profile')}
-          type="button"
-        >
-          <div className="nav-icon-floating">
-            <ProfileIcon active={currentPage === 'profile'} />
-          </div>
+      <div className={`floating-nav ${isKeyboardVisible ? 'keyboard-visible' : 'keyboard-hidden'}`} ref={navRef}>
+        <div className="nav-indicator" ref={indicatorRef} style={{ left: indicatorPos.left, width: indicatorPos.width, opacity: 1, visibility: 'visible', display: 'block' }} />
+        <button data-tab="profile" className={`nav-item-floating ${currentPage === 'profile' ? 'active' : ''}`} onClick={() => navigateTo('profile')} type="button">
+          <div className="nav-icon-floating"><ProfileIcon active={currentPage === 'profile'} /></div>
           <span className="nav-label-floating">Профиль</span>
-          {showBadge && (
-            <span className="nav-badge-floating">
-              ${availableEarnings.toFixed(0)}
-            </span>
-          )}
+          {showBadge && <span className="nav-badge-floating">${availableEarnings.toFixed(0)}</span>}
         </button>
-
-        <button
-          data-tab="p2p"
-          className={`nav-item-floating ${currentPage === 'p2p' ? 'active' : ''}`}
-          onClick={() => navigateTo('p2p')}
-          type="button"
-        >
-          <div className="nav-icon-floating">
-            🤝
-          </div>
+        <button data-tab="p2p" className={`nav-item-floating ${currentPage === 'p2p' ? 'active' : ''}`} onClick={openP2P} type="button">
+          <div className="nav-icon-floating">🤝</div>
           <span className="nav-label-floating">P2P</span>
         </button>
-
-        <button
-          data-tab="home"
-          className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`}
-          onClick={() => navigateTo('home')}
-          type="button"
-        >
-          <div className="nav-icon-floating nav-icon-exchange">
-            <ExchangeIcon active={currentPage === 'home'} />
-          </div>
+        <button data-tab="home" className={`nav-item-floating ${currentPage === 'home' ? 'active' : ''}`} onClick={() => navigateTo('home')} type="button">
+          <div className="nav-icon-floating nav-icon-exchange"><ExchangeIcon active={currentPage === 'home'} /></div>
           <span className="nav-label-floating">Обмен</span>
         </button>
-
-        <button
-          data-tab="history"
-          className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`}
-          onClick={() => navigateTo('history')}
-          type="button"
-        >
-          <div className="nav-icon-floating">
-            <HistoryIcon active={currentPage === 'history'} />
-          </div>
+        <button data-tab="history" className={`nav-item-floating ${currentPage === 'history' ? 'active' : ''}`} onClick={() => navigateTo('history')} type="button">
+          <div className="nav-icon-floating"><HistoryIcon active={currentPage === 'history'} /></div>
           <span className="nav-label-floating">История</span>
         </button>
       </div>
@@ -670,12 +553,9 @@ function App() {
         <div className="app-content">
           {renderPage()}
           {currentPage !== 'help' && currentPage !== 'settings' && <Navigation />}
-
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
-              <span className="telegram-toast-icon">
-                {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
-              </span>
+              <span className="telegram-toast-icon">{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}</span>
               <span className="telegram-toast-text">{toast.message}</span>
             </div>
           )}

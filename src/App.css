@@ -757,3 +757,145 @@ html, body, #root {
   animation: spin 1s linear infinite;
   margin: 0 auto 12px;
 }
+
+/* Новые стили для карточек P2P */
+.p2p-order-item {
+  padding: 16px;
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  transition: transform 0.1s ease;
+}
+
+.p2p-order-item:active {
+  transform: scale(0.98);
+}
+
+.p2p-order-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.p2p-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.p2p-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tg-theme-button-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+}
+
+.p2p-user-name {
+  font-weight: 600;
+  color: var(--tg-theme-text-color);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.p2p-user-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.p2p-completion-rate {
+  background: var(--tg-success-color);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.p2p-trades-count {
+  font-size: 11px;
+  color: var(--tg-theme-hint-color);
+}
+
+.p2p-order-rate {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--tg-theme-text-color);
+  margin-bottom: 4px;
+}
+
+.p2p-order-rate span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--tg-theme-hint-color);
+  margin-left: 4px;
+}
+
+.p2p-order-amount {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color);
+  margin-bottom: 10px;
+}
+
+.p2p-order-payment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.p2p-payment-method {
+  padding: 4px 10px;
+  background: var(--tg-border-color);
+  border-radius: 16px;
+  font-size: 11px;
+  color: var(--tg-theme-text-color);
+}
+
+.p2p-order-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.p2p-buy-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--tg-theme-button-color);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.p2p-buy-btn:active {
+  opacity: 0.8;
+}
+
+.p2p-share-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  background: var(--tg-border-color);
+  color: var(--tg-theme-text-color);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.p2p-share-btn:active {
+  opacity: 0.8;
+}

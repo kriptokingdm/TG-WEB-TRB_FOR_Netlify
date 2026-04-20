@@ -899,3 +899,51 @@ html, body, #root {
 .p2p-share-btn:active {
   opacity: 0.8;
 }
+
+/* Нижняя навигация P2P как в App.js */
+.p2p-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-top: 1px solid var(--tg-border-color);
+    z-index: 100;
+}
+
+.p2p-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--tg-theme-hint-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 12px;
+}
+
+.p2p-bottom-nav-item.active {
+    color: var(--tg-theme-button-color);
+    background: rgba(51, 144, 236, 0.1);
+}
+
+.p2p-bottom-icon {
+    font-size: 22px;
+}
+
+.p2p-bottom-label {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.p2p-content-area {
+    padding-bottom: 80px;
+}

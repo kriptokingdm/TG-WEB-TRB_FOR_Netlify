@@ -55,25 +55,36 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         }
     };
 
-    const fetchOrders = async () => {
-        setLoading(true);
-        try {
-            const type = buySellTab === 'buy' ? 'sell' : 'buy';
-            const res = await fetch(`${API_BASE_URL}/api/p2p/orders?type=${type}&limit=50`);
-            const data = await res.json();
-            // Добавляем тестовые данные для статистики
-            const ordersWithStats = (data.orders || []).map(order => ({
-                ...order,
-                completion_rate: Math.floor(Math.random() * 15) + 85, // 85-99%
-                completed_trades: Math.floor(Math.random() * 500) + 10
-            }));
-            setOrders(ordersWithStats);
-        } catch (error) {
-            console.error('Ошибка:', error);
-        } finally {
-            setLoading(false);
+    // В fetchOrders добавляем сортировку по выгодности
+const fetchOrders = async () => {
+    setLoading(true);
+    try {
+        const type = buySellTab === 'buy' ? 'sell' : 'buy';
+        const res = await fetch(`${API_BASE_URL}/api/p2p/orders?type=${type}&limit=50`);
+        const data = await res.json();
+        
+        // Сортируем объявления: сначала самые выгодные (низкий курс для покупки, высокий для продажи)
+        let sortedOrders = data.orders || [];
+        if (buySellTab === 'buy') {
+            // Для покупки - сортируем по возрастанию курса (самые дешёвые сверху)
+            sortedOrders.sort((a, b) => a.rate - b.rate);
+        } else {
+            // Для продажи - сортируем по убыванию курса (самые дорогие сверху)
+            sortedOrders.sort((a, b) => b.rate - a.rate);
         }
-    };
+        
+        const ordersWithStats = sortedOrders.map(order => ({
+            ...order,
+            completion_rate: Math.floor(Math.random() * 15) + 85,
+            completed_trades: Math.floor(Math.random() * 500) + 10
+        }));
+        setOrders(ordersWithStats);
+    } catch (error) {
+        console.error('Ошибка:', error);
+    } finally {
+        setLoading(false);
+    }
+};
 
     const fetchMyAds = async () => {
         setLoading(true);
@@ -168,53 +179,66 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     };
 
     const startTrade = async () => {
-        if (!tradeAmount || parseFloat(tradeAmount) <= 0) {
-            showToast('Введите сумму', 'error');
-            return;
-        }
-        const amount = parseFloat(tradeAmount);
-        if (amount < selectedOrder.min_amount || amount > selectedOrder.max_amount) {
-            showToast(`Сумма должна быть от ${selectedOrder.min_amount} до ${selectedOrder.max_amount} USDT`, 'error');
-            return;
-        }
-        if (amount > selectedOrder.available_amount) {
-            showToast(`Доступно только ${selectedOrder.available_amount} USDT`, 'error');
-            return;
-        }
+    if (!tradeAmount || parseFloat(tradeAmount) <= 0) {
+        showToast('Введите сумму', 'error');
+        return;
+    }
+    const amount = parseFloat(tradeAmount);
+    if (amount < selectedOrder.min_amount || amount > selectedOrder.max_amount) {
+        showToast(`Сумма должна быть от ${selectedOrder.min_amount} до ${selectedOrder.max_amount} USDT`, 'error');
+        return;
+    }
+    if (amount > selectedOrder.available_amount) {
+        showToast(`Доступно только ${selectedOrder.available_amount} USDT`, 'error');
+        return;
+    }
 
-        setCreatingTrade(true);
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/p2p/trade/start`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: selectedOrder.id,
-                    buyerId: userId,
-                    amount: amount
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('✅ Сделка создана!', 'success');
-                setShowModal(false);
-                setTradeAmount('');
-                setActiveTab('trades');
-                fetchMyTrades();
-            } else {
-                showToast(data.error || 'Ошибка создания', 'error');
-            }
-        } catch (error) {
-            showToast('Ошибка соединения', 'error');
-        } finally {
-            setCreatingTrade(false);
+    setCreatingTrade(true);
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/p2p/trade/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderId: selectedOrder.id,
+                buyerId: userId,
+                amount: amount
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('✅ Сделка создана! Перейдите в раздел "Ордера"', 'success');
+            setShowModal(false);
+            setTradeAmount('');
+            setActiveTab('trades');
+            fetchMyTrades();
+        } else {
+            showToast(data.error || 'Ошибка создания сделки', 'error');
         }
-    };
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showToast('Ошибка соединения с сервером', 'error');
+    } finally {
+        setCreatingTrade(false);
+    }
+};
 
-    const shareOrder = (orderId) => {
-        const shareText = `🤝 P2P объявление #${orderId}\nКупить USDT по выгодному курсу!\nhttps://t.me/TetherRabbitBot?start=order_${orderId}`;
-        navigator.clipboard.writeText(shareText);
-        showToast('🔗 Ссылка скопирована', 'success');
-    };
+   const shareOrder = (order) => {
+    const message = `🤝 *P2P Объявление*\n\n` +
+        `💰 *${order.rate} ₽* за 1 USDT\n` +
+        `📦 Доступно: ${order.available_amount} USDT\n` +
+        `👤 Продавец: ${order.user_name || 'Аноним'}\n` +
+        `⭐ Выполнено: ${order.completion_rate || 98}% (${order.completed_trades || 0} сделок)\n\n` +
+        `🔗 Подробнее: https://t.me/TetherRabbitBot?start=order_${order.id}`;
+    
+    // Копируем в буфер
+    navigator.clipboard.writeText(message);
+    showToast('📋 Текст скопирован! Отправьте в Telegram', 'success');
+    
+    // Также можно открыть Telegram
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert('Текст скопирован! Вставьте его в чат Telegram.');
+    }
+};
 
     const paymentMethodsList = [
         { value: 'bank_transfer', label: 'Банковский перевод', icon: '🏦' },
@@ -326,11 +350,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
                             <div className="p2p-order-buttons">
                                 <button 
-                                    className="p2p-buy-btn"
-                                    onClick={() => { setSelectedOrder(order); setShowModal(true); }}
-                                >
-                                    Купить
-                                </button>
+    className="p2p-buy-btn"
+    onClick={() => { 
+        setSelectedOrder(order); 
+        setShowModal(true);
+    }}
+>
+    Купить
+</button>
                                 <button 
                                     className="p2p-share-btn"
                                     onClick={() => shareOrder(order.id)}
@@ -490,44 +517,43 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    return (
-        <div className="p2p-fullscreen">
-            {/* Верхняя навигация */}
-            <div className="p2p-nav-header">
-                <button className="p2p-back-btn" onClick={onBack}>←</button>
-                <span className="p2p-nav-title">P2P Маркет</span>
-                <div className="p2p-nav-placeholder"></div>
-            </div>
-
-            {/* Вкладки */}
-            <div className="p2p-main-tabs">
-                <button 
-                    className={`p2p-main-tab ${activeTab === 'market' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('market')}
-                >
-                    📊 Маркет
-                </button>
-                <button 
-                    className={`p2p-main-tab ${activeTab === 'my_ads' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('my_ads')}
-                >
-                    📋 Мои
-                </button>
-                <button 
-                    className={`p2p-main-tab ${activeTab === 'trades' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('trades')}
-                >
-                    📦 Ордера
-                </button>
-            </div>
-
-            {/* Контент */}
+    // Вместо верхней навигации, добавляем нижнюю
+return (
+    <div className="p2p-fullscreen">
+        {/* Контент */}
+        <div className="p2p-content-area">
             {activeTab === 'market' && renderMarket()}
             {activeTab === 'my_ads' && renderMyAds()}
             {activeTab === 'trades' && renderTrades()}
-
-            {/* Модалка */}
-            {showModal && selectedOrder && renderModal()}
         </div>
-    );
+
+        {/* Нижняя навигация как в App.js */}
+        <div className="p2p-bottom-nav">
+            <button 
+                className={`p2p-bottom-nav-item ${activeTab === 'market' ? 'active' : ''}`}
+                onClick={() => setActiveTab('market')}
+            >
+                <div className="p2p-bottom-icon">📊</div>
+                <span className="p2p-bottom-label">Маркет</span>
+            </button>
+            <button 
+                className={`p2p-bottom-nav-item ${activeTab === 'my_ads' ? 'active' : ''}`}
+                onClick={() => setActiveTab('my_ads')}
+            >
+                <div className="p2p-bottom-icon">📋</div>
+                <span className="p2p-bottom-label">Мои</span>
+            </button>
+            <button 
+                className={`p2p-bottom-nav-item ${activeTab === 'trades' ? 'active' : ''}`}
+                onClick={() => setActiveTab('trades')}
+            >
+                <div className="p2p-bottom-icon">📦</div>
+                <span className="p2p-bottom-label">Ордера</span>
+            </button>
+        </div>
+
+        {/* Модалка */}
+        {showModal && selectedOrder && renderModal()}
+    </div>
+);
 }

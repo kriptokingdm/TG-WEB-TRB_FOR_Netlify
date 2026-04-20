@@ -1026,3 +1026,617 @@ html, body, #root {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+/* P2P Container */
+.p2p-container {
+    min-height: 100vh;
+    background: var(--tg-theme-bg-color);
+    padding-bottom: 80px;
+}
+
+/* Внутренняя навигация P2P */
+.p2p-nav {
+    display: flex;
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 8px 16px;
+    gap: 8px;
+    border-bottom: 1px solid var(--tg-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.p2p-nav-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.p2p-nav-btn.active {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+/* Маркет - вкладки покупка/продажа */
+.p2p-market-tabs {
+    display: flex;
+    padding: 12px 16px;
+    gap: 12px;
+    background: var(--tg-theme-bg-color);
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.p2p-market-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 30px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.p2p-market-tab.active {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+/* Фильтры */
+.p2p-filters {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.p2p-filter-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.p2p-filters-panel {
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+}
+
+.p2p-filter-group {
+    margin-bottom: 16px;
+}
+
+.p2p-filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-filter-range {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.p2p-filter-range input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 12px;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-filter-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 12px;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-filter-apply {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Карточки объявлений в маркете */
+.p2p-orders-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.p2p-order-card {
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.p2p-order-card:active {
+    transform: scale(0.98);
+}
+
+.p2p-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.p2p-order-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.p2p-user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+.p2p-user-name {
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-user-rating {
+    font-size: 12px;
+    color: #f5a623;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.p2p-order-badge {
+    padding: 4px 8px;
+    background: var(--tg-border-color);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-order-rate {
+    margin-bottom: 8px;
+}
+
+.p2p-rate-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-rate-currency {
+    font-size: 16px;
+    color: var(--tg-theme-hint-color);
+    margin-left: 4px;
+}
+
+.p2p-order-amount {
+    font-size: 14px;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 8px;
+}
+
+.p2p-order-limits {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 12px;
+}
+
+.p2p-order-payment {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.p2p-payment-tag {
+    padding: 4px 10px;
+    background: var(--tg-border-color);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-payment-more {
+    padding: 4px 10px;
+    background: var(--tg-border-color);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-order-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+/* Мои объявления */
+.p2p-my-ads {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.p2p-my-ads-header {
+    margin-bottom: 8px;
+}
+
+.p2p-create-ad-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-success-color);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.p2p-ad-card {
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+}
+
+.p2p-ad-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.p2p-ad-type {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.p2p-ad-type.sell {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+}
+
+.p2p-ad-type.buy {
+    background: rgba(52, 199, 89, 0.2);
+    color: #34c759;
+}
+
+.p2p-ad-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.p2p-ad-status.active {
+    background: rgba(52, 199, 89, 0.2);
+    color: #34c759;
+}
+
+.p2p-ad-status.paused {
+    background: rgba(255, 149, 0, 0.2);
+    color: #ff9500;
+}
+
+.p2p-ad-rate {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-ad-amount, .p2p-ad-limits, .p2p-ad-payment {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 6px;
+}
+
+.p2p-ad-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.p2p-ad-edit, .p2p-ad-delete {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.p2p-ad-edit {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+.p2p-ad-delete {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+}
+
+/* Ордера (сделки) */
+.p2p-orders-section {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.p2p-trade-card {
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+}
+
+.p2p-trade-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.p2p-trade-id {
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-trade-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.p2p-trade-status.pending {
+    background: rgba(255, 149, 0, 0.2);
+    color: #ff9500;
+}
+
+.p2p-trade-status.paid {
+    background: rgba(52, 199, 89, 0.2);
+    color: #34c759;
+}
+
+.p2p-trade-status.completed {
+    background: rgba(52, 199, 89, 0.2);
+    color: #34c759;
+}
+
+.p2p-trade-status.cancelled {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+}
+
+.p2p-trade-details {
+    margin-bottom: 12px;
+}
+
+.p2p-trade-type {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-trade-amount {
+    font-size: 14px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-trade-users {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+}
+
+.p2p-trade-date {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 12px;
+}
+
+.p2p-trade-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.p2p-trade-chat, .p2p-trade-pay, .p2p-trade-confirm {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.p2p-trade-chat {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+.p2p-trade-pay {
+    background: var(--tg-success-color);
+    color: white;
+}
+
+.p2p-trade-confirm {
+    background: var(--tg-success-color);
+    color: white;
+}
+
+/* Модальное окно */
+.p2p-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.p2p-modal {
+    width: 90%;
+    max-width: 340px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.p2p-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--tg-border-color);
+}
+
+.p2p-modal-header h3 {
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: var(--tg-border-color);
+    color: var(--tg-theme-text-color);
+    cursor: pointer;
+}
+
+.p2p-modal-content {
+    padding: 16px;
+}
+
+.p2p-trade-info {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.p2p-trade-rate, .p2p-trade-limits {
+    margin-bottom: 4px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-trade-input {
+    margin-bottom: 16px;
+}
+
+.p2p-trade-input label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-trade-input input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 12px;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-text-color);
+    font-size: 16px;
+}
+
+.p2p-trade-total {
+    padding: 12px;
+    background: var(--tg-success-color);
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.p2p-trade-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Loading & Empty */
+.p2p-loading, .p2p-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--tg-border-color);
+    border-top-color: var(--tg-theme-button-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.p2p-empty span {
+    font-size: 48px;
+}
+
+.p2p-empty-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    cursor: pointer;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

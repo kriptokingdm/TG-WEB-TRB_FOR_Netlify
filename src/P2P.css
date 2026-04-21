@@ -5,107 +5,109 @@
     flex-direction: column;
     background: var(--tg-theme-bg-color);
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--tg-theme-text-color);
 }
 
 /* HEADER */
 .p2p-header {
-    padding: 12px 16px;
+    padding: 14px 16px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .p2p-header h1 {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
 }
 
 .p2p-back {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     border: none;
-    background: rgba(0,0,0,0.06);
-    backdrop-filter: blur(10px);
+    background: var(--tg-theme-secondary-bg-color);
 }
 
 /* TABS */
 .p2p-tabs {
     display: flex;
-    gap: 8px;
-    padding: 10px 16px;
+    padding: 6px 12px;
+    gap: 6px;
 }
 
 .p2p-tabs button {
     flex: 1;
-    border-radius: 999px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 13px;
     border: none;
-    font-size: 14px;
-    background: rgba(0,0,0,0.05);
+    background: transparent;
+    color: var(--tg-theme-hint-color);
 }
 
 .p2p-tabs button.active {
-    background: var(--tg-theme-button-color);
-    color: white;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-weight: 600;
 }
 
-/* SWITCH */
+/* BUY / SELL SWITCH */
 .p2p-market-switch {
     display: flex;
-    gap: 8px;
-    padding: 0 16px 10px;
+    padding: 6px 12px;
+    gap: 6px;
 }
 
 .p2p-market-switch button {
     flex: 1;
-    border-radius: 999px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 14px;
     border: none;
-    font-weight: 600;
-    background: rgba(0,0,0,0.05);
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
 }
 
 .p2p-market-switch button.active {
     background: var(--tg-theme-button-color);
     color: #fff;
+    font-weight: 600;
 }
 
 /* FILTERS */
 .p2p-filters {
     display: flex;
-    gap: 10px;
-    padding: 0 16px 12px;
+    gap: 8px;
+    padding: 8px 12px;
 }
 
 .p2p-filter-amount,
 .p2p-filter-select {
     width: 100%;
-    padding: 12px;
-    border-radius: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
     border: none;
-    background: rgba(0,0,0,0.05);
-    backdrop-filter: blur(6px);
+    background: var(--tg-theme-secondary-bg-color);
+    font-size: 13px;
 }
 
 /* LIST */
 .p2p-orders-list {
-    padding: 10px 16px 100px;
+    padding: 6px 10px 100px;
 }
 
-/* CARD (GLASS STYLE) */
+/* CARD (WALLET STYLE) */
 .p2p-order-card {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(16px);
-    border-radius: 20px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 8px;
+    transition: transform 0.15s ease;
 }
 
 .p2p-order-card:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
 }
 
 /* HEADER */
@@ -122,28 +124,34 @@
 }
 
 .p2p-user-avatar {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* BIG RATE */
+.p2p-user-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* RATE */
 .p2p-order-rate {
-    font-size: 22px;
-    font-weight: 800;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 /* AMOUNT */
 .p2p-order-amount {
-    margin-top: 6px;
+    margin-top: 4px;
     font-size: 13px;
-    opacity: 0.7;
+    color: var(--tg-theme-hint-color);
 }
 
 /* PAYMENT */
@@ -151,70 +159,127 @@
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .p2p-payment-chip {
-    padding: 5px 10px;
-    border-radius: 999px;
+    padding: 4px 8px;
+    border-radius: 8px;
     font-size: 11px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.05);
 }
 
-/* ACTION BAR */
+/* ACTION */
 .p2p-order-buttons {
     display: flex;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 6px;
+    margin-top: 10px;
 }
 
 .p2p-buy-btn {
     flex: 1;
-    padding: 12px;
-    border-radius: 14px;
+    padding: 10px;
+    border-radius: 10px;
     border: none;
-    font-weight: 700;
-    background: linear-gradient(135deg, #34c759, #30d158);
+    font-weight: 600;
+    background: var(--tg-theme-button-color);
     color: white;
 }
 
 .p2p-share-btn {
-    width: 48px;
-    border-radius: 14px;
+    width: 42px;
+    border-radius: 10px;
     border: none;
-    background: rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.05);
 }
 
-/* CREATE BUTTON FLOAT */
+/* CREATE BUTTON */
 .p2p-create-btn {
     position: fixed;
-    bottom: 20px;
-    left: 16px;
-    right: 16px;
-    padding: 16px;
-    border-radius: 20px;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    padding: 14px;
+    border-radius: 16px;
     border: none;
-    font-size: 16px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #007aff, #0a84ff);
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--tg-theme-button-color);
     color: white;
-    box-shadow: 0 10px 25px rgba(0,122,255,0.3);
 }
 
 /* FORM */
 .p2p-create-form {
-    margin: 16px;
-    padding: 18px;
-    border-radius: 20px;
-    backdrop-filter: blur(16px);
-    background: rgba(255,255,255,0.05);
+    margin: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--tg-theme-secondary-bg-color);
 }
 
-/* MODAL = iOS SHEET */
+.p2p-form-group {
+    margin-bottom: 12px;
+}
+
+.p2p-form-group label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.p2p-form-row {
+    display: flex;
+    gap: 8px;
+}
+
+.p2p-form-group.half {
+    flex: 1;
+}
+
+.p2p-form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(0,0,0,0.05);
+}
+
+/* PAYMENT BUTTONS */
+.p2p-payment-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.p2p-payment-buttons button {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(0,0,0,0.05);
+    font-size: 12px;
+}
+
+.p2p-payment-buttons button.selected {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+/* SUBMIT */
+.p2p-submit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+/* MODAL */
 .p2p-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0,0,0,0.4);
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -222,24 +287,27 @@
 
 .p2p-modal-content {
     width: 100%;
-    max-width: 500px;
-    border-radius: 24px 24px 0 0;
+    border-radius: 18px 18px 0 0;
     background: var(--tg-theme-bg-color);
-    padding: 20px;
-    animation: slideUp 0.25s ease;
+    padding: 16px;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+.p2p-trade-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    margin-top: 10px;
+    background: var(--tg-theme-secondary-bg-color);
 }
 
 .p2p-trade-btn {
     width: 100%;
-    padding: 14px;
-    border-radius: 14px;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 12px;
     border: none;
-    font-weight: 700;
+    font-weight: 600;
     background: var(--tg-theme-button-color);
     color: white;
 }
@@ -247,6 +315,7 @@
 /* EMPTY */
 .p2p-empty {
     text-align: center;
-    padding: 60px 20px;
-    opacity: 0.6;
+    padding: 40px 20px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
 }

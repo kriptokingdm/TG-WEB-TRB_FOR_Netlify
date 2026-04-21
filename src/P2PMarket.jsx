@@ -6,7 +6,8 @@ const API_BASE_URL = 'https://tethrab.shop';
 
 export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const [activeTab, setActiveTab] = useState('market');
-    const [orders, setOrders] = useState([]);
+    const [sellOrders, setSellOrders] = useState([]);
+    const [buyOrders, setBuyOrders] = useState([]);
     const [myAds, setMyAds] = useState([]);
     const [myTrades, setMyTrades] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,6 +20,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [minAmountFilter, setMinAmountFilter] = useState('');
     const [maxAmountFilter, setMaxAmountFilter] = useState('');
+    const [marketType, setMarketType] = useState('buy'); // 'buy' или 'sell'
     
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [userBalance, setUserBalance] = useState(0);
@@ -47,7 +49,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         } else if (activeTab === 'trades') {
             fetchMyTrades();
         }
-    }, [activeTab, paymentFilter, minAmountFilter, maxAmountFilter]);
+    }, [activeTab, marketType, paymentFilter, minAmountFilter, maxAmountFilter]);
 
     const fetchUserBalance = async () => {
         try {
@@ -62,26 +64,32 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            let url = `${API_BASE_URL}/api/p2p/orders?limit=100`;
+            // Загружаем объявления на продажу (для покупки)
+            let sellUrl = `${API_BASE_URL}/api/p2p/orders?type=sell&limit=100`;
+            if (paymentFilter !== 'all') sellUrl += `&payment=${paymentFilter}`;
+            if (minAmountFilter) sellUrl += `&min_amount=${minAmountFilter}`;
+            if (maxAmountFilter) sellUrl += `&max_amount=${maxAmountFilter}`;
             
-            if (paymentFilter !== 'all') {
-                url += `&payment=${paymentFilter}`;
-            }
-            if (minAmountFilter) {
-                url += `&min_amount=${minAmountFilter}`;
-            }
-            if (maxAmountFilter) {
-                url += `&max_amount=${maxAmountFilter}`;
-            }
+            // Загружаем объявления на покупку (для продажи)
+            let buyUrl = `${API_BASE_URL}/api/p2p/orders?type=buy&limit=100`;
+            if (paymentFilter !== 'all') buyUrl += `&payment=${paymentFilter}`;
+            if (minAmountFilter) buyUrl += `&min_amount=${minAmountFilter}`;
+            if (maxAmountFilter) buyUrl += `&max_amount=${maxAmountFilter}`;
             
-            const res = await fetch(url);
-            const data = await res.json();
+            const [sellRes, buyRes] = await Promise.all([
+                fetch(sellUrl),
+                fetch(buyUrl)
+            ]);
             
-            const ordersWithNames = (data.orders || []).map(order => ({
-                ...order,
-                user_name: order.user_name || `User${order.user_id?.slice(-4)}`
-            }));
-            setOrders(ordersWithNames);
+            const sellData = await sellRes.json();
+            const buyData = await buyRes.json();
+            
+            // Сортируем по выгодному курсу (самые дешёвые для покупки, самые дорогие для продажи)
+            let sellOrdersList = (sellData.orders || []).sort((a, b) => a.rate - b.rate);
+            let buyOrdersList = (buyData.orders || []).sort((a, b) => b.rate - a.rate);
+            
+            setSellOrders(sellOrdersList);
+            setBuyOrders(buyOrdersList);
         } catch (error) {
             console.error('Ошибка:', error);
         } finally {
@@ -223,19 +231,16 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const shareOrder = (order) => {
         const botUsername = 'TetherRabbitBot';
         const shareUrl = `https://t.me/${botUsername}?start=order_${order.id}`;
-        
-        // Копируем ссылку
         navigator.clipboard.writeText(shareUrl);
-        showToast('✅ Ссылка скопирована! Отправьте её другу', 'success');
-        
-        // Открываем Telegram с готовым сообщением
-        const message = encodeURIComponent(`🤝 P2P Объявление\n💰 ${order.rate} ₽ за 1 USDT\n📦 ${order.available_amount} USDT\n\n${shareUrl}`);
-        const tgLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${message}`;
-        
+        showToast('✅ Ссылка скопирована!', 'success');
+    };
+
+    const openOrderInApp = (order) => {
+        const webAppUrl = `https://tg-web-trb-for-netlify.vercel.app/p2p/order/${order.id}`;
         if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.openTelegramLink(tgLink);
+            window.Telegram.WebApp.openTelegramLink(webAppUrl);
         } else {
-            window.open(tgLink, '_blank');
+            window.open(webAppUrl, '_blank');
         }
     };
 
@@ -265,6 +270,42 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
+    // Рендер карточки объявления
+    const OrderCard = ({ order, type }) => (
+        <div className="p2p-order-card">
+            <div className="p2p-order-header">
+                <div className="p2p-order-user">
+                    <div className="p2p-user-avatar">
+                        {order.user_name?.charAt(0) || '👤'}
+                    </div>
+                    <div className="p2p-user-name">{order.user_name || `User${order.user_id?.slice(-4)}`}</div>
+                </div>
+                <div className="p2p-order-rate-badge">
+                    {formatNumber(order.rate)} ₽
+                </div>
+            </div>
+            
+            <div className="p2p-order-amount">
+                📦 {formatNumber(order.available_amount)} USDT
+            </div>
+            
+            <div className="p2p-order-payment">
+                {order.payment_methods?.slice(0, 2).map(method => (
+                    <span key={method} className="p2p-payment-chip">
+                        {getPaymentLabel(method)}
+                    </span>
+                ))}
+            </div>
+            
+            <div className="p2p-order-buttons">
+                <button className="p2p-buy-btn" onClick={() => { setSelectedOrder(order); setShowModal(true); }}>
+                    {type === 'buy' ? 'Купить' : 'Продать'}
+                </button>
+                <button className="p2p-share-btn" onClick={() => shareOrder(order)}>📤</button>
+            </div>
+        </div>
+    );
+
     return (
         <div className="p2p-fullscreen">
             <div className="p2p-header">
@@ -288,91 +329,59 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             {/* Маркет */}
             {activeTab === 'market' && (
                 <div className="p2p-market">
+                    {/* Переключатель Купить/Продать */}
+                    <div className="p2p-market-switch">
+                        <button className={marketType === 'buy' ? 'active' : ''} onClick={() => setMarketType('buy')}>
+                            🛒 Купить USDT
+                        </button>
+                        <button className={marketType === 'sell' ? 'active' : ''} onClick={() => setMarketType('sell')}>
+                            💰 Продать USDT
+                        </button>
+                    </div>
+
                     {/* Фильтры */}
                     <div className="p2p-filters">
-                        <div className="p2p-filter-row">
-                            <select 
-                                value={paymentFilter} 
-                                onChange={e => setPaymentFilter(e.target.value)}
-                                className="p2p-filter-select"
-                            >
-                                <option value="all">Все способы оплаты</option>
-                                {paymentMethodsList.map(m => (
-                                    <option key={m.value} value={m.value}>{m.icon} {m.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="p2p-filter-row">
-                            <div className="p2p-filter-input">
-                                <span>Сумма от</span>
-                                <input 
-                                    type="number" 
-                                    placeholder="0" 
-                                    value={minAmountFilter}
-                                    onChange={e => setMinAmountFilter(e.target.value)}
-                                />
+                        <select 
+                            value={paymentFilter} 
+                            onChange={e => setPaymentFilter(e.target.value)}
+                            className="p2p-filter-select"
+                        >
+                            <option value="all">Все способы оплаты</option>
+                            {paymentMethodsList.map(m => (
+                                <option key={m.value} value={m.value}>{m.icon} {m.label}</option>
+                            ))}
+                        </select>
+                        
+                        <div className="p2p-filter-amounts">
+                            <div className="p2p-filter-amount">
+                                <span>От</span>
+                                <input type="number" placeholder="0" value={minAmountFilter} onChange={e => setMinAmountFilter(e.target.value)} />
                                 <span>USDT</span>
                             </div>
-                            <div className="p2p-filter-input">
-                                <span>до</span>
-                                <input 
-                                    type="number" 
-                                    placeholder="∞" 
-                                    value={maxAmountFilter}
-                                    onChange={e => setMaxAmountFilter(e.target.value)}
-                                />
+                            <div className="p2p-filter-amount">
+                                <span>До</span>
+                                <input type="number" placeholder="∞" value={maxAmountFilter} onChange={e => setMaxAmountFilter(e.target.value)} />
                                 <span>USDT</span>
                             </div>
                         </div>
                     </div>
 
+                    {/* Список объявлений */}
                     <div className="p2p-orders-list">
                         {loading ? (
                             <div className="p2p-loading">Загрузка...</div>
-                        ) : orders.length === 0 ? (
-                            <div className="p2p-empty">Нет объявлений</div>
+                        ) : marketType === 'buy' ? (
+                            sellOrders.length === 0 ? (
+                                <div className="p2p-empty">Нет объявлений на продажу</div>
+                            ) : (
+                                sellOrders.map(order => <OrderCard key={order.id} order={order} type="buy" />)
+                            )
                         ) : (
-                            orders.map(order => (
-                                <div key={order.id} className="p2p-order-card">
-                                    <div className="p2p-order-user">
-                                        <div className="p2p-user-avatar">
-                                            {order.user_name?.charAt(0) || '👤'}
-                                        </div>
-                                        <div className="p2p-user-name">{order.user_name}</div>
-                                    </div>
-                                    
-                                    <div className="p2p-order-rate">
-                                        {formatNumber(order.rate)} ₽
-                                    </div>
-                                    
-                                    <div className="p2p-order-amount">
-                                        {formatNumber(order.available_amount)} USDT
-                                    </div>
-                                    
-                                    <div className="p2p-order-payment">
-                                        {order.payment_methods?.slice(0, 2).map(method => (
-                                            <span key={method} className="p2p-payment-chip">
-                                                {getPaymentLabel(method)}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    
-                                    <div className="p2p-order-buttons">
-                                        <button 
-                                            className="p2p-buy-btn"
-                                            onClick={() => { setSelectedOrder(order); setShowModal(true); }}
-                                        >
-                                            Купить
-                                        </button>
-                                        <button 
-                                            className="p2p-share-btn"
-                                            onClick={() => shareOrder(order)}
-                                        >
-                                            📤
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
+                            buyOrders.length === 0 ? (
+                                <div className="p2p-empty">Нет объявлений на покупку</div>
+                            ) : (
+                                buyOrders.map(order => <OrderCard key={order.id} order={order} type="sell" />)
+                            )
                         )}
                     </div>
                 </div>
@@ -402,9 +411,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                             </div>
 
                             {newOrder.type === 'sell' && (
-                                <div className="p2p-balance-hint">
-                                    💰 Ваш баланс: {userBalance} USDT
-                                </div>
+                                <div className="p2p-balance-hint">💰 Ваш баланс: {userBalance} USDT</div>
                             )}
 
                             <div className="p2p-form-row">

@@ -96,9 +96,28 @@
 }
 
 .p2p-filters {
+    display: flex;
+    gap: 12px;
     padding: 12px 16px;
     background: var(--tg-theme-bg-color);
     border-bottom: 1px solid var(--tg-border-color);
+}
+
+.p2p-filter-left {
+    flex: 1;
+}
+
+.p2p-filter-amount {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 12px;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-filter-right {
+    flex: 1;
 }
 
 .p2p-filter-select {
@@ -107,36 +126,6 @@
     border: 1px solid var(--tg-border-color);
     border-radius: 12px;
     background: var(--tg-input-bg);
-    color: var(--tg-theme-text-color);
-    margin-bottom: 12px;
-}
-
-.p2p-filter-amounts {
-    display: flex;
-    gap: 12px;
-}
-
-.p2p-filter-amount {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--tg-input-bg);
-    border: 1px solid var(--tg-border-color);
-    border-radius: 12px;
-    padding: 8px 12px;
-}
-
-.p2p-filter-amount span {
-    color: var(--tg-theme-hint-color);
-    font-size: 13px;
-}
-
-.p2p-filter-amount input {
-    flex: 1;
-    padding: 4px 0;
-    border: none;
-    background: transparent;
     color: var(--tg-theme-text-color);
 }
 
@@ -185,7 +174,7 @@
     font-size: 14px;
 }
 
-.p2p-order-rate-badge {
+.p2p-order-rate {
     font-size: 20px;
     font-weight: 700;
     color: var(--tg-theme-text-color);
@@ -403,8 +392,25 @@
     margin-bottom: 12px;
 }
 
+.p2p-ad-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.p2p-ad-edit {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .p2p-ad-delete {
-    width: 100%;
+    flex: 1;
     padding: 10px;
     border: none;
     border-radius: 10px;

@@ -1,22 +1,30 @@
 /* CSS */
-.wallet {position:fixed;inset:0;background:#0e0e0e;color:#fff;font-family:sans-serif;}
-.header {display:flex;justify-content:space-between;padding:14px;font-weight:600;}
-.switch {display:flex;margin:10px;background:#1c1c1e;border-radius:12px;}
-.switch button{flex:1;padding:10px;background:none;border:none;color:#aaa;}
-.switch .active{background:#007aff;color:#fff;border-radius:12px;}
-.table-header{display:flex;justify-content:space-between;padding:0 14px;font-size:12px;color:#888;}
-.list{padding:10px;}
-.row{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #222;}
-.user{display:flex;gap:10px;}
+.app{position:fixed;inset:0;background:#0c0c0e;color:#fff;font-family:-apple-system;}
+.header{display:flex;justify-content:space-between;padding:14px;font-weight:600;}
+.tabs{display:flex;margin:10px;background:#1c1c1e;border-radius:10px;}
+.tabs button{flex:1;padding:10px;background:none;border:none;color:#888;}
+.tabs .active{background:#007aff;color:#fff;border-radius:10px;}
+.table-head{display:flex;justify-content:space-between;padding:0 12px;font-size:12px;color:#666;}
+.list{padding:8px;}
+.row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #1f1f1f;}
+.col{display:flex;align-items:center;}
+.user{gap:10px;}
 .avatar{width:34px;height:34px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;}
-.name{font-weight:500;}
-.sub{font-size:12px;color:#888;}
-.price{font-weight:700;}
+.name{font-size:14px;}
+.sub{font-size:11px;color:#888;}
+.center{flex-direction:column;align-items:flex-start;}
+.price{font-weight:700;font-size:14px;}
 .price.buy{color:#34c759;}
-.price.sell{color:#ff3b30;}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;}
+.price.sell{color:#ff453a;}
+.limits{font-size:11px;color:#666;}
+.right{justify-content:flex-end;}
+.btn{padding:6px 10px;border:none;border-radius:8px;font-size:12px;}
+.btn.buy{background:#34c759;color:#000;}
+.btn.sell{background:#ff453a;color:#fff;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;}
 .sheet{width:100%;background:#1c1c1e;padding:16px;border-radius:16px 16px 0 0;}
 .sheet input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:#2c2c2e;color:#fff;}
-.sheet button{width:100%;margin-top:10px;padding:12px;border:none;background:#007aff;color:#fff;border-radius:10px;}
-.skeleton{height:50px;background:linear-gradient(90deg,#1c1c1e,#2c2c2e,#1c1c1e);animation:shimmer 1.2s infinite;margin-bottom:8px;border-radius:10px;}
+.calc{margin-top:8px;font-size:13px;color:#aaa;}
+.confirm{width:100%;margin-top:12px;padding:12px;border:none;background:#007aff;color:#fff;border-radius:10px;}
+.skeleton{height:52px;background:linear-gradient(90deg,#1c1c1e,#2c2c2e,#1c1c1e);animation:shimmer 1.2s infinite;border-radius:10px;margin-bottom:6px;}
 @keyframes shimmer{0%{background-position:-200px}100%{background-position:200px}}

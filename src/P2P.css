@@ -342,3 +342,286 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Страница объявления */
+.p2p-order-page {
+    min-height: 100vh;
+    background: var(--tg-theme-bg-color);
+    padding-bottom: 20px;
+}
+
+.p2p-order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-bottom: 1px solid var(--tg-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.p2p-order-back {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--tg-border-color);
+    color: var(--tg-theme-text-color);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.p2p-order-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-order-placeholder {
+    width: 40px;
+}
+
+/* Информация о продавце */
+.p2p-order-seller {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    margin: 16px;
+    border-radius: 16px;
+}
+
+.p2p-order-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.p2p-order-seller-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 6px;
+}
+
+.p2p-order-seller-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.p2p-order-completion {
+    color: #f5a623;
+}
+
+.p2p-order-trades {
+    color: var(--tg-theme-hint-color);
+}
+
+/* Детали объявления */
+.p2p-order-details {
+    margin: 16px;
+}
+
+.p2p-order-rate-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.p2p-order-rate-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+}
+
+.p2p-order-rate-value {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-order-rate-value span {
+    font-size: 24px;
+}
+
+.p2p-order-rate-sub {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-top: 4px;
+}
+
+.p2p-order-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.p2p-order-info-item {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.p2p-order-info-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 4px;
+}
+
+.p2p-order-info-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-order-payment-section,
+.p2p-order-terms-section {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.p2p-order-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 12px;
+}
+
+.p2p-order-payment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.p2p-order-payment-item {
+    padding: 8px 12px;
+    background: var(--tg-border-color);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-order-terms-text {
+    font-size: 14px;
+    color: var(--tg-theme-text-color);
+    line-height: 1.4;
+}
+
+/* Форма создания сделки */
+.p2p-order-trade-form {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 16px;
+}
+
+.p2p-order-trade-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--tg-theme-text-color);
+}
+
+.p2p-order-trade-input {
+    margin-bottom: 16px;
+}
+
+.p2p-order-trade-input label {
+    display: block;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+}
+
+.p2p-order-trade-input input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--tg-border-color);
+    border-radius: 12px;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-text-color);
+    font-size: 16px;
+}
+
+.p2p-order-trade-total {
+    padding: 12px;
+    background: var(--tg-success-color);
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.p2p-order-trade-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Кнопки владельца */
+.p2p-order-owner-actions {
+    display: flex;
+    gap: 12px;
+    margin: 16px;
+}
+
+.p2p-order-edit-btn,
+.p2p-order-delete-btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.p2p-order-edit-btn {
+    background: var(--tg-theme-button-color);
+    color: white;
+}
+
+.p2p-order-delete-btn {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+}
+
+/* Loading & Error */
+.p2p-order-loading,
+.p2p-order-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+}
+
+.p2p-order-error button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: white;
+    cursor: pointer;
+}

@@ -498,6 +498,7 @@ function App() {
     }
 
     switch (currentPage) {
+      case 'p2p/order/:id': return <P2POrder key="p2p-order" {...commonProps} />;
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
       case 'p2p': return <P2PMarket key="p2p" {...commonProps} onBack={closeP2P} />;

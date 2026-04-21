@@ -8,16 +8,41 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
     const [loading, setLoading] = useState(true);
     const [amount, setAmount] = useState('');
     const [creating, setCreating] = useState(false);
-    const [userBalance, setUserBalance] = useState(0);
 
-    // Получаем ID объявления из URL
-    const orderId = window.location.pathname.split('/').pop();
+    // Получаем ID объявления из URL или из Telegram WebApp
+    const getOrderId = () => {
+        // 1. Проверяем URL path
+        const pathMatch = window.location.pathname.match(/\/p2p\/order\/(\d+)/);
+        if (pathMatch) return pathMatch[1];
+        
+        // 2. Проверяем query параметр startapp
+        const urlParams = new URLSearchParams(window.location.search);
+        const startapp = urlParams.get('startapp');
+        if (startapp && startapp.startsWith('order_')) {
+            return startapp.replace('order_', '');
+        }
+        
+        // 3. Проверяем Telegram WebApp initData
+        if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+            const startParam = window.Telegram.WebApp.initDataUnsafe.start_param;
+            if (startParam && startParam.startsWith('order_')) {
+                return startParam.replace('order_', '');
+            }
+        }
+        
+        return null;
+    };
 
+    const orderId = getOrderId();
     const userId = telegramUser?.id || '7879866656';
 
     useEffect(() => {
-        fetchOrder();
-        fetchUserBalance();
+        if (orderId) {
+            fetchOrder();
+        } else {
+            showToast('Объявление не найдено', 'error');
+            navigateTo('p2p');
+        }
     }, [orderId]);
 
     const fetchOrder = async () => {
@@ -28,22 +53,13 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
                 setOrder(data.order);
             } else {
                 showToast('Объявление не найдено', 'error');
+                navigateTo('p2p');
             }
         } catch (error) {
             console.error('Ошибка:', error);
             showToast('Ошибка загрузки', 'error');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const fetchUserBalance = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`);
-            const data = await res.json();
-            setUserBalance(data.balance || 0);
-        } catch (error) {
-            console.error('Ошибка:', error);
         }
     };
 
@@ -114,33 +130,27 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
         );
     }
 
-    const isOwner = order.user_id === userId;
-
     return (
         <div className="p2p-order-page">
-            {/* Хедер */}
             <div className="p2p-order-header">
                 <button className="p2p-order-back" onClick={() => navigateTo('p2p')}>←</button>
                 <h1>Объявление #{order.id}</h1>
                 <div className="p2p-order-placeholder"></div>
             </div>
 
-            {/* Информация о продавце */}
             <div className="p2p-order-seller">
                 <div className="p2p-order-avatar">👤</div>
                 <div className="p2p-order-seller-info">
                     <div className="p2p-order-seller-name">{order.user_name || 'Продавец'}</div>
                     <div className="p2p-order-seller-stats">
-                        <span className="p2p-order-completion">⭐ {order.completion_rate || 98}% выполнено</span>
-                        <span className="p2p-order-trades">📊 {order.completed_trades || 0} сделок</span>
+                        <span className="p2p-order-completion">⭐ {order.completion_rate || 98}%</span>
+                        <span className="p2p-order-trades">{order.completed_trades || 0} сделок</span>
                     </div>
                 </div>
             </div>
 
-            {/* Детали объявления */}
             <div className="p2p-order-details">
                 <div className="p2p-order-rate-card">
-                    <div className="p2p-order-rate-label">Курс</div>
                     <div className="p2p-order-rate-value">{order.rate} <span>₽</span></div>
                     <div className="p2p-order-rate-sub">за 1 USDT</div>
                 </div>
@@ -151,16 +161,8 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
                         <div className="p2p-order-info-value">{formatNumber(order.available_amount)} USDT</div>
                     </div>
                     <div className="p2p-order-info-item">
-                        <div className="p2p-order-info-label">Всего</div>
-                        <div className="p2p-order-info-value">{formatNumber(order.amount)} USDT</div>
-                    </div>
-                    <div className="p2p-order-info-item">
-                        <div className="p2p-order-info-label">Мин. сумма</div>
-                        <div className="p2p-order-info-value">{formatNumber(order.min_amount)} USDT</div>
-                    </div>
-                    <div className="p2p-order-info-item">
-                        <div className="p2p-order-info-label">Макс. сумма</div>
-                        <div className="p2p-order-info-value">{formatNumber(order.max_amount)} USDT</div>
+                        <div className="p2p-order-info-label">Лимиты</div>
+                        <div className="p2p-order-info-value">{order.min_amount} - {order.max_amount} USDT</div>
                     </div>
                 </div>
 
@@ -170,10 +172,9 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
                         {order.payment_methods?.map(method => (
                             <span key={method} className="p2p-order-payment-item">
                                 {method === 'bank_transfer' && '🏦 Банковский перевод'}
-                                {method === 'card' && '💳 Банковская карта'}
+                                {method === 'card' && '💳 Карта'}
                                 {method === 'sbp' && '📱 СБП'}
                                 {method === 'cash' && '💰 Наличные'}
-                                {method === 'crypto' && '₿ Криптовалюта'}
                             </span>
                         ))}
                     </div>
@@ -181,14 +182,13 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
 
                 {order.terms && (
                     <div className="p2p-order-terms-section">
-                        <div className="p2p-order-section-title">📝 Условия сделки</div>
+                        <div className="p2p-order-section-title">📝 Условия</div>
                         <div className="p2p-order-terms-text">{order.terms}</div>
                     </div>
                 )}
             </div>
 
-            {/* Форма создания сделки (только если не владелец) */}
-            {!isOwner && order.status === 'active' && (
+            {order.user_id !== userId && order.status === 'active' && (
                 <div className="p2p-order-trade-form">
                     <div className="p2p-order-trade-title">Создание сделки</div>
                     <div className="p2p-order-trade-input">
@@ -202,7 +202,7 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
                     </div>
                     {amount && (
                         <div className="p2p-order-trade-total">
-                            Итого к оплате: <strong>{formatNumber(parseFloat(amount) * order.rate)} ₽</strong>
+                            Итого: <strong>{formatNumber(parseFloat(amount) * order.rate)} ₽</strong>
                         </div>
                     )}
                     <button 
@@ -212,14 +212,6 @@ export default function P2POrder({ telegramUser, showToast, navigateTo }) {
                     >
                         {creating ? 'Создание...' : '✅ Начать сделку'}
                     </button>
-                </div>
-            )}
-
-            {/* Если объявление принадлежит пользователю */}
-            {isOwner && (
-                <div className="p2p-order-owner-actions">
-                    <button className="p2p-order-edit-btn">✏️ Редактировать</button>
-                    <button className="p2p-order-delete-btn">❌ Удалить</button>
                 </div>
             )}
         </div>

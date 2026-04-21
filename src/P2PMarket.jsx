@@ -83,23 +83,28 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     };
 
     const shareOrder = (order) => {
-    // Ссылка на веб-приложение с открытием конкретного объявления
+    // Формируем правильную ссылку для Mini App
+    const botUsername = 'TetherRabbitBot'; // Имя твоего бота
     const webAppUrl = `https://tg-web-trb-for-netlify.vercel.app/p2p/order/${order.id}`;
     
-    // Текст для шаринга
+    // Ссылка для Telegram Mini App (открывается внутри Telegram)
+    const miniAppUrl = `https://t.me/${botUsername}/p2p?startapp=order_${order.id}`;
+    
+    // Альтернативный вариант с web_app кнопкой
     const shareText = `🤝 *P2P Объявление*\n\n` +
         `💰 *${order.rate} ₽* за 1 USDT\n` +
         `📦 Доступно: ${order.available_amount} USDT\n` +
-        `👤 Продавец: ${order.user_name || 'Аноним'}\n\n` +
-        `🔗 ${webAppUrl}`;
+        `👤 Продавец: ${order.user_name || 'Аноним'}\n` +
+        `⭐ Выполнено: ${order.completion_rate || 98}%\n\n` +
+        `[🚀 Открыть в Mini App](${miniAppUrl})`;
     
-    // Копируем текст в буфер
-    navigator.clipboard.writeText(shareText);
-    showToast('✅ Ссылка скопирована!', 'success');
+    // Копируем ссылку
+    navigator.clipboard.writeText(miniAppUrl);
+    showToast('✅ Ссылка на объявление скопирована!', 'success');
     
     // Открываем Telegram с предзаполненным сообщением
     const encodedText = encodeURIComponent(shareText);
-    const tgLink = `https://t.me/share/url?url=${encodeURIComponent(webAppUrl)}&text=${encodedText}`;
+    const tgLink = `https://t.me/share/url?url=${encodeURIComponent(miniAppUrl)}&text=${encodedText}`;
     
     if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.openTelegramLink(tgLink);

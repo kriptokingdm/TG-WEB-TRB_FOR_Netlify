@@ -1,28 +1,23 @@
-:root {
-    --tg-radius: 16px;
-}
-
 .p2p-fullscreen {
     position: fixed;
     inset: 0;
-    background: var(--tg-theme-bg-color);
     display: flex;
     flex-direction: column;
+    background: var(--tg-theme-bg-color);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* HEADER */
 .p2p-header {
+    padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px;
-    background: var(--tg-theme-bg-color);
-    border-bottom: 1px solid var(--tg-border-color);
 }
 
 .p2p-header h1 {
-    font-size: 17px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .p2p-back {
@@ -30,157 +25,196 @@
     height: 36px;
     border-radius: 50%;
     border: none;
-    background: var(--tg-theme-secondary-bg-color);
+    background: rgba(0,0,0,0.06);
+    backdrop-filter: blur(10px);
 }
 
 /* TABS */
 .p2p-tabs {
     display: flex;
-    gap: 6px;
-    padding: 10px;
+    gap: 8px;
+    padding: 10px 16px;
 }
 
 .p2p-tabs button {
     flex: 1;
-    border-radius: 12px;
+    border-radius: 999px;
     padding: 10px;
     border: none;
-    background: transparent;
-    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    background: rgba(0,0,0,0.05);
 }
 
 .p2p-tabs button.active {
     background: var(--tg-theme-button-color);
-    color: #fff;
+    color: white;
 }
 
-/* SWITCH BUY/SELL */
+/* SWITCH */
 .p2p-market-switch {
     display: flex;
     gap: 8px;
-    padding: 10px;
+    padding: 0 16px 10px;
 }
 
 .p2p-market-switch button {
     flex: 1;
-    padding: 12px;
     border-radius: 999px;
+    padding: 12px;
     border: none;
-    background: var(--tg-theme-secondary-bg-color);
+    font-weight: 600;
+    background: rgba(0,0,0,0.05);
 }
 
 .p2p-market-switch button.active {
     background: var(--tg-theme-button-color);
-    color: white;
+    color: #fff;
 }
 
 /* FILTERS */
 .p2p-filters {
     display: flex;
-    gap: 8px;
-    padding: 10px;
+    gap: 10px;
+    padding: 0 16px 12px;
 }
 
 .p2p-filter-amount,
 .p2p-filter-select {
     width: 100%;
-    padding: 10px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 14px;
     border: none;
-    background: var(--tg-theme-secondary-bg-color);
+    background: rgba(0,0,0,0.05);
+    backdrop-filter: blur(6px);
 }
 
-/* ORDER CARD */
+/* LIST */
+.p2p-orders-list {
+    padding: 10px 16px 100px;
+}
+
+/* CARD (GLASS STYLE) */
 .p2p-order-card {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: var(--tg-radius);
-    padding: 14px;
-    margin-bottom: 10px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
 }
 
+.p2p-order-card:active {
+    transform: scale(0.97);
+}
+
+/* HEADER */
 .p2p-order-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+.p2p-order-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .p2p-user-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--tg-theme-button-color);
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-}
-
-.p2p-order-rate {
-    font-size: 18px;
+    color: white;
     font-weight: 700;
 }
 
+/* BIG RATE */
+.p2p-order-rate {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+/* AMOUNT */
+.p2p-order-amount {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* PAYMENT */
 .p2p-order-payment {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
 .p2p-payment-chip {
+    padding: 5px 10px;
+    border-radius: 999px;
     font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 20px;
-    background: var(--tg-border-color);
+    background: rgba(255,255,255,0.1);
 }
 
-/* BUTTONS */
+/* ACTION BAR */
+.p2p-order-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
 .p2p-buy-btn {
     flex: 1;
-    padding: 10px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 14px;
     border: none;
-    background: var(--tg-theme-button-color);
+    font-weight: 700;
+    background: linear-gradient(135deg, #34c759, #30d158);
     color: white;
-    font-weight: 600;
 }
 
 .p2p-share-btn {
-    width: 42px;
-    border-radius: 12px;
+    width: 48px;
+    border-radius: 14px;
     border: none;
+    background: rgba(255,255,255,0.1);
 }
 
-/* CREATE FORM */
-.p2p-create-form {
-    margin: 10px;
+/* CREATE BUTTON FLOAT */
+.p2p-create-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
     padding: 16px;
-    border-radius: var(--tg-radius);
-    background: var(--tg-theme-secondary-bg-color);
-}
-
-.p2p-submit {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
+    border-radius: 20px;
     border: none;
-    background: var(--tg-theme-button-color);
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #007aff, #0a84ff);
     color: white;
+    box-shadow: 0 10px 25px rgba(0,122,255,0.3);
 }
 
-/* ADS / TRADES */
-.p2p-ad-card,
-.p2p-trade-card {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: var(--tg-radius);
-    padding: 14px;
+/* FORM */
+.p2p-create-form {
+    margin: 16px;
+    padding: 18px;
+    border-radius: 20px;
+    backdrop-filter: blur(16px);
+    background: rgba(255,255,255,0.05);
 }
 
-/* MODAL */
+/* MODAL = iOS SHEET */
 .p2p-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.35);
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -189,23 +223,30 @@
 .p2p-modal-content {
     width: 100%;
     max-width: 500px;
-    border-radius: 20px 20px 0 0;
+    border-radius: 24px 24px 0 0;
     background: var(--tg-theme-bg-color);
-    padding: 16px;
+    padding: 20px;
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
 }
 
 .p2p-trade-btn {
     width: 100%;
     padding: 14px;
-    border-radius: 12px;
+    border-radius: 14px;
     border: none;
+    font-weight: 700;
     background: var(--tg-theme-button-color);
     color: white;
 }
 
-/* EMPTY / LOADING */
+/* EMPTY */
 .p2p-empty {
     text-align: center;
-    padding: 40px;
-    color: var(--tg-theme-hint-color);
+    padding: 60px 20px;
+    opacity: 0.6;
 }

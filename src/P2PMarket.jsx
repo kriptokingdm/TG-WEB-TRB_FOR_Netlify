@@ -27,7 +27,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         rate: '',
         min_amount: '10',
         max_amount: '',
-        payment_methods: []
+        payment_methods: [],
+        terms: '',
+        expires_minutes: '30'
     });
 
     const paymentMethodsList = [
@@ -35,6 +37,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         { value: 'card', label: 'Карта', icon: '💳' },
         { value: 'sbp', label: 'СБП', icon: '📱' },
         { value: 'cash', label: 'Наличные', icon: '💰' }
+    ];
+
+    const timeOptions = [
+        { value: '15', label: '15 минут' },
+        { value: '30', label: '30 минут' },
+        { value: '60', label: '1 час' },
+        { value: '120', label: '2 часа' }
     ];
 
     useEffect(() => {
@@ -56,8 +65,35 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const buyData = await buyRes.json();
             const sellData = await sellRes.json();
 
-            setBuyOrders((buyData.orders || []).sort((a, b) => b.rate - a.rate));
-            setSellOrders((sellData.orders || []).sort((a, b) => a.rate - b.rate));
+            // Добавляем реальную статистику для продавцов
+            const buyWithStats = await Promise.all((buyData.orders || []).map(async (order) => {
+                const statsRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
+                const stats = await statsRes.json();
+                return {
+                    ...order,
+                    completion_rate: stats.successful_trades && stats.total_trades 
+                        ? Math.round((stats.successful_trades / stats.total_trades) * 100)
+                        : 98,
+                    completed_trades: stats.successful_trades || 0,
+                    total_trades: stats.total_trades || 0
+                };
+            }));
+
+            const sellWithStats = await Promise.all((sellData.orders || []).map(async (order) => {
+                const statsRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
+                const stats = await statsRes.json();
+                return {
+                    ...order,
+                    completion_rate: stats.successful_trades && stats.total_trades 
+                        ? Math.round((stats.successful_trades / stats.total_trades) * 100)
+                        : 98,
+                    completed_trades: stats.successful_trades || 0,
+                    total_trades: stats.total_trades || 0
+                };
+            }));
+
+            setBuyOrders(buyWithStats.sort((a, b) => b.rate - a.rate));
+            setSellOrders(sellWithStats.sort((a, b) => a.rate - b.rate));
         } catch (e) {
             console.error(e);
         } finally {
@@ -142,14 +178,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     rate: parseFloat(newOrder.rate),
                     min_amount: parseFloat(newOrder.min_amount),
                     max_amount: newOrder.max_amount ? parseFloat(newOrder.max_amount) : parseFloat(newOrder.amount),
-                    payment_methods: newOrder.payment_methods
+                    payment_methods: newOrder.payment_methods,
+                    terms: newOrder.terms
                 })
             });
             const data = await res.json();
             if (data.success) {
                 showToast('✅ Объявление создано!', 'success');
                 setShowCreateForm(false);
-                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [] });
+                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [], terms: '', expires_minutes: '30' });
                 fetchMyAds();
                 setTab('my_ads');
             } else {
@@ -170,7 +207,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
         let usdtAmount = parseFloat(amount);
         
-        // Если пользователь ввёл сумму в рублях - конвертируем
         if (currencyType === 'rub') {
             usdtAmount = parseFloat(amount) / selected.rate;
         }
@@ -189,11 +225,16 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const res = await fetch(`${API}/api/p2p/trade/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderId: selected.id, buyerId: userId, amount: usdtAmount })
+                body: JSON.stringify({ 
+                    orderId: selected.id, 
+                    buyerId: userId, 
+                    amount: usdtAmount,
+                    expires_minutes: 30
+                })
             });
             const data = await res.json();
             if (data.success) {
-                showToast('✅ Сделка создана!', 'success');
+                showToast('✅ Сделка создана! У вас 30 минут на оплату', 'success');
                 setSelected(null);
                 setAmount('');
                 setTab('trades');
@@ -211,14 +252,27 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const shareOrder = (order) => {
         const shareUrl = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
         navigator.clipboard.writeText(shareUrl);
-        showToast('✅ Ссылка скопирована', 'success');
+        showToast('✅ Ссылка на объявление скопирована!', 'success');
+        
+        // Открываем Telegram для отправки
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`🤝 P2P Объявление\n💰 ${order.rate} ₽ за 1 USDT\n📦 ${order.available_amount} USDT`)}`);
+        }
     };
 
     const formatNumber = (num) => new Intl.NumberFormat('ru-RU').format(num);
 
     const getStatusText = (status) => {
-        const map = { pending: 'Ожидает оплаты', paid: 'Оплачено', completed: 'Завершена', cancelled: 'Отменена' };
+        const map = { pending: '⏳ Ожидает оплаты', paid: '💸 Оплачено', completed: '✅ Завершена', cancelled: '❌ Отменена', expired: '⏰ Просрочена' };
         return map[status] || status;
+    };
+
+    const getTimeLeft = (expiresAt) => {
+        const diff = new Date(expiresAt) - new Date();
+        if (diff <= 0) return 'Время истекло';
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
     const getPaymentLabel = (method) => {
@@ -226,7 +280,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
-    // Красивая карточка объявления (как в Wallet)
+    // Карточка объявления
     const OrderCard = ({ o, type }) => (
         <div className="order-card" onClick={() => setSelected(o)}>
             <div className="order-card-header">
@@ -268,6 +322,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 {o.payment_methods?.length > 3 && <span className="payment-chip">+{o.payment_methods.length - 3}</span>}
             </div>
 
+            {o.terms && (
+                <div className="order-card-terms">
+                    <span className="terms-label">📝 Условия:</span>
+                    <span className="terms-text">{o.terms}</span>
+                </div>
+            )}
+
             <div className="order-card-actions">
                 <button className={`action-btn ${type}`} onClick={(e) => { e.stopPropagation(); setSelected(o); }}>
                     {type === 'buy' ? 'Купить USDT' : 'Продать USDT'}
@@ -277,15 +338,17 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
+    // Моё объявление
     const AdCard = ({ ad }) => (
         <div className="ad-card">
             <div className="ad-card-header">
                 <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? '💰 Продажа' : '🛒 Покупка'}</span>
-                <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
+                <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? '✅ Активно' : '⏸ Приостановлено'}</span>
             </div>
             <div className="ad-card-rate">{formatNumber(ad.rate)} ₽</div>
             <div className="ad-card-amount">{formatNumber(ad.available_amount)} / {formatNumber(ad.amount)} USDT</div>
             <div className="ad-card-payment">{ad.payment_methods?.map(m => getPaymentLabel(m)).join(', ')}</div>
+            {ad.terms && <div className="ad-card-terms">📝 {ad.terms}</div>}
             <div className="ad-card-actions">
                 <button className="ad-edit" onClick={() => {
                     const newRate = prompt('Новый курс:', ad.rate);
@@ -296,17 +359,56 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
+    // Сделка
     const TradeCard = ({ trade }) => (
         <div className="trade-card">
             <div className="trade-card-header">
                 <span className="trade-id">Сделка #{trade.trade_id}</span>
                 <span className={`trade-status ${trade.status}`}>{getStatusText(trade.status)}</span>
+                {trade.status === 'pending' && trade.expires_at && (
+                    <span className="trade-timer">⏰ {getTimeLeft(trade.expires_at)}</span>
+                )}
             </div>
             <div className="trade-card-details">
                 <div className="trade-amount">{trade.amount} USDT × {trade.rate} ₽</div>
                 <div className="trade-total">= {formatNumber(trade.total_rub)} ₽</div>
             </div>
+            {trade.terms && <div className="trade-terms">📝 {trade.terms}</div>}
             <div className="trade-date">{new Date(trade.created_at).toLocaleString()}</div>
+            {trade.status === 'pending' && (
+                <div className="trade-actions">
+                    {trade.buyer_id === userId && (
+                        <button className="trade-pay-btn" onClick={async () => {
+                            try {
+                                await fetch(`${API}/api/p2p/trade/confirm-payment`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ tradeId: trade.trade_id, userId })
+                                });
+                                showToast('✅ Оплата подтверждена', 'success');
+                                fetchMyTrades();
+                            } catch (e) {
+                                showToast('Ошибка', 'error');
+                            }
+                        }}>✅ Подтвердить оплату</button>
+                    )}
+                    {trade.seller_id === userId && trade.status === 'paid' && (
+                        <button className="trade-confirm-btn" onClick={async () => {
+                            try {
+                                await fetch(`${API}/api/p2p/trade/confirm-receipt`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ tradeId: trade.trade_id, userId })
+                                });
+                                showToast('✅ Сделка завершена!', 'success');
+                                fetchMyTrades();
+                            } catch (e) {
+                                showToast('Ошибка', 'error');
+                            }
+                        }}>🏁 Подтвердить получение</button>
+                    )}
+                </div>
+            )}
         </div>
     );
 
@@ -375,7 +477,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                     }}>{m.icon} {m.label}</button>
                                 ))}
                             </div>
-                            <button className="submit-btn" onClick={createOrder} disabled={creatingTrade}>✅ Создать</button>
+                            <textarea 
+                                className="terms-input"
+                                placeholder="Условия сделки (необязательно)&#10;Например: Встреча в центре, перевод на карту Сбербанка..."
+                                value={newOrder.terms}
+                                onChange={e => setNewOrder({...newOrder, terms: e.target.value})}
+                                rows="3"
+                            />
+                            <button className="submit-btn" onClick={createOrder} disabled={creatingTrade}>✅ Создать объявление</button>
                         </div>
                     )}
 
@@ -412,6 +521,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                     <span>Доступно</span>
                                     <strong>{selected.available_amount} USDT</strong>
                                 </div>
+                                {selected.terms && (
+                                    <div className="info-row terms-row">
+                                        <span>Условия</span>
+                                        <strong>{selected.terms}</strong>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="currency-switch">
@@ -437,7 +552,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                             )}
 
                             <button className="confirm-btn" onClick={startTrade} disabled={creatingTrade}>
-                                {creatingTrade ? 'Создание...' : '✅ Начать сделку'}
+                                {creatingTrade ? 'Создание...' : '✅ Начать сделку (30 минут на оплату)'}
                             </button>
                         </div>
                     </div>

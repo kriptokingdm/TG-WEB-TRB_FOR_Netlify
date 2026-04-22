@@ -9,107 +9,169 @@
     overflow-y: auto;
 }
 
-/* ============ ГЛАВНОЕ МЕНЮ (соответствует твоему JSX) ============ */
+/* ============ ГЛАВНОЕ МЕНЮ ============ */
 .p2p-main-menu {
-    padding: 24px 20px;
+    padding: 20px;
 }
 
-/* Профиль карточка */
-.p2p-profile-card {
+/* Большой блок профиль + статистика */
+.p2p-profile-block {
+    background: #1c1c1e;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.p2p-profile-large {
     display: flex;
     align-items: center;
     gap: 16px;
-    background: #1c1c1e;
-    border-radius: 20px;
-    padding: 16px;
     margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid #2c2c2e;
 }
 
-.p2p-avatar {
-    width: 60px;
-    height: 60px;
+.p2p-avatar-large {
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     background: linear-gradient(135deg, #007aff, #5e5ce6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 600;
     color: #fff;
 }
 
-.p2p-profile-name {
-    font-size: 18px;
+.p2p-profile-name-large {
+    font-size: 22px;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
-.p2p-profile-balance {
-    font-size: 14px;
+.p2p-profile-balance-large {
+    font-size: 16px;
     color: #34c759;
 }
 
-/* Статистика */
-.p2p-stats-card {
+.p2p-stats-row {
     display: flex;
     justify-content: space-around;
-    background: #1c1c1e;
-    border-radius: 20px;
-    padding: 16px;
-    margin-bottom: 24px;
+    align-items: center;
 }
 
-.p2p-stat-item {
+.p2p-stat-item-large {
     text-align: center;
+    flex: 1;
 }
 
-.stat-value {
+.stat-value-large {
     display: block;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     color: #fff;
 }
 
-.stat-label {
-    font-size: 11px;
+.stat-label-large {
+    font-size: 12px;
     color: #888;
 }
 
-/* Кнопки меню */
-.p2p-menu-buttons {
+.p2p-stat-divider {
+    width: 1px;
+    height: 30px;
+    background: #2c2c2e;
+}
+
+/* Крупные кнопки Купить/Продать */
+.p2p-actions-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.p2p-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.p2p-action-btn:active {
+    transform: scale(0.98);
+}
+
+.p2p-action-btn.buy {
+    background: #34c759;
+}
+
+.p2p-action-btn.sell {
+    background: #ff453a;
+}
+
+.p2p-action-btn .action-icon {
+    font-size: 28px;
+}
+
+.p2p-action-btn .action-text {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: left;
+    color: #fff;
+}
+
+.p2p-action-btn .action-arrow {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Остальные кнопки меню */
+.p2p-menu-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.p2p-menu-btn {
+.p2p-menu-item {
     display: flex;
     align-items: center;
     gap: 14px;
     padding: 16px 20px;
     background: #1c1c1e;
     border: none;
-    border-radius: 14px;
+    border-radius: 16px;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.p2p-menu-btn:active {
+.p2p-menu-item:active {
     background: #2c2c2e;
     transform: scale(0.98);
 }
 
-.p2p-menu-btn .btn-icon {
+.p2p-menu-item .menu-icon {
     font-size: 24px;
     width: 32px;
 }
 
-.p2p-menu-btn .btn-text {
+.p2p-menu-item .menu-text {
     flex: 1;
     font-size: 17px;
     font-weight: 500;
     text-align: left;
+}
+
+.p2p-menu-item .menu-arrow {
+    font-size: 18px;
+    color: #666;
 }
 
 .p2p-menu-btn .btn-arrow {

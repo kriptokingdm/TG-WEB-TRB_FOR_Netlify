@@ -364,62 +364,69 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
     // ============ КОМПОНЕНТЫ ============
 
-    // Главное меню
+        // Главное меню
     const MainMenu = () => (
         <div className="p2p-main-menu">
-            <div className="p2p-profile-card">
-                <div className="p2p-avatar">{telegramUser?.first_name?.[0] || 'U'}</div>
-                <div className="p2p-profile-info">
-                    <div className="p2p-profile-name">{telegramUser?.first_name || 'Пользователь'}</div>
-                    <div className="p2p-profile-balance">💰 {userBalance.toFixed(2)} USDT</div>
+            {/* Большой профиль + статистика в одном блоке */}
+            <div className="p2p-profile-block">
+                <div className="p2p-profile-large">
+                    <div className="p2p-avatar-large">
+                        {telegramUser?.first_name?.[0] || telegramUser?.username?.[0] || 'U'}
+                    </div>
+                    <div className="p2p-profile-details">
+                        <div className="p2p-profile-name-large">{telegramUser?.first_name || telegramUser?.username || 'Пользователь'}</div>
+                        <div className="p2p-profile-balance-large">💰 {userBalance.toFixed(2)} USDT</div>
+                    </div>
+                </div>
+                
+                <div className="p2p-stats-row">
+                    <div className="p2p-stat-item-large">
+                        <span className="stat-value-large">{userStats.total_trades}</span>
+                        <span className="stat-label-large">сделок</span>
+                    </div>
+                    <div className="p2p-stat-divider"></div>
+                    <div className="p2p-stat-item-large">
+                        <span className="stat-value-large">{userStats.successful_trades}</span>
+                        <span className="stat-label-large">успешно</span>
+                    </div>
+                    <div className="p2p-stat-divider"></div>
+                    <div className="p2p-stat-item-large">
+                        <span className="stat-value-large">{userStats.total_trades ? Math.round((userStats.successful_trades / userStats.total_trades) * 100) : 100}%</span>
+                        <span className="stat-label-large">успех</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="p2p-stats-card">
-                <div className="p2p-stat-item">
-                    <span className="stat-value">{userStats.total_trades}</span>
-                    <span className="stat-label">Всего сделок</span>
-                </div>
-                <div className="p2p-stat-item">
-                    <span className="stat-value">{userStats.successful_trades}</span>
-                    <span className="stat-label">Успешных</span>
-                </div>
-                <div className="p2p-stat-item">
-                    <span className="stat-value">{formatNumber(userStats.total_volume)}</span>
-                    <span className="stat-label">Объём, USDT</span>
-                </div>
+            {/* Крупные кнопки Купить/Продать */}
+            <div className="p2p-actions-row">
+                <button className="p2p-action-btn buy" onClick={() => setActiveMenu('buy')}>
+                    <span className="action-icon">🛒</span>
+                    <span className="action-text">Купить USDT</span>
+                    <span className="action-arrow">→</span>
+                </button>
+                <button className="p2p-action-btn sell" onClick={() => setActiveMenu('sell')}>
+                    <span className="action-icon">💰</span>
+                    <span className="action-text">Продать USDT</span>
+                    <span className="action-arrow">→</span>
+                </button>
             </div>
 
-            <div className="p2p-menu-buttons">
-                <button className="p2p-menu-btn buy" onClick={() => setActiveMenu('buy')}>
-                    <span className="btn-icon">🛒</span>
-                    <span className="btn-text">Купить USDT</span>
-                    <span className="btn-arrow">→</span>
+            {/* Остальные кнопки меню */}
+            <div className="p2p-menu-list">
+                <button className="p2p-menu-item" onClick={() => { setActiveMenu('my_ads'); fetchMyAds(); }}>
+                    <span className="menu-icon">📋</span>
+                    <span className="menu-text">Мои объявления</span>
+                    <span className="menu-arrow">→</span>
                 </button>
-                <button className="p2p-menu-btn sell" onClick={() => setActiveMenu('sell')}>
-                    <span className="btn-icon">💰</span>
-                    <span className="btn-text">Продать USDT</span>
-                    <span className="btn-arrow">→</span>
+                <button className="p2p-menu-item" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>
+                    <span className="menu-icon">📦</span>
+                    <span className="menu-text">Мои ордера</span>
+                    <span className="menu-arrow">→</span>
                 </button>
-                <button className="p2p-menu-btn" onClick={() => setActiveMenu('my_ads')}>
-                    <span className="btn-icon">📋</span>
-                    <span className="btn-text">Мои объявления</span>
-                    <span className="btn-arrow">→</span>
-                </button>
-                <button className="p2p-menu-btn" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>
-                    <span className="btn-icon">📦</span>
-                    <span className="btn-text">Мои ордера</span>
-                    <span className="btn-arrow">→</span>
-                </button>
-                <button className="p2p-menu-btn" onClick={() => setActiveMenu('stats')}>
-                    <span className="btn-icon">📊</span>
-                    <span className="btn-text">Статистика</span>
-                    <span className="btn-arrow">→</span>
-                </button>
-                <button className="p2p-menu-btn" onClick={() => setActiveMenu('help')}>
-                    <span className="btn-icon">❓</span>
-                    <span className="btn-text">Справка</span>
-                    <span className="btn-arrow">→</span>
+                <button className="p2p-menu-item" onClick={() => setActiveMenu('help')}>
+                    <span className="menu-icon">❓</span>
+                    <span className="menu-text">Помощь</span>
+                    <span className="menu-arrow">→</span>
                 </button>
             </div>
         </div>

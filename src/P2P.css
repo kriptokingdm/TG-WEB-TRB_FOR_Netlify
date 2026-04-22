@@ -9,11 +9,12 @@
     overflow-y: auto;
 }
 
+/* Хедер без баланса */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
+    padding: 14px 20px;
     background: #0c0c0e;
     border-bottom: 0.5px solid #2c2c2e;
     position: sticky;
@@ -21,36 +22,34 @@
     z-index: 10;
 }
 
-.header button {
-    width: 36px;
-    height: 36px;
+.back-btn {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #1c1c1e;
     border: none;
     color: #fff;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.header > div:first-child {
-    width: 36px;
-}
-
-.header > div:nth-child(2) {
+.header-title {
     font-weight: 600;
-    font-size: 17px;
+    font-size: 18px;
 }
 
-.balance {
-    font-size: 14px;
-    font-weight: 500;
-    color: #34c759;
+.header-placeholder {
+    width: 40px;
 }
 
+/* Табы */
 .main-tabs, .mode-tabs {
     display: flex;
-    margin: 10px 12px;
-    gap: 8px;
+    margin: 12px 16px;
+    gap: 10px;
 }
 
 .main-tabs button, .mode-tabs button {
@@ -58,11 +57,12 @@
     padding: 10px;
     background: #1c1c1e;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #888;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .main-tabs button.active, .mode-tabs button.active {
@@ -70,246 +70,229 @@
     color: #fff;
 }
 
-.table-head {
+/* Сетка карточек */
+.orders-grid {
+    padding: 12px 16px;
     display: flex;
-    justify-content: space-between;
-    padding: 0 16px;
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.table-head span {
-    flex: 1;
-}
-
-.table-head span:first-child { flex: 2; }
-.table-head span:last-child { flex: 1; text-align: right; }
-
-.list {
-    padding: 0 12px;
-}
-
-.row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-    border-bottom: 0.5px solid #1f1f1f;
-    cursor: pointer;
-    transition: background 0.1s;
-}
-
-.row:active {
-    background: #1c1c1e;
-}
-
-.col {
-    display: flex;
-    align-items: center;
-}
-
-.col.user {
-    flex: 2;
-    gap: 10px;
-}
-
-.col.center {
-    flex: 2;
     flex-direction: column;
+    gap: 16px;
+}
+
+/* Карточка объявления - красивая, широкая */
+.order-card {
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+}
+
+.order-card:active {
+    transform: scale(0.98);
+    background: #252528;
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
     align-items: flex-start;
+    margin-bottom: 16px;
 }
 
-.col.right {
-    flex: 1;
-    justify-content: flex-end;
-    gap: 6px;
+.seller-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.avatar {
-    width: 40px;
-    height: 40px;
+.seller-avatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: #007aff;
+    background: linear-gradient(135deg, #007aff, #5e5ce6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #fff;
 }
 
-.name {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.sub {
-    font-size: 11px;
-    color: #888;
-    margin-top: 2px;
-}
-
-.price {
-    font-weight: 700;
+.seller-name {
+    font-weight: 600;
     font-size: 16px;
-}
-
-.price.buy { color: #34c759; }
-.price.sell { color: #ff453a; }
-
-.limits {
-    font-size: 10px;
-    color: #666;
-    margin-top: 2px;
-}
-
-.btn {
-    padding: 6px 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.btn.buy { background: #34c759; color: #000; }
-.btn.sell { background: #ff453a; color: #fff; }
-
-.btn-share {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: #2c2c2e;
-    border: none;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: flex-end;
-    z-index: 1000;
-}
-
-.sheet {
-    width: 100%;
-    background: #1c1c1e;
-    padding: 20px;
-    border-radius: 16px 16px 0 0;
-}
-
-.sheet h3 {
-    margin-bottom: 16px;
-    font-size: 18px;
-}
-
-.info {
-    background: #2c2c2e;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    font-size: 14px;
-}
-
-.info div {
     margin-bottom: 4px;
 }
 
-.sheet input {
-    width: 100%;
-    padding: 14px;
+.seller-stats {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.completion {
+    color: #34c759;
+}
+
+.trades-count {
+    color: #888;
+}
+
+.order-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.order-badge.buy {
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+}
+
+.order-badge.sell {
+    background: rgba(255, 69, 58, 0.15);
+    color: #ff453a;
+}
+
+.order-card-rate {
+    margin-bottom: 16px;
+}
+
+.rate-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.rate-currency {
+    font-size: 14px;
+    color: #888;
+    margin-left: 2px;
+}
+
+.order-card-details {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 11px;
+    color: #888;
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.order-card-payment {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.payment-chip {
+    padding: 4px 12px;
     background: #2c2c2e;
-    border: none;
-    border-radius: 10px;
+    border-radius: 16px;
+    font-size: 11px;
     color: #fff;
-    font-size: 16px;
 }
 
-.calc {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #aaa;
+.order-card-actions {
+    display: flex;
+    gap: 12px;
 }
 
-.confirm {
-    width: 100%;
-    margin-top: 16px;
+.action-btn {
+    flex: 1;
     padding: 14px;
-    background: #007aff;
     border: none;
-    border-radius: 10px;
-    color: #fff;
+    border-radius: 14px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-.skeleton {
-    height: 60px;
-    background: linear-gradient(90deg, #1c1c1e, #2c2c2e, #1c1c1e);
-    background-size: 200% 100%;
-    animation: shimmer 1.2s infinite;
-    border-radius: 10px;
-    margin-bottom: 8px;
+.action-btn.buy {
+    background: #34c759;
+    color: #000;
 }
 
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+.action-btn.sell {
+    background: #ff453a;
+    color: #fff;
 }
 
-.empty, .loading {
-    text-align: center;
-    padding: 40px;
-    color: #666;
+.action-btn:active {
+    opacity: 0.8;
 }
 
-/* Мои объявления */
-.my-ads {
-    flex: 1;
-    padding: 12px;
+.share-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: #2c2c2e;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.create-btn {
-    width: 100%;
-    padding: 14px;
+/* Создание объявления */
+.create-ad-btn {
+    width: calc(100% - 32px);
+    margin: 16px;
+    padding: 16px;
     background: #34c759;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     color: #000;
     font-weight: 600;
-    margin-bottom: 16px;
+    font-size: 16px;
     cursor: pointer;
 }
 
 .create-form {
+    margin: 0 16px 20px;
+    padding: 20px;
     background: #1c1c1e;
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 16px;
+    border-radius: 20px;
 }
 
 .create-form h4 {
     margin-bottom: 16px;
+    font-size: 18px;
 }
 
 .form-row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
 .form-row button {
     flex: 1;
-    padding: 10px;
+    padding: 12px;
     background: #2c2c2e;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #fff;
+    font-size: 14px;
     cursor: pointer;
 }
 
@@ -318,32 +301,24 @@
 
 .create-form input {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background: #2c2c2e;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #fff;
+    font-size: 15px;
     margin-bottom: 12px;
-}
-
-.balance-hint {
-    background: #2c2c2e;
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    text-align: center;
-    font-size: 13px;
 }
 
 .payment-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .payment-buttons button {
-    padding: 8px 12px;
+    padding: 8px 14px;
     background: #2c2c2e;
     border: none;
     border-radius: 20px;
@@ -358,31 +333,34 @@
 
 .submit-btn {
     width: 100%;
-    padding: 14px;
+    padding: 16px;
     background: #34c759;
     border: none;
-    border-radius: 10px;
+    border-radius: 14px;
     color: #000;
     font-weight: 600;
+    font-size: 16px;
     cursor: pointer;
 }
 
-.ads-list {
+/* Мои объявления */
+.ads-grid {
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.ad-row {
+.ad-card {
     background: #1c1c1e;
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 16px;
+    padding: 16px;
 }
 
-.ad-header {
+.ad-card-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .ad-type {
@@ -405,35 +383,35 @@
 
 .ad-status.active { background: rgba(52, 199, 89, 0.2); color: #34c759; }
 
-.ad-rate {
-    font-size: 18px;
+.ad-card-rate {
+    font-size: 20px;
     font-weight: 700;
     margin-bottom: 6px;
 }
 
-.ad-amount {
+.ad-card-amount {
     font-size: 13px;
     color: #888;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
-.ad-payment {
-    font-size: 11px;
+.ad-card-payment {
+    font-size: 12px;
     color: #666;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
-.ad-actions {
+.ad-card-actions {
     display: flex;
     gap: 10px;
 }
 
 .ad-edit, .ad-delete {
     flex: 1;
-    padding: 8px;
+    padding: 10px;
     border: none;
-    border-radius: 8px;
-    font-size: 12px;
+    border-radius: 10px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
 }
@@ -442,23 +420,23 @@
 .ad-delete { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
 
 /* Ордера */
-.trades-list {
-    padding: 12px;
+.trades-grid {
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.trade-row {
+.trade-card {
     background: #1c1c1e;
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 16px;
+    padding: 16px;
 }
 
-.trade-header {
+.trade-card-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .trade-id {
@@ -476,13 +454,158 @@
 .trade-status.paid, .trade-status.completed { background: rgba(52, 199, 89, 0.2); color: #34c759; }
 .trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
 
+.trade-card-details {
+    margin-bottom: 8px;
+}
+
 .trade-amount, .trade-total {
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 4px;
 }
 
 .trade-date {
     font-size: 11px;
     color: #666;
-    margin-top: 8px;
+}
+
+/* Модалка */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: flex-end;
+    z-index: 1000;
+}
+
+.modal-sheet {
+    width: 100%;
+    background: #1c1c1e;
+    border-radius: 24px 24px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 0.5px solid #2c2c2e;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2c2c2e;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.trade-info {
+    background: #2c2c2e;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.currency-switch {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.currency-switch button {
+    flex: 1;
+    padding: 12px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 12px;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.currency-switch button.active {
+    background: #007aff;
+    color: #fff;
+}
+
+.amount-input {
+    width: 100%;
+    padding: 16px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.calc-result {
+    text-align: center;
+    padding: 12px;
+    background: #2c2c2e;
+    border-radius: 12px;
+    color: #34c759;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.confirm-btn {
+    width: 100%;
+    padding: 16px;
+    background: #007aff;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.confirm-btn:disabled {
+    opacity: 0.5;
+}
+
+/* Скелетоны */
+.skeleton-card {
+    background: #1c1c1e;
+    border-radius: 20px;
+    padding: 20px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.empty-state, .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
 }

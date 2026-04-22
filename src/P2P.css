@@ -1,425 +1,4 @@
-.p2p-app {
-    position: fixed;
-    inset: 0;
-    background: #0c0c0e;
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-/* Хедер без баланса */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 20px;
-    background: #0c0c0e;
-    border-bottom: 0.5px solid #2c2c2e;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #1c1c1e;
-    border: none;
-    color: #fff;
-    font-size: 22px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.header-title {
-    font-weight: 600;
-    font-size: 18px;
-}
-
-.header-placeholder {
-    width: 40px;
-}
-
-/* Табы */
-.main-tabs, .mode-tabs {
-    display: flex;
-    margin: 12px 16px;
-    gap: 10px;
-}
-
-.main-tabs button, .mode-tabs button {
-    flex: 1;
-    padding: 10px;
-    background: #1c1c1e;
-    border: none;
-    border-radius: 12px;
-    color: #888;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.main-tabs button.active, .mode-tabs button.active {
-    background: #007aff;
-    color: #fff;
-}
-
-/* Сетка карточек */
-.orders-grid {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* Карточка объявления - красивая, широкая */
-.order-card {
-    background: #1c1c1e;
-    border-radius: 20px;
-    padding: 20px;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.2s;
-}
-
-.order-card:active {
-    transform: scale(0.98);
-    background: #252528;
-}
-
-.order-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
-}
-
-.seller-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.seller-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #007aff, #5e5ce6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.seller-name {
-    font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 4px;
-}
-
-.seller-stats {
-    display: flex;
-    gap: 8px;
-    font-size: 11px;
-}
-
-.completion {
-    color: #34c759;
-}
-
-.trades-count {
-    color: #888;
-}
-
-.order-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.order-badge.buy {
-    background: rgba(52, 199, 89, 0.15);
-    color: #34c759;
-}
-
-.order-badge.sell {
-    background: rgba(255, 69, 58, 0.15);
-    color: #ff453a;
-}
-
-.order-card-rate {
-    margin-bottom: 16px;
-}
-
-.rate-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: #fff;
-}
-
-.rate-currency {
-    font-size: 14px;
-    color: #888;
-    margin-left: 2px;
-}
-
-.order-card-details {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 16px;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.detail-label {
-    font-size: 11px;
-    color: #888;
-}
-
-.detail-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: #fff;
-}
-
-.order-card-payment {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.payment-chip {
-    padding: 4px 12px;
-    background: #2c2c2e;
-    border-radius: 16px;
-    font-size: 11px;
-    color: #fff;
-}
-
-.order-card-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.action-btn {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.action-btn.buy {
-    background: #34c759;
-    color: #000;
-}
-
-.action-btn.sell {
-    background: #ff453a;
-    color: #fff;
-}
-
-.action-btn:active {
-    opacity: 0.8;
-}
-
-.share-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
-    background: #2c2c2e;
-    border: none;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Создание объявления */
-.create-ad-btn {
-    width: calc(100% - 32px);
-    margin: 16px;
-    padding: 16px;
-    background: #34c759;
-    border: none;
-    border-radius: 14px;
-    color: #000;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.create-form {
-    margin: 0 16px 20px;
-    padding: 20px;
-    background: #1c1c1e;
-    border-radius: 20px;
-}
-
-.create-form h4 {
-    margin-bottom: 16px;
-    font-size: 18px;
-}
-
-.form-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.form-row button {
-    flex: 1;
-    padding: 12px;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.form-row button.active.sell { background: #ff453a; }
-.form-row button.active.buy { background: #34c759; color: #000; }
-
-.create-form input {
-    width: 100%;
-    padding: 14px;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 15px;
-    margin-bottom: 12px;
-}
-
-.payment-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.payment-buttons button {
-    padding: 8px 14px;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 20px;
-    color: #fff;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.payment-buttons button.selected {
-    background: #007aff;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 16px;
-    background: #34c759;
-    border: none;
-    border-radius: 14px;
-    color: #000;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-/* Мои объявления */
-.ads-grid {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.ad-card {
-    background: #1c1c1e;
-    border-radius: 16px;
-    padding: 16px;
-}
-
-.ad-card-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-.ad-type {
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.ad-type.sell { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
-.ad-type.buy { background: rgba(52, 199, 89, 0.2); color: #34c759; }
-
-.ad-status {
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 11px;
-    background: #2c2c2e;
-    color: #888;
-}
-
-.ad-status.active { background: rgba(52, 199, 89, 0.2); color: #34c759; }
-
-.ad-card-rate {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.ad-card-amount {
-    font-size: 13px;
-    color: #888;
-    margin-bottom: 10px;
-}
-
-.ad-card-payment {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 14px;
-}
-
-.ad-card-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.ad-edit, .ad-delete {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.ad-edit { background: #007aff; color: #fff; }
-.ad-delete { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
-
-/* Ордера */
+/* Ордера - улучшенный дизайн */
 .trades-grid {
     padding: 12px 16px;
     display: flex;
@@ -429,183 +8,210 @@
 
 .trade-card {
     background: #1c1c1e;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 16px;
+    transition: all 0.2s;
+}
+
+.trade-card.expired {
+    opacity: 0.7;
+    background: #1c1c1e;
 }
 
 .trade-card-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 12px;
 }
 
 .trade-id {
     font-weight: 600;
     font-size: 13px;
+    color: #fff;
+    background: #2c2c2e;
+    padding: 4px 10px;
+    border-radius: 16px;
 }
 
 .trade-status {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 16px;
     font-size: 11px;
+    font-weight: 500;
 }
 
 .trade-status.pending { background: rgba(255, 149, 0, 0.2); color: #ff9500; }
-.trade-status.paid, .trade-status.completed { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+.trade-status.paid { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+.trade-status.completed { background: rgba(52, 199, 89, 0.2); color: #34c759; }
 .trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+.trade-status.expired { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
 
 .trade-card-details {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
-.trade-amount, .trade-total {
-    font-size: 14px;
+.trade-amount {
+    font-size: 15px;
+    font-weight: 500;
     margin-bottom: 4px;
+}
+
+.trade-total {
+    font-size: 18px;
+    font-weight: 700;
+    color: #34c759;
+}
+
+.trade-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.role-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.role-badge.buyer {
+    background: rgba(52, 199, 89, 0.2);
+    color: #34c759;
+}
+
+.role-badge.seller {
+    background: rgba(255, 69, 58, 0.2);
+    color: #ff453a;
+}
+
+.trade-timer {
+    font-size: 12px;
+    color: #ff9500;
+    background: rgba(255, 149, 0, 0.1);
+    padding: 4px 10px;
+    border-radius: 16px;
+}
+
+.trade-expired {
+    font-size: 12px;
+    color: #ff453a;
+    background: rgba(255, 69, 58, 0.1);
+    padding: 4px 10px;
+    border-radius: 16px;
+}
+
+.trade-terms {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    background: #2c2c2e;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #888;
+}
+
+.trade-terms span:first-child {
+    font-size: 14px;
+}
+
+.trade-terms span:last-child {
+    flex: 1;
+    color: #fff;
 }
 
 .trade-date {
     font-size: 11px;
     color: #666;
-}
-
-/* Модалка */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: flex-end;
-    z-index: 1000;
-}
-
-.modal-sheet {
-    width: 100%;
-    background: #1c1c1e;
-    border-radius: 24px 24px 0 0;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 0.5px solid #2c2c2e;
-}
-
-.modal-header h3 {
-    font-size: 18px;
-}
-
-.modal-close {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #2c2c2e;
-    border: none;
-    color: #fff;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.trade-info {
-    background: #2c2c2e;
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 20px;
-}
-
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.info-row:last-child {
-    margin-bottom: 0;
-}
-
-.currency-switch {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.currency-switch button {
-    flex: 1;
-    padding: 12px;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 12px;
-    color: #888;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.currency-switch button.active {
-    background: #007aff;
-    color: #fff;
-}
-
-.amount-input {
-    width: 100%;
-    padding: 16px;
-    background: #2c2c2e;
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    font-size: 18px;
-    text-align: center;
     margin-bottom: 12px;
 }
 
-.calc-result {
-    text-align: center;
-    padding: 12px;
-    background: #2c2c2e;
-    border-radius: 12px;
-    color: #34c759;
-    font-size: 14px;
-    margin-bottom: 20px;
+.trade-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
 }
 
-.confirm-btn {
-    width: 100%;
-    padding: 16px;
-    background: #007aff;
+.trade-pay-btn, .trade-confirm-btn, .trade-cancel-btn {
+    flex: 1;
+    padding: 12px;
     border: none;
-    border-radius: 14px;
-    color: #fff;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 600;
-    font-size: 16px;
     cursor: pointer;
 }
 
-.confirm-btn:disabled {
-    opacity: 0.5;
+.trade-pay-btn {
+    background: #34c759;
+    color: #000;
 }
 
-/* Скелетоны */
-.skeleton-card {
-    background: #1c1c1e;
-    border-radius: 20px;
-    padding: 20px;
-    animation: pulse 1.5s infinite;
+.trade-confirm-btn {
+    background: #007aff;
+    color: #fff;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+.trade-cancel-btn {
+    background: rgba(255, 69, 58, 0.2);
+    color: #ff453a;
 }
 
-.empty-state, .loading {
+.trade-completed-badge, .trade-cancelled-badge {
+    padding: 10px;
     text-align: center;
-    padding: 60px 20px;
-    color: #666;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.trade-completed-badge {
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+}
+
+.trade-cancelled-badge {
+    background: rgba(255, 69, 58, 0.15);
+    color: #ff453a;
+}
+
+/* Условия в карточке объявления - компактно */
+.order-card-terms {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    background: #2c2c2e;
+    border-radius: 12px;
+}
+
+.terms-label {
+    font-size: 12px;
+}
+
+.terms-text {
+    font-size: 12px;
+    color: #aaa;
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* Условия в модалке */
+.terms-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.terms-value {
+    font-size: 13px;
+    font-weight: 400;
+    color: #aaa;
+    line-height: 1.4;
+    word-break: break-word;
 }

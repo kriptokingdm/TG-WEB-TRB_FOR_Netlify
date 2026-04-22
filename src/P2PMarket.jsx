@@ -28,7 +28,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         min_amount: '10',
         max_amount: '',
         payment_methods: [],
-        terms: ''
+        terms: '',
+        payment_time: '30'
     });
 
     const paymentMethodsList = [
@@ -36,6 +37,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         { value: 'card', label: 'Карта', icon: '💳' },
         { value: 'sbp', label: 'СБП', icon: '📱' },
         { value: 'cash', label: 'Наличные', icon: '💰' }
+    ];
+
+    const timeOptions = [
+        { value: '15', label: '15 минут' },
+        { value: '30', label: '30 минут' },
+        { value: '60', label: '1 час' },
+        { value: '120', label: '2 часа' }
     ];
 
     useEffect(() => {
@@ -46,7 +54,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         if (tab === 'my_ads') fetchMyAds();
         if (tab === 'trades') {
             fetchMyTrades();
-            // Интервал для обновления таймеров
             const interval = setInterval(() => {
                 fetchMyTrades();
             }, 10000);
@@ -72,8 +79,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     completion_rate: stats.successful_trades && stats.total_trades 
                         ? Math.round((stats.successful_trades / stats.total_trades) * 100)
                         : 100,
-                    completed_trades: stats.successful_trades || 0,
-                    total_trades: stats.total_trades || 0
+                    completed_trades: stats.successful_trades || 0
                 };
             }));
 
@@ -85,8 +91,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     completion_rate: stats.successful_trades && stats.total_trades 
                         ? Math.round((stats.successful_trades / stats.total_trades) * 100)
                         : 100,
-                    completed_trades: stats.successful_trades || 0,
-                    total_trades: stats.total_trades || 0
+                    completed_trades: stats.successful_trades || 0
                 };
             }));
 
@@ -177,14 +182,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     min_amount: parseFloat(newOrder.min_amount),
                     max_amount: newOrder.max_amount ? parseFloat(newOrder.max_amount) : parseFloat(newOrder.amount),
                     payment_methods: newOrder.payment_methods,
-                    terms: newOrder.terms
+                    terms: newOrder.terms,
+                    payment_time: parseInt(newOrder.payment_time)
                 })
             });
             const data = await res.json();
             if (data.success) {
                 showToast('✅ Объявление создано!', 'success');
                 setShowCreateForm(false);
-                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [], terms: '' });
+                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [], terms: '', payment_time: '30' });
                 fetchMyAds();
                 setTab('my_ads');
             } else {
@@ -227,12 +233,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     orderId: selected.id, 
                     buyerId: userId, 
                     amount: usdtAmount,
-                    expires_minutes: 30
+                    expires_minutes: selected.payment_time || 30
                 })
             });
             const data = await res.json();
             if (data.success) {
-                showToast('✅ Сделка создана! У вас 30 минут на оплату', 'success');
+                showToast(`✅ Сделка создана! У вас ${selected.payment_time || 30} минут на оплату`, 'success');
                 setSelected(null);
                 setAmount('');
                 setTab('trades');
@@ -342,7 +348,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
-    // Красивая карточка объявления
+    // Карточка объявления в стакане
     const OrderCard = ({ o, type }) => (
         <div className="order-card" onClick={() => setSelected(o)}>
             <div className="order-card-header">
@@ -384,13 +390,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 {o.payment_methods?.length > 3 && <span className="payment-chip">+{o.payment_methods.length - 3}</span>}
             </div>
 
-            {o.terms && (
-                <div className="order-card-terms">
-                    <span className="terms-label">📝</span>
-                    <span className="terms-text">{o.terms.length > 60 ? o.terms.slice(0, 60) + '...' : o.terms}</span>
-                </div>
-            )}
-
             <div className="order-card-actions">
                 <button className={`action-btn ${type}`} onClick={(e) => { e.stopPropagation(); setSelected(o); }}>
                     {type === 'buy' ? 'Купить USDT' : 'Продать USDT'}
@@ -410,7 +409,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             <div className="ad-card-rate">{formatNumber(ad.rate)} ₽</div>
             <div className="ad-card-amount">{formatNumber(ad.available_amount)} / {formatNumber(ad.amount)} USDT</div>
             <div className="ad-card-payment">{ad.payment_methods?.map(m => getPaymentLabel(m)).join(', ')}</div>
-            {ad.terms && <div className="ad-card-terms">📝 {ad.terms.length > 50 ? ad.terms.slice(0, 50) + '...' : ad.terms}</div>}
+            {ad.terms && <div className="ad-card-terms">📝 {ad.terms.length > 60 ? ad.terms.slice(0, 60) + '...' : ad.terms}</div>}
             <div className="ad-card-actions">
                 <button className="ad-edit" onClick={() => {
                     const newRate = prompt('Новый курс:', ad.rate);
@@ -421,7 +420,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Красивая карточка сделки
+    // Карточка сделки
     const TradeCard = ({ trade }) => {
         const isBuyer = trade.buyer_id === userId;
         const isSeller = trade.seller_id === userId;
@@ -459,7 +458,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 {trade.terms && (
                     <div className="trade-terms">
                         <span>📝</span>
-                        <span>{trade.terms.length > 60 ? trade.terms.slice(0, 60) + '...' : trade.terms}</span>
+                        <span>{trade.terms.length > 80 ? trade.terms.slice(0, 80) + '...' : trade.terms}</span>
                     </div>
                 )}
                 
@@ -542,16 +541,20 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     {showCreateForm && (
                         <div className="create-form">
                             <h4>Новое объявление</h4>
+                            
                             <div className="form-row">
                                 <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>💰 Продажа</button>
                                 <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>🛒 Покупка</button>
                             </div>
+                            
                             <input type="number" placeholder="Сумма (USDT)" value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} />
                             <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
+                            
                             <div className="form-row">
                                 <input type="number" placeholder="Мин. сумма" value={newOrder.min_amount} onChange={e => setNewOrder({...newOrder, min_amount: e.target.value})} />
                                 <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
                             </div>
+                            
                             <div className="payment-buttons">
                                 {paymentMethodsList.map(m => (
                                     <button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => {
@@ -562,6 +565,19 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                     }}>{m.icon} {m.label}</button>
                                 ))}
                             </div>
+                            
+                            <div className="form-row">
+                                <select 
+                                    value={newOrder.payment_time} 
+                                    onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}
+                                    className="time-select"
+                                >
+                                    {timeOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>⏰ Время на оплату: {opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
                             <textarea 
                                 className="terms-input"
                                 placeholder="Условия сделки (необязательно)"
@@ -569,6 +585,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 onChange={e => setNewOrder({...newOrder, terms: e.target.value})}
                                 rows="2"
                             />
+                            
                             <button className="submit-btn" onClick={createOrder} disabled={creatingTrade}>✅ Создать объявление</button>
                         </div>
                     )}
@@ -585,6 +602,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 </div>
             )}
 
+            {/* Модалка создания сделки - с условиями аккуратно */}
             {selected && (
                 <div className="modal-overlay" onClick={() => setSelected(null)}>
                     <div className="modal-sheet" onClick={e => e.stopPropagation()}>
@@ -606,10 +624,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                     <span>Доступно</span>
                                     <strong>{selected.available_amount} USDT</strong>
                                 </div>
+                                <div className="info-row">
+                                    <span>Время на оплату</span>
+                                    <strong>⏰ {selected.payment_time || 30} минут</strong>
+                                </div>
                                 {selected.terms && (
                                     <div className="info-row terms-row">
                                         <span>Условия</span>
-                                        <strong className="terms-value">{selected.terms}</strong>
+                                        <div className="terms-value">{selected.terms}</div>
                                     </div>
                                 )}
                             </div>
@@ -637,7 +659,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                             )}
 
                             <button className="confirm-btn" onClick={startTrade} disabled={creatingTrade}>
-                                {creatingTrade ? 'Создание...' : '✅ Начать сделку (30 минут на оплату)'}
+                                {creatingTrade ? 'Создание...' : `✅ Начать сделку (${selected.payment_time || 30} минут на оплату)`}
                             </button>
                         </div>
                     </div>

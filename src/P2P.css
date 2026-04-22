@@ -1,30 +1,488 @@
-/* CSS */
-.app{position:fixed;inset:0;background:#0c0c0e;color:#fff;font-family:-apple-system;}
-.header{display:flex;justify-content:space-between;padding:14px;font-weight:600;}
-.tabs{display:flex;margin:10px;background:#1c1c1e;border-radius:10px;}
-.tabs button{flex:1;padding:10px;background:none;border:none;color:#888;}
-.tabs .active{background:#007aff;color:#fff;border-radius:10px;}
-.table-head{display:flex;justify-content:space-between;padding:0 12px;font-size:12px;color:#666;}
-.list{padding:8px;}
-.row{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #1f1f1f;}
-.col{display:flex;align-items:center;}
-.user{gap:10px;}
-.avatar{width:34px;height:34px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;}
-.name{font-size:14px;}
-.sub{font-size:11px;color:#888;}
-.center{flex-direction:column;align-items:flex-start;}
-.price{font-weight:700;font-size:14px;}
-.price.buy{color:#34c759;}
-.price.sell{color:#ff453a;}
-.limits{font-size:11px;color:#666;}
-.right{justify-content:flex-end;}
-.btn{padding:6px 10px;border:none;border-radius:8px;font-size:12px;}
-.btn.buy{background:#34c759;color:#000;}
-.btn.sell{background:#ff453a;color:#fff;}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;}
-.sheet{width:100%;background:#1c1c1e;padding:16px;border-radius:16px 16px 0 0;}
-.sheet input{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none;background:#2c2c2e;color:#fff;}
-.calc{margin-top:8px;font-size:13px;color:#aaa;}
-.confirm{width:100%;margin-top:12px;padding:12px;border:none;background:#007aff;color:#fff;border-radius:10px;}
-.skeleton{height:52px;background:linear-gradient(90deg,#1c1c1e,#2c2c2e,#1c1c1e);animation:shimmer 1.2s infinite;border-radius:10px;margin-bottom:6px;}
-@keyframes shimmer{0%{background-position:-200px}100%{background-position:200px}}
+.p2p-app {
+    position: fixed;
+    inset: 0;
+    background: #0c0c0e;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: #0c0c0e;
+    border-bottom: 0.5px solid #2c2c2e;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.header > div:first-child {
+    width: 36px;
+}
+
+.header > div:nth-child(2) {
+    font-weight: 600;
+    font-size: 17px;
+}
+
+.balance {
+    font-size: 14px;
+    font-weight: 500;
+    color: #34c759;
+}
+
+.main-tabs, .mode-tabs {
+    display: flex;
+    margin: 10px 12px;
+    gap: 8px;
+}
+
+.main-tabs button, .mode-tabs button {
+    flex: 1;
+    padding: 10px;
+    background: #1c1c1e;
+    border: none;
+    border-radius: 10px;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.main-tabs button.active, .mode-tabs button.active {
+    background: #007aff;
+    color: #fff;
+}
+
+.table-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.table-head span {
+    flex: 1;
+}
+
+.table-head span:first-child { flex: 2; }
+.table-head span:last-child { flex: 1; text-align: right; }
+
+.list {
+    padding: 0 12px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 0.5px solid #1f1f1f;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.row:active {
+    background: #1c1c1e;
+}
+
+.col {
+    display: flex;
+    align-items: center;
+}
+
+.col.user {
+    flex: 2;
+    gap: 10px;
+}
+
+.col.center {
+    flex: 2;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.col.right {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #007aff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sub {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.price {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.price.buy { color: #34c759; }
+.price.sell { color: #ff453a; }
+
+.limits {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn.buy { background: #34c759; color: #000; }
+.btn.sell { background: #ff453a; color: #fff; }
+
+.btn-share {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #2c2c2e;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: flex-end;
+    z-index: 1000;
+}
+
+.sheet {
+    width: 100%;
+    background: #1c1c1e;
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+}
+
+.sheet h3 {
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.info {
+    background: #2c2c2e;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.info div {
+    margin-bottom: 4px;
+}
+
+.sheet input {
+    width: 100%;
+    padding: 14px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+}
+
+.calc {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.confirm {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    background: #007aff;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.skeleton {
+    height: 60px;
+    background: linear-gradient(90deg, #1c1c1e, #2c2c2e, #1c1c1e);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.empty, .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+/* Мои объявления */
+.my-ads {
+    flex: 1;
+    padding: 12px;
+}
+
+.create-btn {
+    width: 100%;
+    padding: 14px;
+    background: #34c759;
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 16px;
+    cursor: pointer;
+}
+
+.create-form {
+    background: #1c1c1e;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.create-form h4 {
+    margin-bottom: 16px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.form-row button {
+    flex: 1;
+    padding: 10px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.form-row button.active.sell { background: #ff453a; }
+.form-row button.active.buy { background: #34c759; color: #000; }
+
+.create-form input {
+    width: 100%;
+    padding: 12px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.balance-hint {
+    background: #2c2c2e;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.payment-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.payment-buttons button {
+    padding: 8px 12px;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.payment-buttons button.selected {
+    background: #007aff;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #34c759;
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ad-row {
+    background: #1c1c1e;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.ad-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.ad-type {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ad-type.sell { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+.ad-type.buy { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+
+.ad-status {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    background: #2c2c2e;
+    color: #888;
+}
+
+.ad-status.active { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+
+.ad-rate {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.ad-amount {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.ad-payment {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.ad-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.ad-edit, .ad-delete {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.ad-edit { background: #007aff; color: #fff; }
+.ad-delete { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+
+/* Ордера */
+.trades-list {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trade-row {
+    background: #1c1c1e;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.trade-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.trade-id {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.trade-status {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+}
+
+.trade-status.pending { background: rgba(255, 149, 0, 0.2); color: #ff9500; }
+.trade-status.paid, .trade-status.completed { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+.trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+
+.trade-amount, .trade-total {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.trade-date {
+    font-size: 11px;
+    color: #666;
+    margin-top: 8px;
+}

@@ -602,7 +602,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 </div>
             )}
 
-            {/* Модалка создания сделки - с условиями аккуратно */}
+            {/* Модалка создания сделки */}
             {selected && (
                 <div className="modal-overlay" onClick={() => setSelected(null)}>
                     <div className="modal-sheet" onClick={e => e.stopPropagation()}>

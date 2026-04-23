@@ -113,24 +113,34 @@
 .menu-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .menu-item {
-    padding: 18px 16px;
-    background: var(--tg-theme-secondary-bg-color);
-    border: none;
-    border-radius: 16px;
-    color: var(--tg-theme-text-color);
-    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px;
+    border-radius: 18px;
+
+    background: #1c1c1e; /* как wallet */
+    border: 1px solid rgba(255,255,255,0.05);
+
+    color: #fff;
+    font-size: 16px;
     font-weight: 500;
-    text-align: left;
+
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+}
+
+.menu-item:hover {
+    background: #2c2c2e;
 }
 
 .menu-item:active {
-    background: var(--tg-hover-color);
+    transform: scale(0.98);
 }
 
 /* ============ ЭКРАН МАРКЕТА (КУПИТЬ/ПРОДАТЬ друг напротив друга) ============ */

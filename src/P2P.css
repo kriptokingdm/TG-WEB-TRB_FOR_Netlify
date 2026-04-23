@@ -1,4 +1,4 @@
-/* P2P.css - стиль как в приложении */
+/* P2P.css - ТОЧНО КАК В ПРИЛОЖЕНИИ */
 
 .p2p-app {
     position: fixed;
@@ -18,30 +18,30 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 30px;
 }
 
 .profile-avatar {
-    width: 64px;
-    height: 64px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: linear-gradient(135deg, #007aff, #5e5ce6);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 600;
     color: #fff;
 }
 
 .profile-name {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .profile-balance {
-    font-size: 14px;
+    font-size: 15px;
     color: #34c759;
 }
 
@@ -49,19 +49,20 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 30px;
 }
 
 .stat-card {
     background: #1c1c1e;
     border-radius: 16px;
-    padding: 12px;
+    padding: 14px 8px;
     text-align: center;
 }
 
 .stat-value {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
+    color: #fff;
 }
 
 .stat-label {
@@ -73,19 +74,22 @@
 .menu-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .menu-item {
-    padding: 16px;
+    padding: 18px 16px;
     background: #1c1c1e;
     border: none;
-    border-radius: 14px;
+    border-radius: 16px;
     color: #fff;
     font-size: 17px;
     font-weight: 500;
     text-align: left;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .menu-item:active {
@@ -118,6 +122,7 @@
 .screen-header h2 {
     font-size: 20px;
     font-weight: 600;
+    margin: 0;
 }
 
 .orders-list {
@@ -141,46 +146,46 @@
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: #007aff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #fff;
 }
 
 .user-name {
     font-weight: 600;
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .order-rate {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .order-amount {
     font-size: 14px;
     color: #888;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .order-payment {
     display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
 }
 
 .payment-badge {
     padding: 4px 10px;
     background: #2c2c2e;
-    border-radius: 16px;
+    border-radius: 20px;
     font-size: 11px;
     color: #aaa;
 }
@@ -193,6 +198,7 @@
     border-radius: 12px;
     color: #fff;
     font-weight: 600;
+    font-size: 15px;
     cursor: pointer;
 }
 
@@ -232,11 +238,12 @@
     border: none;
     border-radius: 12px;
     color: #fff;
+    font-weight: 500;
     cursor: pointer;
 }
 
 .form-type button.active.sell { background: #ff453a; }
-.form-type button.active.buy { background: #34c759; }
+.form-type button.active.buy { background: #34c759; color: #000; }
 
 .create-form input, .create-form select, .create-form textarea {
     width: 100%;
@@ -246,6 +253,7 @@
     border-radius: 12px;
     color: #fff;
     margin-bottom: 12px;
+    font-size: 14px;
 }
 
 .form-row {
@@ -266,6 +274,7 @@
     border: none;
     border-radius: 20px;
     color: #fff;
+    font-size: 13px;
     cursor: pointer;
 }
 
@@ -281,6 +290,7 @@
     border-radius: 12px;
     color: #000;
     font-weight: 600;
+    font-size: 15px;
     cursor: pointer;
 }
 
@@ -303,7 +313,7 @@
 }
 
 .ad-type {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
@@ -313,7 +323,7 @@
 .ad-type.buy { background: rgba(52, 199, 89, 0.2); color: #34c759; }
 
 .ad-status {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
     background: #2c2c2e;
@@ -325,13 +335,13 @@
 .ad-rate {
     font-size: 20px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .ad-amount {
     font-size: 13px;
     color: #888;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .ad-actions {
@@ -370,6 +380,7 @@
     border: none;
     border-radius: 12px;
     color: #888;
+    font-size: 14px;
     cursor: pointer;
 }
 
@@ -398,10 +409,11 @@
 
 .trade-type {
     font-weight: 600;
+    font-size: 15px;
 }
 
 .trade-status {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
 }
@@ -412,23 +424,24 @@
 .trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
 
 .trade-details {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .trade-details div {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    font-size: 14px;
 }
 
 .trade-time {
     font-size: 12px;
     color: #888;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .trade-timer {
     font-size: 12px;
     color: #ff9500;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .trade-actions {
@@ -471,6 +484,7 @@
 .help-block h3 {
     margin-bottom: 8px;
     font-size: 16px;
+    font-weight: 600;
 }
 
 .help-block p {
@@ -510,6 +524,11 @@
     border-bottom: 0.5px solid #2c2c2e;
 }
 
+.modal-header h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
 .modal-close {
     width: 36px;
     height: 36px;
@@ -533,12 +552,13 @@
 }
 
 .modal-info div {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
 }
 
 .modal-terms {
-    margin-top: 8px;
-    padding-top: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
     border-top: 0.5px solid #3a3a3e;
     font-size: 13px;
     color: #aaa;
@@ -557,6 +577,7 @@
     border: none;
     border-radius: 12px;
     color: #888;
+    font-size: 15px;
     cursor: pointer;
 }
 
@@ -583,6 +604,7 @@
     background: #2c2c2e;
     border-radius: 12px;
     color: #34c759;
+    font-size: 14px;
     margin-bottom: 20px;
 }
 
@@ -594,10 +616,11 @@
     border-radius: 14px;
     color: #fff;
     font-weight: 600;
+    font-size: 16px;
     cursor: pointer;
 }
 
-/* ============ ОБЩИЕ СТИЛИ ============ */
+/* ============ ЗАГРУЗКА ============ */
 .skeleton-card {
     background: #1c1c1e;
     border-radius: 16px;
@@ -614,4 +637,5 @@
     text-align: center;
     padding: 40px;
     color: #666;
+    font-size: 14px;
 }

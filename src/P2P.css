@@ -1,8 +1,10 @@
+/* P2P.css - в стиле Telegram Mini App */
+
 .p2p-app {
     position: fixed;
     inset: 0;
-    background: #0c0c0e;
-    color: #fff;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     overflow-y: auto;
 }
@@ -23,7 +25,7 @@
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #007aff, #5e5ce6);
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -36,12 +38,12 @@
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .profile-balance {
     font-size: 15px;
-    color: #34c759;
+    color: var(--tg-success-color);
 }
 
 .stats-grid {
@@ -52,7 +54,7 @@
 }
 
 .stat-card {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 14px 8px;
     text-align: center;
@@ -61,15 +63,16 @@
 .stat-value {
     font-size: 22px;
     font-weight: 700;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .stat-label {
     font-size: 11px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     margin-top: 4px;
 }
 
+/* Кнопки меню */
 .menu-list {
     display: flex;
     flex-direction: column;
@@ -78,21 +81,22 @@
 
 .menu-item {
     padding: 18px 16px;
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
     border-radius: 16px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-size: 17px;
     font-weight: 500;
     text-align: left;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
 .menu-item:active {
-    background: #2c2c2e;
+    background: var(--tg-hover-color);
 }
 
-/* ============ ЭКРАН МАРКЕТА ============ */
+/* ============ ЭКРАН МАРКЕТА (КУПИТЬ/ПРОДАТЬ друг напротив друга) ============ */
 .p2p-market-screen {
     padding: 16px;
 }
@@ -108,9 +112,9 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-size: 20px;
     cursor: pointer;
 }
@@ -119,9 +123,35 @@
     font-size: 20px;
     font-weight: 600;
     margin: 0;
+    color: var(--tg-theme-text-color);
+}
+
+/* Кнопки выбора валюты рядом друг с другом */
+.currency-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.currency-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-text-color);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.currency-btn.active {
+    background: var(--tg-theme-button-color);
     color: #fff;
 }
 
+/* Список объявлений */
 .orders-list {
     display: flex;
     flex-direction: column;
@@ -129,10 +159,15 @@
 }
 
 .order-item {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.order-item:active {
+    background: var(--tg-hover-color);
 }
 
 .order-user {
@@ -146,7 +181,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #007aff;
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -158,19 +193,19 @@
 .user-name {
     font-weight: 600;
     font-size: 16px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .order-rate {
     font-size: 26px;
     font-weight: 700;
     margin-bottom: 6px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .order-amount {
     font-size: 14px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     margin-bottom: 10px;
 }
 
@@ -183,22 +218,28 @@
 
 .payment-badge {
     padding: 4px 10px;
-    background: #2c2c2e;
+    background: var(--tg-input-bg);
     border-radius: 20px;
     font-size: 11px;
-    color: #aaa;
+    color: var(--tg-theme-hint-color);
 }
 
+/* Кнопки Купить/Продать друг напротив друга */
 .order-btn {
     width: 100%;
     padding: 12px;
-    background: #007aff;
+    background: var(--tg-theme-button-color);
     border: none;
     border-radius: 12px;
     color: #fff;
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.order-btn:active {
+    opacity: 0.8;
 }
 
 /* ============ МОИ ОБЪЯВЛЕНИЯ ============ */
@@ -210,7 +251,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #34c759;
+    background: var(--tg-success-color);
     border: none;
     color: #000;
     font-size: 24px;
@@ -218,7 +259,7 @@
 }
 
 .create-form {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 20px;
@@ -233,24 +274,24 @@
 .form-type button {
     flex: 1;
     padding: 12px;
-    background: #2c2c2e;
+    background: var(--tg-input-bg);
     border: none;
     border-radius: 12px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-weight: 500;
     cursor: pointer;
 }
 
-.form-type button.active.sell { background: #ff453a; }
-.form-type button.active.buy { background: #34c759; color: #000; }
+.form-type button.active.sell { background: var(--tg-error-color); color: #fff; }
+.form-type button.active.buy { background: var(--tg-success-color); color: #000; }
 
 .create-form input, .create-form select, .create-form textarea {
     width: 100%;
     padding: 12px;
-    background: #2c2c2e;
+    background: var(--tg-input-bg);
     border: none;
     border-radius: 12px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     margin-bottom: 12px;
     font-size: 14px;
 }
@@ -269,22 +310,23 @@
 
 .payment-buttons button {
     padding: 8px 14px;
-    background: #2c2c2e;
+    background: var(--tg-input-bg);
     border: none;
     border-radius: 20px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-size: 13px;
     cursor: pointer;
 }
 
 .payment-buttons button.selected {
-    background: #007aff;
+    background: var(--tg-theme-button-color);
+    color: #fff;
 }
 
 .submit-btn {
     width: 100%;
     padding: 14px;
-    background: #34c759;
+    background: var(--tg-success-color);
     border: none;
     border-radius: 12px;
     color: #000;
@@ -300,7 +342,7 @@
 }
 
 .ad-item {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
 }
@@ -318,29 +360,29 @@
     font-weight: 600;
 }
 
-.ad-type.sell { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
-.ad-type.buy { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+.ad-type.sell { background: rgba(255, 69, 58, 0.2); color: var(--tg-error-color); }
+.ad-type.buy { background: rgba(52, 199, 89, 0.2); color: var(--tg-success-color); }
 
 .ad-status {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
-    background: #2c2c2e;
-    color: #888;
+    background: var(--tg-input-bg);
+    color: var(--tg-theme-hint-color);
 }
 
-.ad-status.active { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+.ad-status.active { background: rgba(52, 199, 89, 0.2); color: var(--tg-success-color); }
 
 .ad-rate {
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 6px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .ad-amount {
     font-size: 13px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     margin-bottom: 14px;
 }
 
@@ -359,8 +401,8 @@
     cursor: pointer;
 }
 
-.ad-edit { background: #007aff; color: #fff; }
-.ad-delete { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+.ad-edit { background: var(--tg-theme-button-color); color: #fff; }
+.ad-delete { background: rgba(255, 69, 58, 0.2); color: var(--tg-error-color); }
 
 /* ============ МОИ ОРДЕРА ============ */
 .p2p-trades-screen {
@@ -376,16 +418,16 @@
 .tabs button {
     flex: 1;
     padding: 10px;
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
     border-radius: 12px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     font-size: 14px;
     cursor: pointer;
 }
 
 .tabs button.active {
-    background: #007aff;
+    background: var(--tg-theme-button-color);
     color: #fff;
 }
 
@@ -396,7 +438,7 @@
 }
 
 .trade-item {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
 }
@@ -410,7 +452,7 @@
 .trade-type {
     font-weight: 600;
     font-size: 15px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .trade-status {
@@ -419,10 +461,10 @@
     font-size: 11px;
 }
 
-.trade-status.pending { background: rgba(255, 149, 0, 0.2); color: #ff9500; }
-.trade-status.paid { background: rgba(52, 199, 89, 0.2); color: #34c759; }
-.trade-status.completed { background: rgba(52, 199, 89, 0.2); color: #34c759; }
-.trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
+.trade-status.pending { background: rgba(255, 149, 0, 0.2); color: var(--tg-warning-color); }
+.trade-status.paid { background: rgba(52, 199, 89, 0.2); color: var(--tg-success-color); }
+.trade-status.completed { background: rgba(52, 199, 89, 0.2); color: var(--tg-success-color); }
+.trade-status.cancelled { background: rgba(255, 69, 58, 0.2); color: var(--tg-error-color); }
 
 .trade-details {
     margin-bottom: 10px;
@@ -431,18 +473,18 @@
 .trade-details div {
     margin-bottom: 6px;
     font-size: 14px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .trade-time {
     font-size: 12px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     margin-bottom: 10px;
 }
 
 .trade-timer {
     font-size: 12px;
-    color: #ff9500;
+    color: var(--tg-warning-color);
     margin-bottom: 14px;
 }
 
@@ -462,9 +504,9 @@
     cursor: pointer;
 }
 
-.trade-pay, .trade-confirm { background: #34c759; color: #000; }
-.trade-cancel { background: rgba(255, 69, 58, 0.2); color: #ff453a; }
-.trade-copy, .trade-chat { background: #2c2c2e; color: #fff; }
+.trade-pay, .trade-confirm { background: var(--tg-success-color); color: #000; }
+.trade-cancel { background: rgba(255, 69, 58, 0.2); color: var(--tg-error-color); }
+.trade-copy, .trade-chat { background: var(--tg-input-bg); color: var(--tg-theme-text-color); }
 
 /* ============ ПОМОЩЬ ============ */
 .p2p-help-screen {
@@ -478,7 +520,7 @@
 }
 
 .help-block {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
 }
@@ -487,17 +529,17 @@
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .help-block p {
     font-size: 13px;
-    color: #aaa;
+    color: var(--tg-theme-hint-color);
     line-height: 1.4;
 }
 
 .help-block a {
-    color: #007aff;
+    color: var(--tg-theme-button-color);
     text-decoration: none;
 }
 
@@ -513,7 +555,7 @@
 
 .modal-content {
     width: 100%;
-    background: #1c1c1e;
+    background: var(--tg-theme-bg-color);
     border-radius: 20px 20px 0 0;
     max-height: 85vh;
     overflow-y: auto;
@@ -524,22 +566,22 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 0.5px solid #2c2c2e;
+    border-bottom: 1px solid var(--tg-border-color);
 }
 
 .modal-header h3 {
     font-size: 18px;
     margin: 0;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .modal-close {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #2c2c2e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-size: 18px;
     cursor: pointer;
 }
@@ -549,7 +591,7 @@
 }
 
 .modal-info {
-    background: #2c2c2e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 20px;
@@ -558,15 +600,15 @@
 .modal-info div {
     margin-bottom: 10px;
     font-size: 14px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
 }
 
 .modal-terms {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 0.5px solid #3a3a3e;
+    border-top: 1px solid var(--tg-border-color);
     font-size: 13px;
-    color: #aaa;
+    color: var(--tg-theme-hint-color);
 }
 
 .currency-switch {
@@ -578,26 +620,26 @@
 .currency-switch button {
     flex: 1;
     padding: 12px;
-    background: #2c2c2e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
     border-radius: 12px;
-    color: #888;
+    color: var(--tg-theme-hint-color);
     font-size: 15px;
     cursor: pointer;
 }
 
 .currency-switch button.active {
-    background: #007aff;
+    background: var(--tg-theme-button-color);
     color: #fff;
 }
 
 .amount-input {
     width: 100%;
     padding: 16px;
-    background: #2c2c2e;
+    background: var(--tg-theme-secondary-bg-color);
     border: none;
     border-radius: 14px;
-    color: #fff;
+    color: var(--tg-theme-text-color);
     font-size: 18px;
     text-align: center;
     margin-bottom: 12px;
@@ -606,9 +648,9 @@
 .calc-result {
     text-align: center;
     padding: 12px;
-    background: #2c2c2e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 12px;
-    color: #34c759;
+    color: var(--tg-success-color);
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -616,7 +658,7 @@
 .confirm-btn {
     width: 100%;
     padding: 16px;
-    background: #007aff;
+    background: var(--tg-theme-button-color);
     border: none;
     border-radius: 14px;
     color: #fff;
@@ -627,7 +669,7 @@
 
 /* ============ ЗАГРУЗКА ============ */
 .skeleton-card {
-    background: #1c1c1e;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 16px;
     padding: 16px;
     animation: pulse 1.5s infinite;
@@ -641,6 +683,6 @@
 .loading, .empty-state {
     text-align: center;
     padding: 40px;
-    color: #666;
+    color: var(--tg-theme-hint-color);
     font-size: 14px;
 }

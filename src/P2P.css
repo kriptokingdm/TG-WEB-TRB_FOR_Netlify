@@ -1,5 +1,3 @@
-/* P2P.css - ТОЧНО КАК В ПРИЛОЖЕНИИ */
-
 .p2p-app {
     position: fixed;
     inset: 0;
@@ -38,6 +36,7 @@
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 6px;
+    color: #fff;
 }
 
 .profile-balance {
@@ -87,16 +86,13 @@
     font-weight: 500;
     text-align: left;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
 .menu-item:active {
     background: #2c2c2e;
 }
 
-/* ============ ЭКРАН МАРКЕТА (КУПИТЬ/ПРОДАТЬ) ============ */
+/* ============ ЭКРАН МАРКЕТА ============ */
 .p2p-market-screen {
     padding: 16px;
 }
@@ -123,6 +119,7 @@
     font-size: 20px;
     font-weight: 600;
     margin: 0;
+    color: #fff;
 }
 
 .orders-list {
@@ -161,12 +158,14 @@
 .user-name {
     font-weight: 600;
     font-size: 16px;
+    color: #fff;
 }
 
 .order-rate {
     font-size: 26px;
     font-weight: 700;
     margin-bottom: 6px;
+    color: #fff;
 }
 
 .order-amount {
@@ -336,6 +335,7 @@
     font-size: 20px;
     font-weight: 700;
     margin-bottom: 6px;
+    color: #fff;
 }
 
 .ad-amount {
@@ -410,6 +410,7 @@
 .trade-type {
     font-weight: 600;
     font-size: 15px;
+    color: #fff;
 }
 
 .trade-status {
@@ -430,6 +431,7 @@
 .trade-details div {
     margin-bottom: 6px;
     font-size: 14px;
+    color: #fff;
 }
 
 .trade-time {
@@ -485,6 +487,7 @@
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: 600;
+    color: #fff;
 }
 
 .help-block p {
@@ -527,6 +530,7 @@
 .modal-header h3 {
     font-size: 18px;
     margin: 0;
+    color: #fff;
 }
 
 .modal-close {
@@ -554,6 +558,7 @@
 .modal-info div {
     margin-bottom: 10px;
     font-size: 14px;
+    color: #fff;
 }
 
 .modal-terms {

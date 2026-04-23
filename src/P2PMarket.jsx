@@ -7,15 +7,15 @@ const API = 'https://tethrab.shop';
 export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const userId = telegramUser?.id || '7879866656';
     const [userBalance, setUserBalance] = useState(0);
+    const [userName, setUserName] = useState(telegramUser?.first_name || 'Пользователь');
 
-    // Состояния
-    const [activeMenu, setActiveMenu] = useState('main'); // main, buy, sell, my_ads, trades, stats, help
+    const [activeMenu, setActiveMenu] = useState('main');
     const [buyOrders, setBuyOrders] = useState([]);
     const [sellOrders, setSellOrders] = useState([]);
     const [myAds, setMyAds] = useState([]);
     const [myTrades, setMyTrades] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [userStats, setUserStats] = useState({ total_trades: 0, successful_trades: 0, total_volume: 0 });
+    const [stats, setStats] = useState({ total: 0, completed: 0, active: 0, cancelled: 0 });
 
     const [selected, setSelected] = useState(null);
     const [amount, setAmount] = useState('');
@@ -42,16 +42,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     ];
 
     const timeOptions = [
-        { value: '15', label: '15 минут' },
-        { value: '30', label: '30 минут' },
+        { value: '15', label: '15 мин' },
+        { value: '30', label: '30 мин' },
         { value: '60', label: '1 час' },
         { value: '120', label: '2 часа' }
     ];
 
-    // Загрузка данных
     useEffect(() => {
         fetchUserBalance();
-        fetchUserStats();
+        fetchStats();
         fetchOrders();
     }, []);
 
@@ -68,14 +67,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         } catch (e) {}
     };
 
-    const fetchUserStats = async () => {
+    const fetchStats = async () => {
         try {
             const res = await fetch(`${API}/api/p2p/stats/${userId}`);
             const data = await res.json();
-            setUserStats({
-                total_trades: data.total_trades || 0,
-                successful_trades: data.successful_trades || 0,
-                total_volume: data.total_volume || 0
+            setStats({
+                total: data.total_trades || 0,
+                completed: data.successful_trades || 0,
+                active: data.pending_trades || 0,
+                cancelled: data.cancelled_trades || 0
             });
         } catch (e) {}
     };
@@ -90,32 +90,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const buyData = await buyRes.json();
             const sellData = await sellRes.json();
 
-            const buyWithStats = await Promise.all((buyData.orders || []).map(async (order) => {
-                const statsRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
-                const stats = await statsRes.json();
-                return {
-                    ...order,
-                    completion_rate: stats.successful_trades && stats.total_trades 
-                        ? Math.round((stats.successful_trades / stats.total_trades) * 100)
-                        : 100,
-                    completed_trades: stats.successful_trades || 0
-                };
-            }));
-
-            const sellWithStats = await Promise.all((sellData.orders || []).map(async (order) => {
-                const statsRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
-                const stats = await statsRes.json();
-                return {
-                    ...order,
-                    completion_rate: stats.successful_trades && stats.total_trades 
-                        ? Math.round((stats.successful_trades / stats.total_trades) * 100)
-                        : 100,
-                    completed_trades: stats.successful_trades || 0
-                };
-            }));
-
-            setBuyOrders(buyWithStats.sort((a, b) => b.rate - a.rate));
-            setSellOrders(sellWithStats.sort((a, b) => a.rate - b.rate));
+            setBuyOrders((buyData.orders || []).sort((a, b) => b.rate - a.rate));
+            setSellOrders((sellData.orders || []).sort((a, b) => a.rate - b.rate));
         } catch (e) {
             console.error(e);
         } finally {
@@ -280,7 +256,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             });
             const data = await res.json();
             if (data.success) {
-                showToast('✅ Оплата подтверждена! Ожидайте подтверждения продавца', 'success');
+                showToast('✅ Оплата подтверждена!', 'success');
                 fetchMyTrades();
             } else {
                 showToast(data.error || 'Ошибка', 'error');
@@ -299,7 +275,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             });
             const data = await res.json();
             if (data.success) {
-                showToast('✅ Сделка успешно завершена!', 'success');
+                showToast('✅ Сделка завершена!', 'success');
                 fetchMyTrades();
             } else {
                 showToast(data.error || 'Ошибка', 'error');
@@ -335,15 +311,18 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         showToast('✅ Ссылка скопирована!', 'success');
     };
 
-    const formatNumber = (num) => new Intl.NumberFormat('ru-RU').format(num);
+    const formatNumber = (num) => {
+        if (num === undefined || num === null) return '0';
+        return new Intl.NumberFormat('ru-RU').format(num);
+    };
 
     const getStatusText = (status) => {
         const map = { 
-            pending: '⏳ Ожидает оплаты', 
-            paid: '💸 Оплачено', 
-            completed: '✅ Завершена', 
-            cancelled: '❌ Отменена', 
-            expired: '⏰ Просрочена' 
+            pending: 'Ожидает оплаты', 
+            paid: 'Оплачено', 
+            completed: 'Завершена', 
+            cancelled: 'Отменена', 
+            expired: 'Просрочена' 
         };
         return map[status] || status;
     };
@@ -362,175 +341,142 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
-    // ============ КОМПОНЕНТЫ ============
-
-        // Главное меню
-    const MainMenu = () => (
-        <div className="p2p-main-menu">
-            {/* Большой профиль + статистика в одном блоке */}
-            <div className="p2p-profile-block">
-                <div className="p2p-profile-large">
-                    <div className="p2p-avatar-large">
-                        {telegramUser?.first_name?.[0] || telegramUser?.username?.[0] || 'U'}
-                    </div>
-                    <div className="p2p-profile-details">
-                        <div className="p2p-profile-name-large">{telegramUser?.first_name || telegramUser?.username || 'Пользователь'}</div>
-                        <div className="p2p-profile-balance-large">💰 {userBalance.toFixed(2)} USDT</div>
-                    </div>
+    // ============ ЭКРАН ПРОФИЛЯ ============
+    const ProfileScreen = () => (
+        <div className="p2p-profile-screen">
+            <div className="profile-header">
+                <div className="profile-avatar">
+                    {userName.charAt(0)}
                 </div>
-                
-                <div className="p2p-stats-row">
-                    <div className="p2p-stat-item-large">
-                        <span className="stat-value-large">{userStats.total_trades}</span>
-                        <span className="stat-label-large">сделок</span>
-                    </div>
-                    <div className="p2p-stat-divider"></div>
-                    <div className="p2p-stat-item-large">
-                        <span className="stat-value-large">{userStats.successful_trades}</span>
-                        <span className="stat-label-large">успешно</span>
-                    </div>
-                    <div className="p2p-stat-divider"></div>
-                    <div className="p2p-stat-item-large">
-                        <span className="stat-value-large">{userStats.total_trades ? Math.round((userStats.successful_trades / userStats.total_trades) * 100) : 100}%</span>
-                        <span className="stat-label-large">успех</span>
-                    </div>
+                <div className="profile-info">
+                    <div className="profile-name">{userName}</div>
+                    <div className="profile-balance">💰 {userBalance.toFixed(2)} USDT</div>
                 </div>
             </div>
 
-            {/* Крупные кнопки Купить/Продать */}
-            <div className="p2p-actions-row">
-                <button className="p2p-action-btn buy" onClick={() => setActiveMenu('buy')}>
-                    <span className="action-icon">🛒</span>
-                    <span className="action-text">Купить USDT</span>
-                    <span className="action-arrow">→</span>
-                </button>
-                <button className="p2p-action-btn sell" onClick={() => setActiveMenu('sell')}>
-                    <span className="action-icon">💰</span>
-                    <span className="action-text">Продать USDT</span>
-                    <span className="action-arrow">→</span>
-                </button>
+            <div className="stats-grid">
+                <div className="stat-card">
+                    <div className="stat-value">{stats.total}</div>
+                    <div className="stat-label">Всего</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.completed}</div>
+                    <div className="stat-label">Завершено</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.active}</div>
+                    <div className="stat-label">Активные</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.cancelled}</div>
+                    <div className="stat-label">Отклонено</div>
+                </div>
             </div>
 
-            {/* Остальные кнопки меню */}
-            <div className="p2p-menu-list">
-                <button className="p2p-menu-item" onClick={() => { setActiveMenu('my_ads'); fetchMyAds(); }}>
-                    <span className="menu-icon">📋</span>
-                    <span className="menu-text">Мои объявления</span>
-                    <span className="menu-arrow">→</span>
+            <div className="menu-list">
+                <button className="menu-item" onClick={() => setActiveMenu('buy')}>
+                    🛒 Купить USDT
                 </button>
-                <button className="p2p-menu-item" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>
-                    <span className="menu-icon">📦</span>
-                    <span className="menu-text">Мои ордера</span>
-                    <span className="menu-arrow">→</span>
+                <button className="menu-item" onClick={() => setActiveMenu('sell')}>
+                    💰 Продать USDT
                 </button>
-                <button className="p2p-menu-item" onClick={() => setActiveMenu('help')}>
-                    <span className="menu-icon">❓</span>
-                    <span className="menu-text">Помощь</span>
-                    <span className="menu-arrow">→</span>
+                <button className="menu-item" onClick={() => { setActiveMenu('my_ads'); fetchMyAds(); }}>
+                    📋 Мои объявления
+                </button>
+                <button className="menu-item" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>
+                    📦 Мои ордера
+                </button>
+                <button className="menu-item" onClick={() => setActiveMenu('help')}>
+                    ❓ Помощь
                 </button>
             </div>
         </div>
     );
 
-    // Страница покупки (стакан продавцов)
-    const BuyMarket = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
+    // ============ ЭКРАН ПОКУПКИ (СТАКАН) ============
+    const BuyScreen = () => (
+        <div className="p2p-market-screen">
+            <div className="screen-header">
                 <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>🛒 Купить USDT</h2>
+                <h2>Купить USDT</h2>
+                <div style={{ width: 40 }}></div>
             </div>
             <div className="orders-list">
                 {loading ? (
-                    [...Array(4)].map((_, i) => <div key={i} className="skeleton-card" />)
+                    [...Array(3)].map((_, i) => <div key={i} className="skeleton-card" />)
                 ) : sellOrders.length === 0 ? (
                     <div className="empty-state">Нет объявлений на продажу</div>
                 ) : (
-                    sellOrders.map(order => <OrderCard key={order.id} order={order} type="buy" />)
+                    sellOrders.map(order => (
+                        <div key={order.id} className="order-item" onClick={() => setSelected(order)}>
+                            <div className="order-user">
+                                <div className="user-avatar">{order.user_name?.[0] || 'U'}</div>
+                                <div className="user-name">{order.user_name || `User${order.user_id?.slice(-4)}`}</div>
+                            </div>
+                            <div className="order-rate">{formatNumber(order.rate)} ₽</div>
+                            <div className="order-amount">{formatNumber(order.available_amount)} USDT</div>
+                            <div className="order-payment">
+                                {order.payment_methods?.slice(0, 2).map(m => (
+                                    <span key={m} className="payment-badge">{getPaymentLabel(m)}</span>
+                                ))}
+                            </div>
+                            <button className="order-btn">Купить</button>
+                        </div>
+                    ))
                 )}
             </div>
         </div>
     );
 
-    // Страница продажи (стакан покупателей)
-    const SellMarket = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
+    // ============ ЭКРАН ПРОДАЖИ ============
+    const SellScreen = () => (
+        <div className="p2p-market-screen">
+            <div className="screen-header">
                 <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>💰 Продать USDT</h2>
+                <h2>Продать USDT</h2>
+                <div style={{ width: 40 }}></div>
             </div>
             <div className="orders-list">
                 {loading ? (
-                    [...Array(4)].map((_, i) => <div key={i} className="skeleton-card" />)
+                    [...Array(3)].map((_, i) => <div key={i} className="skeleton-card" />)
                 ) : buyOrders.length === 0 ? (
                     <div className="empty-state">Нет объявлений на покупку</div>
                 ) : (
-                    buyOrders.map(order => <OrderCard key={order.id} order={order} type="sell" />)
+                    buyOrders.map(order => (
+                        <div key={order.id} className="order-item" onClick={() => setSelected(order)}>
+                            <div className="order-user">
+                                <div className="user-avatar">{order.user_name?.[0] || 'U'}</div>
+                                <div className="user-name">{order.user_name || `User${order.user_id?.slice(-4)}`}</div>
+                            </div>
+                            <div className="order-rate">{formatNumber(order.rate)} ₽</div>
+                            <div className="order-amount">{formatNumber(order.available_amount)} USDT</div>
+                            <div className="order-payment">
+                                {order.payment_methods?.slice(0, 2).map(m => (
+                                    <span key={m} className="payment-badge">{getPaymentLabel(m)}</span>
+                                ))}
+                            </div>
+                            <button className="order-btn">Продать</button>
+                        </div>
+                    ))
                 )}
             </div>
         </div>
     );
 
-    // Карточка объявления
-    const OrderCard = ({ order, type }) => (
-        <div className="order-card" onClick={() => setSelected(order)}>
-            <div className="order-card-header">
-                <div className="seller-info">
-                    <div className="seller-avatar">{order.user_name?.[0] || 'U'}</div>
-                    <div>
-                        <div className="seller-name">{order.user_name || `User${order.user_id?.slice(-4)}`}</div>
-                        <div className="seller-stats">
-                            <span className="completion">✅ {order.completion_rate || 100}%</span>
-                            <span className="trades-count">{order.completed_trades || 0} сделок</span>
-                        </div>
-                    </div>
-                </div>
-                <div className={`order-badge ${type}`}>
-                    {type === 'buy' ? 'ПРОДАВЕЦ' : 'ПОКУПАТЕЛЬ'}
-                </div>
-            </div>
-            <div className="order-card-rate">
-                <span className="rate-value">{formatNumber(order.rate)}</span>
-                <span className="rate-currency">₽</span>
-            </div>
-            <div className="order-card-details">
-                <div className="detail-item">
-                    <span>Доступно</span>
-                    <strong>{formatNumber(order.available_amount)} USDT</strong>
-                </div>
-                <div className="detail-item">
-                    <span>Лимиты</span>
-                    <strong>{formatNumber(order.min_amount)} - {formatNumber(order.max_amount)} USDT</strong>
-                </div>
-            </div>
-            <div className="order-card-payment">
-                {order.payment_methods?.slice(0, 2).map(method => (
-                    <span key={method} className="payment-chip">{getPaymentLabel(method)}</span>
-                ))}
-            </div>
-            <div className="order-card-actions">
-                <button className={`action-btn ${type}`} onClick={(e) => { e.stopPropagation(); setSelected(order); }}>
-                    {type === 'buy' ? 'Купить USDT' : 'Продать USDT'}
-                </button>
-                <button className="share-btn" onClick={(e) => { e.stopPropagation(); shareOrder(order); }}>📤</button>
-            </div>
-        </div>
-    );
-
-    // Мои объявления
-    const MyAdsList = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
+    // ============ МОИ ОБЪЯВЛЕНИЯ ============
+    const MyAdsScreen = () => (
+        <div className="p2p-myads-screen">
+            <div className="screen-header">
                 <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>📋 Мои объявления</h2>
-                <button className="create-btn-small" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
+                <h2>Мои объявления</h2>
+                <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
             </div>
 
             {showCreateForm && (
                 <div className="create-form">
-                    <h4>Новое объявление</h4>
-                    <div className="form-row">
-                        <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>💰 Продажа</button>
-                        <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>🛒 Покупка</button>
+                    <div className="form-type">
+                        <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
+                        <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
                     </div>
                     <input type="number" placeholder="Сумма (USDT)" value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} />
                     <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
@@ -545,193 +491,181 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                     ? newOrder.payment_methods.filter(x => x !== m.value)
                                     : [...newOrder.payment_methods, m.value];
                                 setNewOrder({...newOrder, payment_methods: methods});
-                            }}>{m.icon} {m.label}</button>
+                            }}>{m.icon}</button>
                         ))}
                     </div>
-                    <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})} className="time-select">
+                    <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}>
                         {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
                     </select>
                     <textarea placeholder="Условия сделки" value={newOrder.terms} onChange={e => setNewOrder({...newOrder, terms: e.target.value})} rows="2" />
-                    <button className="submit-btn" onClick={createOrder} disabled={creatingTrade}>✅ Создать</button>
+                    <button className="submit-btn" onClick={createOrder} disabled={creatingTrade}>Создать</button>
                 </div>
             )}
 
             <div className="ads-list">
-                {loading ? <div className="loading">Загрузка...</div> : myAds.length === 0 ? <div className="empty-state">У вас нет объявлений</div> : myAds.map(ad => (
-                    <div key={ad.id} className="ad-card">
-                        <div className="ad-card-header">
-                            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? '💰 Продажа' : '🛒 Покупка'}</span>
-                            <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? '✅ Активно' : '⏸ Приостановлено'}</span>
+                {loading ? (
+                    <div className="loading">Загрузка...</div>
+                ) : myAds.length === 0 ? (
+                    <div className="empty-state">У вас нет объявлений</div>
+                ) : (
+                    myAds.map(ad => (
+                        <div key={ad.id} className="ad-item">
+                            <div className="ad-header">
+                                <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
+                                <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
+                            </div>
+                            <div className="ad-rate">{ad.rate} ₽</div>
+                            <div className="ad-amount">{ad.available_amount}/{ad.amount} USDT</div>
+                            <div className="ad-actions">
+                                <button className="ad-edit" onClick={() => {
+                                    const newRate = prompt('Новый курс:', ad.rate);
+                                    if (newRate && !isNaN(newRate)) updateAdRate(ad.id, parseFloat(newRate));
+                                }}>Изменить курс</button>
+                                <button className="ad-delete" onClick={() => deleteAd(ad.id)}>Удалить</button>
+                            </div>
                         </div>
-                        <div className="ad-card-rate">{formatNumber(ad.rate)} ₽</div>
-                        <div className="ad-card-amount">{formatNumber(ad.available_amount)} / {formatNumber(ad.amount)} USDT</div>
-                        <div className="ad-card-actions">
-                            <button className="ad-edit" onClick={() => {
-                                const newRate = prompt('Новый курс:', ad.rate);
-                                if (newRate && !isNaN(newRate)) updateAdRate(ad.id, parseFloat(newRate));
-                            }}>✏️ Курс</button>
-                            <button className="ad-delete" onClick={() => deleteAd(ad.id)}>🗑 Удалить</button>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );
 
-    // Мои ордера
-    const MyTradesList = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
+    // ============ МОИ ОРДЕРА ============
+    const TradesScreen = () => (
+        <div className="p2p-trades-screen">
+            <div className="screen-header">
                 <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>📦 Мои ордера</h2>
+                <h2>Мои ордера</h2>
+                <div style={{ width: 40 }}></div>
+            </div>
+            <div className="tabs">
+                <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
+                <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>История</button>
             </div>
             <div className="trades-list">
-                {loading ? <div className="loading">Загрузка...</div> : myTrades.length === 0 ? <div className="empty-state">Нет сделок</div> : myTrades.map(trade => <TradeCard key={trade.trade_id} trade={trade} />)}
+                {loading ? (
+                    <div className="loading">Загрузка...</div>
+                ) : myTrades.length === 0 ? (
+                    <div className="empty-state">Нет сделок</div>
+                ) : (
+                    myTrades.map(trade => {
+                        const isBuyer = trade.buyer_id === userId;
+                        const isActive = trade.status === 'pending' || trade.status === 'paid';
+                        const timeLeft = getTimeLeft(trade.expires_at);
+                        
+                        return (
+                            <div key={trade.trade_id} className="trade-item">
+                                <div className="trade-header">
+                                    <div className="trade-type">{isBuyer ? 'Покупка USDT' : 'Продажа USDT'}</div>
+                                    <div className={`trade-status ${trade.status}`}>{getStatusText(trade.status)}</div>
+                                </div>
+                                <div className="trade-details">
+                                    <div>Сумма: {trade.amount} USDT</div>
+                                    <div>Курс: {trade.rate} ₽</div>
+                                    <div>Итого: {trade.total_rub} ₽</div>
+                                </div>
+                                <div className="trade-time">{new Date(trade.created_at).toLocaleString()}</div>
+                                {isActive && timeLeft && timeLeft !== 'expired' && (
+                                    <div className="trade-timer">⏰ Осталось: {timeLeft}</div>
+                                )}
+                                <div className="trade-actions">
+                                    {trade.status === 'pending' && isBuyer && (
+                                        <button className="trade-pay" onClick={() => confirmPayment(trade.trade_id)}>Подтвердить оплату</button>
+                                    )}
+                                    {trade.status === 'paid' && !isBuyer && (
+                                        <button className="trade-confirm" onClick={() => confirmReceipt(trade.trade_id)}>Подтвердить получение</button>
+                                    )}
+                                    {(trade.status === 'pending' || trade.status === 'paid') && (
+                                        <button className="trade-cancel" onClick={() => cancelTrade(trade.trade_id)}>Отменить</button>
+                                    )}
+                                    <button className="trade-copy" onClick={() => {
+                                        navigator.clipboard.writeText(trade.trade_id);
+                                        showToast('✅ ID сделки скопирован', 'success');
+                                    }}>Копировать</button>
+                                    <button className="trade-chat">Чат</button>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
             </div>
         </div>
     );
 
-    // Карточка сделки
-    const TradeCard = ({ trade }) => {
-        const isBuyer = trade.buyer_id === userId;
-        const isSeller = trade.seller_id === userId;
-        const timeLeft = getTimeLeft(trade.expires_at);
-        const isExpired = timeLeft === 'expired';
-        
-        return (
-            <div className={`trade-card ${trade.status}`}>
-                <div className="trade-card-header">
-                    <div className="trade-id">Сделка #{trade.trade_id}</div>
-                    <div className={`trade-status ${trade.status}`}>{getStatusText(trade.status)}</div>
-                </div>
-                <div className="trade-amount">{trade.amount} USDT × {trade.rate} ₽ = {formatNumber(trade.total_rub)} ₽</div>
-                <div className="trade-role">
-                    {isBuyer && <span className="role-badge buyer">Вы покупатель</span>}
-                    {isSeller && <span className="role-badge seller">Вы продавец</span>}
-                </div>
-                {trade.expires_at && trade.status === 'pending' && !isExpired && (
-                    <div className="trade-timer">⏰ Осталось: {timeLeft}</div>
-                )}
-                <div className="trade-date">{new Date(trade.created_at).toLocaleString()}</div>
-                {trade.status === 'pending' && !isExpired && (
-                    <div className="trade-actions">
-                        {isBuyer && <button className="trade-pay-btn" onClick={() => confirmPayment(trade.trade_id)}>✅ Оплатить</button>}
-                        <button className="trade-cancel-btn" onClick={() => cancelTrade(trade.trade_id)}>❌ Отменить</button>
-                    </div>
-                )}
-                {trade.status === 'paid' && isSeller && (
-                    <button className="trade-confirm-btn" onClick={() => confirmReceipt(trade.trade_id)}>🏁 Подтвердить получение</button>
-                )}
-            </div>
-        );
-    };
-
-    // Статистика
-    const StatsPage = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
+    // ============ ПОМОЩЬ ============
+    const HelpScreen = () => (
+        <div className="p2p-help-screen">
+            <div className="screen-header">
                 <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>📊 Статистика</h2>
+                <h2>Помощь</h2>
+                <div style={{ width: 40 }}></div>
             </div>
-            <div className="stats-container">
-                <div className="stat-card">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-info">
-                        <div className="stat-value">{userStats.total_trades}</div>
-                        <div className="stat-label">Всего сделок</div>
-                    </div>
+            <div className="help-content">
+                <div className="help-block">
+                    <h3>🤝 Как работает P2P?</h3>
+                    <p>Вы покупаете USDT у других пользователей напрямую. Средства продавца блокируются, вы платите ему, он подтверждает получение - сделка завершена.</p>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-info">
-                        <div className="stat-value">{userStats.successful_trades}</div>
-                        <div className="stat-label">Успешных сделок</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-info">
-                        <div className="stat-value">{formatNumber(userStats.total_volume)}</div>
-                        <div className="stat-label">Общий объём, USDT</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon">⭐</div>
-                    <div className="stat-info">
-                        <div className="stat-value">{userStats.total_trades ? Math.round((userStats.successful_trades / userStats.total_trades) * 100) : 100}%</div>
-                        <div className="stat-label">Успешность</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    // Справка
-    const HelpPage = () => (
-        <div className="p2p-market-page">
-            <div className="page-header">
-                <button className="back-btn" onClick={() => setActiveMenu('main')}>←</button>
-                <h2>❓ Справка</h2>
-            </div>
-            <div className="help-container">
-                <div className="help-section">
-                    <h3>🤝 Как работает P2P маркет?</h3>
-                    <p>Вы можете покупать и продавать USDT напрямую с другими пользователями. Средства блокируются системой до подтверждения сделки.</p>
-                </div>
-                <div className="help-section">
+                <div className="help-block">
                     <h3>⏰ Время на оплату</h3>
-                    <p>После создания сделки у вас есть 15-120 минут на оплату (выбирается продавцом). При просрочке сделка отменяется.</p>
+                    <p>Обычно 30 минут. За это время нужно перевести деньги продавцу и нажать "Подтвердить оплату".</p>
                 </div>
-                <div className="help-section">
+                <div className="help-block">
                     <h3>✅ Защита сделки</h3>
-                    <p>Средства продавца блокируются при создании сделки. Вы платите продавцу, он подтверждает получение - средства разблокируются.</p>
+                    <p>USDT продавца заморожены до подтверждения оплаты. Ваши деньги в безопасности.</p>
                 </div>
-                <div className="help-section">
+                <div className="help-block">
                     <h3>📞 Поддержка</h3>
-                    <p>По всем вопросам: <a href="https://t.me/TetherRabbit_chat">Чат поддержки</a></p>
+                    <p>Чат с поддержкой: <a href="https://t.me/TetherRabbit_chat">@TetherRabbit_chat</a></p>
                 </div>
             </div>
         </div>
     );
 
-    // Модалка создания сделки
+    // ============ МОДАЛКА СДЕЛКИ ============
     const TradeModal = () => (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
-            <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h3>Создание сделки</h3>
                     <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
                 </div>
                 <div className="modal-body">
-                    <div className="trade-info">
+                    <div className="modal-info">
                         <div>Курс: <strong>{selected.rate} ₽</strong></div>
                         <div>Лимиты: {selected.min_amount} - {selected.max_amount} USDT</div>
                         <div>Доступно: {selected.available_amount} USDT</div>
-                        <div>Время на оплату: ⏰ {selected.payment_time || 30} минут</div>
-                        {selected.terms && <div className="terms-value">📝 {selected.terms}</div>}
+                        <div>Время на оплату: ⏰ {selected.payment_time || 30} мин</div>
+                        {selected.terms && <div className="modal-terms">📝 {selected.terms}</div>}
                     </div>
                     <div className="currency-switch">
-                        <button className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>💰 USDT</button>
-                        <button className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>💵 RUB</button>
+                        <button className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>
+                        <button className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>RUB</button>
                     </div>
                     <input type="number" className="amount-input" value={amount} onChange={e => setAmount(e.target.value)} placeholder={`Введите сумму в ${currencyType === 'usdt' ? 'USDT' : 'RUB'}`} />
-                    {amount && <div className="calc-result">{currencyType === 'usdt' ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽` : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`}</div>}
-                    <button className="confirm-btn" onClick={startTrade} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : `✅ Начать сделку`}</button>
+                    {amount && (
+                        <div className="calc-result">
+                            {currencyType === 'usdt' 
+                                ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽`
+                                : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`
+                            }
+                        </div>
+                    )}
+                    <button className="confirm-btn" onClick={startTrade} disabled={creatingTrade}>
+                        {creatingTrade ? 'Создание...' : 'Начать сделку'}
+                    </button>
                 </div>
             </div>
         </div>
     );
 
-    // Рендер
     return (
         <div className="p2p-app">
-            {activeMenu === 'main' && <MainMenu />}
-            {activeMenu === 'buy' && <BuyMarket />}
-            {activeMenu === 'sell' && <SellMarket />}
-            {activeMenu === 'my_ads' && <MyAdsList />}
-            {activeMenu === 'trades' && <MyTradesList />}
-            {activeMenu === 'stats' && <StatsPage />}
-            {activeMenu === 'help' && <HelpPage />}
+            {activeMenu === 'main' && <ProfileScreen />}
+            {activeMenu === 'buy' && <BuyScreen />}
+            {activeMenu === 'sell' && <SellScreen />}
+            {activeMenu === 'my_ads' && <MyAdsScreen />}
+            {activeMenu === 'trades' && <TradesScreen />}
+            {activeMenu === 'help' && <HelpScreen />}
             {selected && <TradeModal />}
         </div>
     );

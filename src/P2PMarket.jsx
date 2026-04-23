@@ -338,41 +338,59 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     };
 
     // ============ ЭКРАН ПРОФИЛЯ ============
+        // ============ ЭКРАН ПРОФИЛЯ ============
     const ProfileScreen = () => (
         <div className="p2p-profile-screen">
-            <div className="profile-header">
-                <div className="profile-avatar">{userName.charAt(0)}</div>
-                <div className="profile-info">
-                    <div className="profile-name">{userName}</div>
-                    <div className="profile-balance">💰 {userBalance.toFixed(2)} USDT</div>
+            {/* Аватар по центру */}
+            <div className="profile-avatar-container">
+                <div className="profile-avatar-large">
+                    {userName.charAt(0).toUpperCase()}
+                </div>
+                <div className="profile-name-large">{userName}</div>
+                <div className="profile-balance-large">💰 {userBalance.toFixed(2)} USDT</div>
+            </div>
+
+            {/* Статистика - как на втором скрине */}
+            <div className="stats-container">
+                <div className="stat-item">
+                    <div className="stat-number">{stats.total}</div>
+                    <div className="stat-name">Всего</div>
+                </div>
+                <div className="stat-item">
+                    <div className="stat-number">{stats.completed}</div>
+                    <div className="stat-name">Завершено</div>
+                </div>
+                <div className="stat-item">
+                    <div className="stat-number">{stats.active}</div>
+                    <div className="stat-name">Активные</div>
+                </div>
+                <div className="stat-item">
+                    <div className="stat-number">{stats.cancelled}</div>
+                    <div className="stat-name">Отклонено</div>
                 </div>
             </div>
 
-            <div className="stats-grid">
-                <div className="stat-card">
-                    <div className="stat-value">{stats.total}</div>
-                    <div className="stat-label">Всего</div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-value">{stats.completed}</div>
-                    <div className="stat-label">Завершено</div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-value">{stats.active}</div>
-                    <div className="stat-label">Активные</div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-value">{stats.cancelled}</div>
-                    <div className="stat-label">Отклонено</div>
-                </div>
+            {/* Кнопки Купить/Продать - горизонтально */}
+            <div className="action-buttons-row">
+                <button className="action-btn buy" onClick={() => setActiveMenu('buy')}>
+                    🛒 Купить USDT
+                </button>
+                <button className="action-btn sell" onClick={() => setActiveMenu('sell')}>
+                    💰 Продать USDT
+                </button>
             </div>
 
+            {/* Остальные кнопки меню */}
             <div className="menu-list">
-                <button className="menu-item" onClick={() => setActiveMenu('buy')}>🛒 Купить USDT</button>
-                <button className="menu-item" onClick={() => setActiveMenu('sell')}>💰 Продать USDT</button>
-                <button className="menu-item" onClick={() => { setActiveMenu('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
-                <button className="menu-item" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>📦 Мои ордера</button>
-                <button className="menu-item" onClick={() => setActiveMenu('help')}>❓ Помощь</button>
+                <button className="menu-item" onClick={() => { setActiveMenu('my_ads'); fetchMyAds(); }}>
+                    📋 Мои объявления
+                </button>
+                <button className="menu-item" onClick={() => { setActiveMenu('trades'); fetchMyTrades(); }}>
+                    📦 Мои ордера
+                </button>
+                <button className="menu-item" onClick={() => setActiveMenu('help')}>
+                    ❓ Помощь
+                </button>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-/* P2P.css - Wallet стиль */
+/* P2P.css - Wallet стиль с анимациями */
 
 .app {
     position: fixed;
@@ -9,7 +9,7 @@
     overflow-y: auto;
 }
 
-/* ============ ПРОФИЛЬ (ГЛАВНЫЙ ЭКРАН) ============ */
+/* ============ ПРОФИЛЬ ============ */
 .profile {
     padding: 24px 20px;
 }
@@ -19,6 +19,7 @@
     flex-direction: column;
     align-items: center;
     margin-bottom: 24px;
+    animation: fadeInUp 0.4s ease;
 }
 
 .avatar {
@@ -33,17 +34,17 @@
     font-weight: 600;
     color: #fff;
     margin-bottom: 12px;
+    transition: transform 0.2s ease;
+}
+
+.avatar:active {
+    transform: scale(0.95);
 }
 
 .name {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 4px;
-}
-
-.balance {
-    font-size: 14px;
-    color: #34c759;
 }
 
 .stats {
@@ -53,6 +54,7 @@
     border-radius: 20px;
     padding: 16px;
     margin-bottom: 24px;
+    animation: fadeInUp 0.4s ease 0.05s both;
 }
 
 .stats div {
@@ -77,6 +79,7 @@
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
+    animation: fadeInUp 0.4s ease 0.1s both;
 }
 
 .actions button {
@@ -87,6 +90,11 @@
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s;
+}
+
+.actions button:active {
+    transform: scale(0.97);
 }
 
 .actions button.buy {
@@ -103,9 +111,10 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    animation: fadeInUp 0.4s ease 0.15s both;
 }
 
-.menu button {
+.menu-item {
     padding: 18px 16px;
     background: #1c1c1e;
     border: none;
@@ -115,11 +124,82 @@
     font-weight: 500;
     text-align: left;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
-/* ============ ОБЩИЕ СТИЛИ ДЛЯ ЭКРАНОВ ============ */
+.menu-item:active {
+    background: #2c2c2e;
+    transform: scale(0.98);
+}
+
+/* Баннер активной сделки */
+.active-trade-banner {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #2f80ed20, #5e5ce620);
+    border: 1px solid #2f80ed40;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: pulse 2s infinite;
+}
+
+.active-trade-banner:active {
+    transform: scale(0.98);
+}
+
+.active-trade-icon {
+    font-size: 14px;
+    animation: blink 1.5s infinite;
+}
+
+.active-trade-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2f80ed;
+}
+
+.active-trade-arrow {
+    font-size: 18px;
+    color: #2f80ed;
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        border-color: #2f80ed40;
+        box-shadow: 0 0 0 0 rgba(47, 128, 237, 0.2);
+    }
+    50% {
+        border-color: #2f80ed80;
+        box-shadow: 0 0 0 4px rgba(47, 128, 237, 0.1);
+    }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============ ОСТАЛЬНЫЕ СТИЛИ ============ */
 .screen {
     padding: 16px;
+    animation: fadeInUp 0.3s ease;
 }
 
 .header {
@@ -138,6 +218,12 @@
     color: #fff;
     font-size: 20px;
     cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.header button:active {
+    background: #2c2c2e;
+    transform: scale(0.95);
 }
 
 .header h2 {
@@ -155,6 +241,14 @@
     background: #1c1c1e;
     padding: 16px;
     border-radius: 16px;
+    transition: transform 0.1s ease, background 0.2s;
+    animation: fadeInUp 0.3s ease;
+    cursor: pointer;
+}
+
+.card:active {
+    transform: scale(0.98);
+    background: #252528;
 }
 
 .user {
@@ -197,9 +291,14 @@
     color: #fff;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-/* ============ ФОРМА СОЗДАНИЯ ============ */
+.action:active {
+    opacity: 0.8;
+}
+
+/* Форма создания */
 .create-btn {
     width: 40px;
     height: 40px;
@@ -216,6 +315,7 @@
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 20px;
+    animation: fadeInUp 0.3s ease;
 }
 
 .formType {
@@ -232,6 +332,7 @@
     border-radius: 12px;
     color: #fff;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .formType button.active.sell { background: #ff3b30; }
@@ -266,6 +367,7 @@
     border-radius: 20px;
     color: #fff;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .paymentBtns button.selected {
@@ -281,9 +383,14 @@
     color: #000;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-/* ============ МОИ ОБЪЯВЛЕНИЯ ============ */
+.submit:active {
+    opacity: 0.8;
+}
+
+/* Мои объявления */
 .adHeader {
     display: flex;
     justify-content: space-between;
@@ -323,12 +430,13 @@
     border-radius: 10px;
     font-weight: 500;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
 .edit { background: #2f80ed; color: #fff; }
 .delete { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
 
-/* ============ МОИ ОРДЕРА ============ */
+/* Ордера */
 .tabs {
     display: flex;
     gap: 12px;
@@ -343,6 +451,7 @@
     border-radius: 12px;
     color: #888;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .tabs button.active {
@@ -395,13 +504,14 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
 .pay, .confirm { background: #34c759; color: #000; }
 .cancel { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
 .copy, .chat { background: #2c2c2e; color: #fff; }
 
-/* ============ ПОМОЩЬ ============ */
+/* Помощь */
 .helpContent {
     display: flex;
     flex-direction: column;
@@ -430,7 +540,7 @@
     text-decoration: none;
 }
 
-/* ============ МОДАЛКА ============ */
+/* Модалка */
 .modal {
     position: fixed;
     inset: 0;
@@ -438,6 +548,12 @@
     display: flex;
     align-items: flex-end;
     z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modalContent {
@@ -446,6 +562,12 @@
     border-radius: 20px 20px 0 0;
     max-height: 85vh;
     overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
 }
 
 .modalHeader {
@@ -502,6 +624,7 @@
     border-radius: 12px;
     color: #888;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .currencySwitch button.active {
@@ -539,9 +662,14 @@
     color: #fff;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-/* ============ ЗАГРУЗКА ============ */
+.confirmBtn:active {
+    opacity: 0.8;
+}
+
+/* Загрузка */
 .skeleton {
     background: linear-gradient(90deg, #1c1c1e, #2c2c2e, #1c1c1e);
     background-size: 200% 100%;

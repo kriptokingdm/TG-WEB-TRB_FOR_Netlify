@@ -6,7 +6,6 @@ const API = 'https://tethrab.shop';
 
 export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const userId = telegramUser?.id || '7879866656';
-    const [userBalance, setUserBalance] = useState(0);
     const [userName, setUserName] = useState(telegramUser?.first_name || telegramUser?.username || 'User');
     
     const [screen, setScreen] = useState('main');
@@ -14,8 +13,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const [sellOrders, setSellOrders] = useState([]);
     const [myAds, setMyAds] = useState([]);
     const [myTrades, setMyTrades] = useState([]);
+    const [activeTrade, setActiveTrade] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({ total: 0, completed: 0, active: 0, cancelled: 0 });
+    const [stats, setStats] = useState({ total: 0, completed: 0, active: 0 });
     
     const [selected, setSelected] = useState(null);
     const [amount, setAmount] = useState('');
@@ -49,11 +49,10 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         { value: '120', label: '2 часа' }
     ];
 
-    // ============ ЗАГРУЗКА ДАННЫХ ИЗ БД ============
     useEffect(() => {
-        fetchUserBalance();
         fetchStats();
         fetchOrders();
+        fetchActiveTrade();
     }, []);
 
     useEffect(() => {
@@ -61,13 +60,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         if (screen === 'orders') fetchMyTrades();
     }, [screen]);
 
-    const fetchUserBalance = async () => {
+    const fetchActiveTrade = async () => {
         try {
-            const res = await fetch(`${API}/api/wallet/usdt/balance/${userId}`);
+            const res = await fetch(`${API}/api/p2p/trades/user/${userId}`);
             const data = await res.json();
-            setUserBalance(data.balance || 0);
+            const pending = (data.trades || []).find(t => t.status === 'pending' || t.status === 'paid');
+            setActiveTrade(pending || null);
         } catch (e) {
-            console.error('Ошибка баланса:', e);
+            console.error('Ошибка активной сделки:', e);
         }
     };
 
@@ -78,8 +78,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             setStats({
                 total: data.total_trades || 0,
                 completed: data.successful_trades || 0,
-                active: data.pending_trades || 0,
-                cancelled: data.cancelled_trades || 0
+                active: data.pending_trades || 0
             });
         } catch (e) {
             console.error('Ошибка статистики:', e);
@@ -96,7 +95,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const buyData = await buyRes.json();
             const sellData = await sellRes.json();
             
-            // Добавляем реальные имена пользователей и статистику
             const buyWithInfo = await Promise.all((buyData.orders || []).map(async (order) => {
                 const userRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
                 const userStats = await userRes.json();
@@ -149,6 +147,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const res = await fetch(`${API}/api/p2p/trades/user/${userId}`);
             const data = await res.json();
             setMyTrades(data.trades || []);
+            // Обновляем активную сделку
+            const pending = (data.trades || []).find(t => t.status === 'pending' || t.status === 'paid');
+            setActiveTrade(pending || null);
         } catch (e) {
             console.error('Ошибка загрузки сделок:', e);
         } finally {
@@ -375,14 +376,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             <div className="avatarWrap">
                 <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
                 <div className="name">{userName}</div>
-                <div className="balance">💰 {userBalance.toFixed(2)} USDT</div>
             </div>
 
             <div className="stats">
                 <div><b>{stats.total}</b><span>Всего</span></div>
                 <div><b>{stats.completed}</b><span>Завершено</span></div>
                 <div><b>{stats.active}</b><span>Активные</span></div>
-                <div><b>{stats.cancelled}</b><span>Отменено</span></div>
             </div>
 
             <div className="actions">
@@ -391,10 +390,19 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             </div>
 
             <div className="menu">
-                <button onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
-                <button onClick={() => { setScreen('orders'); fetchMyTrades(); }}>📦 Мои ордера</button>
-                <button onClick={() => setScreen('help')}>❓ Помощь</button>
+                <button className="menu-item" onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
+                <button className="menu-item" onClick={() => { setScreen('orders'); fetchMyTrades(); }}>📦 Мои ордера</button>
+                <button className="menu-item" onClick={() => setScreen('help')}>❓ Помощь</button>
             </div>
+
+            {/* Активная сделка */}
+            {activeTrade && (
+                <div className="active-trade-banner" onClick={() => setScreen('orders')}>
+                    <span className="active-trade-icon">🟢</span>
+                    <span className="active-trade-text">У вас активная сделка #{activeTrade.trade_id}</span>
+                    <span className="active-trade-arrow">→</span>
+                </div>
+            )}
         </div>
     );
 

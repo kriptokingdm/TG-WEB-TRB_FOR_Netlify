@@ -370,13 +370,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
     // ============ ЭКРАНЫ ============
     
-    // Главный экран с кнопкой назад
     const ProfileScreen = () => (
         <div className="profile">
-            <div className="header">
-                <button className="back-btn" onClick={onBack}>←</button>
-                <h2>P2P Маркет</h2>
-                <div className="header-placeholder"></div>
+            {/* Кнопка назад */}
+            <div className="profile-header">
+                <button className="profile-back-btn" onClick={onBack}>←</button>
+                <div className="profile-header-placeholder"></div>
             </div>
 
             <div className="avatarWrap">
@@ -411,13 +410,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Экран покупки
     const BuyScreen = () => (
         <div className="screen">
             <div className="header">
-                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <button onClick={() => setScreen('main')}>←</button>
                 <h2>Купить USDT</h2>
-                <div className="header-placeholder"></div>
+                <div />
             </div>
             <div className="list">
                 {loading ? (
@@ -444,13 +442,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Экран продажи
     const SellScreen = () => (
         <div className="screen">
             <div className="header">
-                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <button onClick={() => setScreen('main')}>←</button>
                 <h2>Продать USDT</h2>
-                <div className="header-placeholder"></div>
+                <div />
             </div>
             <div className="list">
                 {loading ? (
@@ -477,11 +474,10 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Мои объявления
     const MyAdsScreen = () => (
         <div className="screen">
             <div className="header">
-                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <button onClick={() => setScreen('main')}>←</button>
                 <h2>Мои объявления</h2>
                 <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
             </div>
@@ -538,13 +534,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Мои ордера
     const OrdersScreen = () => (
         <div className="screen">
             <div className="header">
-                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <button onClick={() => setScreen('main')}>←</button>
                 <h2>Мои ордера</h2>
-                <div className="header-placeholder"></div>
+                <div />
             </div>
             <div className="tabs">
                 <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
@@ -579,13 +574,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Помощь
     const HelpScreen = () => (
         <div className="screen">
             <div className="header">
-                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <button onClick={() => setScreen('main')}>←</button>
                 <h2>Помощь</h2>
-                <div className="header-placeholder"></div>
+                <div />
             </div>
             <div className="helpContent">
                 <div className="helpBlock"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую.</p></div>
@@ -596,13 +590,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // Модалка
     const TradeModal = () => (
         <div className="modal" onClick={() => setSelected(null)}>
             <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
                     <h3>Создание сделки</h3>
-                    <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
+                    <button onClick={() => setSelected(null)}>✕</button>
                 </div>
                 <div className="modalBody">
                     <div className="modalInfo">

@@ -147,7 +147,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const res = await fetch(`${API}/api/p2p/trades/user/${userId}`);
             const data = await res.json();
             setMyTrades(data.trades || []);
-            // Обновляем активную сделку
             const pending = (data.trades || []).find(t => t.status === 'pending' || t.status === 'paid');
             setActiveTrade(pending || null);
         } catch (e) {
@@ -373,6 +372,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     
     const ProfileScreen = () => (
         <div className="profile">
+            {/* Кнопка назад */}
+            <div className="profile-header">
+                <button className="profile-back-btn" onClick={onBack}>←</button>
+                <div className="profile-header-placeholder"></div>
+            </div>
+
             <div className="avatarWrap">
                 <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
                 <div className="name">{userName}</div>
@@ -395,12 +400,11 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 <button className="menu-item" onClick={() => setScreen('help')}>❓ Помощь</button>
             </div>
 
-            {/* Активная сделка */}
             {activeTrade && (
                 <div className="active-trade-banner" onClick={() => setScreen('orders')}>
-                    <span className="active-trade-icon">🟢</span>
-                    <span className="active-trade-text">У вас активная сделка #{activeTrade.trade_id}</span>
-                    <span className="active-trade-arrow">→</span>
+                    <span>🟢</span>
+                    <span>У вас активная сделка #{activeTrade.trade_id}</span>
+                    <span>→</span>
                 </div>
             )}
         </div>
@@ -425,7 +429,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <div className="ava">{order.user_name?.[0] || 'U'}</div>
                                 <div>
                                     <div>{order.user_name}</div>
-                                    <div style={{ fontSize: 11, color: '#888' }}>✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
                                 </div>
                             </div>
                             <div className="price">{formatNumber(order.rate)} ₽</div>
@@ -457,7 +461,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <div className="ava">{order.user_name?.[0] || 'U'}</div>
                                 <div>
                                     <div>{order.user_name}</div>
-                                    <div style={{ fontSize: 11, color: '#888' }}>✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
                                 </div>
                             </div>
                             <div className="price">{formatNumber(order.rate)} ₽</div>
@@ -555,12 +559,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <div>{trade.amount} USDT × {trade.rate} ₽</div>
                                 <div>= {trade.total_rub} ₽</div>
                             </div>
-                            {timeLeft && timeLeft !== 'expired' && <div className="timer">⏰ Осталось: {timeLeft}</div>}
+                            {timeLeft && timeLeft !== 'expired' && <div className="timer">⏰ {timeLeft}</div>}
                             <div className="tradeActions">
-                                {trade.status === 'pending' && isBuyer && <button className="pay" onClick={() => confirmPayment(trade.trade_id)}>Подтвердить оплату</button>}
-                                {trade.status === 'paid' && !isBuyer && <button className="confirm" onClick={() => confirmReceipt(trade.trade_id)}>Подтвердить получение</button>}
+                                {trade.status === 'pending' && isBuyer && <button className="pay" onClick={() => confirmPayment(trade.trade_id)}>Оплатить</button>}
+                                {trade.status === 'paid' && !isBuyer && <button className="confirm" onClick={() => confirmReceipt(trade.trade_id)}>Получить</button>}
                                 {(trade.status === 'pending' || trade.status === 'paid') && <button className="cancel" onClick={() => cancelTrade(trade.trade_id)}>Отменить</button>}
-                                <button className="copy" onClick={() => { navigator.clipboard.writeText(trade.trade_id); showToast('✅ ID скопирован', 'success'); }}>Копировать</button>
+                                <button className="copy" onClick={() => { navigator.clipboard.writeText(trade.trade_id); showToast('✅ ID скопирован', 'success'); }}>ID</button>
                                 <button className="chat">Чат</button>
                             </div>
                         </div>
@@ -578,10 +582,10 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 <div />
             </div>
             <div className="helpContent">
-                <div className="helpBlock"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую. Средства продавца блокируются, вы платите ему, он подтверждает получение - сделка завершена.</p></div>
-                <div className="helpBlock"><h3>⏰ Время на оплату</h3><p>Обычно 30 минут. За это время нужно перевести деньги продавцу и нажать "Подтвердить оплату".</p></div>
-                <div className="helpBlock"><h3>✅ Защита сделки</h3><p>USDT продавца заморожены до подтверждения оплаты. Ваши деньги в безопасности.</p></div>
-                <div className="helpBlock"><h3>📞 Поддержка</h3><p>Чат с поддержкой: <a href="https://t.me/TetherRabbit_chat">@TetherRabbit_chat</a></p></div>
+                <div className="helpBlock"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую.</p></div>
+                <div className="helpBlock"><h3>⏰ Время на оплату</h3><p>Обычно 30 минут. Успейте оплатить и подтвердить.</p></div>
+                <div className="helpBlock"><h3>✅ Защита сделки</h3><p>USDT продавца заморожены до подтверждения оплаты.</p></div>
+                <div className="helpBlock"><h3>📞 Поддержка</h3><p><a href="https://t.me/TetherRabbit_chat">@TetherRabbit_chat</a></p></div>
             </div>
         </div>
     );
@@ -604,7 +608,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         <button className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>
                         <button className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>RUB</button>
                     </div>
-                    <input type="number" className="amountInput" value={amount} onChange={e => setAmount(e.target.value)} placeholder={`Введите сумму в ${currencyType === 'usdt' ? 'USDT' : 'RUB'}`} />
+                    <input type="number" className="amountInput" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Сумма" />
                     {amount && <div className="calcResult">{currencyType === 'usdt' ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽` : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`}</div>}
                     <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : 'Начать сделку'}</button>
                 </div>

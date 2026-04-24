@@ -9,31 +9,42 @@
     overflow-y: auto;
 }
 
+/* ============ ОБЩИЙ ХЕДЕР ============ */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    background: transparent;
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-placeholder {
+    width: 40px;
+}
+
 /* ============ ПРОФИЛЬ ============ */
 .profile {
     padding: 20px;
-}
-
-.profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.profile-back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    border: none;
-    color: var(--tg-theme-text-color, #fff);
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.profile-header-placeholder {
-    width: 40px;
 }
 
 .avatarWrap {
@@ -133,7 +144,6 @@
     cursor: pointer;
 }
 
-/* Баннер активной сделки */
 .active-trade-banner {
     margin-top: 20px;
     padding: 14px 16px;
@@ -165,29 +175,6 @@
 /* ============ ОСТАЛЬНЫЕ ЭКРАНЫ ============ */
 .screen {
     padding: 16px;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.header button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    border: none;
-    color: var(--tg-theme-text-color, #fff);
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.header h2 {
-    font-size: 20px;
-    font-weight: 600;
 }
 
 .list {
@@ -255,10 +242,9 @@
 .create-btn {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background: #34c759;
+    background: transparent;
     border: none;
-    color: #000;
+    color: var(--tg-theme-text-color, #fff);
     font-size: 24px;
     cursor: pointer;
 }
@@ -511,16 +497,16 @@
 
 .modalHeader h3 {
     font-size: 18px;
+    margin: 0;
 }
 
-.modalHeader button {
+.modal-close {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
-    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    background: transparent;
     border: none;
     color: var(--tg-theme-text-color, #fff);
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
 }
 

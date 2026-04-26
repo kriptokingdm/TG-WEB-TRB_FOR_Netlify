@@ -616,97 +616,104 @@
     color: var(--tg-theme-hint-color, #666);
 }
 
-/* ===== WALLET STYLE FILTERS (УЛУЧШЕННЫЕ) ===== */
+/* ===== REAL WALLET STYLE ===== */
 
 .wallet-filters {
     display: flex;
-    align-items: center;
-    gap: 0;
-    margin-bottom: 16px;
     background: #1c1c1e;
-    border-radius: 16px;
-    padding: 10px 12px;
+    border-radius: 18px;
+    padding: 4px;
+    margin-bottom: 16px;
+    gap: 4px;
 }
 
-.wallet-filter-item {
+/* каждый сегмент */
+.wf-item {
     flex: 1;
     position: relative;
-    display: flex;
-    align-items: center;
 }
 
-.wallet-filter-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+/* кнопки */
+.wf-btn {
     width: 100%;
-    font-size: 14px;
-    color: #fff;
-    background: transparent;
+    height: 36px;
+    border-radius: 14px;
     border: none;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.wallet-filter-btn span:first-child {
-    opacity: 0.95;
-}
-
-.filter-arrow {
-    font-size: 12px;
+    background: transparent;
     color: #8e8e93;
-    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.wallet-filter-input {
-    width: 100%;
-    border: none;
-    background: transparent;
+/* активный как в wallet */
+.wf-btn.active {
+    background: #2c2c2e;
     color: #fff;
-    font-size: 14px;
+}
+
+/* стрелка */
+.wf-btn span {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* input */
+.wf-input {
+    width: 100%;
+    height: 36px;
+    border-radius: 14px;
+    border: none;
+    text-align: center;
+    background: transparent;
+    color: #8e8e93;
+    font-size: 13px;
     font-weight: 500;
     outline: none;
+    transition: all 0.2s ease;
 }
 
-.wallet-filter-input::placeholder {
-    color: #8e8e93;
-}
-
-/* 🔥 divider как в Telegram Wallet */
-.wallet-divider {
-    width: 1px;
-    height: 20px;
+/* активный input */
+.wf-input.active {
     background: #2c2c2e;
-    margin: 0 8px;
+    color: #fff;
 }
 
 /* dropdown */
-.wallet-dropdown {
+.wf-dropdown {
     position: absolute;
-    top: 120%;
+    top: 44px;
     left: 0;
     right: 0;
     background: #1c1c1e;
     border-radius: 14px;
     overflow: hidden;
-    z-index: 200;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    z-index: 100;
     border: 1px solid #2c2c2e;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
-.wallet-dropdown-item {
-    padding: 14px 16px;
+/* элементы */
+.wf-option {
+    padding: 14px;
+    text-align: center;
     font-size: 14px;
     color: #fff;
     cursor: pointer;
     transition: background 0.15s;
 }
 
-.wallet-dropdown-item:active {
+.wf-option:active {
     background: #2c2c2e;
 }
 
-.wallet-dropdown-item.active {
+/* выбранный */
+.wf-option.active {
     color: #2f80ed;
     font-weight: 600;
 }

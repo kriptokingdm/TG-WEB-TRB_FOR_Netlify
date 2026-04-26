@@ -403,33 +403,41 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-        // ============ ЭКРАН ПОКУПКИ С ФИЛЬТРАМИ-ЧИПСАМИ ============
+           // ============ ЭКРАН ПОКУПКИ ============
     const BuyScreen = () => {
-        const [amountFilter, setAmountFilter] = useState('all');
-        const [timeFilter, setTimeFilter] = useState('all');
+        const [filters, setFilters] = useState({
+            paymentMethod: 'all',
+            maxAmount: '',
+            maxTime: 'all'
+        });
+        const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
+        const [showTimeDropdown, setShowTimeDropdown] = useState(false);
 
-        const amountOptions = [
-            { value: 'all', label: 'Все суммы' },
-            { value: '50', label: 'До 50 USDT' },
-            { value: '100', label: 'До 100 USDT' },
-            { value: '500', label: 'До 500 USDT' },
-            { value: '1000', label: 'До 1000 USDT' },
-            { value: '5000', label: 'До 5000 USDT' }
+        const paymentMethodsFilter = [
+            { value: 'all', label: 'Оплата' },
+            { value: 'bank_transfer', label: '🏦 Банковский перевод' },
+            { value: 'card', label: '💳 Карта' },
+            { value: 'sbp', label: '📱 СБП' },
+            { value: 'cash', label: '💰 Наличные' }
         ];
 
-        const timeOptionsFilter = [
-            { value: 'all', label: 'Любое время' },
-            { value: '15', label: 'До 15 мин' },
-            { value: '30', label: 'До 30 мин' },
-            { value: '60', label: 'До 1 часа' },
-            { value: '120', label: 'До 2 часов' }
+        const timeFilterOptions = [
+            { value: 'all', label: 'Время' },
+            { value: '15', label: '⏰ До 15 мин' },
+            { value: '30', label: '⏰ До 30 мин' },
+            { value: '60', label: '⏰ До 1 часа' },
+            { value: '120', label: '⏰ До 2 часов' }
         ];
+
+        const selectedPayment = paymentMethodsFilter.find(p => p.value === filters.paymentMethod) || paymentMethodsFilter[0];
+        const selectedTime = timeFilterOptions.find(t => t.value === filters.maxTime) || timeFilterOptions[0];
 
         const filteredOrders = sellOrders.filter(order => {
-            if (amountFilter !== 'all' && order.available_amount > parseFloat(amountFilter)) return false;
-            if (timeFilter !== 'all') {
+            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+            if (filters.maxTime !== 'all') {
                 const time = order.payment_time || 30;
-                if (time > parseFloat(timeFilter)) return false;
+                if (time > parseFloat(filters.maxTime)) return false;
             }
             return true;
         });
@@ -442,35 +450,74 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <div className="header-placeholder"></div>
                 </div>
 
-                {/* Фильтры в виде чипсов */}
-                <div className="filters-section">
-                    <div className="filter-group">
-                        <span className="filter-group-title">💰 Сумма</span>
-                        <div className="chips-container">
-                            {amountOptions.map(opt => (
-                                <button 
-                                    key={opt.value}
-                                    className={`chip ${amountFilter === opt.value ? 'active' : ''}`}
-                                    onClick={() => setAmountFilter(opt.value)}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+                {/* Фильтры как в Wallet */}
+                <div className="wallet-filters">
+                    <div className="wallet-filter-item">
+                        <div 
+                            className="wallet-filter-btn"
+                            onClick={() => {
+                                setShowPaymentDropdown(!showPaymentDropdown);
+                                setShowTimeDropdown(false);
+                            }}
+                        >
+                            <span>{selectedPayment.label}</span>
+                            <span className="filter-arrow">▼</span>
                         </div>
+                        {showPaymentDropdown && (
+                            <div className="wallet-dropdown">
+                                {paymentMethodsFilter.map(m => (
+                                    <div 
+                                        key={m.value}
+                                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setFilters({...filters, paymentMethod: m.value});
+                                            setShowPaymentDropdown(false);
+                                        }}
+                                    >
+                                        {m.label}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <div className="filter-group">
-                        <span className="filter-group-title">⏰ Время на оплату</span>
-                        <div className="chips-container">
-                            {timeOptionsFilter.map(opt => (
-                                <button 
-                                    key={opt.value}
-                                    className={`chip ${timeFilter === opt.value ? 'active' : ''}`}
-                                    onClick={() => setTimeFilter(opt.value)}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+
+                    <div className="wallet-filter-item">
+                        <input 
+                            type="number" 
+                            className="wallet-filter-input"
+                            placeholder="Сумма"
+                            value={filters.maxAmount}
+                            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="wallet-filter-item">
+                        <div 
+                            className="wallet-filter-btn"
+                            onClick={() => {
+                                setShowTimeDropdown(!showTimeDropdown);
+                                setShowPaymentDropdown(false);
+                            }}
+                        >
+                            <span>{selectedTime.label}</span>
+                            <span className="filter-arrow">▼</span>
                         </div>
+                        {showTimeDropdown && (
+                            <div className="wallet-dropdown">
+                                {timeFilterOptions.map(t => (
+                                    <div 
+                                        key={t.value}
+                                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setFilters({...filters, maxTime: t.value});
+                                            setShowTimeDropdown(false);
+                                        }}
+                                    >
+                                        {t.label}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -501,33 +548,41 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         );
     };
 
-    // ============ ЭКРАН ПРОДАЖИ С ФИЛЬТРАМИ-ЧИПСАМИ ============
+    // ============ ЭКРАН ПРОДАЖИ ============
     const SellScreen = () => {
-        const [amountFilter, setAmountFilter] = useState('all');
-        const [timeFilter, setTimeFilter] = useState('all');
+        const [filters, setFilters] = useState({
+            paymentMethod: 'all',
+            maxAmount: '',
+            maxTime: 'all'
+        });
+        const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
+        const [showTimeDropdown, setShowTimeDropdown] = useState(false);
 
-        const amountOptions = [
-            { value: 'all', label: 'Все суммы' },
-            { value: '50', label: 'До 50 USDT' },
-            { value: '100', label: 'До 100 USDT' },
-            { value: '500', label: 'До 500 USDT' },
-            { value: '1000', label: 'До 1000 USDT' },
-            { value: '5000', label: 'До 5000 USDT' }
+        const paymentMethodsFilter = [
+            { value: 'all', label: 'Оплата' },
+            { value: 'bank_transfer', label: '🏦 Банковский перевод' },
+            { value: 'card', label: '💳 Карта' },
+            { value: 'sbp', label: '📱 СБП' },
+            { value: 'cash', label: '💰 Наличные' }
         ];
 
-        const timeOptionsFilter = [
-            { value: 'all', label: 'Любое время' },
-            { value: '15', label: 'До 15 мин' },
-            { value: '30', label: 'До 30 мин' },
-            { value: '60', label: 'До 1 часа' },
-            { value: '120', label: 'До 2 часов' }
+        const timeFilterOptions = [
+            { value: 'all', label: 'Время' },
+            { value: '15', label: '⏰ До 15 мин' },
+            { value: '30', label: '⏰ До 30 мин' },
+            { value: '60', label: '⏰ До 1 часа' },
+            { value: '120', label: '⏰ До 2 часов' }
         ];
+
+        const selectedPayment = paymentMethodsFilter.find(p => p.value === filters.paymentMethod) || paymentMethodsFilter[0];
+        const selectedTime = timeFilterOptions.find(t => t.value === filters.maxTime) || timeFilterOptions[0];
 
         const filteredOrders = buyOrders.filter(order => {
-            if (amountFilter !== 'all' && order.available_amount > parseFloat(amountFilter)) return false;
-            if (timeFilter !== 'all') {
+            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+            if (filters.maxTime !== 'all') {
                 const time = order.payment_time || 30;
-                if (time > parseFloat(timeFilter)) return false;
+                if (time > parseFloat(filters.maxTime)) return false;
             }
             return true;
         });
@@ -540,35 +595,74 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <div className="header-placeholder"></div>
                 </div>
 
-                {/* Фильтры в виде чипсов */}
-                <div className="filters-section">
-                    <div className="filter-group">
-                        <span className="filter-group-title">💰 Сумма</span>
-                        <div className="chips-container">
-                            {amountOptions.map(opt => (
-                                <button 
-                                    key={opt.value}
-                                    className={`chip ${amountFilter === opt.value ? 'active' : ''}`}
-                                    onClick={() => setAmountFilter(opt.value)}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+                {/* Фильтры как в Wallet */}
+                <div className="wallet-filters">
+                    <div className="wallet-filter-item">
+                        <div 
+                            className="wallet-filter-btn"
+                            onClick={() => {
+                                setShowPaymentDropdown(!showPaymentDropdown);
+                                setShowTimeDropdown(false);
+                            }}
+                        >
+                            <span>{selectedPayment.label}</span>
+                            <span className="filter-arrow">▼</span>
                         </div>
+                        {showPaymentDropdown && (
+                            <div className="wallet-dropdown">
+                                {paymentMethodsFilter.map(m => (
+                                    <div 
+                                        key={m.value}
+                                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setFilters({...filters, paymentMethod: m.value});
+                                            setShowPaymentDropdown(false);
+                                        }}
+                                    >
+                                        {m.label}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <div className="filter-group">
-                        <span className="filter-group-title">⏰ Время на оплату</span>
-                        <div className="chips-container">
-                            {timeOptionsFilter.map(opt => (
-                                <button 
-                                    key={opt.value}
-                                    className={`chip ${timeFilter === opt.value ? 'active' : ''}`}
-                                    onClick={() => setTimeFilter(opt.value)}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+
+                    <div className="wallet-filter-item">
+                        <input 
+                            type="number" 
+                            className="wallet-filter-input"
+                            placeholder="Сумма"
+                            value={filters.maxAmount}
+                            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="wallet-filter-item">
+                        <div 
+                            className="wallet-filter-btn"
+                            onClick={() => {
+                                setShowTimeDropdown(!showTimeDropdown);
+                                setShowPaymentDropdown(false);
+                            }}
+                        >
+                            <span>{selectedTime.label}</span>
+                            <span className="filter-arrow">▼</span>
                         </div>
+                        {showTimeDropdown && (
+                            <div className="wallet-dropdown">
+                                {timeFilterOptions.map(t => (
+                                    <div 
+                                        key={t.value}
+                                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setFilters({...filters, maxTime: t.value});
+                                            setShowTimeDropdown(false);
+                                        }}
+                                    >
+                                        {t.label}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

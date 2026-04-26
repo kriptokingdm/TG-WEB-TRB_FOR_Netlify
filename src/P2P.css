@@ -826,3 +826,56 @@
     border-radius: 12px;
     color: var(--tg-theme-hint-color, #888);
 }
+
+/* ============ КОМПАКТНЫЙ ФИЛЬТР ============ */
+.compact-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.filter-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 12px;
+    padding: 6px 12px;
+}
+
+.filter-label {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.filter-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 14px;
+    padding: 6px 0;
+    outline: none;
+}
+
+.filter-input::placeholder {
+    color: var(--tg-theme-hint-color, #555);
+}
+
+.filter-select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 13px;
+    padding: 6px 0;
+    outline: none;
+    cursor: pointer;
+}
+
+.filter-select option {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    color: var(--tg-theme-text-color, #fff);
+}

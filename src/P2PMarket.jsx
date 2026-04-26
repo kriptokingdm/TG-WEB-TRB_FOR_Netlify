@@ -606,6 +606,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
     {/* Оплата */}
     <div className="wf-item">
+         <div className="wf-input-wrap">
         <button 
             className={`wf-btn ${filters.paymentMethod !== 'all' ? 'active' : ''}`}
             onClick={() => {
@@ -633,6 +634,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 ))}
             </div>
         )}
+
+    </div>
     </div>
 
     {/* Сумма */}

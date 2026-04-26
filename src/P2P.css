@@ -8,6 +8,133 @@
     overflow-y: auto;
 }
 
+/* ============ АНИМАЦИИ ============ */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from { 
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@keyframes dropdown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+.animate-scale {
+    animation: scaleIn 0.25s ease-out;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.animate-dropdown {
+    animation: dropdown 0.2s ease-out;
+}
+
+/* ============ БЕГУЩАЯ СТРОКА (ЗЕЛЕНАЯ ПЛАШКА) ============ */
+.marquee-wrapper {
+    width: 100%;
+    background: rgba(52, 199, 89, 0.12);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border: 0.5px solid rgba(52, 199, 89, 0.3);
+}
+
+.marquee-container {
+    width: 100%;
+    overflow: hidden;
+    padding: 12px 0;
+}
+
+.marquee-text {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+    font-size: 13px;
+    color: var(--tg-theme-text-color, #fff);
+    padding-right: 50px;
+}
+
+.marquee-text .rules-link {
+    color: #34c759;
+    cursor: pointer;
+    margin-left: 6px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.marquee-text .rules-link:active {
+    opacity: 0.7;
+}
+
+/* Пауза при наведении */
+.marquee-container:hover .marquee-text {
+    animation-play-state: paused;
+}
+
 /* ============ ПРОФИЛЬ ============ */
 .profile {
     padding: 20px;
@@ -29,6 +156,12 @@
     color: var(--tg-theme-text-color, #fff);
     font-size: 20px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.profile-back-btn:active {
+    transform: scale(0.95);
+    opacity: 0.7;
 }
 
 .profile-header-placeholder {
@@ -102,6 +235,12 @@
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.actions button:active {
+    transform: scale(0.98);
+    opacity: 0.8;
 }
 
 .actions button.buy {
@@ -130,6 +269,12 @@
     font-weight: 500;
     text-align: left;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.menu-item:active {
+    transform: scale(0.99);
+    background: #252528;
 }
 
 .active-trade-banner {
@@ -144,20 +289,9 @@
     cursor: pointer;
 }
 
-.active-trade-banner span:first-child {
-    font-size: 14px;
-}
-
-.active-trade-banner span:nth-child(2) {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    color: #34c759;
-}
-
-.active-trade-banner span:last-child {
-    font-size: 18px;
-    color: #34c759;
+.active-trade-banner:active {
+    transform: scale(0.99);
+    opacity: 0.8;
 }
 
 /* ============ ОСТАЛЬНЫЕ ЭКРАНЫ ============ */
@@ -181,6 +315,12 @@
     color: var(--tg-theme-text-color, #fff);
     font-size: 20px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.header button:active {
+    transform: scale(0.95);
+    opacity: 0.7;
 }
 
 .header h2 {
@@ -192,7 +332,7 @@
 .orders-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     margin-top: 8px;
 }
 
@@ -201,11 +341,11 @@
     border-radius: 20px;
     padding: 20px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.1s ease;
 }
 
 .order-card:active {
-    background: #252528;
+    transform: scale(0.99);
 }
 
 .order-card-row {
@@ -278,6 +418,12 @@
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.order-action-btn:active {
+    transform: scale(0.97);
+    opacity: 0.8;
 }
 
 .order-share-btn {
@@ -289,33 +435,15 @@
     color: var(--tg-theme-text-color, #fff);
     font-size: 18px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.order-share-btn:active {
+    transform: scale(0.95);
+    opacity: 0.7;
 }
 
 /* ============ ФИЛЬТРЫ ============ */
-.info-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(52, 199, 89, 0.08);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
-}
-
-.info-icon {
-    font-size: 14px;
-}
-
-.info-text {
-    font-size: 12px;
-    color: var(--tg-theme-text-color, #fff);
-}
-
-.rules-link {
-    color: var(--tg-theme-button-color, #2f80ed);
-    cursor: pointer;
-}
-
 .filter-bar {
     display: flex;
     gap: 8px;
@@ -366,8 +494,7 @@
     color: var(--tg-theme-hint-color, #888);
 }
 
-/* Выпадашка снизу */
-/* Выпадашка ВНИЗ (исправлено) */
+/* Выпадашка ВНИЗ */
 .chip-dropdown-bottom {
     position: absolute;
     top: 100%;
@@ -382,16 +509,18 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Удаляем старый класс если есть */
-.chip-dropdown {
-    top: 100%;
-    bottom: auto;
-    margin-top: 8px;
-    margin-bottom: 0;
+.chip-option {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.1s ease;
 }
 
 .chip-option:active {
     background: var(--tg-theme-section-bg-color, #2c2c2e);
+    transform: scale(0.98);
 }
 
 .chip-option.active {
@@ -409,6 +538,12 @@
     color: #000;
     font-size: 24px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.create-btn:active {
+    transform: scale(0.95);
+    opacity: 0.8;
 }
 
 .createForm {
@@ -432,6 +567,11 @@
     border-radius: 12px;
     color: var(--tg-theme-text-color, #fff);
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.formType button:active {
+    transform: scale(0.98);
 }
 
 .formType button.active.sell { background: #ff3b30; color: #fff; }
@@ -445,6 +585,11 @@
     border-radius: 12px;
     color: var(--tg-theme-text-color, #fff);
     margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.createForm input:focus, .createForm textarea:focus {
+    outline: 1px solid var(--tg-theme-button-color, #2f80ed);
 }
 
 .row {
@@ -466,6 +611,12 @@
     border-radius: 20px;
     color: var(--tg-theme-text-color, #fff);
     cursor: pointer;
+    font-size: 16px;
+    transition: all 0.1s ease;
+}
+
+.paymentBtns button:active {
+    transform: scale(0.95);
 }
 
 .paymentBtns button.selected {
@@ -482,6 +633,17 @@
     color: #000;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.submit:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+}
+
+.submit:disabled {
+    opacity: 0.5;
+    transform: none;
 }
 
 /* ============ МОИ ОБЪЯВЛЕНИЯ ============ */
@@ -548,6 +710,12 @@
     border-radius: 10px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.ad-edit:active, .ad-delete:active {
+    transform: scale(0.97);
+    opacity: 0.8;
 }
 
 .ad-edit { background: var(--tg-theme-button-color, #2f80ed); color: #fff; }
@@ -568,6 +736,11 @@
     border-radius: 12px;
     color: var(--tg-theme-hint-color, #888);
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.tabs button:active {
+    transform: scale(0.98);
 }
 
 .tabs button.active {
@@ -632,6 +805,12 @@
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.trade-actions button:active {
+    transform: scale(0.97);
+    opacity: 0.8;
 }
 
 .trade-pay, .trade-confirm { background: #34c759; color: #000; }
@@ -716,6 +895,12 @@
     color: var(--tg-theme-text-color, #fff);
     font-size: 18px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.modal-close:active {
+    transform: scale(0.95);
+    opacity: 0.7;
 }
 
 .modalBody {
@@ -781,6 +966,11 @@
     color: var(--tg-theme-hint-color, #888);
     font-size: 15px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.currencySwitch button:active {
+    transform: scale(0.98);
 }
 
 .currencySwitch button.active {
@@ -799,6 +989,16 @@
     text-align: center;
     margin-bottom: 16px;
     outline: none;
+}
+
+.amountInput:focus {
+    outline: 1px solid var(--tg-theme-button-color, #2f80ed);
+}
+
+/* Убираем стрелки у number input */
+.amountInput::-webkit-inner-spin-button,
+.amountInput::-webkit-outer-spin-button {
+    opacity: 0.5;
 }
 
 .calcResult {
@@ -821,11 +1021,18 @@
     font-weight: 600;
     font-size: 16px;
     cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.confirmBtn:active {
+    transform: scale(0.98);
+    opacity: 0.8;
 }
 
 .confirmBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
 }
 
 /* ============ ЗАГРУЗКА ============ */
@@ -841,104 +1048,14 @@
     color: var(--tg-theme-hint-color, #666);
 }
 
-
-
-
-/* БЕГУЩАЯ СТРОКА - БЕЗ ЗЕЛЕНОГО ФОНА */
-.marquee-wrapper {
-    width: 100%;
-   background: rgba(52, 199, 89, 0.06);
-    border-radius: 0;
-    padding: 8px 0;
-    margin-bottom: 16px;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-}
-
-.marquee-content {
-    display: block;
-}
-
-.marquee-text-static {
-    font-size: 12px;
-    color: var(--tg-theme-text-color, #fff);
-    line-height: 1.4;
-    white-space: normal;
-    word-break: keep-all;
-    display: block;
-}
-
-.rules-link {
-    color: var(--tg-theme-button-color, #2f80ed);
-    cursor: pointer;
-    margin: 0 2px;
-    display: inline-block;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 2px;
-}
-
-.rules-link:active {
-    opacity: 0.7;
-}
-
-/* Выпадашка ВНИЗ */
-.chip-dropdown-bottom {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    border-radius: 14px;
-    margin-top: 8px;
-    z-index: 200;
-    overflow: hidden;
-    border: 0.5px solid var(--tg-border-color, #2c2c2e);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Убираем анимацию при нажатиях */
-.filter-chip-value, .order-card, .menu-item, .action-btn, .order-share-btn, .trade-actions button {
-    transition: none !important;
-}
-
-.filter-chip-value:active, .order-card:active {
-    transform: none !important;
-}
-
-/* Скролл для длинных текстов */
-.marquee-wrapper::-webkit-scrollbar {
-    height: 2px;
-}
-
-.marquee-wrapper::-webkit-scrollbar-track {
-    background: var(--tg-theme-section-bg-color, #2c2c2e);
-    border-radius: 10px;
-}
-
-.marquee-wrapper::-webkit-scrollbar-thumb {
-    background: var(--tg-theme-button-color, #2f80ed);
-    border-radius: 10px;
-}
-
-@keyframes marquee {
-    0% {
-        transform: translateX(0);
+/* Telegram WebApp safe area */
+@supports (padding: max(0px)) {
+    .app, .screen, .profile {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
     }
-    100% {
-        transform: translateX(-100%);
+    
+    .modalContent {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
-}
-
-/* Для мобильных устройств - немного медленнее */
-@media (max-width: 600px) {
-    .marquee-text {
-        animation-duration: 25s;
-    }
-}
-
-/* Ховер - останавливаем анимацию */
-.marquee-container:hover .marquee-text {
-    animation-play-state: paused;
 }

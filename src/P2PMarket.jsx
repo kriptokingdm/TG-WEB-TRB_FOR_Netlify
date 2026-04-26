@@ -32,11 +32,10 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
     const [showTimeDropdown, setShowTimeDropdown] = useState(false);
     
-    // Refs для инпутов
     const amountInputRef = useRef(null);
+    const filterAmountRef = useRef(null);
     const createAmountRef = useRef(null);
     const createRateRef = useRef(null);
-    const filterAmountRef = useRef(null);
 
     const [newOrder, setNewOrder] = useState({
         type: 'sell',
@@ -74,12 +73,11 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         if (screen === 'orders') fetchMyTrades();
     }, [screen]);
 
-    // Автофокус для модалки
     useEffect(() => {
         if (selected && amountInputRef.current) {
             setTimeout(() => {
                 amountInputRef.current.focus();
-            }, 100);
+            }, 150);
         }
     }, [selected]);
 
@@ -333,6 +331,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         showToast('✅ Ссылка на объявление скопирована!', 'success');
     };
 
+    const openRules = (e) => {
+        if (e) e.stopPropagation();
+        if (navigateTo) {
+            navigateTo('help');
+            localStorage.setItem('helpSection', 'rules');
+        }
+    };
+
     const formatNumber = (num) => {
         if (num === undefined || num === null) return '0';
         return new Intl.NumberFormat('ru-RU').format(num);
@@ -356,22 +362,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         const minutes = Math.floor(diff / 60000);
         const seconds = Math.floor((diff % 60000) / 1000);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    const getPaymentLabel = (method) => {
-        const found = paymentMethodsList.find(m => m.value === method);
-        return found ? `${found.icon} ${found.label}` : method;
-    };
-
-        const openRules = (e) => {
-        if (e) e.stopPropagation();
-        if (navigateTo) {
-            navigateTo('help');
-            localStorage.setItem('helpSection', 'rules');
-        } else if (window.location) {
-            window.location.hash = 'help';
-            localStorage.setItem('helpSection', 'rules');
-        }
     };
 
     const paymentMethodsFilter = [
@@ -413,9 +403,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         return true;
     });
 
-    // Карточка объявления
+    // Карточка объявления с анимацией
     const OrderCard = ({ order, type }) => (
-        <div className="order-card" onClick={() => setSelected(order)}>
+        <div className="order-card animate-slide-up" onClick={() => setSelected(order)}>
             <div className="order-card-row">
                 <div className="order-user">
                     <div className="order-avatar">{order.user_name?.[0] || 'U'}</div>
@@ -437,33 +427,50 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         </div>
     );
 
+    // Бегущая строка компонент
+    const MarqueeBanner = () => (
+        <div className="marquee-wrapper" onClick={(e) => e.stopPropagation()}>
+            <div className="marquee-container">
+                <div className="marquee-text">
+                    ⚠️ Перед началом торговли P2P маркета ознакомьтесь с общими правилами. 
+                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
+                    <span className="rules-link" onClick={openRules}>📋 Подробнее</span>
+                    &nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;
+                   ⚠️ Перед началом торговли P2P маркета ознакомьтесь с общими правилами. 
+                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
+                    <span className="rules-link" onClick={openRules}>📋 Подробнее</span>
+                </div>
+            </div>
+        </div>
+    );
+
     // ============ ПРОФИЛЬ ============
     const ProfileScreen = () => (
-        <div className="profile">
+        <div className="profile animate-fade-in">
             <div className="profile-header">
                 <button className="profile-back-btn" onClick={onBack}>←</button>
                 <div className="profile-header-placeholder"></div>
             </div>
             <div className="avatarWrap">
-                <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
+                <div className="avatar animate-scale">{userName.charAt(0).toUpperCase()}</div>
                 <div className="name">{userName}</div>
             </div>
             <div className="stats">
-                <div><b>{stats.total}</b><span>Всего</span></div>
-                <div><b>{stats.completed}</b><span>Завершено</span></div>
-                <div><b>{stats.active}</b><span>Активные</span></div>
+                <div className="animate-slide-up" style={{animationDelay: '0.05s'}}><b>{stats.total}</b><span>Всего</span></div>
+                <div className="animate-slide-up" style={{animationDelay: '0.1s'}}><b>{stats.completed}</b><span>Завершено</span></div>
+                <div className="animate-slide-up" style={{animationDelay: '0.15s'}}><b>{stats.active}</b><span>Активные</span></div>
             </div>
             <div className="actions">
-                <button className="buy" onClick={() => setScreen('buy')}>Купить</button>
-                <button className="sell" onClick={() => setScreen('sell')}>Продать</button>
+                <button className="buy animate-scale" onClick={() => setScreen('buy')}>Купить</button>
+                <button className="sell animate-scale" onClick={() => setScreen('sell')}>Продать</button>
             </div>
             <div className="menu">
-                <button className="menu-item" onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
-                <button className="menu-item" onClick={() => { setScreen('orders'); fetchMyTrades(); }}>📦 Мои ордера</button>
-                <button className="menu-item" onClick={() => setScreen('help')}>❓ Помощь</button>
+                <button className="menu-item animate-slide-up" style={{animationDelay: '0.05s'}} onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
+                <button className="menu-item animate-slide-up" style={{animationDelay: '0.1s'}} onClick={() => { setScreen('orders'); fetchMyTrades(); }}>📦 Мои ордера</button>
+                <button className="menu-item animate-slide-up" style={{animationDelay: '0.15s'}} onClick={() => setScreen('help')}>❓ Помощь</button>
             </div>
             {activeTrade && (
-                <div className="active-trade-banner" onClick={() => setScreen('orders')}>
+                <div className="active-trade-banner animate-slide-up" onClick={() => setScreen('orders')}>
                     <span>🟢</span>
                     <span>У вас активная сделка #{activeTrade.trade_id}</span>
                     <span>→</span>
@@ -474,21 +481,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
 
     // ============ ЭКРАН ПОКУПКИ ============
     const BuyScreen = () => (
-        <div className="screen">
+        <div className="screen animate-fade-in">
             <div className="header">
                 <button className="back-btn" onClick={() => setScreen('main')}>←</button>
                 <h2>Купить USDT</h2>
                 <div className="header-placeholder"></div>
             </div>
 
-            {/* Бегущая строка */}
-            <div className="marquee-container">
-                <div className="marquee-text">
-                    ⚠️ Перед началом торговли P2P ознакомьтесь с условиями маркета. 
-                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
-                    <span className="rules-link" onClick={openRules}> 📋 Правила P2P</span>
-                </div>
-            </div>
+            <MarqueeBanner />
 
             <div className="filter-bar">
                 <div className="filter-chip">
@@ -498,7 +498,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <span className="chip-arrow">⌄</span>
                     </div>
                     {showPaymentDropdown && (
-                        <div className="chip-dropdown-bottom">
+                        <div className="chip-dropdown-bottom animate-dropdown">
                             {paymentMethodsFilter.map(m => (
                                 <div key={m.value} className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, paymentMethod: m.value}); setShowPaymentDropdown(false); }}>{m.label}</div>
                             ))}
@@ -524,7 +524,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <span className="chip-arrow">⌄</span>
                     </div>
                     {showTimeDropdown && (
-                        <div className="chip-dropdown-bottom">
+                        <div className="chip-dropdown-bottom animate-dropdown">
                             {timeFilterOptions.map(t => (
                                 <div key={t.value} className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, maxTime: t.value}); setShowTimeDropdown(false); }}>{t.label}</div>
                             ))}
@@ -534,30 +534,21 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             </div>
 
             <div className="orders-list">
-                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredSellOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredSellOrders.map(order => <OrderCard key={order.id} order={order} type="buy" />)}
+                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton animate-pulse" />) : filteredSellOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredSellOrders.map(order => <OrderCard key={order.id} order={order} type="buy" />)}
             </div>
         </div>
     );
 
     // ============ ЭКРАН ПРОДАЖИ ============
     const SellScreen = () => (
-        <div className="screen">
+        <div className="screen animate-fade-in">
             <div className="header">
                 <button className="back-btn" onClick={() => setScreen('main')}>←</button>
                 <h2>Продать USDT</h2>
                 <div className="header-placeholder"></div>
             </div>
 
-                        {/* Бегущая строка - фикс */}
-            <div className="marquee-wrapper">
-                <div className="marquee-content">
-                    <span className="marquee-text-static">
-                        ⚠️ Перед началом торговли P2P ознакомьтесь с 
-                        <span className="rules-link" onClick={(e) => { e.stopPropagation(); openRules(); }}> правилами P2P</span>
-                        . Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
-                    </span>
-                </div>
-            </div>
+            <MarqueeBanner />
 
             <div className="filter-bar">
                 <div className="filter-chip">
@@ -567,7 +558,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <span className="chip-arrow">⌄</span>
                     </div>
                     {showPaymentDropdown && (
-                        <div className="chip-dropdown-bottom">
+                        <div className="chip-dropdown-bottom animate-dropdown">
                             {paymentMethodsFilter.map(m => (
                                 <div key={m.value} className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, paymentMethod: m.value}); setShowPaymentDropdown(false); }}>{m.label}</div>
                             ))}
@@ -593,7 +584,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <span className="chip-arrow">⌄</span>
                     </div>
                     {showTimeDropdown && (
-                        <div className="chip-dropdown-bottom">
+                        <div className="chip-dropdown-bottom animate-dropdown">
                             {timeFilterOptions.map(t => (
                                 <div key={t.value} className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, maxTime: t.value}); setShowTimeDropdown(false); }}>{t.label}</div>
                             ))}
@@ -603,21 +594,21 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             </div>
 
             <div className="orders-list">
-                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredBuyOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredBuyOrders.map(order => <OrderCard key={order.id} order={order} type="sell" />)}
+                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton animate-pulse" />) : filteredBuyOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredBuyOrders.map(order => <OrderCard key={order.id} order={order} type="sell" />)}
             </div>
         </div>
     );
 
     // ============ МОИ ОБЪЯВЛЕНИЯ ==========
     const MyAdsScreen = () => (
-        <div className="screen">
+        <div className="screen animate-fade-in">
             <div className="header">
                 <button onClick={() => setScreen('main')}>←</button>
                 <h2>Мои объявления</h2>
-                <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
+                <button className="create-btn animate-scale" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
             </div>
             {showCreateForm && (
-                <div className="createForm">
+                <div className="createForm animate-slide-down">
                     <div className="formType">
                         <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
                         <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
@@ -649,12 +640,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
                     </select>
                     <textarea placeholder="Условия сделки" value={newOrder.terms} onChange={e => setNewOrder({...newOrder, terms: e.target.value})} rows="2" />
-                    <button className="submit" onClick={createOrder} disabled={creatingTrade}>Создать</button>
+                    <button className="submit" onClick={createOrder} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : 'Создать объявление'}</button>
                 </div>
             )}
             <div className="ads-list">
                 {loading ? <div className="loading">Загрузка...</div> : myAds.length === 0 ? <div className="empty">Нет объявлений</div> : myAds.map(ad => (
-                    <div key={ad.id} className="ad-card">
+                    <div key={ad.id} className="ad-card animate-slide-up">
                         <div className="ad-header">
                             <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
                             <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
@@ -673,7 +664,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
 
     // ============ МОИ ОРДЕРА ==========
     const OrdersScreen = () => (
-        <div className="screen">
+        <div className="screen animate-fade-in">
             <div className="header">
                 <button onClick={() => setScreen('main')}>←</button>
                 <h2>Мои ордера</h2>
@@ -688,7 +679,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                     const isBuyer = trade.buyer_id === userId;
                     const timeLeft = getTimeLeft(trade.expires_at);
                     return (
-                        <div key={trade.trade_id} className="trade-card">
+                        <div key={trade.trade_id} className="trade-card animate-slide-up">
                             <div className="trade-header">
                                 <span className="trade-type">{isBuyer ? 'Покупка' : 'Продажа'}</span>
                                 <span className={`trade-status ${trade.status}`}>{getStatusText(trade.status)}</span>
@@ -712,25 +703,25 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
 
     // ============ ПОМОЩЬ ==========
     const HelpScreen = () => (
-        <div className="screen">
+        <div className="screen animate-fade-in">
             <div className="header">
                 <button onClick={() => setScreen('main')}>←</button>
                 <h2>Помощь</h2>
                 <div />
             </div>
             <div className="helpContent">
-                <div className="helpBlock"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую.</p></div>
-                <div className="helpBlock"><h3>⏰ Время на оплату</h3><p>Обычно 30 минут.</p></div>
-                <div className="helpBlock"><h3>✅ Защита сделки</h3><p>USDT продавца заморожены до подтверждения оплаты.</p></div>
-                <div className="helpBlock"><h3>📞 Поддержка</h3><p><a href="https://t.me/TetherRabbit_chat">Чат поддержки</a></p></div>
+                <div className="helpBlock animate-slide-up"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую.</p></div>
+                <div className="helpBlock animate-slide-up" style={{animationDelay: '0.05s'}}><h3>⏰ Время на оплату</h3><p>Обычно 30 минут.</p></div>
+                <div className="helpBlock animate-slide-up" style={{animationDelay: '0.1s'}}><h3>✅ Защита сделки</h3><p>USDT продавца заморожены до подтверждения оплаты.</p></div>
+                <div className="helpBlock animate-slide-up" style={{animationDelay: '0.15s'}}><h3>📞 Поддержка</h3><p><a href="https://t.me/TetherRabbit_chat">Чат поддержки</a></p></div>
             </div>
         </div>
     );
 
     // ============ МОДАЛКА СДЕЛКИ ==========
     const TradeModal = () => (
-        <div className="modal" onClick={() => setSelected(null)}>
-            <div className="modalContent" onClick={e => e.stopPropagation()}>
+        <div className="modal animate-fade-in" onClick={() => setSelected(null)}>
+            <div className="modalContent animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
                     <h3>Создание сделки</h3>
                     <button className="modal-close" onClick={() => setSelected(null)}>✕</button>

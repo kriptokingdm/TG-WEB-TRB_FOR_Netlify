@@ -447,7 +447,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             <div className="screen">
                 <div className="header">
                     <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    <h2>Продать USDT</h2>
+                    {/* <h2>Продать USDT</h2> */}
                     <div className="header-placeholder"></div>
                 </div>
 
@@ -607,7 +607,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             <div className="screen">
                 <div className="header">
                     <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    <h2>Купить USDT</h2>
+                    {/* <h2>Купить USDT</h2> */}
                     <div className="header-placeholder"></div>
                 </div>
 

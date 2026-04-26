@@ -1,3 +1,4 @@
+// src/Help.js
 import { useEffect, useMemo, useState } from 'react';
 import './Help.css';
 
@@ -18,8 +19,23 @@ export default function Help({ navigateTo }) {
     tg.BackButton.show();
     tg.BackButton.onClick(() => navigateTo('home'));
 
-    return () => tg.BackButton.hide();
+    return () => {
+      try {
+        tg.BackButton.hide();
+      } catch (e) {}
+    };
   }, [navigateTo]);
+
+  /* ===============================
+     ОТКРЫТИЕ РАЗДЕЛА ПРАВИЛ ИЗ P2P
+  =============================== */
+  useEffect(() => {
+    const section = localStorage.getItem('helpSection');
+    if (section === 'rules') {
+      setActiveSection('rules');
+      localStorage.removeItem('helpSection');
+    }
+  }, []);
 
   /* ===============================
      DATA

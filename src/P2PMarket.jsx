@@ -363,9 +363,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         return found ? `${found.icon} ${found.label}` : method;
     };
 
-    const openRules = () => {
+        const openRules = (e) => {
+        if (e) e.stopPropagation();
         if (navigateTo) {
             navigateTo('help');
+            localStorage.setItem('helpSection', 'rules');
+        } else if (window.location) {
+            window.location.hash = 'help';
             localStorage.setItem('helpSection', 'rules');
         }
     };
@@ -544,12 +548,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 <div className="header-placeholder"></div>
             </div>
 
-            {/* Бегущая строка */}
-            <div className="marquee-container">
-                <div className="marquee-text">
-                    ⚠️ Перед началом торговли P2P ознакомьтесь с условиями маркета. 
-                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
-                    <span className="rules-link" onClick={openRules}> 📋 Правила P2P</span>
+                        {/* Бегущая строка - фикс */}
+            <div className="marquee-wrapper">
+                <div className="marquee-content">
+                    <span className="marquee-text-static">
+                        ⚠️ Перед началом торговли P2P ознакомьтесь с 
+                        <span className="rules-link" onClick={(e) => { e.stopPropagation(); openRules(); }}> правилами P2P</span>
+                        . Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
+                    </span>
                 </div>
             </div>
 

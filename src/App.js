@@ -8,6 +8,7 @@ import Help from './Help';
 import SettingsApp from './SettingsApp';
 import P2PMarket from './P2PMarket';
 import P2PCreate from './P2PCreate';
+import P2POrder from './P2POrder';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
@@ -199,7 +200,6 @@ function App() {
     });
   }, []);
 
-  // Открыть/закрыть P2P
   const openP2P = () => setShowP2P(true);
   const closeP2P = () => setShowP2P(false);
 
@@ -264,7 +264,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create'].includes(hash)) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order'].includes(hash)) {
       setCurrentPage(hash);
     }
 
@@ -273,7 +273,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create'].includes(h)) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order'].includes(h)) {
         setCurrentPage(h);
       }
     };
@@ -478,7 +478,7 @@ function App() {
 
   // Если открыт P2P - показываем его полноэкранно, скрывая основную навигацию
   if (showP2P) {
-    return <P2PMarket telegramUser={telegramUser} showToast={showToast} onBack={closeP2P} />;
+    return <P2PMarket telegramUser={telegramUser} showToast={showToast} onBack={closeP2P} navigateTo={navigateTo} />;
   }
 
   const renderPage = () => {
@@ -497,11 +497,16 @@ function App() {
       return <PinPage />;
     }
 
+    // Проверяем на p2p/order/:id
+    if (currentPage && currentPage.startsWith('p2p/order/')) {
+      const orderId = currentPage.split('/').pop();
+      return <P2POrder key="p2p-order" {...commonProps} orderId={orderId} />;
+    }
+
     switch (currentPage) {
-      case 'p2p/order/:id': return <P2POrder key="p2p-order" {...commonProps} />;
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
-      case 'p2p': return <P2PMarket key="p2p" {...commonProps} onBack={closeP2P} />;
+      case 'p2p': return <P2PMarket key="p2p" {...commonProps} onBack={closeP2P} navigateTo={navigateTo} />;
       case 'p2p/create': return <P2PCreate key="p2p-create" {...commonProps} />;
       case 'help': return <Help key="help" {...commonProps} />;
       case 'settings': return <SettingsApp key="settings" {...commonProps} />;

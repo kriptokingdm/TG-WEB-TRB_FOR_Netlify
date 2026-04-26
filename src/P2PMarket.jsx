@@ -403,7 +403,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-           // ============ ЭКРАН ПОКУПКИ ============
         // ============ ЭКРАН ПОКУПКИ ============
     const BuyScreen = () => {
         const [filters, setFilters] = useState({
@@ -443,43 +442,54 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             return true;
         });
 
+        const openRules = () => {
+            if (window.Telegram?.WebApp) {
+                window.location.hash = 'help';
+                // Сохраняем в localStorage какой раздел открыть
+                localStorage.setItem('helpSection', 'rules');
+                navigateTo('help');
+            } else {
+                navigateTo('help');
+            }
+        };
+
         return (
             <div className="screen">
                 <div className="header">
                     <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    {/* <h2>Продать USDT</h2> */}
+                    <h2>Продать USDT</h2>
                     <div className="header-placeholder"></div>
                 </div>
 
-                {/* Информационный баннер */}
+                {/* Информационный баннер - компактный */}
                 <div className="info-banner">
                     <div className="info-icon">🛡️</div>
                     <div className="info-text">
-                        Здесь вы можете <strong>продать USDT</strong> по самому выгодному курсу.
-                        Пожалуйста, соблюдайте <span className="rules-link" onClick={() => setScreen('rules')}>правила P2P</span> 
-                        и относитесь уважительно к контрагентам, дабы избежать блокировки аккаунта.
+                        Продавайте USDT по лучшему курсу. 
+                        Соблюдайте <span className="rules-link" onClick={openRules}>правила P2P</span> 
+                        и будьте вежливы с контрагентами.
                     </div>
                 </div>
 
-                {/* Фильтры как в Wallet */}
-                <div className="wallet-filters">
-                    <div className="wallet-filter-chip">
+                {/* Фильтры - каждый элемент в своём чипсе */}
+                <div className="filters-row">
+                    <div className="filter-chip">
                         <div 
-                            className="wallet-filter-btn"
+                            className="filter-chip-btn"
                             onClick={() => {
                                 setShowPaymentDropdown(!showPaymentDropdown);
                                 setShowTimeDropdown(false);
                             }}
                         >
                             <span>{selectedPayment.label}</span>
-                            <span className="filter-arrow">⌄</span>
+                            <span className="chip-arrow">⌄</span>
                         </div>
                         {showPaymentDropdown && (
-                            <div className="wallet-dropdown">
+                            <div className="chip-dropdown">
                                 {paymentMethodsFilter.map(m => (
                                     <div 
                                         key={m.value}
-                                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
+                                        className={`chip-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
                                         onClick={() => {
                                             setFilters({...filters, paymentMethod: m.value});
                                             setShowPaymentDropdown(false);
@@ -492,33 +502,33 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         )}
                     </div>
 
-                    <div className="wallet-filter-chip">
+                    <div className="filter-chip">
                         <input 
                             type="number" 
-                            className="wallet-filter-input"
+                            className="filter-chip-input"
                             placeholder="Сумма USDT"
                             value={filters.maxAmount}
                             onChange={e => setFilters({...filters, maxAmount: e.target.value})}
                         />
                     </div>
 
-                    <div className="wallet-filter-chip">
+                    <div className="filter-chip">
                         <div 
-                            className="wallet-filter-btn"
+                            className="filter-chip-btn"
                             onClick={() => {
                                 setShowTimeDropdown(!showTimeDropdown);
                                 setShowPaymentDropdown(false);
                             }}
                         >
                             <span>{selectedTime.label}</span>
-                            <span className="filter-arrow">⌄</span>
+                            <span className="chip-arrow">⌄</span>
                         </div>
                         {showTimeDropdown && (
-                            <div className="wallet-dropdown">
+                            <div className="chip-dropdown">
                                 {timeFilterOptions.map(t => (
                                     <div 
                                         key={t.value}
-                                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
+                                        className={`chip-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
                                         onClick={() => {
                                             setFilters({...filters, maxTime: t.value});
                                             setShowTimeDropdown(false);
@@ -550,11 +560,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <div className="price">{formatNumber(order.rate)} ₽</div>
                                 <div className="amount">{formatNumber(order.available_amount)} USDT</div>
                                 <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
-                                <div className="payment-icons">
-                                    {order.payment_methods?.slice(0, 3).map(m => (
-                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
-                                    ))}
-                                </div>
                                 <button className="action">Продать</button>
                             </div>
                         ))
@@ -603,11 +608,21 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             return true;
         });
 
+        const openRules = () => {
+            if (window.Telegram?.WebApp) {
+                window.location.hash = 'help';
+                localStorage.setItem('helpSection', 'rules');
+                navigateTo('help');
+            } else {
+                navigateTo('help');
+            }
+        };
+
         return (
             <div className="screen">
                 <div className="header">
                     <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    {/* <h2>Купить USDT</h2> */}
+                    <h2>Купить USDT</h2>
                     <div className="header-placeholder"></div>
                 </div>
 
@@ -615,31 +630,31 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 <div className="info-banner">
                     <div className="info-icon">🛡️</div>
                     <div className="info-text">
-                        Здесь вы можете <strong>купить USDT</strong> по самому выгодному курсу.
-                        Пожалуйста, соблюдайте <span className="rules-link" onClick={() => setScreen('rules')}>правила P2P</span> 
-                        и относитесь уважительно к контрагентам, дабы избежать блокировки аккаунта.
+                        Покупайте USDT по лучшему курсу. 
+                        Соблюдайте <span className="rules-link" onClick={openRules}>правила P2P</span> 
+                        и будьте вежливы с контрагентами.
                     </div>
                 </div>
 
-                {/* Фильтры как в Wallet */}
-                <div className="wallet-filters">
-                    <div className="wallet-filter-chip">
+                {/* Фильтры - каждый элемент в своём чипсе */}
+                <div className="filters-row">
+                    <div className="filter-chip">
                         <div 
-                            className="wallet-filter-btn"
+                            className="filter-chip-btn"
                             onClick={() => {
                                 setShowPaymentDropdown(!showPaymentDropdown);
                                 setShowTimeDropdown(false);
                             }}
                         >
                             <span>{selectedPayment.label}</span>
-                            <span className="filter-arrow">⌄</span>
+                            <span className="chip-arrow">⌄</span>
                         </div>
                         {showPaymentDropdown && (
-                            <div className="wallet-dropdown">
+                            <div className="chip-dropdown">
                                 {paymentMethodsFilter.map(m => (
                                     <div 
                                         key={m.value}
-                                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
+                                        className={`chip-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
                                         onClick={() => {
                                             setFilters({...filters, paymentMethod: m.value});
                                             setShowPaymentDropdown(false);
@@ -652,33 +667,33 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         )}
                     </div>
 
-                    <div className="wallet-filter-chip">
+                    <div className="filter-chip">
                         <input 
                             type="number" 
-                            className="wallet-filter-input"
+                            className="filter-chip-input"
                             placeholder="Сумма USDT"
                             value={filters.maxAmount}
                             onChange={e => setFilters({...filters, maxAmount: e.target.value})}
                         />
                     </div>
 
-                    <div className="wallet-filter-chip">
+                    <div className="filter-chip">
                         <div 
-                            className="wallet-filter-btn"
+                            className="filter-chip-btn"
                             onClick={() => {
                                 setShowTimeDropdown(!showTimeDropdown);
                                 setShowPaymentDropdown(false);
                             }}
                         >
                             <span>{selectedTime.label}</span>
-                            <span className="filter-arrow">⌄</span>
+                            <span className="chip-arrow">⌄</span>
                         </div>
                         {showTimeDropdown && (
-                            <div className="wallet-dropdown">
+                            <div className="chip-dropdown">
                                 {timeFilterOptions.map(t => (
                                     <div 
                                         key={t.value}
-                                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
+                                        className={`chip-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
                                         onClick={() => {
                                             setFilters({...filters, maxTime: t.value});
                                             setShowTimeDropdown(false);
@@ -710,11 +725,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <div className="price">{formatNumber(order.rate)} ₽</div>
                                 <div className="amount">{formatNumber(order.available_amount)} USDT</div>
                                 <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
-                                <div className="payment-icons">
-                                    {order.payment_methods?.slice(0, 3).map(m => (
-                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
-                                    ))}
-                                </div>
                                 <button className="action">Купить</button>
                             </div>
                         ))

@@ -419,8 +419,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 <div><b>{stats.active}</b><span>Активные</span></div>
             </div>
             <div className="actions">
-                <button className="buy" onClick={() => setScreen('buy')}>Купить</button>
-                <button className="sell" onClick={() => setScreen('sell')}>Продать</button>
+                <button className="buy" onClick={() => setScreen('buy')}>Продать</button>
+                <button className="sell" onClick={() => setScreen('sell')}>Купить</button>
             </div>
             <div className="menu">
                 <button className="menu-item" onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
@@ -681,26 +681,74 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     );
 
     // ============ МОДАЛКА ==========
+        // ============ МОДАЛКА ============
     const TradeModal = () => (
         <div className="modal" onClick={() => setSelected(null)}>
             <div className="modalContent" onClick={e => e.stopPropagation()}>
                 <div className="modalHeader">
                     <h3>Создание сделки</h3>
-                    <button onClick={() => setSelected(null)}>✕</button>
+                    <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
                 </div>
                 <div className="modalBody">
                     <div className="modalInfo">
-                        <div>Курс: <strong>{selected.rate} ₽</strong></div>
-                        <div>Лимиты: {selected.min_amount} - {selected.max_amount} USDT</div>
-                        <div>Доступно: {selected.available_amount} USDT</div>
+                        <div className="info-row-modal">
+                            <span>Курс</span>
+                            <strong>{selected.rate} ₽</strong>
+                        </div>
+                        <div className="info-row-modal">
+                            <span>Лимиты</span>
+                            <strong>{selected.min_amount} - {selected.max_amount} USDT</strong>
+                        </div>
+                        <div className="info-row-modal">
+                            <span>Доступно</span>
+                            <strong>{selected.available_amount} USDT</strong>
+                        </div>
+                        {selected.terms && (
+                            <div className="info-row-modal terms">
+                                <span>Условия</span>
+                                <div className="terms-text">{selected.terms}</div>
+                            </div>
+                        )}
                     </div>
+
                     <div className="currencySwitch">
-                        <button className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>
-                        <button className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>RUB</button>
+                        <button 
+                            type="button"
+                            className={currencyType === 'usdt' ? 'active' : ''} 
+                            onClick={() => setCurrencyType('usdt')}
+                        >
+                            USDT
+                        </button>
+                        <button 
+                            type="button"
+                            className={currencyType === 'rub' ? 'active' : ''} 
+                            onClick={() => setCurrencyType('rub')}
+                        >
+                            RUB
+                        </button>
                     </div>
-                    <input type="number" className="amountInput" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Сумма" />
-                    {amount && <div className="calcResult">{currencyType === 'usdt' ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽` : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`}</div>}
-                    <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : 'Начать сделку'}</button>
+
+                    <input 
+                        type="number" 
+                        className="amountInput"
+                        value={amount} 
+                        onChange={e => setAmount(e.target.value)} 
+                        placeholder={`Введите сумму в ${currencyType === 'usdt' ? 'USDT' : 'RUB'}`}
+                        autoFocus
+                    />
+
+                    {amount && (
+                        <div className="calcResult">
+                            {currencyType === 'usdt' 
+                                ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽`
+                                : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`
+                            }
+                        </div>
+                    )}
+
+                    <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>
+                        {creatingTrade ? 'Создание...' : '✅ Начать сделку'}
+                    </button>
                 </div>
             </div>
         </div>

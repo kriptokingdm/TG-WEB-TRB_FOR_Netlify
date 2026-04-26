@@ -403,28 +403,33 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-       // ============ ЭКРАН ПОКУПКИ С КОМПАКТНЫМ ФИЛЬТРОМ ============
+        // ============ ЭКРАН ПОКУПКИ С ФИЛЬТРАМИ-ЧИПСАМИ ============
     const BuyScreen = () => {
-        const [filters, setFilters] = useState({
-            maxAmount: '',
-            maxTime: 'all'
-        });
-        const [localMaxAmount, setLocalMaxAmount] = useState('');
+        const [amountFilter, setAmountFilter] = useState('all');
+        const [timeFilter, setTimeFilter] = useState('all');
 
-        const handleAmountChange = (e) => {
-            const value = e.target.value;
-            setLocalMaxAmount(value);
-            setFilters(prev => ({ ...prev, maxAmount: value }));
-        };
+        const amountOptions = [
+            { value: 'all', label: 'Все суммы' },
+            { value: '50', label: 'До 50 USDT' },
+            { value: '100', label: 'До 100 USDT' },
+            { value: '500', label: 'До 500 USDT' },
+            { value: '1000', label: 'До 1000 USDT' },
+            { value: '5000', label: 'До 5000 USDT' }
+        ];
+
+        const timeOptionsFilter = [
+            { value: 'all', label: 'Любое время' },
+            { value: '15', label: 'До 15 мин' },
+            { value: '30', label: 'До 30 мин' },
+            { value: '60', label: 'До 1 часа' },
+            { value: '120', label: 'До 2 часов' }
+        ];
 
         const filteredOrders = sellOrders.filter(order => {
-            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            if (filters.maxTime !== 'all') {
+            if (amountFilter !== 'all' && order.available_amount > parseFloat(amountFilter)) return false;
+            if (timeFilter !== 'all') {
                 const time = order.payment_time || 30;
-                if (filters.maxTime === '15' && time > 15) return false;
-                if (filters.maxTime === '30' && time > 30) return false;
-                if (filters.maxTime === '60' && time > 60) return false;
-                if (filters.maxTime === '120' && time > 120) return false;
+                if (time > parseFloat(timeFilter)) return false;
             }
             return true;
         });
@@ -437,31 +442,35 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <div className="header-placeholder"></div>
                 </div>
 
-                {/* Компактный фильтр */}
-                <div className="compact-filters">
-                    <div className="filter-item">
-                        <span className="filter-label">💰 До</span>
-                        <input 
-                            type="number" 
-                            className="filter-input"
-                            placeholder="Сумма USDT"
-                            value={localMaxAmount}
-                            onChange={handleAmountChange}
-                        />
+                {/* Фильтры в виде чипсов */}
+                <div className="filters-section">
+                    <div className="filter-group">
+                        <span className="filter-group-title">💰 Сумма</span>
+                        <div className="chips-container">
+                            {amountOptions.map(opt => (
+                                <button 
+                                    key={opt.value}
+                                    className={`chip ${amountFilter === opt.value ? 'active' : ''}`}
+                                    onClick={() => setAmountFilter(opt.value)}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="filter-item">
-                        <span className="filter-label">⏰ До</span>
-                        <select 
-                            className="filter-select"
-                            value={filters.maxTime}
-                            onChange={e => setFilters({...filters, maxTime: e.target.value})}
-                        >
-                            <option value="all">Любое время</option>
-                            <option value="15">15 минут</option>
-                            <option value="30">30 минут</option>
-                            <option value="60">1 час</option>
-                            <option value="120">2 часа</option>
-                        </select>
+                    <div className="filter-group">
+                        <span className="filter-group-title">⏰ Время на оплату</span>
+                        <div className="chips-container">
+                            {timeOptionsFilter.map(opt => (
+                                <button 
+                                    key={opt.value}
+                                    className={`chip ${timeFilter === opt.value ? 'active' : ''}`}
+                                    onClick={() => setTimeFilter(opt.value)}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -492,28 +501,33 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         );
     };
 
-    // ============ ЭКРАН ПРОДАЖИ С КОМПАКТНЫМ ФИЛЬТРОМ ============
+    // ============ ЭКРАН ПРОДАЖИ С ФИЛЬТРАМИ-ЧИПСАМИ ============
     const SellScreen = () => {
-        const [filters, setFilters] = useState({
-            maxAmount: '',
-            maxTime: 'all'
-        });
-        const [localMaxAmount, setLocalMaxAmount] = useState('');
+        const [amountFilter, setAmountFilter] = useState('all');
+        const [timeFilter, setTimeFilter] = useState('all');
 
-        const handleAmountChange = (e) => {
-            const value = e.target.value;
-            setLocalMaxAmount(value);
-            setFilters(prev => ({ ...prev, maxAmount: value }));
-        };
+        const amountOptions = [
+            { value: 'all', label: 'Все суммы' },
+            { value: '50', label: 'До 50 USDT' },
+            { value: '100', label: 'До 100 USDT' },
+            { value: '500', label: 'До 500 USDT' },
+            { value: '1000', label: 'До 1000 USDT' },
+            { value: '5000', label: 'До 5000 USDT' }
+        ];
+
+        const timeOptionsFilter = [
+            { value: 'all', label: 'Любое время' },
+            { value: '15', label: 'До 15 мин' },
+            { value: '30', label: 'До 30 мин' },
+            { value: '60', label: 'До 1 часа' },
+            { value: '120', label: 'До 2 часов' }
+        ];
 
         const filteredOrders = buyOrders.filter(order => {
-            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            if (filters.maxTime !== 'all') {
+            if (amountFilter !== 'all' && order.available_amount > parseFloat(amountFilter)) return false;
+            if (timeFilter !== 'all') {
                 const time = order.payment_time || 30;
-                if (filters.maxTime === '15' && time > 15) return false;
-                if (filters.maxTime === '30' && time > 30) return false;
-                if (filters.maxTime === '60' && time > 60) return false;
-                if (filters.maxTime === '120' && time > 120) return false;
+                if (time > parseFloat(timeFilter)) return false;
             }
             return true;
         });
@@ -526,31 +540,35 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <div className="header-placeholder"></div>
                 </div>
 
-                {/* Компактный фильтр */}
-                <div className="compact-filters">
-                    <div className="filter-item">
-                        <span className="filter-label">💰 До</span>
-                        <input 
-                            type="number" 
-                            className="filter-input"
-                            placeholder="Сумма USDT"
-                            value={localMaxAmount}
-                            onChange={handleAmountChange}
-                        />
+                {/* Фильтры в виде чипсов */}
+                <div className="filters-section">
+                    <div className="filter-group">
+                        <span className="filter-group-title">💰 Сумма</span>
+                        <div className="chips-container">
+                            {amountOptions.map(opt => (
+                                <button 
+                                    key={opt.value}
+                                    className={`chip ${amountFilter === opt.value ? 'active' : ''}`}
+                                    onClick={() => setAmountFilter(opt.value)}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="filter-item">
-                        <span className="filter-label">⏰ До</span>
-                        <select 
-                            className="filter-select"
-                            value={filters.maxTime}
-                            onChange={e => setFilters({...filters, maxTime: e.target.value})}
-                        >
-                            <option value="all">Любое время</option>
-                            <option value="15">15 минут</option>
-                            <option value="30">30 минут</option>
-                            <option value="60">1 час</option>
-                            <option value="120">2 часа</option>
-                        </select>
+                    <div className="filter-group">
+                        <span className="filter-group-title">⏰ Время на оплату</span>
+                        <div className="chips-container">
+                            {timeOptionsFilter.map(opt => (
+                                <button 
+                                    key={opt.value}
+                                    className={`chip ${timeFilter === opt.value ? 'active' : ''}`}
+                                    onClick={() => setTimeFilter(opt.value)}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

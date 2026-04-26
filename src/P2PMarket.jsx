@@ -368,38 +368,31 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
-    // ============ ЭКРАНЫ ============
-    
+    // ============ ПРОФИЛЬ ============
     const ProfileScreen = () => (
         <div className="profile">
-            {/* Кнопка назад */}
             <div className="profile-header">
                 <button className="profile-back-btn" onClick={onBack}>←</button>
                 <div className="profile-header-placeholder"></div>
             </div>
-
             <div className="avatarWrap">
                 <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
                 <div className="name">{userName}</div>
             </div>
-
             <div className="stats">
                 <div><b>{stats.total}</b><span>Всего</span></div>
                 <div><b>{stats.completed}</b><span>Завершено</span></div>
                 <div><b>{stats.active}</b><span>Активные</span></div>
             </div>
-
             <div className="actions">
                 <button className="buy" onClick={() => setScreen('buy')}>Купить</button>
                 <button className="sell" onClick={() => setScreen('sell')}>Продать</button>
             </div>
-
             <div className="menu">
                 <button className="menu-item" onClick={() => { setScreen('my_ads'); fetchMyAds(); }}>📋 Мои объявления</button>
                 <button className="menu-item" onClick={() => { setScreen('orders'); fetchMyTrades(); }}>📦 Мои ордера</button>
                 <button className="menu-item" onClick={() => setScreen('help')}>❓ Помощь</button>
             </div>
-
             {activeTrade && (
                 <div className="active-trade-banner" onClick={() => setScreen('orders')}>
                     <span>🟢</span>
@@ -410,7 +403,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-        // ============ ЭКРАН ПОКУПКИ С ФИЛЬТРАМИ ============
+    // ============ ПОКУПКА С ФИЛЬТРАМИ ============
     const BuyScreen = () => {
         const [filters, setFilters] = useState({
             minAmount: '',
@@ -421,12 +414,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         const [showFilters, setShowFilters] = useState(false);
 
         const filteredOrders = sellOrders.filter(order => {
-            // Фильтр по сумме
             if (filters.minAmount && order.available_amount < parseFloat(filters.minAmount)) return false;
             if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            // Фильтр по способу оплаты
             if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
-            // Фильтр по времени оплаты
             if (filters.timeFilter !== 'all') {
                 const time = order.payment_time || 30;
                 if (filters.timeFilter === '15' && time !== 15) return false;
@@ -444,129 +434,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <h2>Купить USDT</h2>
                     <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>🔍</button>
                 </div>
-
-                {/* Панель фильтров */}
-                {showFilters && (
-                    <div className="filters-panel">
-                        <div className="filter-row">
-                            <div className="filter-group">
-                                <label>Сумма USDT</label>
-                                <div className="filter-range">
-                                    <input 
-                                        type="number" 
-                                        placeholder="От" 
-                                        value={filters.minAmount}
-                                        onChange={e => setFilters({...filters, minAmount: e.target.value})}
-                                    />
-                                    <span>-</span>
-                                    <input 
-                                        type="number" 
-                                        placeholder="До" 
-                                        value={filters.maxAmount}
-                                        onChange={e => setFilters({...filters, maxAmount: e.target.value})}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="filter-row">
-                            <div className="filter-group">
-                                <label>Способ оплаты</label>
-                                <select 
-                                    value={filters.paymentMethod}
-                                    onChange={e => setFilters({...filters, paymentMethod: e.target.value})}
-                                >
-                                    <option value="all">Все способы</option>
-                                    {paymentMethodsList.map(m => (
-                                        <option key={m.value} value={m.value}>{m.icon} {m.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="filter-row">
-                            <div className="filter-group">
-                                <label>Время на оплату</label>
-                                <select 
-                                    value={filters.timeFilter}
-                                    onChange={e => setFilters({...filters, timeFilter: e.target.value})}
-                                >
-                                    <option value="all">Любое</option>
-                                    {timeOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="filter-actions">
-                            <button className="filter-reset" onClick={() => setFilters({ minAmount: '', maxAmount: '', paymentMethod: 'all', timeFilter: 'all' })}>Сбросить</button>
-                            <button className="filter-apply" onClick={() => setShowFilters(false)}>Применить</button>
-                        </div>
-                    </div>
-                )}
-
-                <div className="list">
-                    {loading ? (
-                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                    ) : filteredOrders.length === 0 ? (
-                        <div className="empty">Нет объявлений</div>
-                    ) : (
-                        filteredOrders.map(order => (
-                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                                <div className="user">
-                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                    <div>
-                                        <div>{order.user_name}</div>
-                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
-                                    </div>
-                                </div>
-                                <div className="price">{formatNumber(order.rate)} ₽</div>
-                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                                <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
-                                <div className="payment-icons">
-                                    {order.payment_methods?.slice(0, 3).map(m => (
-                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
-                                    ))}
-                                </div>
-                                <button className="action">Купить</button>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
-        );
-    };
-
-    // ============ ЭКРАН ПРОДАЖИ С ФИЛЬТРАМИ ============
-    const SellScreen = () => {
-        const [filters, setFilters] = useState({
-            minAmount: '',
-            maxAmount: '',
-            paymentMethod: 'all',
-            timeFilter: 'all'
-        });
-        const [showFilters, setShowFilters] = useState(false);
-
-        const filteredOrders = buyOrders.filter(order => {
-            if (filters.minAmount && order.available_amount < parseFloat(filters.minAmount)) return false;
-            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
-            if (filters.timeFilter !== 'all') {
-                const time = order.payment_time || 30;
-                if (filters.timeFilter === '15' && time !== 15) return false;
-                if (filters.timeFilter === '30' && time !== 30) return false;
-                if (filters.timeFilter === '60' && time !== 60) return false;
-                if (filters.timeFilter === '120' && time !== 120) return false;
-            }
-            return true;
-        });
-
-        return (
-            <div className="screen">
-                <div className="header">
-                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    <h2>Продать USDT</h2>
-                    <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>🔍</button>
-                </div>
-
                 {showFilters && (
                     <div className="filters-panel">
                         <div className="filter-row">
@@ -603,39 +470,118 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         </div>
                     </div>
                 )}
-
                 <div className="list">
-                    {loading ? (
-                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                    ) : filteredOrders.length === 0 ? (
-                        <div className="empty">Нет объявлений</div>
-                    ) : (
-                        filteredOrders.map(order => (
-                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                                <div className="user">
-                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                    <div>
-                                        <div>{order.user_name}</div>
-                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
-                                    </div>
+                    {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredOrders.map(order => (
+                        <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                            <div className="user">
+                                <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                                <div>
+                                    <div>{order.user_name}</div>
+                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
                                 </div>
-                                <div className="price">{formatNumber(order.rate)} ₽</div>
-                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                                <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
-                                <div className="payment-icons">
-                                    {order.payment_methods?.slice(0, 3).map(m => (
-                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
-                                    ))}
-                                </div>
-                                <button className="action">Продать</button>
                             </div>
-                        ))
-                    )}
+                            <div className="price">{formatNumber(order.rate)} ₽</div>
+                            <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                            <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
+                            <div className="payment-icons">{order.payment_methods?.slice(0, 3).map(m => <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>)}</div>
+                            <button className="action">Купить</button>
+                        </div>
+                    ))}
                 </div>
             </div>
         );
     };
 
+    // ============ ПРОДАЖА С ФИЛЬТРАМИ ============
+    const SellScreen = () => {
+        const [filters, setFilters] = useState({
+            minAmount: '',
+            maxAmount: '',
+            paymentMethod: 'all',
+            timeFilter: 'all'
+        });
+        const [showFilters, setShowFilters] = useState(false);
+
+        const filteredOrders = buyOrders.filter(order => {
+            if (filters.minAmount && order.available_amount < parseFloat(filters.minAmount)) return false;
+            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+            if (filters.timeFilter !== 'all') {
+                const time = order.payment_time || 30;
+                if (filters.timeFilter === '15' && time !== 15) return false;
+                if (filters.timeFilter === '30' && time !== 30) return false;
+                if (filters.timeFilter === '60' && time !== 60) return false;
+                if (filters.timeFilter === '120' && time !== 120) return false;
+            }
+            return true;
+        });
+
+        return (
+            <div className="screen">
+                <div className="header">
+                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                    <h2>Продать USDT</h2>
+                    <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>🔍</button>
+                </div>
+                {showFilters && (
+                    <div className="filters-panel">
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Сумма USDT</label>
+                                <div className="filter-range">
+                                    <input type="number" placeholder="От" value={filters.minAmount} onChange={e => setFilters({...filters, minAmount: e.target.value})} />
+                                    <span>-</span>
+                                    <input type="number" placeholder="До" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Способ оплаты</label>
+                                <select value={filters.paymentMethod} onChange={e => setFilters({...filters, paymentMethod: e.target.value})}>
+                                    <option value="all">Все способы</option>
+                                    {paymentMethodsList.map(m => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Время на оплату</label>
+                                <select value={filters.timeFilter} onChange={e => setFilters({...filters, timeFilter: e.target.value})}>
+                                    <option value="all">Любое</option>
+                                    {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-actions">
+                            <button className="filter-reset" onClick={() => setFilters({ minAmount: '', maxAmount: '', paymentMethod: 'all', timeFilter: 'all' })}>Сбросить</button>
+                            <button className="filter-apply" onClick={() => setShowFilters(false)}>Применить</button>
+                        </div>
+                    </div>
+                )}
+                <div className="list">
+                    {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredOrders.map(order => (
+                        <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                            <div className="user">
+                                <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                                <div>
+                                    <div>{order.user_name}</div>
+                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+                                </div>
+                            </div>
+                            <div className="price">{formatNumber(order.rate)} ₽</div>
+                            <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                            <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
+                            <div className="payment-icons">{order.payment_methods?.slice(0, 3).map(m => <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>)}</div>
+                            <button className="action">Продать</button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    // ============ МОИ ОБЪЯВЛЕНИЯ ============
     const MyAdsScreen = () => (
         <div className="screen">
             <div className="header">
@@ -643,7 +589,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                 <h2>Мои объявления</h2>
                 <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
             </div>
-
             {showCreateForm && (
                 <div className="createForm">
                     <div className="formType">
@@ -657,14 +602,10 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
                     </div>
                     <div className="paymentBtns">
-                        {paymentMethodsList.map(m => (
-                            <button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => {
-                                const methods = newOrder.payment_methods.includes(m.value)
-                                    ? newOrder.payment_methods.filter(x => x !== m.value)
-                                    : [...newOrder.payment_methods, m.value];
-                                setNewOrder({...newOrder, payment_methods: methods});
-                            }}>{m.icon}</button>
-                        ))}
+                        {paymentMethodsList.map(m => (<button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => {
+                            const methods = newOrder.payment_methods.includes(m.value) ? newOrder.payment_methods.filter(x => x !== m.value) : [...newOrder.payment_methods, m.value];
+                            setNewOrder({...newOrder, payment_methods: methods});
+                        }}>{m.icon}</button>))}
                     </div>
                     <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}>
                         {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
@@ -673,7 +614,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                     <button className="submit" onClick={createOrder} disabled={creatingTrade}>Создать</button>
                 </div>
             )}
-
             <div className="list">
                 {loading ? <div className="loading">Загрузка...</div> : myAds.length === 0 ? <div className="empty">Нет объявлений</div> : myAds.map(ad => (
                     <div key={ad.id} className="card">
@@ -684,10 +624,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         <div className="price">{ad.rate} ₽</div>
                         <div className="amount">{ad.available_amount}/{ad.amount} USDT</div>
                         <div className="adActions">
-                            <button className="edit" onClick={() => {
-                                const newRate = prompt('Новый курс:', ad.rate);
-                                if (newRate && !isNaN(newRate)) updateAdRate(ad.id, parseFloat(newRate));
-                            }}>Изменить курс</button>
+                            <button className="edit" onClick={() => { const newRate = prompt('Новый курс:', ad.rate); if (newRate && !isNaN(newRate)) updateAdRate(ad.id, parseFloat(newRate)); }}>Изменить курс</button>
                             <button className="delete" onClick={() => deleteAd(ad.id)}>Удалить</button>
                         </div>
                     </div>
@@ -696,6 +633,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
+    // ============ МОИ ОРДЕРА ============
     const OrdersScreen = () => (
         <div className="screen">
             <div className="header">
@@ -736,6 +674,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
+    // ============ ПОМОЩЬ ============
     const HelpScreen = () => (
         <div className="screen">
             <div className="header">
@@ -752,6 +691,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
+    // ============ МОДАЛКА ============
     const TradeModal = () => (
         <div className="modal" onClick={() => setSelected(null)}>
             <div className="modalContent" onClick={e => e.stopPropagation()}>

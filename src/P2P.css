@@ -717,4 +717,112 @@
     background: var(--tg-theme-section-bg-color, #2c2c2e);
     border-radius: 12px;
     color: var(--tg-theme-hint-color, #888);
-}x  
+}
+
+/* ============ ФИЛЬТРЫ ============ */
+.filter-btn {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.filters-panel {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.filter-row {
+    margin-bottom: 16px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.filter-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-range input {
+    flex: 1;
+    padding: 10px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 10px;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.filter-range span {
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.filter-group select {
+    width: 100%;
+    padding: 10px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 10px;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.filter-reset, .filter-apply {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.filter-reset {
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.filter-apply {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+/* Дополнительные стили для карточек */
+.order-meta {
+    font-size: 12px;
+    color: #ff9500;
+    margin-bottom: 8px;
+}
+
+.payment-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.payment-icon {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border-radius: 12px;
+    color: var(--tg-theme-hint-color, #888);
+}

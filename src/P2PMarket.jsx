@@ -1,10 +1,10 @@
-// src/P2PMarket.jsx
+// src/P2PMarket.jsx - упрощённая рабочая версия
 import React, { useState, useEffect } from 'react';
 import './P2P.css';
 
 const API = 'https://tethrab.shop';
 
-export default function P2PMarket({ telegramUser, showToast, onBack }) {
+export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo }) {
     const userId = telegramUser?.id || '7879866656';
     const [userName, setUserName] = useState(telegramUser?.first_name || telegramUser?.username || 'User');
     
@@ -23,6 +23,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
     const [creatingTrade, setCreatingTrade] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [activeTab, setActiveTab] = useState('active');
+    
+    // Фильтры
+    const [filters, setFilters] = useState({
+        paymentMethod: 'all',
+        maxAmount: '',
+        maxTime: 'all'
+    });
+    const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
+    const [showTimeDropdown, setShowTimeDropdown] = useState(false);
 
     const [newOrder, setNewOrder] = useState({
         type: 'sell',
@@ -40,6 +49,22 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         { value: 'card', label: 'Карта', icon: '💳' },
         { value: 'sbp', label: 'СБП', icon: '📱' },
         { value: 'cash', label: 'Наличные', icon: '💰' }
+    ];
+
+    const paymentMethodsFilter = [
+        { value: 'all', label: 'Все способы' },
+        { value: 'bank_transfer', label: '🏦 Банк' },
+        { value: 'card', label: '💳 Карта' },
+        { value: 'sbp', label: '📱 СБП' },
+        { value: 'cash', label: '💰 Наличные' }
+    ];
+
+    const timeFilterOptions = [
+        { value: 'all', label: 'Любое время' },
+        { value: '15', label: '⏰ 15 мин' },
+        { value: '30', label: '⏰ 30 мин' },
+        { value: '60', label: '⏰ 1 час' },
+        { value: '120', label: '⏰ 2 часа' }
     ];
 
     const timeOptions = [
@@ -95,32 +120,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             const buyData = await buyRes.json();
             const sellData = await sellRes.json();
             
-            const buyWithInfo = await Promise.all((buyData.orders || []).map(async (order) => {
-                const userRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
-                const userStats = await userRes.json();
-                return {
-                    ...order,
-                    user_name: order.user_name || `User${order.user_id?.slice(-4)}`,
-                    completion_rate: userStats.successful_trades && userStats.total_trades 
-                        ? Math.round((userStats.successful_trades / userStats.total_trades) * 100) : 100,
-                    completed_trades: userStats.successful_trades || 0
-                };
-            }));
-            
-            const sellWithInfo = await Promise.all((sellData.orders || []).map(async (order) => {
-                const userRes = await fetch(`${API}/api/p2p/stats/${order.user_id}`);
-                const userStats = await userRes.json();
-                return {
-                    ...order,
-                    user_name: order.user_name || `User${order.user_id?.slice(-4)}`,
-                    completion_rate: userStats.successful_trades && userStats.total_trades 
-                        ? Math.round((userStats.successful_trades / userStats.total_trades) * 100) : 100,
-                    completed_trades: userStats.successful_trades || 0
-                };
-            }));
-            
-            setBuyOrders(buyWithInfo.sort((a, b) => b.rate - a.rate));
-            setSellOrders(sellWithInfo.sort((a, b) => a.rate - b.rate));
+            setBuyOrders((buyData.orders || []).sort((a, b) => b.rate - a.rate));
+            setSellOrders((sellData.orders || []).sort((a, b) => a.rate - b.rate));
         } catch (e) {
             console.error('Ошибка загрузки ордеров:', e);
         } finally {
@@ -368,6 +369,39 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         return found ? `${found.icon} ${found.label}` : method;
     };
 
+    const openRules = () => {
+        if (navigateTo) {
+            navigateTo('help');
+            localStorage.setItem('helpSection', 'rules');
+        } else if (window.location) {
+            window.location.hash = 'help';
+            localStorage.setItem('helpSection', 'rules');
+        }
+    };
+
+    const selectedPayment = paymentMethodsFilter.find(p => p.value === filters.paymentMethod) || paymentMethodsFilter[0];
+    const selectedTime = timeFilterOptions.find(t => t.value === filters.maxTime) || timeFilterOptions[0];
+
+    const filteredSellOrders = sellOrders.filter(order => {
+        if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+        if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+        if (filters.maxTime !== 'all') {
+            const time = order.payment_time || 30;
+            if (time > parseFloat(filters.maxTime)) return false;
+        }
+        return true;
+    });
+
+    const filteredBuyOrders = buyOrders.filter(order => {
+        if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+        if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+        if (filters.maxTime !== 'all') {
+            const time = order.payment_time || 30;
+            if (time > parseFloat(filters.maxTime)) return false;
+        }
+        return true;
+    });
+
     // ============ ПРОФИЛЬ ============
     const ProfileScreen = () => (
         <div className="profile">
@@ -403,307 +437,145 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-         // ============ ЭКРАН ПОКУПКИ ============
-    const BuyScreen = () => {
-        const [filters, setFilters] = useState({
-            paymentMethod: 'all',
-            maxAmount: '',
-            maxTime: 'all'
-        });
-        const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
-        const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+    // ============ ЭКРАН ПОКУПКИ ============
+    const BuyScreen = () => (
+        <div className="screen">
+            <div className="header">
+                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <h2>Купить USDT</h2>
+                <div className="header-placeholder"></div>
+            </div>
 
-        const paymentMethodsFilter = [
-            { value: 'all', label: 'Все способы' },
-            { value: 'bank_transfer', label: '🏦 Банк' },
-            { value: 'card', label: '💳 Карта' },
-            { value: 'sbp', label: '📱 СБП' },
-            { value: 'cash', label: '💰 Наличные' }
-        ];
+            <div className="info-row">
+                <span className="info-icon">🛡️</span>
+                <span className="info-text">
+                    Покупайте USDT по лучшему курсу.
+                    <span className="rules-link" onClick={openRules}> Правила P2P</span>
+                </span>
+            </div>
 
-        const timeFilterOptions = [
-            { value: 'all', label: 'Любое время' },
-            { value: '15', label: '⏰ 15 мин' },
-            { value: '30', label: '⏰ 30 мин' },
-            { value: '60', label: '⏰ 1 час' },
-            { value: '120', label: '⏰ 2 часа' }
-        ];
-
-        const selectedPayment = paymentMethodsFilter.find(p => p.value === filters.paymentMethod) || paymentMethodsFilter[0];
-        const selectedTime = timeFilterOptions.find(t => t.value === filters.maxTime) || timeFilterOptions[0];
-
-        const filteredOrders = sellOrders.filter(order => {
-            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
-            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            if (filters.maxTime !== 'all') {
-                const time = order.payment_time || 30;
-                if (time > parseFloat(filters.maxTime)) return false;
-            }
-            return true;
-        });
-
-        const openRules = () => {
-            navigateTo('help');
-            localStorage.setItem('helpSection', 'rules');
-        };
-
-        return (
-            <div className="screen">
-                <div className="header">
-                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    <h2>Продать USDT</h2>
-                    <div className="header-placeholder"></div>
-                </div>
-
-                {/* Баннер - компактный */}
-                <div className="info-row">
-                    <span className="info-icon">🛡️</span>
-                    <span className="info-text">
-                        Продавайте USDT по лучшему курсу. 
-                        <span className="rules-link" onClick={openRules}> Правила P2P</span>
-                    </span>
-                </div>
-
-                {/* Фильтры - 3 чипса в ряд */}
-                <div className="filter-bar">
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Способ</div>
-                        <div className="filter-chip-value" onClick={() => setShowPaymentDropdown(!showPaymentDropdown)}>
-                            {selectedPayment.label}
-                            <span className="chip-arrow">⌄</span>
+            <div className="filter-bar">
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Способ</div>
+                    <div className="filter-chip-value" onClick={() => setShowPaymentDropdown(!showPaymentDropdown)}>
+                        {selectedPayment.label}
+                        <span className="chip-arrow">⌄</span>
+                    </div>
+                    {showPaymentDropdown && (
+                        <div className="chip-dropdown">
+                            {paymentMethodsFilter.map(m => (
+                                <div key={m.value} className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, paymentMethod: m.value}); setShowPaymentDropdown(false); }}>{m.label}</div>
+                            ))}
                         </div>
-                        {showPaymentDropdown && (
-                            <div className="chip-dropdown">
-                                {paymentMethodsFilter.map(m => (
-                                    <div 
-                                        key={m.value}
-                                        className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, paymentMethod: m.value});
-                                            setShowPaymentDropdown(false);
-                                        }}
-                                    >
-                                        {m.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Сумма до</div>
-                        <input 
-                            type="number" 
-                            className="filter-chip-input"
-                            placeholder="USDT"
-                            value={filters.maxAmount}
-                            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Время</div>
-                        <div className="filter-chip-value" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
-                            {selectedTime.label}
-                            <span className="chip-arrow">⌄</span>
-                        </div>
-                        {showTimeDropdown && (
-                            <div className="chip-dropdown">
-                                {timeFilterOptions.map(t => (
-                                    <div 
-                                        key={t.value}
-                                        className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, maxTime: t.value});
-                                            setShowTimeDropdown(false);
-                                        }}
-                                    >
-                                        {t.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
-
-                <div className="list">
-                    {loading ? (
-                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                    ) : filteredOrders.length === 0 ? (
-                        <div className="empty">Нет объявлений</div>
-                    ) : (
-                        filteredOrders.map(order => (
-                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                                <div className="user">
-                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                    <div>
-                                        <div>{order.user_name}</div>
-                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades}</div>
-                                    </div>
-                                </div>
-                                <div className="price">{formatNumber(order.rate)} ₽</div>
-                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                                <div className="order-meta">⏰ {order.payment_time || 30} мин</div>
-                                <button className="action">Продать</button>
-                            </div>
-                        ))
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Сумма до</div>
+                    <input type="number" className="filter-chip-input" placeholder="USDT" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                </div>
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Время</div>
+                    <div className="filter-chip-value" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
+                        {selectedTime.label}
+                        <span className="chip-arrow">⌄</span>
+                    </div>
+                    {showTimeDropdown && (
+                        <div className="chip-dropdown">
+                            {timeFilterOptions.map(t => (
+                                <div key={t.value} className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, maxTime: t.value}); setShowTimeDropdown(false); }}>{t.label}</div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
-        );
-    };
+
+            <div className="list">
+                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredSellOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredSellOrders.map(order => (
+                    <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                        <div className="user">
+                            <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                            <div><div>{order.user_name || `User${order.user_id?.slice(-4)}`}</div></div>
+                        </div>
+                        <div className="price">{formatNumber(order.rate)} ₽</div>
+                        <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                        <div className="order-meta">⏰ {order.payment_time || 30} мин</div>
+                        <button className="action">Купить</button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 
     // ============ ЭКРАН ПРОДАЖИ ============
-    const SellScreen = () => {
-        const [filters, setFilters] = useState({
-            paymentMethod: 'all',
-            maxAmount: '',
-            maxTime: 'all'
-        });
-        const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
-        const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+    const SellScreen = () => (
+        <div className="screen">
+            <div className="header">
+                <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                <h2>Продать USDT</h2>
+                <div className="header-placeholder"></div>
+            </div>
 
-        const paymentMethodsFilter = [
-            { value: 'all', label: 'Все способы' },
-            { value: 'bank_transfer', label: '🏦 Банк' },
-            { value: 'card', label: '💳 Карта' },
-            { value: 'sbp', label: '📱 СБП' },
-            { value: 'cash', label: '💰 Наличные' }
-        ];
+            <div className="info-row">
+                <span className="info-icon">🛡️</span>
+                <span className="info-text">
+                    Продавайте USDT по лучшему курсу.
+                    <span className="rules-link" onClick={openRules}> Правила P2P</span>
+                </span>
+            </div>
 
-        const timeFilterOptions = [
-            { value: 'all', label: 'Любое время' },
-            { value: '15', label: '⏰ 15 мин' },
-            { value: '30', label: '⏰ 30 мин' },
-            { value: '60', label: '⏰ 1 час' },
-            { value: '120', label: '⏰ 2 часа' }
-        ];
-
-        const selectedPayment = paymentMethodsFilter.find(p => p.value === filters.paymentMethod) || paymentMethodsFilter[0];
-        const selectedTime = timeFilterOptions.find(t => t.value === filters.maxTime) || timeFilterOptions[0];
-
-        const filteredOrders = buyOrders.filter(order => {
-            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
-            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
-            if (filters.maxTime !== 'all') {
-                const time = order.payment_time || 30;
-                if (time > parseFloat(filters.maxTime)) return false;
-            }
-            return true;
-        });
-
-        const openRules = () => {
-            navigateTo('help');
-            localStorage.setItem('helpSection', 'rules');
-        };
-
-        return (
-            <div className="screen">
-                <div className="header">
-                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
-                    <h2>Купить USDT</h2>
-                    <div className="header-placeholder"></div>
-                </div>
-
-                {/* Баннер - компактный */}
-                <div className="info-row">
-                    <span className="info-icon">🛡️</span>
-                    <span className="info-text">
-                        Покупайте USDT по лучшему курсу. 
-                        <span className="rules-link" onClick={openRules}> Правила P2P</span>
-                    </span>
-                </div>
-
-                {/* Фильтры - 3 чипса в ряд */}
-                <div className="filter-bar">
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Способ</div>
-                        <div className="filter-chip-value" onClick={() => setShowPaymentDropdown(!showPaymentDropdown)}>
-                            {selectedPayment.label}
-                            <span className="chip-arrow">⌄</span>
+            <div className="filter-bar">
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Способ</div>
+                    <div className="filter-chip-value" onClick={() => setShowPaymentDropdown(!showPaymentDropdown)}>
+                        {selectedPayment.label}
+                        <span className="chip-arrow">⌄</span>
+                    </div>
+                    {showPaymentDropdown && (
+                        <div className="chip-dropdown">
+                            {paymentMethodsFilter.map(m => (
+                                <div key={m.value} className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, paymentMethod: m.value}); setShowPaymentDropdown(false); }}>{m.label}</div>
+                            ))}
                         </div>
-                        {showPaymentDropdown && (
-                            <div className="chip-dropdown">
-                                {paymentMethodsFilter.map(m => (
-                                    <div 
-                                        key={m.value}
-                                        className={`chip-option ${filters.paymentMethod === m.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, paymentMethod: m.value});
-                                            setShowPaymentDropdown(false);
-                                        }}
-                                    >
-                                        {m.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Сумма до</div>
-                        <input 
-                            type="number" 
-                            className="filter-chip-input"
-                            placeholder="USDT"
-                            value={filters.maxAmount}
-                            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="filter-chip">
-                        <div className="filter-chip-label">Время</div>
-                        <div className="filter-chip-value" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
-                            {selectedTime.label}
-                            <span className="chip-arrow">⌄</span>
-                        </div>
-                        {showTimeDropdown && (
-                            <div className="chip-dropdown">
-                                {timeFilterOptions.map(t => (
-                                    <div 
-                                        key={t.value}
-                                        className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, maxTime: t.value});
-                                            setShowTimeDropdown(false);
-                                        }}
-                                    >
-                                        {t.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
-
-                <div className="list">
-                    {loading ? (
-                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                    ) : filteredOrders.length === 0 ? (
-                        <div className="empty">Нет объявлений</div>
-                    ) : (
-                        filteredOrders.map(order => (
-                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                                <div className="user">
-                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                    <div>
-                                        <div>{order.user_name}</div>
-                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades}</div>
-                                    </div>
-                                </div>
-                                <div className="price">{formatNumber(order.rate)} ₽</div>
-                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                                <div className="order-meta">⏰ {order.payment_time || 30} мин</div>
-                                <button className="action">Купить</button>
-                            </div>
-                        ))
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Сумма до</div>
+                    <input type="number" className="filter-chip-input" placeholder="USDT" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                </div>
+                <div className="filter-chip">
+                    <div className="filter-chip-label">Время</div>
+                    <div className="filter-chip-value" onClick={() => setShowTimeDropdown(!showTimeDropdown)}>
+                        {selectedTime.label}
+                        <span className="chip-arrow">⌄</span>
+                    </div>
+                    {showTimeDropdown && (
+                        <div className="chip-dropdown">
+                            {timeFilterOptions.map(t => (
+                                <div key={t.value} className={`chip-option ${filters.maxTime === t.value ? 'active' : ''}`} onClick={() => { setFilters({...filters, maxTime: t.value}); setShowTimeDropdown(false); }}>{t.label}</div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
-        );
-    };
 
-    // ============ МОИ ОБЪЯВЛЕНИЯ ============
+            <div className="list">
+                {loading ? [...Array(3)].map((_, i) => <div key={i} className="skeleton" />) : filteredBuyOrders.length === 0 ? <div className="empty">Нет объявлений</div> : filteredBuyOrders.map(order => (
+                    <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                        <div className="user">
+                            <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                            <div><div>{order.user_name || `User${order.user_id?.slice(-4)}`}</div></div>
+                        </div>
+                        <div className="price">{formatNumber(order.rate)} ₽</div>
+                        <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                        <div className="order-meta">⏰ {order.payment_time || 30} мин</div>
+                        <button className="action">Продать</button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    // ============ МОИ ОБЪЯВЛЕНИЯ ==========
     const MyAdsScreen = () => (
         <div className="screen">
             <div className="header">
@@ -724,10 +596,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
                     </div>
                     <div className="paymentBtns">
-                        {paymentMethodsList.map(m => (<button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => {
-                            const methods = newOrder.payment_methods.includes(m.value) ? newOrder.payment_methods.filter(x => x !== m.value) : [...newOrder.payment_methods, m.value];
-                            setNewOrder({...newOrder, payment_methods: methods});
-                        }}>{m.icon}</button>))}
+                        {paymentMethodsList.map(m => (<button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => { const methods = newOrder.payment_methods.includes(m.value) ? newOrder.payment_methods.filter(x => x !== m.value) : [...newOrder.payment_methods, m.value]; setNewOrder({...newOrder, payment_methods: methods}); }}>{m.icon}</button>))}
                     </div>
                     <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}>
                         {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
@@ -755,7 +624,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // ============ МОИ ОРДЕРА ============
+    // ============ МОИ ОРДЕРА ==========
     const OrdersScreen = () => (
         <div className="screen">
             <div className="header">
@@ -778,8 +647,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 <span className={`tradeStatus ${trade.status}`}>{getStatusText(trade.status)}</span>
                             </div>
                             <div className="tradeDetails">
-                                <div>{trade.amount} USDT × {trade.rate} ₽</div>
-                                <div>= {trade.total_rub} ₽</div>
+                                <div>{trade.amount} USDT × {trade.rate} ₽ = {trade.total_rub} ₽</div>
                             </div>
                             {timeLeft && timeLeft !== 'expired' && <div className="timer">⏰ {timeLeft}</div>}
                             <div className="tradeActions">
@@ -787,7 +655,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                                 {trade.status === 'paid' && !isBuyer && <button className="confirm" onClick={() => confirmReceipt(trade.trade_id)}>Получить</button>}
                                 {(trade.status === 'pending' || trade.status === 'paid') && <button className="cancel" onClick={() => cancelTrade(trade.trade_id)}>Отменить</button>}
                                 <button className="copy" onClick={() => { navigator.clipboard.writeText(trade.trade_id); showToast('✅ ID скопирован', 'success'); }}>ID</button>
-                                <button className="chat">Чат</button>
                             </div>
                         </div>
                     );
@@ -796,7 +663,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    // ============ ПОМОЩЬ ============
+    // ============ ПОМОЩЬ ==========
     const HelpScreen = () => (
         <div className="screen">
             <div className="header">
@@ -806,14 +673,14 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
             </div>
             <div className="helpContent">
                 <div className="helpBlock"><h3>🤝 Как работает P2P?</h3><p>Вы покупаете USDT у других пользователей напрямую.</p></div>
-                <div className="helpBlock"><h3>⏰ Время на оплату</h3><p>Обычно 30 минут. Успейте оплатить и подтвердить.</p></div>
+                <div className="helpBlock"><h3>⏰ Время на оплату</h3><p>Обычно 30 минут.</p></div>
                 <div className="helpBlock"><h3>✅ Защита сделки</h3><p>USDT продавца заморожены до подтверждения оплаты.</p></div>
-                <div className="helpBlock"><h3>📞 Поддержка</h3><p><a href="https://t.me/TetherRabbit_chat">@TetherRabbit_chat</a></p></div>
+                <div className="helpBlock"><h3>📞 Поддержка</h3><p><a href="https://t.me/TetherRabbit_chat">Чат поддержки</a></p></div>
             </div>
         </div>
     );
 
-    // ============ МОДАЛКА ============
+    // ============ МОДАЛКА ==========
     const TradeModal = () => (
         <div className="modal" onClick={() => setSelected(null)}>
             <div className="modalContent" onClick={e => e.stopPropagation()}>
@@ -826,7 +693,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
                         <div>Курс: <strong>{selected.rate} ₽</strong></div>
                         <div>Лимиты: {selected.min_amount} - {selected.max_amount} USDT</div>
                         <div>Доступно: {selected.available_amount} USDT</div>
-                        {selected.terms && <div className="modalTerms">📝 {selected.terms}</div>}
                     </div>
                     <div className="currencySwitch">
                         <button className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>

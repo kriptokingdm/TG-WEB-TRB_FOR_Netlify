@@ -1,5 +1,4 @@
-/* P2P.css - стили под Telegram Mini App */
-
+/* P2P.css */
 .app {
     position: fixed;
     inset: 0;
@@ -9,7 +8,7 @@
     overflow-y: auto;
 }
 
-/* ============ ПРОФИЛЬ ============ */
+/* ПРОФИЛЬ */
 .profile {
     padding: 20px;
 }
@@ -161,7 +160,7 @@
     color: #34c759;
 }
 
-/* ============ ОСТАЛЬНЫЕ ЭКРАНЫ ============ */
+/* ОСТАЛЬНЫЕ ЭКРАНЫ */
 .screen {
     padding: 16px;
 }
@@ -256,7 +255,7 @@
     cursor: pointer;
 }
 
-/* ============ ФОРМА СОЗДАНИЯ ============ */
+/* ФОРМА СОЗДАНИЯ */
 .create-btn {
     width: 40px;
     height: 40px;
@@ -341,7 +340,7 @@
     cursor: pointer;
 }
 
-/* ============ МОИ ОБЪЯВЛЕНИЯ ============ */
+/* МОИ ОБЪЯВЛЕНИЯ */
 .adHeader {
     display: flex;
     justify-content: space-between;
@@ -386,7 +385,7 @@
 .edit { background: var(--tg-theme-button-color, #2f80ed); color: #fff; }
 .delete { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
 
-/* ============ ОРДЕРА ============ */
+/* ОРДЕРА */
 .tabs {
     display: flex;
     gap: 12px;
@@ -459,7 +458,7 @@
 .cancel { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
 .copy, .chat { background: var(--tg-theme-section-bg-color, #2c2c2e); color: var(--tg-theme-text-color, #fff); }
 
-/* ============ ПОМОЩЬ ============ */
+/* ПОМОЩЬ */
 .helpContent {
     display: flex;
     flex-direction: column;
@@ -488,7 +487,7 @@
     text-decoration: none;
 }
 
-/* ============ МОДАЛКА ============ */
+/* МОДАЛКА */
 .modal {
     position: fixed;
     inset: 0;
@@ -603,7 +602,7 @@
     cursor: pointer;
 }
 
-/* ============ ЗАГРУЗКА ============ */
+/* ЗАГРУЗКА */
 .skeleton {
     background: var(--tg-theme-secondary-bg-color, #1c1c1e);
     border-radius: 16px;
@@ -616,7 +615,7 @@
     color: var(--tg-theme-hint-color, #666);
 }
 
-/* ============ НОВЫЕ КОМПАКТНЫЕ ФИЛЬТРЫ ============ */
+/* ФИЛЬТРЫ */
 .info-row {
     display: flex;
     align-items: center;

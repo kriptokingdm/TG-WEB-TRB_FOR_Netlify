@@ -452,74 +452,80 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
 
                 {/* Фильтры как в Wallet */}
                 <div className="wallet-filters">
-                    <div className="wallet-filter-item">
-                        <div 
-                            className="wallet-filter-btn"
-                            onClick={() => {
-                                setShowPaymentDropdown(!showPaymentDropdown);
-                                setShowTimeDropdown(false);
-                            }}
-                        >
-                            <span>{selectedPayment.label}</span>
-                            <span className="filter-arrow">▼</span>
-                        </div>
-                        {showPaymentDropdown && (
-                            <div className="wallet-dropdown">
-                                {paymentMethodsFilter.map(m => (
-                                    <div 
-                                        key={m.value}
-                                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, paymentMethod: m.value});
-                                            setShowPaymentDropdown(false);
-                                        }}
-                                    >
-                                        {m.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
 
-                    <div className="wallet-filter-item">
-                        <input 
-                            type="number" 
-                            className="wallet-filter-input"
-                            placeholder="Сумма"
-                            value={filters.maxAmount}
-                            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
-                        />
+    <div className="wallet-filter-item">
+        <div 
+            className="wallet-filter-btn"
+            onClick={() => {
+                setShowPaymentDropdown(!showPaymentDropdown);
+                setShowTimeDropdown(false);
+            }}
+        >
+            <span>{selectedPayment.label}</span>
+            <span className="filter-arrow">⌄</span>
+        </div>
+        {showPaymentDropdown && (
+            <div className="wallet-dropdown">
+                {paymentMethodsFilter.map(m => (
+                    <div 
+                        key={m.value}
+                        className={`wallet-dropdown-item ${filters.paymentMethod === m.value ? 'active' : ''}`}
+                        onClick={() => {
+                            setFilters({...filters, paymentMethod: m.value});
+                            setShowPaymentDropdown(false);
+                        }}
+                    >
+                        {m.label}
                     </div>
+                ))}
+            </div>
+        )}
+    </div>
 
-                    <div className="wallet-filter-item">
-                        <div 
-                            className="wallet-filter-btn"
-                            onClick={() => {
-                                setShowTimeDropdown(!showTimeDropdown);
-                                setShowPaymentDropdown(false);
-                            }}
-                        >
-                            <span>{selectedTime.label}</span>
-                            <span className="filter-arrow">▼</span>
-                        </div>
-                        {showTimeDropdown && (
-                            <div className="wallet-dropdown">
-                                {timeFilterOptions.map(t => (
-                                    <div 
-                                        key={t.value}
-                                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
-                                        onClick={() => {
-                                            setFilters({...filters, maxTime: t.value});
-                                            setShowTimeDropdown(false);
-                                        }}
-                                    >
-                                        {t.label}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+    <div className="wallet-divider" />
+
+    <div className="wallet-filter-item">
+        <input 
+            type="number" 
+            className="wallet-filter-input"
+            placeholder="Сумма"
+            value={filters.maxAmount}
+            onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+        />
+    </div>
+
+    <div className="wallet-divider" />
+
+    <div className="wallet-filter-item">
+        <div 
+            className="wallet-filter-btn"
+            onClick={() => {
+                setShowTimeDropdown(!showTimeDropdown);
+                setShowPaymentDropdown(false);
+            }}
+        >
+            <span>{selectedTime.label}</span>
+            <span className="filter-arrow">⌄</span>
+        </div>
+        {showTimeDropdown && (
+            <div className="wallet-dropdown">
+                {timeFilterOptions.map(t => (
+                    <div 
+                        key={t.value}
+                        className={`wallet-dropdown-item ${filters.maxTime === t.value ? 'active' : ''}`}
+                        onClick={() => {
+                            setFilters({...filters, maxTime: t.value});
+                            setShowTimeDropdown(false);
+                        }}
+                    >
+                        {t.label}
                     </div>
-                </div>
+                ))}
+            </div>
+        )}
+    </div>
+
+</div>
 
                 <div className="list">
                     {loading ? (

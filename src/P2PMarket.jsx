@@ -410,69 +410,231 @@ export default function P2PMarket({ telegramUser, showToast, onBack }) {
         </div>
     );
 
-    const BuyScreen = () => (
-        <div className="screen">
-            <div className="header">
-                <button onClick={() => setScreen('main')}>←</button>
-                <h2>Купить USDT</h2>
-                <div />
-            </div>
-            <div className="list">
-                {loading ? (
-                    [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                ) : sellOrders.length === 0 ? (
-                    <div className="empty">Нет объявлений</div>
-                ) : (
-                    sellOrders.map(order => (
-                        <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                            <div className="user">
-                                <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                <div>
-                                    <div>{order.user_name}</div>
-                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
-                                </div>
-                            </div>
-                            <div className="price">{formatNumber(order.rate)} ₽</div>
-                            <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                            <button className="action">Купить</button>
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
-    );
+        // ============ ЭКРАН ПОКУПКИ С ФИЛЬТРАМИ ============
+    const BuyScreen = () => {
+        const [filters, setFilters] = useState({
+            minAmount: '',
+            maxAmount: '',
+            paymentMethod: 'all',
+            timeFilter: 'all'
+        });
+        const [showFilters, setShowFilters] = useState(false);
 
-    const SellScreen = () => (
-        <div className="screen">
-            <div className="header">
-                <button onClick={() => setScreen('main')}>←</button>
-                <h2>Продать USDT</h2>
-                <div />
-            </div>
-            <div className="list">
-                {loading ? (
-                    [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
-                ) : buyOrders.length === 0 ? (
-                    <div className="empty">Нет объявлений</div>
-                ) : (
-                    buyOrders.map(order => (
-                        <div key={order.id} className="card" onClick={() => setSelected(order)}>
-                            <div className="user">
-                                <div className="ava">{order.user_name?.[0] || 'U'}</div>
-                                <div>
-                                    <div>{order.user_name}</div>
-                                    <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+        const filteredOrders = sellOrders.filter(order => {
+            // Фильтр по сумме
+            if (filters.minAmount && order.available_amount < parseFloat(filters.minAmount)) return false;
+            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+            // Фильтр по способу оплаты
+            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+            // Фильтр по времени оплаты
+            if (filters.timeFilter !== 'all') {
+                const time = order.payment_time || 30;
+                if (filters.timeFilter === '15' && time !== 15) return false;
+                if (filters.timeFilter === '30' && time !== 30) return false;
+                if (filters.timeFilter === '60' && time !== 60) return false;
+                if (filters.timeFilter === '120' && time !== 120) return false;
+            }
+            return true;
+        });
+
+        return (
+            <div className="screen">
+                <div className="header">
+                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                    <h2>Купить USDT</h2>
+                    <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>🔍</button>
+                </div>
+
+                {/* Панель фильтров */}
+                {showFilters && (
+                    <div className="filters-panel">
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Сумма USDT</label>
+                                <div className="filter-range">
+                                    <input 
+                                        type="number" 
+                                        placeholder="От" 
+                                        value={filters.minAmount}
+                                        onChange={e => setFilters({...filters, minAmount: e.target.value})}
+                                    />
+                                    <span>-</span>
+                                    <input 
+                                        type="number" 
+                                        placeholder="До" 
+                                        value={filters.maxAmount}
+                                        onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+                                    />
                                 </div>
                             </div>
-                            <div className="price">{formatNumber(order.rate)} ₽</div>
-                            <div className="amount">{formatNumber(order.available_amount)} USDT</div>
-                            <button className="action">Продать</button>
                         </div>
-                    ))
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Способ оплаты</label>
+                                <select 
+                                    value={filters.paymentMethod}
+                                    onChange={e => setFilters({...filters, paymentMethod: e.target.value})}
+                                >
+                                    <option value="all">Все способы</option>
+                                    {paymentMethodsList.map(m => (
+                                        <option key={m.value} value={m.value}>{m.icon} {m.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Время на оплату</label>
+                                <select 
+                                    value={filters.timeFilter}
+                                    onChange={e => setFilters({...filters, timeFilter: e.target.value})}
+                                >
+                                    <option value="all">Любое</option>
+                                    {timeOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-actions">
+                            <button className="filter-reset" onClick={() => setFilters({ minAmount: '', maxAmount: '', paymentMethod: 'all', timeFilter: 'all' })}>Сбросить</button>
+                            <button className="filter-apply" onClick={() => setShowFilters(false)}>Применить</button>
+                        </div>
+                    </div>
                 )}
+
+                <div className="list">
+                    {loading ? (
+                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
+                    ) : filteredOrders.length === 0 ? (
+                        <div className="empty">Нет объявлений</div>
+                    ) : (
+                        filteredOrders.map(order => (
+                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                                <div className="user">
+                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                                    <div>
+                                        <div>{order.user_name}</div>
+                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+                                    </div>
+                                </div>
+                                <div className="price">{formatNumber(order.rate)} ₽</div>
+                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                                <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
+                                <div className="payment-icons">
+                                    {order.payment_methods?.slice(0, 3).map(m => (
+                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
+                                    ))}
+                                </div>
+                                <button className="action">Купить</button>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
+
+    // ============ ЭКРАН ПРОДАЖИ С ФИЛЬТРАМИ ============
+    const SellScreen = () => {
+        const [filters, setFilters] = useState({
+            minAmount: '',
+            maxAmount: '',
+            paymentMethod: 'all',
+            timeFilter: 'all'
+        });
+        const [showFilters, setShowFilters] = useState(false);
+
+        const filteredOrders = buyOrders.filter(order => {
+            if (filters.minAmount && order.available_amount < parseFloat(filters.minAmount)) return false;
+            if (filters.maxAmount && order.available_amount > parseFloat(filters.maxAmount)) return false;
+            if (filters.paymentMethod !== 'all' && !order.payment_methods?.includes(filters.paymentMethod)) return false;
+            if (filters.timeFilter !== 'all') {
+                const time = order.payment_time || 30;
+                if (filters.timeFilter === '15' && time !== 15) return false;
+                if (filters.timeFilter === '30' && time !== 30) return false;
+                if (filters.timeFilter === '60' && time !== 60) return false;
+                if (filters.timeFilter === '120' && time !== 120) return false;
+            }
+            return true;
+        });
+
+        return (
+            <div className="screen">
+                <div className="header">
+                    <button className="back-btn" onClick={() => setScreen('main')}>←</button>
+                    <h2>Продать USDT</h2>
+                    <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>🔍</button>
+                </div>
+
+                {showFilters && (
+                    <div className="filters-panel">
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Сумма USDT</label>
+                                <div className="filter-range">
+                                    <input type="number" placeholder="От" value={filters.minAmount} onChange={e => setFilters({...filters, minAmount: e.target.value})} />
+                                    <span>-</span>
+                                    <input type="number" placeholder="До" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Способ оплаты</label>
+                                <select value={filters.paymentMethod} onChange={e => setFilters({...filters, paymentMethod: e.target.value})}>
+                                    <option value="all">Все способы</option>
+                                    {paymentMethodsList.map(m => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-row">
+                            <div className="filter-group">
+                                <label>Время на оплату</label>
+                                <select value={filters.timeFilter} onChange={e => setFilters({...filters, timeFilter: e.target.value})}>
+                                    <option value="all">Любое</option>
+                                    {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="filter-actions">
+                            <button className="filter-reset" onClick={() => setFilters({ minAmount: '', maxAmount: '', paymentMethod: 'all', timeFilter: 'all' })}>Сбросить</button>
+                            <button className="filter-apply" onClick={() => setShowFilters(false)}>Применить</button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="list">
+                    {loading ? (
+                        [...Array(3)].map((_, i) => <div key={i} className="skeleton" />)
+                    ) : filteredOrders.length === 0 ? (
+                        <div className="empty">Нет объявлений</div>
+                    ) : (
+                        filteredOrders.map(order => (
+                            <div key={order.id} className="card" onClick={() => setSelected(order)}>
+                                <div className="user">
+                                    <div className="ava">{order.user_name?.[0] || 'U'}</div>
+                                    <div>
+                                        <div>{order.user_name}</div>
+                                        <div className="user-stats">✅ {order.completion_rate}% • {order.completed_trades} сделок</div>
+                                    </div>
+                                </div>
+                                <div className="price">{formatNumber(order.rate)} ₽</div>
+                                <div className="amount">{formatNumber(order.available_amount)} USDT</div>
+                                <div className="order-meta">⏰ {order.payment_time || 30} мин на оплату</div>
+                                <div className="payment-icons">
+                                    {order.payment_methods?.slice(0, 3).map(m => (
+                                        <span key={m} className="payment-icon">{getPaymentLabel(m)}</span>
+                                    ))}
+                                </div>
+                                <button className="action">Продать</button>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const MyAdsScreen = () => (
         <div className="screen">

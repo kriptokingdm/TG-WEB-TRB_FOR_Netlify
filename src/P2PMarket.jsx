@@ -31,7 +31,12 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     });
     const [showPaymentDropdown, setShowPaymentDropdown] = useState(false);
     const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+    
+    // Refs для инпутов
     const amountInputRef = useRef(null);
+    const createAmountRef = useRef(null);
+    const createRateRef = useRef(null);
+    const filterAmountRef = useRef(null);
 
     const [newOrder, setNewOrder] = useState({
         type: 'sell',
@@ -68,6 +73,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         if (screen === 'my_ads') fetchMyAds();
         if (screen === 'orders') fetchMyTrades();
     }, [screen]);
+
+    // Автофокус для модалки
+    useEffect(() => {
+        if (selected && amountInputRef.current) {
+            setTimeout(() => {
+                amountInputRef.current.focus();
+            }, 100);
+        }
+    }, [selected]);
 
     const fetchActiveTrade = async () => {
         try {
@@ -395,7 +409,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         return true;
     });
 
-    // Карточка объявления - курс справа
+    // Карточка объявления
     const OrderCard = ({ order, type }) => (
         <div className="order-card" onClick={() => setSelected(order)}>
             <div className="order-card-row">
@@ -463,12 +477,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 <div className="header-placeholder"></div>
             </div>
 
-            <div className="info-row">
-                <span className="info-icon">🛡️</span>
-                <span className="info-text">
-                    Покупайте USDT по лучшему курсу.
-                    <span className="rules-link" onClick={openRules}> Правила P2P</span>
-                </span>
+            {/* Бегущая строка */}
+            <div className="marquee-container">
+                <div className="marquee-text">
+                    ⚠️ Перед началом торговли P2P ознакомьтесь с условиями маркета. 
+                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
+                    <span className="rules-link" onClick={openRules}> 📋 Правила P2P</span>
+                </div>
             </div>
 
             <div className="filter-bar">
@@ -488,7 +503,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 </div>
                 <div className="filter-chip">
                     <div className="filter-chip-label">Сумма до</div>
-                    <input type="number" className="filter-chip-input" placeholder="USDT" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                    <input 
+                        ref={filterAmountRef}
+                        type="number" 
+                        className="filter-chip-input" 
+                        placeholder="USDT" 
+                        value={filters.maxAmount} 
+                        onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
                 </div>
                 <div className="filter-chip">
                     <div className="filter-chip-label">Время</div>
@@ -521,12 +544,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 <div className="header-placeholder"></div>
             </div>
 
-            <div className="info-row">
-                <span className="info-icon">🛡️</span>
-                <span className="info-text">
-                    Продавайте USDT по лучшему курсу.
-                    <span className="rules-link" onClick={openRules}> Правила P2P</span>
-                </span>
+            {/* Бегущая строка */}
+            <div className="marquee-container">
+                <div className="marquee-text">
+                    ⚠️ Перед началом торговли P2P ознакомьтесь с условиями маркета. 
+                    Пожалуйста, соблюдайте условия маркета и уважительно относитесь к контрагентам.
+                    <span className="rules-link" onClick={openRules}> 📋 Правила P2P</span>
+                </div>
             </div>
 
             <div className="filter-bar">
@@ -546,7 +570,15 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                 </div>
                 <div className="filter-chip">
                     <div className="filter-chip-label">Сумма до</div>
-                    <input type="number" className="filter-chip-input" placeholder="USDT" value={filters.maxAmount} onChange={e => setFilters({...filters, maxAmount: e.target.value})} />
+                    <input 
+                        ref={filterAmountRef}
+                        type="number" 
+                        className="filter-chip-input" 
+                        placeholder="USDT" 
+                        value={filters.maxAmount} 
+                        onChange={e => setFilters({...filters, maxAmount: e.target.value})}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
                 </div>
                 <div className="filter-chip">
                     <div className="filter-chip-label">Время</div>
@@ -584,8 +616,22 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
                         <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
                     </div>
-                    <input type="number" placeholder="Сумма (USDT)" value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} />
-                    <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
+                    <input 
+                        ref={createAmountRef}
+                        type="number" 
+                        placeholder="Сумма (USDT)" 
+                        value={newOrder.amount} 
+                        onChange={e => setNewOrder({...newOrder, amount: e.target.value})}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                    <input 
+                        ref={createRateRef}
+                        type="number" 
+                        placeholder="Курс (RUB)" 
+                        value={newOrder.rate} 
+                        onChange={e => setNewOrder({...newOrder, rate: e.target.value})}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
                     <div className="row">
                         <input type="number" placeholder="Мин. сумма" value={newOrder.min_amount} onChange={e => setNewOrder({...newOrder, min_amount: e.target.value})} />
                         <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
@@ -676,75 +722,66 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     );
 
     // ============ МОДАЛКА СДЕЛКИ ==========
-    const TradeModal = () => {
-        useEffect(() => {
-            setTimeout(() => {
-                if (amountInputRef.current) {
-                    amountInputRef.current.focus();
-                }
-            }, 100);
-        }, []);
-
-        return (
-            <div className="modal" onClick={() => setSelected(null)}>
-                <div className="modalContent" onClick={e => e.stopPropagation()}>
-                    <div className="modalHeader">
-                        <h3>Создание сделки</h3>
-                        <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
-                    </div>
-                    <div className="modalBody">
-                        <div className="modalInfo">
-                            <div className="info-row-modal">
-                                <span>Курс</span>
-                                <strong>{selected.rate} ₽</strong>
-                            </div>
-                            <div className="info-row-modal">
-                                <span>Лимиты</span>
-                                <strong>{selected.min_amount} - {selected.max_amount} USDT</strong>
-                            </div>
-                            <div className="info-row-modal">
-                                <span>Доступно</span>
-                                <strong>{selected.available_amount} USDT</strong>
-                            </div>
-                            {selected.terms && (
-                                <div className="info-row-modal terms">
-                                    <span>Условия</span>
-                                    <div className="terms-text">{selected.terms}</div>
-                                </div>
-                            )}
+    const TradeModal = () => (
+        <div className="modal" onClick={() => setSelected(null)}>
+            <div className="modalContent" onClick={e => e.stopPropagation()}>
+                <div className="modalHeader">
+                    <h3>Создание сделки</h3>
+                    <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
+                </div>
+                <div className="modalBody">
+                    <div className="modalInfo">
+                        <div className="info-row-modal">
+                            <span>Курс</span>
+                            <strong>{selected.rate} ₽</strong>
                         </div>
-
-                        <div className="currencySwitch">
-                            <button type="button" className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>
-                            <button type="button" className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>RUB</button>
+                        <div className="info-row-modal">
+                            <span>Лимиты</span>
+                            <strong>{selected.min_amount} - {selected.max_amount} USDT</strong>
                         </div>
-
-                        <input 
-                            ref={amountInputRef}
-                            type="number" 
-                            className="amountInput"
-                            value={amount} 
-                            onChange={e => setAmount(e.target.value)} 
-                            placeholder={`Введите сумму в ${currencyType === 'usdt' ? 'USDT' : 'RUB'}`}
-                        />
-
-                        {amount && (
-                            <div className="calcResult">
-                                {currencyType === 'usdt' 
-                                    ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽`
-                                    : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`
-                                }
+                        <div className="info-row-modal">
+                            <span>Доступно</span>
+                            <strong>{selected.available_amount} USDT</strong>
+                        </div>
+                        {selected.terms && (
+                            <div className="info-row-modal terms">
+                                <span>Условия</span>
+                                <div className="terms-text">{selected.terms}</div>
                             </div>
                         )}
-
-                        <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>
-                            {creatingTrade ? 'Создание...' : '✅ Начать сделку'}
-                        </button>
                     </div>
+
+                    <div className="currencySwitch">
+                        <button type="button" className={currencyType === 'usdt' ? 'active' : ''} onClick={() => setCurrencyType('usdt')}>USDT</button>
+                        <button type="button" className={currencyType === 'rub' ? 'active' : ''} onClick={() => setCurrencyType('rub')}>RUB</button>
+                    </div>
+
+                    <input 
+                        ref={amountInputRef}
+                        type="number" 
+                        className="amountInput"
+                        value={amount} 
+                        onChange={e => setAmount(e.target.value)} 
+                        onKeyDown={(e) => e.stopPropagation()}
+                        placeholder={`Введите сумму в ${currencyType === 'usdt' ? 'USDT' : 'RUB'}`}
+                    />
+
+                    {amount && (
+                        <div className="calcResult">
+                            {currencyType === 'usdt' 
+                                ? `≈ ${formatNumber(parseFloat(amount) * selected.rate)} ₽`
+                                : `≈ ${formatNumber(parseFloat(amount) / selected.rate)} USDT`
+                            }
+                        </div>
+                    )}
+
+                    <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>
+                        {creatingTrade ? 'Создание...' : '✅ Начать сделку'}
+                    </button>
                 </div>
             </div>
-        );
-    };
+        </div>
+    );
 
     return (
         <div className="app">

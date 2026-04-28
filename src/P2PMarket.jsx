@@ -255,14 +255,9 @@ const startTrade = async () => {
             // Обновляем список сделок
             await fetchMyTrades();
             
-            // ВАЖНО: Переход на страницу ордеров через navigateTo
-            if (navigateTo) {
-                navigateTo('order_list'); // сначала нужно добавить эту страницу
-            } else {
-                // Fallback - внутренний переход
-                setActiveTab('active');
-                setScreen('orders');
-            }
+            // Переход на страницу сделок (внутри P2P)
+            setActiveTab('active');
+            setScreen('orders');
             
             setTimeout(() => {
                 showToast(`⏰ У вас ${selected.payment_time || 30} минут на оплату`, 'info');

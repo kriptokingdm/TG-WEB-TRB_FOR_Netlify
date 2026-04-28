@@ -1,4 +1,4 @@
-/* P2P.css */
+/* P2P.css - БЕЗ АНИМАЦИЙ */
 .app {
     position: fixed;
     inset: 0;
@@ -207,7 +207,7 @@
     font-weight: 600;
 }
 
-/* ============ ФИЛЬТРЫ - СВЕРХУ НАД КАРТОЧКАМИ ============ */
+/* ============ ФИЛЬТРЫ ============ */
 .filter-bar {
     display: flex;
     gap: 8px;
@@ -606,6 +606,8 @@
     font-weight: 500;
     padding: 3px 10px;
     border-radius: 20px;
+    background: rgba(255, 149, 0, 0.15);
+    color: #ff9500;
 }
 
 .trade-info-row {
@@ -971,40 +973,6 @@
 
 .chat-send:disabled {
     opacity: 0.5;
-}
-
-/* ============ ЛЕГКИЕ АНИМАЦИИ (ТОЛЬКО ПРИ ЗАГРУЗКЕ) ============ */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Только первая загрузка - без повторений */
-.order-card {
-    animation: fadeInUp 0.2s ease-out;
-}
-
-.trade-card-new {
-    animation: fadeInUp 0.2s ease-out;
-}
-
-.filter-chip {
-    animation: fadeInUp 0.2s ease-out;
-}
-
-/* Убираем анимации при кликах - никаких transition/transform на взаимодействиях */
-.order-card:active,
-.trade-card-new:active,
-.action-btn:active,
-.order-action-btn:active,
-.menu-item:active {
-    /* Никаких трансформаций! */
 }
 
 /* ============ ЗАГРУЗКА ============ */

@@ -1,0 +1,1885 @@
+/* Home.css - Telegram WebApp стили (Telegram iOS style) */
+
+:root {
+  --tg-bg: var(--tg-theme-bg-color, #ffffff);
+  --tg-text: var(--tg-theme-text-color, #000000);
+  --tg-hint: var(--tg-theme-hint-color, #8e8e93);
+  --tg-button: var(--tg-theme-button-color, #3390ec);
+  --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  --tg-border: var(--tg-theme-section-bg-color, #e9e9ed);
+}
+
+/* ==================== КОНТЕЙНЕРЫ ==================== */
+.home-container {
+  min-height: 100vh;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+}
+
+.home-content {
+  padding: 16px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ==================== ВАЛЮТНЫЕ КАРТОЧКИ ==================== */
+.currency-cards-section {
+  background: var(--tg-secondary-bg);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.currency-cards-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 16px 0;
+  gap: 12px;
+}
+
+.currency-card-side {
+  flex: 1;
+  background: var(--tg-bg);
+  border-radius: 18px;
+  padding: 20px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.currency-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.currency-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--tg-text);
+}
+
+.currency-rate {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tg-hint);
+}
+
+/* Swap кнопка */
+.swap-center-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) !important;
+  width: 56px;
+  height: 56px;
+  background: var(--tg-button);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.swap-center-button:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.05) !important;
+}
+
+.swap-center-button:active:not(:disabled) {
+  transform: translate(-50%, -50%) scale(0.95) !important;
+}
+
+.swap-center-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==================== ПОЛЯ ВВОДА - TELEGRAM STYLE ==================== */
+.amount-input-section.tg-amount {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.tg-amount-card {
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+
+.tg-amount-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tg-amount-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  letter-spacing: -0.2px;
+}
+
+.tg-amount-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tg-text);
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--tg-border);
+}
+
+.tg-amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tg-amount-input {
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--tg-text);
+  caret-color: var(--tg-button);
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.tg-amount-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.4;
+  font-weight: 600;
+}
+
+.tg-amount-input[readonly] {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+  opacity: 1 !important;
+}
+
+.tg-amount-card:focus-within {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.tg-amount-error {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff3b30;
+}
+
+.tg-amount-card.error {
+  border-color: #ff3b30;
+  background: rgba(255, 59, 48, 0.02);
+}
+
+/* ==================== ЗАГОЛОВКИ ==================== */
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+/* ==================== КНОПКА ДОБАВЛЕНИЯ ==================== */
+.add-button {
+  width: 100%;
+  padding: 18px;
+  background: var(--tg-button);
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  margin: 8px 0 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+  transition: all 0.2s ease;
+}
+
+.add-button:hover {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.add-button:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+/* ==================== КНОПКА ОБМЕНА ==================== */
+.exchange-button-new {
+  width: 100%;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0 16px 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+.exchange-button-new.buy {
+  background: #34c759;
+  color: white;
+}
+
+.exchange-button-new.sell {
+  background: var(--tg-button);
+  color: white;
+}
+
+.exchange-button-new.disabled {
+  background: var(--tg-hint);
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.exchange-button-new:active:not(.disabled) {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.exchange-icon {
+  font-size: 20px;
+}
+
+.exchange-text {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* ==================== БЕЗОПАСНОСТЬ ==================== */
+.security-info {
+  display: flex;
+  gap: 16px;
+  padding: 20px 16px;
+  background: var(--tg-secondary-bg);
+  border-radius: 20px;
+  margin: 16px 0;
+  align-items: center;
+}
+
+.security-icon {
+  flex-shrink: 0;
+  color: var(--tg-button);
+  opacity: 0.9;
+}
+
+.security-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+.security-text strong {
+  color: var(--tg-text);
+  font-weight: 700;
+}
+
+/* ==================== СПИСКИ ==================== */
+.crypto-list,
+.payments-list {
+  margin-top: 20px;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--tg-secondary-bg);
+  padding: 8px;
+}
+
+.crypto-list h4,
+.payments-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 8px 12px 8px;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+.crypto-item,
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 12px;
+  background: var(--tg-bg);
+  border-radius: 14px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.crypto-item:active,
+.payment-item:active {
+  background: var(--tg-secondary-bg);
+  transform: scale(0.99);
+}
+
+.crypto-item.selected,
+.payment-item.selected {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
+}
+
+.crypto-info {
+  flex: 1;
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.crypto-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+}
+
+.crypto-network-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-button);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.crypto-address {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-hint);
+  word-break: break-all;
+}
+
+.payment-info {
+  flex: 1;
+}
+
+.bank-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.payment-number {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-hint);
+}
+
+/* ==================== КНОПКИ ДЕЙСТВИЙ ==================== */
+.crypto-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.action-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+}
+
+.action-btn.copy-btn {
+  color: var(--tg-button) !important;
+}
+
+.action-btn.delete-btn {
+  color: #ff3b30 !important;
+}
+
+.action-btn:hover {
+  opacity: 0.7;
+}
+
+.action-btn:active {
+  opacity: 0.5;
+  transform: scale(0.92);
+}
+
+.action-btn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* ==================== АКТИВНЫЙ ОРДЕР ==================== */
+.tg-home-container {
+  min-height: 100vh;
+  background: var(--tg-bg);
+}
+
+.tg-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--tg-bg);
+  border-bottom: 1px solid var(--tg-border);
+  padding-top: env(safe-area-inset-top);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.tg-header-content {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.tg-back-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--tg-secondary-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--tg-button);
+  font-size: 24px;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.tg-back-btn:active {
+  background: var(--tg-border);
+  transform: scale(0.94);
+}
+
+.tg-header-titles {
+  flex: 1;
+}
+
+.tg-header-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--tg-text);
+}
+
+.tg-header-subtitle {
+  font-size: 13px;
+  color: var(--tg-hint);
+  margin: 2px 0 0;
+  font-weight: 500;
+}
+
+.tg-status-badge {
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.tg-main-content {
+  padding: 16px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+.tg-order-card {
+  background: var(--tg-secondary-bg);
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.tg-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tg-order-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background: var(--tg-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.tg-order-info {
+  flex: 1;
+}
+
+.tg-order-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: var(--tg-text);
+  letter-spacing: -0.3px;
+}
+
+.tg-order-subtitle {
+  font-size: 14px;
+  color: var(--tg-hint);
+  margin: 0;
+  font-weight: 500;
+}
+
+.tg-order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tg-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(142, 142, 147, 0.1);
+}
+
+.tg-detail-row:last-child {
+  border-bottom: none;
+}
+
+.tg-detail-label {
+  font-size: 15px;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+.tg-detail-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tg-text);
+}
+
+.tg-detail-amount {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tg-detail-accent {
+  color: var(--tg-button);
+}
+
+.tg-detail-full {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tg-detail-box {
+  background: var(--tg-bg);
+  padding: 14px 16px;
+  border-radius: 16px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.tg-detail-mono {
+  font-family: 'SF Mono', monospace;
+  font-size: 14px;
+  word-break: break-all;
+  color: var(--tg-text);
+}
+
+.tg-copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--tg-button);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.tg-copy-btn:hover {
+  opacity: 1;
+  background: rgba(51, 144, 236, 0.05);
+}
+
+.tg-copy-btn:active {
+  transform: scale(0.9);
+}
+
+.tg-copy-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tg-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tg-action-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-button);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.tg-action-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Предупреждение */
+.tg-warning {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 200, 0, 0.04);
+  border-radius: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+}
+
+.tg-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.tg-warning-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--tg-bg);
+  border-radius: 28px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--tg-text);
+}
+
+.modal-close {
+  background: var(--tg-secondary-bg);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--tg-hint);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:active {
+  background: var(--tg-border);
+  transform: scale(0.94);
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: var(--tg-secondary-bg);
+  border-radius: 30px;
+  padding: 4px;
+}
+
+.modal-tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 26px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--tg-hint);
+  transition: all 0.2s ease;
+}
+
+.modal-tab.active {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 2px 8px rgba(51, 144, 236, 0.2);
+}
+
+.network-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.network-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: var(--tg-secondary-bg);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.network-item:active {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}
+
+.network-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.network-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.network-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tg-text);
+}
+
+.network-arrow {
+  font-size: 18px;
+  color: var(--tg-hint);
+  opacity: 0.5;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  margin-bottom: 8px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-secondary-bg);
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  color: var(--tg-text);
+}
+
+.modal-input:focus {
+  outline: 2px solid var(--tg-button);
+  outline-offset: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-btn.cancel {
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.modal-btn.save {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.modal-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 480px) {
+  .amount-input-section.tg-amount {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .currency-name {
+    font-size: 22px;
+  }
+  
+  .swap-center-button {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .tg-amount-input {
+    font-size: 24px;
+  }
+}
+
+/* Safe area */
+@supports (padding: max(0px)) {
+  .home-content {
+    padding-bottom: calc(80px + max(0px, env(safe-area-inset-bottom, 10px)));
+  }
+}
+
+/* ==================== СОХРАНЕННЫЕ АДРЕСА ==================== */
+.saved-addresses {
+  margin-top: 24px;
+  background: var(--tg-secondary-bg);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.saved-addresses h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  padding: 0 4px;
+}
+
+.saved-addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-address-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.saved-address-item:hover {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
+}
+
+.saved-address-item:active {
+  transform: scale(0.98);
+  background: var(--tg-secondary-bg);
+}
+
+.saved-address-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.saved-address-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tg-secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--tg-button);
+  font-size: 24px;
+}
+
+.saved-address-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.saved-address-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.saved-address-name {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tg-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.saved-address-hash {
+  display: block;
+  font-size: 13px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--tg-hint);
+  word-break: break-all;
+  line-height: 1.4;
+  background: var(--tg-secondary-bg);
+  padding: 4px 8px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+.saved-address-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: 12px;
+}
+
+.saved-address-copy,
+.saved-address-delete {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.saved-address-copy {
+  color: var(--tg-button) !important;
+}
+
+.saved-address-delete {
+  color: #ff3b30 !important;
+}
+
+.saved-address-copy:hover,
+.saved-address-delete:hover {
+  opacity: 0.7;
+  background: var(--tg-secondary-bg) !important;
+}
+
+.saved-address-copy:active,
+.saved-address-delete:active {
+  transform: scale(0.9);
+  opacity: 0.5;
+}
+
+.saved-address-copy svg,
+.saved-address-delete svg {
+  width: 20px;
+  height: 20px;
+}
+
+.saved-address-item.selected {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.03);
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.1);
+}
+
+.saved-address-item.selected .saved-address-icon {
+  background: var(--tg-button);
+  color: white;
+}
+
+.saved-addresses-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--tg-hint);
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  border: 1px dashed var(--tg-border);
+}
+
+.saved-addresses-empty-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* ==================== CRYPTO LIST ==================== */
+.crypto-list {
+  margin-top: 20px;
+  background: var(--tg-secondary-bg);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.crypto-list h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  padding: 0 4px;
+}
+
+.crypto-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.crypto-item:hover {
+  border-color: var(--tg-button);
+}
+
+.crypto-item.selected {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.05);
+}
+
+.crypto-info {
+  flex: 1;
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.crypto-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+}
+
+.crypto-network-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-button);
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.crypto-address {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-hint);
+  word-break: break-all;
+  background: var(--tg-secondary-bg);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.crypto-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: 12px;
+}
+
+/* ==================== БАНКОВСКИЕ ПОЛЯ ==================== */
+.bank-select {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tg-text);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+}
+
+.bank-select:hover {
+  border-color: var(--tg-button);
+}
+
+.bank-select:focus {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.bank-select option {
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  padding: 12px;
+}
+
+/* Поле для телефона */
+.phone-input {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tg-text);
+  outline: none;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+.phone-input:hover {
+  border-color: var(--tg-button);
+}
+
+.phone-input:focus {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.phone-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.5;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Поле для карты */
+.card-input {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tg-text);
+  outline: none;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  letter-spacing: 0.5px;
+}
+
+.card-input:hover {
+  border-color: var(--tg-button);
+}
+
+.card-input:focus {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.card-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.5;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: normal;
+}
+
+/* ==================== PAYMENT SECTION NEW - ОБНОВЛЕННЫЙ ==================== */
+.payment-section-new {
+  background: var(--tg-secondary-bg);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.payment-section-new .section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  margin: 0 0 16px 0;
+  padding: 0 4px;
+}
+
+/* Контейнер для кнопок выбора банка */
+.payment-section-new .bank-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid var(--tg-border);
+}
+
+/* Кнопки выбора банка */
+.payment-section-new .bank-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.payment-section-new .bank-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.payment-section-new .bank-option.selected svg path {
+  fill: white;
+}
+
+.payment-section-new .bank-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}
+
+/* Поля ввода */
+.payment-section-new .phone-input,
+.payment-section-new .card-input {
+  width: 100%;
+  padding: 16px;
+  background: var(--tg-bg);
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tg-text);
+  outline: none;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', 'Menlo', monospace;
+}
+
+.payment-section-new .phone-input:hover,
+.payment-section-new .card-input:hover {
+  border-color: var(--tg-button);
+}
+
+.payment-section-new .phone-input:focus,
+.payment-section-new .card-input:focus {
+  border-color: var(--tg-button);
+  box-shadow: 0 0 0 3px rgba(51, 144, 236, 0.1);
+}
+
+.payment-section-new .phone-input::placeholder,
+.payment-section-new .card-input::placeholder {
+  color: var(--tg-hint);
+  opacity: 0.5;
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Кнопка добавления */
+.payment-section-new .add-button {
+  margin: 0 0 20px 0;
+}
+
+/* Список сохраненных реквизитов */
+.payment-section-new .payments-list {
+  margin-top: 20px;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--tg-bg);
+  padding: 8px;
+  border: 1px solid var(--tg-border);
+}
+
+.payment-section-new .payments-list h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 8px 12px 8px;
+  color: var(--tg-hint);
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+}
+
+/* Элементы списка */
+.payment-section-new .payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 12px;
+  background: var(--tg-secondary-bg);
+  border-radius: 14px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.payment-section-new .payment-item:last-child {
+  margin-bottom: 0;
+}
+
+.payment-section-new .payment-item:active {
+  background: var(--tg-border);
+  transform: scale(0.99);
+}
+
+.payment-section-new .payment-item.selected {
+  border-color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.02);
+}
+
+/* Информация о платеже */
+.payment-section-new .payment-info {
+  flex: 1;
+}
+
+.payment-section-new .bank-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+  margin-bottom: 6px;
+}
+
+.payment-section-new .payment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.payment-section-new .payment-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.payment-section-new .payment-number {
+  font-size: 13px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--tg-hint);
+  background: var(--tg-bg);
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Кнопка удаления */
+.payment-section-new .action-btn.delete-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 8px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+  color: #ff3b30 !important;
+}
+
+.payment-section-new .action-btn.delete-btn:hover {
+  opacity: 0.7;
+}
+
+.payment-section-new .action-btn.delete-btn:active {
+  opacity: 0.5;
+  transform: scale(0.92);
+}
+
+.payment-section-new .action-btn.delete-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Пустое состояние */
+.payment-section-new .empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--tg-hint);
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  border: 1px dashed var(--tg-border);
+  margin-top: 20px;
+}
+
+/* ==================== КАСТОМНЫЙ SELECT С ИКОНКАМИ ==================== */
+.custom-select-wrapper {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: var(--tg-secondary-bg);
+  border-radius: 16px;
+  padding: 6px;
+}
+
+.custom-select-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+}
+
+.custom-select-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.custom-select-option.selected svg path {
+  fill: white;
+}
+
+.custom-select-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.97);
+}
+
+.option-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.option-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.option-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ==================== ИКОНКИ В СПИСКЕ ПЛАТЕЖЕЙ ==================== */
+.payment-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.payment-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.payment-item.selected .payment-icon svg path {
+  fill: var(--tg-button);
+}
+
+/* ==================== УЛУЧШЕННЫЙ CRYPTO-ADDRESS ==================== */
+.crypto-address {
+  font-size: 14px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--tg-button);
+  background: rgba(51, 144, 236, 0.05);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* ==================== ПОЛЯ БЕЗ ВЗАИМОДЕЙСТВИЯ ==================== */
+.tg-amount-input[readonly] {
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  -webkit-text-fill-color: var(--tg-text) !important;
+  opacity: 1 !important;
+}
+
+.tg-amount-card.readonly {
+  background: var(--tg-secondary-bg);
+  border-color: transparent;
+  opacity: 0.9;
+}
+
+.tg-amount-card.readonly:focus-within {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ==================== АДАПТАЦИЯ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ ==================== */
+@media (max-width: 480px) {
+  .custom-select-wrapper {
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+  }
+  
+  .custom-select-option {
+    padding: 16px 12px;
+  }
+  
+  .option-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .option-name {
+    font-size: 16px;
+  }
+  
+  .payment-section-new {
+    padding: 16px;
+  }
+  
+  .payment-section-new .bank-option {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+  
+  .payment-section-new .phone-input,
+  .payment-section-new .card-input {
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .payment-section-new .payment-item {
+    padding: 14px 10px;
+  }
+  
+  .payment-section-new .bank-name {
+    font-size: 14px;
+  }
+  
+  .payment-section-new .payment-number {
+    font-size: 12px;
+  }
+}
+
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ КРИПТО-ЭЛЕМЕНТОВ ==================== */
+
+/* Фикс для иконок на узких экранах */
+.crypto-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  gap: 12px;
+  min-width: 0; /* Важно для flex-детей */
+}
+
+.crypto-info {
+  flex: 1;
+  min-width: 0; /* Позволяет тексту сжиматься */
+  overflow: hidden;
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.crypto-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; /* Ограничиваем ширину */
+}
+
+.crypto-network-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-button);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0; /* Не даем сжиматься */
+}
+
+.crypto-address {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  color: var(--tg-hint);
+  word-break: break-all;
+  background: var(--tg-secondary-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crypto-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0; /* Не даем сжиматься */
+  margin-left: 4px;
+}
+
+.action-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 6px !important;
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+  flex-shrink: 0; /* Не даем сжиматься */
+}
+
+.action-btn svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Для очень узких экранов */
+@media (max-width: 380px) {
+  .crypto-name {
+    max-width: 80px;
+  }
+  
+  .crypto-network-badge {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  
+  .crypto-address {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .action-btn {
+    padding: 4px !important;
+  }
+  
+  .action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Банк селектор - исправляем инлайн стили на классы */
+.bank-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: var(--tg-bg);
+  border-radius: 16px;
+  padding: 6px;
+  border: 1px solid var(--tg-border);
+}
+
+.bank-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--tg-hint);
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.bank-option.selected {
+  background: var(--tg-button);
+  color: white;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.2);
+}
+
+.bank-option.selected svg path {
+  fill: white;
+}
+
+.bank-option:active:not(.selected) {
+  background: var(--tg-border);
+  transform: scale(0.98);
+}

@@ -1,0 +1,1186 @@
+/* P2P.css - без глючных анимаций */
+.app {
+    position: fixed;
+    inset: 0;
+    background: var(--tg-theme-bg-color, #0c0c0e);
+    color: var(--tg-theme-text-color, #fff);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow-y: auto;
+}
+
+/* ============ СТАТИЧНЫЙ БАННЕР ============ */
+.warning-banner {
+    width: 100%;
+    background: rgba(52, 199, 89, 0.12);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border: 0.5px solid rgba(52, 199, 89, 0.3);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.warning-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.warning-content {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--tg-theme-text-color, #fff);
+    flex: 1;
+}
+
+.rules-link {
+    color: #34c759;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    margin: 0 2px;
+}
+
+/* ============ ПРОФИЛЬ ============ */
+.profile {
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.profile-header-placeholder {
+    width: 40px;
+}
+
+.avatarWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color, #2f80ed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.name {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.stats div {
+    text-align: center;
+    flex: 1;
+}
+
+.stats b {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.stats span {
+    display: block;
+    font-size: 11px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-top: 4px;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.actions button {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.actions button.buy {
+    background: #34c759;
+    color: #000;
+}
+
+.actions button.sell {
+    background: #ff3b30;
+    color: #fff;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.menu-item {
+    padding: 18px 16px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    border-radius: 16px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 17px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+
+.active-trade-banner {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: 1px solid #34c759;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+/* ============ ЭКРАНЫ ============ */
+.screen {
+    padding: 16px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.header h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* ============ КАРТОЧКИ ОБЪЯВЛЕНИЙ ============ */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.order-card {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 20px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.order-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.order-user {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.order-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color, #2f80ed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.order-user-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.order-user-stats {
+    font-size: 11px;
+    color: #34c759;
+}
+
+.order-rate {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.order-amount {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 8px;
+}
+
+.order-meta {
+    font-size: 12px;
+    color: #ff9500;
+    margin-bottom: 16px;
+}
+
+.order-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.order-action-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-button-color, #2f80ed);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.order-share-btn {
+    width: 48px;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 14px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* ============ ФИЛЬТРЫ ============ */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-chip {
+    flex: 1;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 14px;
+    padding: 8px 12px;
+    position: relative;
+}
+
+.filter-chip-label {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 4px;
+}
+
+.filter-chip-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.filter-chip-input {
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #fff);
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.filter-chip-input::placeholder {
+    color: var(--tg-theme-hint-color, #666);
+    font-size: 12px;
+}
+
+.chip-arrow {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.chip-dropdown-bottom {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 14px;
+    margin-top: 8px;
+    z-index: 200;
+    overflow: hidden;
+    border: 0.5px solid var(--tg-border-color, #2c2c2e);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.chip-option {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+    text-align: center;
+}
+
+.chip-option.active {
+    color: var(--tg-theme-button-color, #2f80ed);
+    font-weight: 500;
+}
+
+/* ============ ФОРМА СОЗДАНИЯ ============ */
+.create-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #34c759;
+    border: none;
+    color: #000;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.createForm {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.formType {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.formType button {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+}
+
+.formType button.active.sell { background: #ff3b30; color: #fff; }
+.formType button.active.buy { background: #34c759; color: #000; }
+
+.createForm input, .createForm select, .createForm textarea {
+    width: 100%;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-text-color, #fff);
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.createForm input:focus, .createForm textarea:focus {
+    outline: 1px solid var(--tg-theme-button-color, #2f80ed);
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+}
+
+.paymentBtns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.paymentBtns button {
+    padding: 8px 14px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 20px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.paymentBtns button.selected {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+.submit {
+    width: 100%;
+    padding: 14px;
+    background: #34c759;
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============ МОИ ОБЪЯВЛЕНИЯ ============ */
+.ads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ad-card {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.ad-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.ad-type {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ad-type.sell { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
+.ad-type.buy { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+
+.ad-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.ad-status.active { background: rgba(52, 199, 89, 0.2); color: #34c759; }
+
+.ad-rate {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.ad-amount {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 12px;
+}
+
+.ad-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.ad-edit, .ad-delete {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.ad-edit { background: var(--tg-theme-button-color, #2f80ed); color: #fff; }
+.ad-delete { background: rgba(255, 69, 58, 0.2); color: #ff3b30; }
+
+/* ============ СДЕЛКИ (ОРДЕРА) ============ */
+.tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    flex: 1;
+    padding: 10px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-hint-color, #888);
+    cursor: pointer;
+}
+
+.tabs button.active {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+.trades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trade-card-new {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.trade-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 0.5px solid var(--tg-border-color, #2c2c2e);
+}
+
+.trade-type-badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.trade-status-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.trade-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.trade-amount-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.trade-amount-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.trade-currency {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.trade-rate-info {
+    font-size: 11px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-top: 2px;
+}
+
+.trade-total-info {
+    font-size: 16px;
+    font-weight: 700;
+    color: #34c759;
+}
+
+.trade-timer-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(255, 149, 0, 0.1);
+    border-radius: 30px;
+    padding: 6px 12px;
+    margin: 8px 0;
+}
+
+.timer-icon {
+    font-size: 12px;
+}
+
+.timer-label {
+    font-size: 11px;
+    color: #ff9500;
+}
+
+.timer-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: monospace;
+    letter-spacing: 1px;
+    color: #ff9500;
+}
+
+.trade-actions-new {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pay-btn, .confirm-btn {
+    background: #34c759;
+    color: #000;
+}
+
+.cancel-btn {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
+}
+
+.chat-btn {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+/* ============ ПОМОЩЬ ============ */
+.helpContent {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.helpBlock {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.helpBlock h3 {
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.helpBlock p {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #888);
+    line-height: 1.4;
+}
+
+/* ============ МОДАЛКА ============ */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    width: 100%;
+    max-width: 500px;
+    background: var(--tg-theme-bg-color, #1c1c1e);
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 0.5px solid var(--tg-border-color, #2c2c2e);
+    position: sticky;
+    top: 0;
+    background: var(--tg-theme-bg-color, #1c1c1e);
+    z-index: 10;
+}
+
+.modalHeader h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.modalBody {
+    padding: 20px;
+    padding-bottom: 30px;
+}
+
+.modalInfo {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.info-row-modal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.info-row-modal:last-child {
+    margin-bottom: 0;
+}
+
+.info-row-modal span {
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.info-row-modal strong {
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.currencySwitch {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.currencySwitch button {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-hint-color, #888);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.currencySwitch button.active {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+.amountInput {
+    width: 100%;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    border-radius: 14px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 16px;
+    outline: none;
+}
+
+.amountInput:focus {
+    outline: 1px solid var(--tg-theme-button-color, #2f80ed);
+}
+
+.amountInput::-webkit-inner-spin-button,
+.amountInput::-webkit-outer-spin-button {
+    opacity: 0.5;
+}
+
+.calcResult {
+    text-align: center;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 12px;
+    color: #34c759;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.confirmBtn {
+    width: 100%;
+    padding: 16px;
+    background: var(--tg-theme-button-color, #2f80ed);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.confirmBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============ ЧАТ ============ */
+.chat-modal {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 16px;
+}
+
+.chat-message.own {
+    align-self: flex-end;
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: white;
+}
+
+.chat-message.other {
+    align-self: flex-start;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+}
+
+.chat-message-name {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.chat-message-text {
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.chat-message-time {
+    font-size: 10px;
+    opacity: 0.5;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.chat-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 0.5px solid var(--tg-border-color, #2c2c2e);
+    background: var(--tg-theme-bg-color, #0c0c0e);
+}
+
+.chat-input {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border: none;
+    border-radius: 24px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 14px;
+    outline: none;
+}
+
+.chat-send {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color, #2f80ed);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.chat-send:disabled {
+    opacity: 0.5;
+}
+
+/* ============ ЗАГРУЗКА ============ */
+.skeleton {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 20px;
+    height: 140px;
+}
+
+.loading, .empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--tg-theme-hint-color, #666);
+}
+
+/* Telegram WebApp safe area */
+@supports (padding: max(0px)) {
+    .app, .screen, .profile {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+    }
+    
+    .modalContent {
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+}
+
+/* ============ ЛЕГКИЕ АНИМАЦИИ ДЛЯ P2P ============ */
+
+/* Анимация появления карточек */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.order-card {
+    animation: fadeInUp 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+/* Задержки для карточек */
+.order-card:nth-child(1) { animation-delay: 0.05s; }
+.order-card:nth-child(2) { animation-delay: 0.1s; }
+.order-card:nth-child(3) { animation-delay: 0.15s; }
+.order-card:nth-child(4) { animation-delay: 0.2s; }
+.order-card:nth-child(5) { animation-delay: 0.25s; }
+.order-card:nth-child(6) { animation-delay: 0.3s; }
+
+/* Анимация для карточек сделок */
+.trade-card-new {
+    animation: fadeInUp 0.25s ease-out forwards;
+    opacity: 0;
+}
+
+.trade-card-new:nth-child(1) { animation-delay: 0.05s; }
+.trade-card-new:nth-child(2) { animation-delay: 0.1s; }
+.trade-card-new:nth-child(3) { animation-delay: 0.15s; }
+.trade-card-new:nth-child(4) { animation-delay: 0.2s; }
+.trade-card-new:nth-child(5) { animation-delay: 0.25s; }
+
+/* Анимация для кнопок при наведении (только для десктопа, на мобилках игнорится) */
+@media (hover: hover) {
+    .order-action-btn:hover {
+        opacity: 0.85;
+        transition: opacity 0.2s ease;
+    }
+    
+    .order-share-btn:hover {
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        opacity: 0.85;
+        transition: opacity 0.15s ease;
+    }
+    
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transition: background 0.2s ease;
+    }
+}
+
+/* Анимация пульсации для активного таймера (очень легкая) */
+@keyframes softPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.85;
+    }
+}
+
+.trade-timer-section {
+    animation: softPulse 2s ease-in-out infinite;
+}
+
+/* Анимация загрузки скелетона */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, 
+        var(--tg-theme-secondary-bg-color, #1c1c1e) 25%, 
+        var(--tg-theme-section-bg-color, #2c2c2e) 50%, 
+        var(--tg-theme-secondary-bg-color, #1c1c1e) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Анимация появления модалки */
+.modal {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Анимация для баннера */
+.warning-banner {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Анимация для фильтров */
+.filter-chip {
+    animation: fadeInUp 0.25s ease-out forwards;
+    opacity: 0;
+}
+
+.filter-chip:nth-child(1) { animation-delay: 0.05s; }
+.filter-chip:nth-child(2) { animation-delay: 0.1s; }
+.filter-chip:nth-child(3) { animation-delay: 0.15s; }
+
+/* Анимация для статистики в профиле */
+.stats div {
+    animation: fadeInUp 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.stats div:nth-child(1) { animation-delay: 0.05s; }
+.stats div:nth-child(2) { animation-delay: 0.1s; }
+.stats div:nth-child(3) { animation-delay: 0.15s; }
+
+/* Анимация для кнопок в профиле */
+.actions button {
+    animation: fadeInUp 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.actions button:nth-child(1) { animation-delay: 0.1s; }
+.actions button:nth-child(2) { animation-delay: 0.15s; }
+
+/* Анимация для меню */
+.menu-item {
+    animation: fadeInUp 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.menu-item:nth-child(1) { animation-delay: 0.2s; }
+.menu-item:nth-child(2) { animation-delay: 0.25s; }
+.menu-item:nth-child(3) { animation-delay: 0.3s; }
+
+/* Легкий эффект при нажатии на карточку (микровзаимодействие) */
+.order-card:active {
+    transform: scale(0.99);
+    transition: transform 0.05s ease;
+}
+
+.trade-card-new:active {
+    transform: scale(0.99);
+    transition: transform 0.05s ease;
+}
+
+/* Анимация появления сообщений в чате */
+.chat-message {
+    animation: fadeInUp 0.2s ease-out;
+}
+
+/* Анимация для иконок */
+.order-share-btn:active {
+    transform: scale(0.96);
+    transition: transform 0.05s ease;
+}
+
+.order-action-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.05s ease;
+}
+
+.action-btn:active {
+    transform: scale(0.97);
+    transition: transform 0.05s ease;
+}

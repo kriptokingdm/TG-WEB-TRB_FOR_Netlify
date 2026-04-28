@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#3390ec">
+    <meta name="format-detection" content="telephone=no">
+    
+    <title>TetherRabbit</title>
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Основные темы через CSS переменные */
+        :root {
+            --tg-bg-color: #ffffff;
+            --tg-header-color: #000000;
+        }
+        
+        html[data-theme="dark"] {
+            --tg-bg-color: #0f0f0f;
+            --tg-header-color: #ffffff;
+        }
+        
+        body {
+            background: var(--tg-bg-color);
+            color: var(--tg-header-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        #root {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: inherit;
+            color: inherit;
+        }
+        
+        /* Лоадер */
+        #app-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Лоадер -->
+    <div id="app-loading">
+        <div class="loading-spinner"></div>
+        <p>Загрузка TetherRabbit...</p>
+    </div>
+    
+    <!-- Контейнер React -->
+    <div id="root"></div>
+    
+    <script>
+        // Инициализация Telegram
+        const initTelegramTheme = () => {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+                
+                // Устанавливаем тему из Telegram
+                const theme = tg.colorScheme || 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                console.log('🎨 Telegram WebApp тема установлена:', theme);
+                
+                // Слушатель изменения темы в Telegram
+                tg.onEvent('themeChanged', () => {
+                    const newTheme = tg.colorScheme || 'light';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    console.log('🎨 Тема Telegram изменилась:', newTheme);
+                    
+                    // Обновляем цвет status bar
+                    if (newTheme === 'dark') {
+                        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0f0f');
+                        document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', 'black');
+                    } else {
+                        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#3390ec');
+                        document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', 'black-translucent');
+                    }
+                });
+                
+                // Обновляем цвет status bar
+                if (theme === 'dark') {
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0f0f');
+                    document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', 'black');
+                }
+                
+            } else {
+                // Фолбэк для браузера - определяем системную тему
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                const setThemeFromMedia = () => {
+                    const theme = mediaQuery.matches ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    console.log('🎨 Системная тема:', theme);
+                };
+                
+                setThemeFromMedia();
+                
+                // Слушаем изменение системной темы
+                mediaQuery.addEventListener('change', setThemeFromMedia);
+                
+                // Также добавляем возможность переключения темы через localStorage
+                const savedTheme = localStorage.getItem('app-theme');
+                if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                    console.log('🎨 Тема из localStorage:', savedTheme);
+                }
+            }
+        };
+        
+        // Инициализируем тему сразу
+        initTelegramTheme();
+        
+        // Скрываем лоадер
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('app-loading');
+                if (loader) loader.style.display = 'none';
+            }, 500);
+        });
+        
+        // Фолбэк через 5 сек
+        setTimeout(() => {
+            const loader = document.getElementById('app-loading');
+            if (loader) loader.style.display = 'none';
+        }, 5000);
+        
+        // Дополнительная отладка
+        setTimeout(() => {
+            console.log('🔍 Проверка темы после загрузки:');
+            console.log('   - HTML атрибут:', document.documentElement.getAttribute('data-theme'));
+            console.log('   - CSS переменные:');
+            console.log('     --tg-bg-color:', getComputedStyle(document.documentElement).getPropertyValue('--tg-bg-color'));
+            console.log('     --tg-header-color:', getComputedStyle(document.documentElement).getPropertyValue('--tg-header-color'));
+            
+            // Принудительное обновление для тестирования
+            if (window.location.search.includes('test-dark')) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                console.log('🎨 Принудительно установлена темная тема (test)');
+            }
+            if (window.location.search.includes('test-light')) {
+                document.documentElement.setAttribute('data-theme', 'light');
+                console.log('🎨 Принудительно установлена светлая тема (test)');
+            }
+        }, 1000);
+    </script>
+
+
+
+
+<script>
+    // Принудительно применяем тему при загрузке
+    (function() {
+      // Ждем загрузки DOM
+      document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, есть ли сохраненная тема
+        const savedTheme = localStorage.getItem('forceTheme');
+        const themeApplied = localStorage.getItem('themeApplied');
+        
+        if (!themeApplied) {
+          // Если тема еще не применялась, устанавливаем темную тему
+          const root = document.documentElement;
+          
+          // Цвета темной темы (единые для всех)
+          root.style.setProperty('--tg-theme-bg-color', '#0f0f0f');
+          root.style.setProperty('--tg-theme-text-color', '#ffffff');
+          root.style.setProperty('--tg-theme-hint-color', '#8e8e93');
+          root.style.setProperty('--tg-theme-button-color', '#3390ec');
+          root.style.setProperty('--tg-theme-button-text-color', '#ffffff');
+          root.style.setProperty('--tg-theme-secondary-bg-color', '#1c1c1e');
+          root.style.setProperty('--tg-theme-section-bg-color', '#2c2c2e');
+          
+          // Дополнительные цвета
+          root.style.setProperty('--tg-success-color', '#34c759');
+          root.style.setProperty('--tg-error-color', '#ff3b30');
+          root.style.setProperty('--tg-warning-color', '#ff9500');
+          root.style.setProperty('--tg-info-color', '#5856d6');
+          root.style.setProperty('--tg-card-bg', '#1c1c1e');
+          root.style.setProperty('--tg-input-bg', '#2c2c2e');
+          root.style.setProperty('--tg-border-color', '#3c3c3e');
+          root.style.setProperty('--tg-hover-color', '#3c3c3e');
+          
+          root.setAttribute('data-theme', 'dark');
+          
+          console.log('🎨 Применена единая темная тема при загрузке');
+          localStorage.setItem('themeApplied', 'true');
+        }
+      });
+      
+      // Также применяем сразу на случай быстрой загрузки
+      setTimeout(function() {
+        if (!localStorage.getItem('themeApplied')) {
+          const root = document.documentElement;
+          root.style.cssText = `
+            --tg-theme-bg-color: #0f0f0f;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #8e8e93;
+            --tg-theme-button-color: #3390ec;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #1c1c1e;
+            --tg-theme-section-bg-color: #2c2c2e;
+            --tg-success-color: #34c759;
+            --tg-error-color: #ff3b30;
+            --tg-warning-color: #ff9500;
+            --tg-info-color: #5856d6;
+            --tg-card-bg: #1c1c1e;
+            --tg-input-bg: #2c2c2e;
+            --tg-border-color: #3c3c3e;
+            --tg-hover-color: #3c3c3e;
+          `;
+          root.setAttribute('data-theme', 'dark');
+          localStorage.setItem('themeApplied', 'true');
+        }
+      }, 100);
+    })();
+  </script>
+</body>
+</html>

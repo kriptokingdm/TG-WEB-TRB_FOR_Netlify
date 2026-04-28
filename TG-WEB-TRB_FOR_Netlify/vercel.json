@@ -1,0 +1,26 @@
+{
+    "rewrites": [
+      { "source": "/exchange", "destination": "/index.html" },
+      { "source": "/history", "destination": "/index.html" },
+      { "source": "/profile", "destination": "/index.html" },
+      { "source": "/help", "destination": "/index.html" },
+      { "source": "/(.*)", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        ]
+      },
+      {
+        "source": "/static/(.*)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        ]
+      }
+    ],
+    "buildCommand": "CI=false npm run build",
+    "outputDirectory": "build",
+    "framework": "create-react-app"
+  }

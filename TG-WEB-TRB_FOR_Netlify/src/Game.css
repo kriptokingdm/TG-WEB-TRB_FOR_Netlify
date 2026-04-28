@@ -1,0 +1,202 @@
+/* Game.css - Dark Doodle Jump vibe */
+
+.dj-page{
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  background:
+    radial-gradient(900px 500px at 30% 15%, rgba(120, 190, 255, 0.10), transparent 60%),
+    radial-gradient(800px 450px at 70% 10%, rgba(180, 120, 255, 0.10), transparent 60%),
+    linear-gradient(180deg, #070a14 0%, #0a1020 40%, #05060d 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #eaf2ff;
+}
+
+.dj-shell{
+  width: 390px;
+  max-width: calc(100vw - 24px);
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+
+.dj-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+}
+
+.dj-logo{
+  text-align:center;
+  font-weight: 1000;
+  letter-spacing: -0.6px;
+  line-height: 1;
+  font-size: 18px;
+  color: rgba(234,242,255,0.92);
+}
+.dj-logo span{
+  display:inline-block;
+  margin-left: 6px;
+  color: rgba(120,190,255,0.95);
+}
+.dj-logo-sub{
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(234,242,255,0.55);
+}
+
+.dj-stat{
+  min-width: 86px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.dj-stat-label{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: rgba(234,242,255,0.55);
+}
+
+.dj-stat-value{
+  font-size: 18px;
+  font-weight: 1000;
+  color: rgba(234,242,255,0.95);
+}
+
+/* Game container */
+.dj-container{
+  position:relative;
+  width: 360px;
+  height: 640px;
+  margin: 0 auto;
+  border-radius: 24px;
+  overflow:hidden;
+  touch-action: none;
+  user-select:none;
+
+  background: #0b1020;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow:
+    0 22px 60px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.dj-container canvas{
+  display:block;
+  width: 360px;
+  height: 640px;
+  cursor: pointer;
+}
+
+/* Overlay */
+.dj-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 18px;
+  background:
+    radial-gradient(700px 450px at 50% 35%, rgba(255,255,255,0.08), rgba(0,0,0,0.65));
+  backdrop-filter: blur(6px);
+}
+
+.dj-card{
+  width: 100%;
+  max-width: 320px;
+  background: rgba(10, 14, 26, 0.88);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.60);
+  padding: 16px;
+  text-align:center;
+}
+
+.dj-card-title{
+  font-size: 26px;
+  font-weight: 1000;
+  letter-spacing: -0.6px;
+  color: rgba(234,242,255,0.96);
+}
+
+.dj-danger{
+  color: rgba(255, 120, 120, 0.95);
+}
+
+.dj-card-text{
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(234,242,255,0.72);
+}
+
+.dj-card-hint{
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(234,242,255,0.45);
+}
+
+.dj-btn{
+  margin-top: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 1000;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  transition: transform 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
+}
+
+.dj-btn:active{
+  transform: translateY(1px) scale(0.99);
+}
+
+.dj-btn-primary{
+  color: #06101f;
+  background: linear-gradient(180deg, rgba(120,190,255,1), rgba(120,190,255,0.72));
+  box-shadow: 0 16px 30px rgba(120,190,255,0.22);
+}
+
+.dj-btn-primary:hover{
+  filter: brightness(1.05);
+}
+
+/* In-game hint */
+.dj-hud-hint{
+  position:absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  text-align:center;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(234,242,255,0.35);
+  pointer-events:none;
+}

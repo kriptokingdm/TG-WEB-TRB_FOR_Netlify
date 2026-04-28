@@ -255,9 +255,12 @@ const startTrade = async () => {
             // Обновляем список сделок
             await fetchMyTrades();
             
-            // Переход на страницу сделок (внутри P2P)
+            // Переход на страницу сделок ВНУТРИ P2P
             setActiveTab('active');
             setScreen('orders');
+            
+            // НЕ ВЫЗЫВАЙ navigateTo!
+            // если есть строка типа navigateTo('order_list') - УДАЛИ ЕЁ
             
             setTimeout(() => {
                 showToast(`⏰ У вас ${selected.payment_time || 30} минут на оплату`, 'info');

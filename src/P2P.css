@@ -1,4 +1,4 @@
-/* P2P.css - без глючных анимаций */
+/* P2P.css */
 .app {
     position: fixed;
     inset: 0;
@@ -207,6 +207,87 @@
     font-weight: 600;
 }
 
+/* ============ ФИЛЬТРЫ - СВЕРХУ НАД КАРТОЧКАМИ ============ */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    flex: 1;
+    min-width: 100px;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 14px;
+    padding: 10px 12px;
+    position: relative;
+}
+
+.filter-chip-label {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 4px;
+}
+
+.filter-chip-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.filter-chip-input {
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #fff);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+}
+
+.filter-chip-input::placeholder {
+    color: var(--tg-theme-hint-color, #666);
+    font-size: 12px;
+}
+
+.chip-arrow {
+    font-size: 10px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.chip-dropdown-bottom {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 14px;
+    margin-top: 8px;
+    z-index: 200;
+    overflow: hidden;
+    border: 0.5px solid var(--tg-border-color, #2c2c2e);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.chip-option {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+    text-align: center;
+}
+
+.chip-option.active {
+    color: var(--tg-theme-button-color, #2f80ed);
+    font-weight: 500;
+}
+
 /* ============ КАРТОЧКИ ОБЪЯВЛЕНИЙ ============ */
 .orders-list {
     display: flex;
@@ -303,84 +384,6 @@
     color: var(--tg-theme-text-color, #fff);
     font-size: 18px;
     cursor: pointer;
-}
-
-/* ============ ФИЛЬТРЫ ============ */
-.filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.filter-chip {
-    flex: 1;
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    border-radius: 14px;
-    padding: 8px 12px;
-    position: relative;
-}
-
-.filter-chip-label {
-    font-size: 10px;
-    color: var(--tg-theme-hint-color, #888);
-    margin-bottom: 4px;
-}
-
-.filter-chip-value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #fff);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-}
-
-.filter-chip-input {
-    width: 100%;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-text-color, #fff);
-    background: transparent;
-    border: none;
-    outline: none;
-}
-
-.filter-chip-input::placeholder {
-    color: var(--tg-theme-hint-color, #666);
-    font-size: 12px;
-}
-
-.chip-arrow {
-    font-size: 10px;
-    color: var(--tg-theme-hint-color, #888);
-}
-
-.chip-dropdown-bottom {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-    border-radius: 14px;
-    margin-top: 8px;
-    z-index: 200;
-    overflow: hidden;
-    border: 0.5px solid var(--tg-border-color, #2c2c2e);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.chip-option {
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--tg-theme-text-color, #fff);
-    cursor: pointer;
-    text-align: center;
-}
-
-.chip-option.active {
-    color: var(--tg-theme-button-color, #2f80ed);
-    font-weight: 500;
 }
 
 /* ============ ФОРМА СОЗДАНИЯ ============ */
@@ -970,6 +973,40 @@
     opacity: 0.5;
 }
 
+/* ============ ЛЕГКИЕ АНИМАЦИИ (ТОЛЬКО ПРИ ЗАГРУЗКЕ) ============ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Только первая загрузка - без повторений */
+.order-card {
+    animation: fadeInUp 0.2s ease-out;
+}
+
+.trade-card-new {
+    animation: fadeInUp 0.2s ease-out;
+}
+
+.filter-chip {
+    animation: fadeInUp 0.2s ease-out;
+}
+
+/* Убираем анимации при кликах - никаких transition/transform на взаимодействиях */
+.order-card:active,
+.trade-card-new:active,
+.action-btn:active,
+.order-action-btn:active,
+.menu-item:active {
+    /* Никаких трансформаций! */
+}
+
 /* ============ ЗАГРУЗКА ============ */
 .skeleton {
     background: var(--tg-theme-secondary-bg-color, #1c1c1e);
@@ -993,194 +1030,4 @@
     .modalContent {
         padding-bottom: max(0px, env(safe-area-inset-bottom));
     }
-}
-
-/* ============ ЛЕГКИЕ АНИМАЦИИ ДЛЯ P2P ============ */
-
-/* Анимация появления карточек */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.order-card {
-    animation: fadeInUp 0.3s ease-out forwards;
-    opacity: 0;
-}
-
-/* Задержки для карточек */
-.order-card:nth-child(1) { animation-delay: 0.05s; }
-.order-card:nth-child(2) { animation-delay: 0.1s; }
-.order-card:nth-child(3) { animation-delay: 0.15s; }
-.order-card:nth-child(4) { animation-delay: 0.2s; }
-.order-card:nth-child(5) { animation-delay: 0.25s; }
-.order-card:nth-child(6) { animation-delay: 0.3s; }
-
-/* Анимация для карточек сделок */
-.trade-card-new {
-    animation: fadeInUp 0.25s ease-out forwards;
-    opacity: 0;
-}
-
-.trade-card-new:nth-child(1) { animation-delay: 0.05s; }
-.trade-card-new:nth-child(2) { animation-delay: 0.1s; }
-.trade-card-new:nth-child(3) { animation-delay: 0.15s; }
-.trade-card-new:nth-child(4) { animation-delay: 0.2s; }
-.trade-card-new:nth-child(5) { animation-delay: 0.25s; }
-
-/* Анимация для кнопок при наведении (только для десктопа, на мобилках игнорится) */
-@media (hover: hover) {
-    .order-action-btn:hover {
-        opacity: 0.85;
-        transition: opacity 0.2s ease;
-    }
-    
-    .order-share-btn:hover {
-        opacity: 0.8;
-        transition: opacity 0.2s ease;
-    }
-    
-    .action-btn:hover {
-        opacity: 0.85;
-        transition: opacity 0.15s ease;
-    }
-    
-    .menu-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-        transition: background 0.2s ease;
-    }
-}
-
-/* Анимация пульсации для активного таймера (очень легкая) */
-@keyframes softPulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.85;
-    }
-}
-
-.trade-timer-section {
-    animation: softPulse 2s ease-in-out infinite;
-}
-
-/* Анимация загрузки скелетона */
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
-
-.skeleton {
-    background: linear-gradient(90deg, 
-        var(--tg-theme-secondary-bg-color, #1c1c1e) 25%, 
-        var(--tg-theme-section-bg-color, #2c2c2e) 50%, 
-        var(--tg-theme-secondary-bg-color, #1c1c1e) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
-}
-
-/* Анимация появления модалки */
-.modal {
-    animation: fadeIn 0.2s ease-out;
-}
-
-.modalContent {
-    animation: slideUp 0.25s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-}
-
-/* Анимация для баннера */
-.warning-banner {
-    animation: fadeInUp 0.3s ease-out;
-}
-
-/* Анимация для фильтров */
-.filter-chip {
-    animation: fadeInUp 0.25s ease-out forwards;
-    opacity: 0;
-}
-
-.filter-chip:nth-child(1) { animation-delay: 0.05s; }
-.filter-chip:nth-child(2) { animation-delay: 0.1s; }
-.filter-chip:nth-child(3) { animation-delay: 0.15s; }
-
-/* Анимация для статистики в профиле */
-.stats div {
-    animation: fadeInUp 0.3s ease-out forwards;
-    opacity: 0;
-}
-
-.stats div:nth-child(1) { animation-delay: 0.05s; }
-.stats div:nth-child(2) { animation-delay: 0.1s; }
-.stats div:nth-child(3) { animation-delay: 0.15s; }
-
-/* Анимация для кнопок в профиле */
-.actions button {
-    animation: fadeInUp 0.3s ease-out forwards;
-    opacity: 0;
-}
-
-.actions button:nth-child(1) { animation-delay: 0.1s; }
-.actions button:nth-child(2) { animation-delay: 0.15s; }
-
-/* Анимация для меню */
-.menu-item {
-    animation: fadeInUp 0.3s ease-out forwards;
-    opacity: 0;
-}
-
-.menu-item:nth-child(1) { animation-delay: 0.2s; }
-.menu-item:nth-child(2) { animation-delay: 0.25s; }
-.menu-item:nth-child(3) { animation-delay: 0.3s; }
-
-/* Легкий эффект при нажатии на карточку (микровзаимодействие) */
-.order-card:active {
-    transform: scale(0.99);
-    transition: transform 0.05s ease;
-}
-
-.trade-card-new:active {
-    transform: scale(0.99);
-    transition: transform 0.05s ease;
-}
-
-/* Анимация появления сообщений в чате */
-.chat-message {
-    animation: fadeInUp 0.2s ease-out;
-}
-
-/* Анимация для иконок */
-.order-share-btn:active {
-    transform: scale(0.96);
-    transition: transform 0.05s ease;
-}
-
-.order-action-btn:active {
-    transform: scale(0.98);
-    transition: transform 0.05s ease;
-}
-
-.action-btn:active {
-    transform: scale(0.97);
-    transition: transform 0.05s ease;
 }

@@ -335,10 +335,50 @@ const startTrade = async () => {
     };
 
     const shareOrder = (order) => {
-        const shareUrl = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
-        navigator.clipboard.writeText(shareUrl);
-        showToast('✅ Ссылка на объявление скопирована!', 'success');
-    };
+    // Формируем текст сообщения
+    const messageText = `🤝 *P2P ОБЪЯВЛЕНИЕ #${order.id}*
+
+💰 *${order.rate} ₽* за 1 USDT
+📦 Доступно: *${order.available_amount} USDT*
+📊 Лимиты: ${order.min_amount} - ${order.max_amount} USDT
+💳 Оплата: ${order.payment_methods?.map(m => {
+    const methods = { bank_transfer: '🏦 Банк', card: '💳 Карта', sbp: '📱 СБП', cash: '💰 Наличные' };
+    return methods[m] || m;
+}).join(', ')}
+
+👇 Нажмите на кнопку ниже, чтобы открыть объявление.`;
+
+    // URL для кнопки
+    const buttonUrl = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
+    
+    // Формируем полное сообщение с Markdown разметкой
+    const fullMessage = `${messageText}\n\n[🔗 Открыть объявление](${buttonUrl})`;
+    
+    // Используем Telegram WebApp для шаринга
+    if (window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        
+        // Пробуем использовать shareToStory
+        if (tg.shareToStory) {
+            tg.shareToStory(fullMessage);
+        } 
+        // Иначе используем HapticFeedback + копирование
+        else {
+            navigator.clipboard.writeText(`${messageText}\n\n🔗 ${buttonUrl}`);
+            showToast('✅ Текст с ссылкой скопирован! Отправьте другу в Telegram', 'success');
+            
+            // Вибрация для подтверждения
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+    } else {
+        // Fallback для обычного браузера
+        const fullText = `${messageText}\n\n🔗 ${buttonUrl}`;
+        navigator.clipboard.writeText(fullText);
+        showToast('✅ Ссылка скопирована', 'success');
+    }
+};
 
     const openRules = (e) => {
         if (e) e.stopPropagation();

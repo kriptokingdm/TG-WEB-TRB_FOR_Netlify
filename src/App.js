@@ -485,15 +485,14 @@ function App() {
       updateHideHints
     };
 
-    // Проверяем на p2p/trade/:id (страница создания сделки)
-    if (currentPage && currentPage.startsWith('p2p/trade/')) {
-      return <P2PTrade key="p2p-trade" {...commonProps} />;
-    }
+    // В renderPage, ПЕРВЫМИ проверяем p2p/trade и p2p/order
+if (currentPage && currentPage.startsWith('p2p/trade/')) {
+  return <P2PTrade key="p2p-trade" {...commonProps} />;
+}
 
-    // Проверяем на p2p/order/:id (страница просмотра объявления)
-    if (currentPage && currentPage.startsWith('p2p/order/')) {
-      return <P2POrder key="p2p-order" {...commonProps} />;
-    }
+if (currentPage && currentPage.startsWith('p2p/order/')) {
+  return <P2POrder key="p2p-order" {...commonProps} />;
+}
 
     if (window.location.pathname === '/pin') {
       return <PinPage />;

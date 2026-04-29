@@ -335,18 +335,45 @@ const startTrade = async () => {
     };
 
     const shareOrder = (order) => {
-    // Ссылка на бота с параметром order_
-    const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
+    // Форматируем способы оплаты
+    const paymentMethods = order.payment_methods || [];
+    const paymentText = paymentMethods.map(m => {
+        const methods = { 
+            bank_transfer: '🏦 Банк', 
+            card: '💳 Карта', 
+            sbp: '📱 СБП', 
+            cash: '💰 Наличные' 
+        };
+        return methods[m] || m;
+    }).join(', ');
     
-    // Копируем ссылку
-    navigator.clipboard.writeText(botLink);
+    const orderUrl = `https://tg-web-trb-for-netlify.vercel.app/#p2p/order/${order.id}`;
+    const message = `🤝 P2P ОБЪЯВЛЕНИЕ #${order.id}
+
+💰 ${order.rate} ₽ за 1 USDT
+📦 Доступно: ${order.available_amount} USDT
+📊 Лимиты: ${order.min_amount} - ${order.max_amount} USDT
+💳 Оплата: ${paymentText}
+⏰ Время на оплату: ${order.payment_time || 30} мин
+
+🔗 Открыть объявление: ${orderUrl}`;
+    
+    // Кодируем текст для URL
+    const encodedText = encodeURIComponent(message);
+    const encodedUrl = encodeURIComponent(orderUrl);
+    
+    // Создаем ссылку для шаринга в Telegram
+    const shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
+    
+    // Открываем окно шаринга Telegram
+    window.open(shareUrl, '_blank');
     
     // Показываем тост
-    showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
+    showToast('📤 Открывается окно отправки...', 'info');
     
-    // Вибрация для подтверждения
+    // Вибрация
     if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
     }
 };
 

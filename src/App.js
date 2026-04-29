@@ -9,6 +9,7 @@ import SettingsApp from './SettingsApp';
 import P2PMarket from './P2PMarket';
 import P2PCreate from './P2PCreate';
 import P2POrder from './P2POrder';
+import P2PTrade from './P2PTrade';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
@@ -260,7 +261,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order'].includes(hash)) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade'].includes(hash.split('/')[0])) {
       setCurrentPage(hash);
     }
 
@@ -269,7 +270,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order'].includes(h)) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade'].includes(h.split('/')[0])) {
         setCurrentPage(h);
       }
     };
@@ -484,13 +485,18 @@ function App() {
       updateHideHints
     };
 
-    if (window.location.pathname === '/pin') {
-      return <PinPage />;
+    // Проверяем на p2p/trade/:id (страница создания сделки)
+    if (currentPage && currentPage.startsWith('p2p/trade/')) {
+      return <P2PTrade key="p2p-trade" {...commonProps} />;
     }
 
+    // Проверяем на p2p/order/:id (страница просмотра объявления)
     if (currentPage && currentPage.startsWith('p2p/order/')) {
-      const orderId = currentPage.split('/').pop();
-      return <P2POrder key="p2p-order" {...commonProps} orderId={orderId} />;
+      return <P2POrder key="p2p-order" {...commonProps} />;
+    }
+
+    if (window.location.pathname === '/pin') {
+      return <PinPage />;
     }
 
     switch (currentPage) {
@@ -548,7 +554,7 @@ function App() {
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {currentPage !== 'help' && currentPage !== 'settings' && currentPage !== 'p2p' && <Navigation />}
+          {currentPage !== 'help' && currentPage !== 'settings' && !currentPage?.startsWith('p2p/') && <Navigation />}
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
               <span className="telegram-toast-icon">{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}</span>

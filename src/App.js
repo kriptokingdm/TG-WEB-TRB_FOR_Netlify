@@ -14,6 +14,7 @@ import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
 import SecurityPage from './SecurityPage';
+import TradeDetail from './TradeDetail';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
@@ -488,6 +489,12 @@ function App() {
     // В renderPage, ПЕРВЫМИ проверяем p2p/trade и p2p/order
 if (currentPage && currentPage.startsWith('p2p/trade/')) {
   return <P2PTrade key="p2p-trade" {...commonProps} />;
+}
+
+// В renderPage добавь:
+if (currentPage && currentPage.startsWith('trade/')) {
+    const tradeId = currentPage.split('/')[1];
+    return <TradeDetail key="trade-detail" {...commonProps} tradeId={tradeId} />;
 }
 
 if (currentPage && currentPage.startsWith('p2p/order/')) {

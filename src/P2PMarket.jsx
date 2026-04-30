@@ -844,17 +844,40 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     );
 
     const OrdersScreen = () => (
-        <div className="screen">
-            <div className="header"><button onClick={() => setScreen('main')}>←</button><h2>Мои сделки</h2><div></div></div>
-            <div className="tabs">
-                <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
-                <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>История</button>
-            </div>
-            <div className="trades-list">
-                {loading ? <div className="loading">Загрузка...</div> : myTrades.length === 0 ? <div className="empty">Нет сделок</div> : myTrades.filter(t => activeTab === 'active' ? ['pending', 'paid'].includes(t.status) : ['completed', 'cancelled', 'expired'].includes(t.status)).map((trade, index) => (<div key={trade.trade_id} className="trade-card-wrapper" style={{ animationDelay: `${index * 0.05}s` }}><TradeCard trade={trade} onUpdate={fetchMyTrades} /></div>))}
-            </div>
+    <div className="screen">
+        <div className="header">
+            <button onClick={() => setScreen('main')}>←</button>
+            <h2>Мои сделки</h2>
+            <div></div>
         </div>
-    );
+        <div className="tabs">
+            <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
+            <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>История</button>
+        </div>
+        <div className="trades-list">
+            {loading ? (
+                <div className="loading">Загрузка...</div>
+            ) : myTrades.length === 0 ? (
+                <div className="empty">Нет сделок</div>
+            ) : (
+                myTrades
+                    .filter(t => activeTab === 'active' 
+                        ? ['pending', 'paid'].includes(t.status) 
+                        : ['completed', 'cancelled', 'expired'].includes(t.status))
+                    .map((trade, index) => (
+                        <div 
+                            key={trade.trade_id} 
+                            className="trade-card-wrapper" 
+                            onClick={() => navigateTo(`trade/${trade.trade_id}`)} 
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <TradeCard trade={trade} onUpdate={fetchMyTrades} />
+                        </div>
+                    ))
+            )}
+        </div>
+    </div>
+);
 
     const HelpScreen = () => (
         <div className="screen">

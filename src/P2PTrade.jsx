@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './P2P.css';
 
 const API = 'https://tethrab.shop';
@@ -18,7 +18,7 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
         if (orderId) {
             fetchOrder();
         } else {
-            showToast('бъявление не найдено', 'error');
+            showToast('Объявление не найдено', 'error');
             setTimeout(() => navigateTo('p2p'), 1000);
         }
     }, [orderId]);
@@ -31,16 +31,16 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
 
     const fetchOrder = async () => {
         try {
-            const res = await fetch(${API}/api/p2p/order/);
+            const res = await fetch(`${API}/api/p2p/order/${orderId}`);
             const data = await res.json();
             if (data.success) {
                 setOrder(data.order);
             } else {
-                showToast('бъявление не найдено', 'error');
+                showToast('Объявление не найдено', 'error');
                 setTimeout(() => navigateTo('p2p'), 1500);
             }
         } catch (e) {
-            showToast('шибка загрузки', 'error');
+            showToast('Ошибка загрузки', 'error');
         } finally {
             setLoading(false);
         }
@@ -48,7 +48,7 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
 
     const startTrade = async () => {
         if (!amount || parseFloat(amount) <= 0) {
-            showToast('ведите сумму', 'error');
+            showToast('Введите сумму', 'error');
             return;
         }
         
@@ -58,18 +58,18 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
         }
         
         if (usdtAmount < order.min_amount || usdtAmount > order.max_amount) {
-            showToast(Сумма должна быть от  до  USDT, 'error');
+            showToast(`Сумма должна быть от ${order.min_amount} до ${order.max_amount} USDT`, 'error');
             return;
         }
         
         if (usdtAmount > order.available_amount) {
-            showToast(оступно только  USDT, 'error');
+            showToast(`Доступно только ${order.available_amount} USDT`, 'error');
             return;
         }
         
         setCreatingTrade(true);
         try {
-            const res = await fetch(${API}/api/p2p/trade/start, {
+            const res = await fetch(`${API}/api/p2p/trade/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -84,10 +84,10 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
                 showToast('✅ Сделка успешно создана!', 'success');
                 navigateTo('orders');
             } else {
-                showToast(data.error || 'шибка', 'error');
+                showToast(data.error || 'Ошибка', 'error');
             }
         } catch (e) {
-            showToast('шибка соединения', 'error');
+            showToast('Ошибка соединения', 'error');
         } finally {
             setCreatingTrade(false);
         }
@@ -103,10 +103,10 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
             <div className="screen">
                 <div className="header">
                     <button onClick={() => navigateTo('p2p')}>←</button>
-                    <h2>агрузка...</h2>
+                    <h2>Загрузка...</h2>
                     <div></div>
                 </div>
-                <div className="loading">агрузка объявления...</div>
+                <div className="loading">Загрузка объявления...</div>
             </div>
         );
     }
@@ -116,10 +116,10 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
             <div className="screen">
                 <div className="header">
                     <button onClick={() => navigateTo('p2p')}>←</button>
-                    <h2>шибка</h2>
+                    <h2>Ошибка</h2>
                     <div></div>
                 </div>
-                <div className="empty">бъявление не найдено</div>
+                <div className="empty">Объявление не найдено</div>
             </div>
         );
     }
@@ -127,10 +127,10 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
     const paymentMethods = order.payment_methods || [];
     const paymentText = paymentMethods.map(m => {
         const methods = { 
-            bank_transfer: '🏦 анк', 
-            card: '💳 арта', 
-            sbp: '📱 С', 
-            cash: '💰 аличные' 
+            bank_transfer: '🏦 Банк', 
+            card: '💳 Карта', 
+            sbp: '📱 СБП', 
+            cash: '💰 Наличные' 
         };
         return methods[m] || m;
     }).join(', ');
@@ -146,26 +146,26 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
             <div className="trade-create-card">
                 <div className="seller-info">
                     <div className="seller-avatar">{order.user_name?.[0] || 'U'}</div>
-                    <div className="seller-name">{order.user_name || 'родавец'}</div>
+                    <div className="seller-name">{order.user_name || 'Продавец'}</div>
                 </div>
                 
                 <div className="order-info">
-                    <div className="order-rate">{formatNumber(order.rate)} </div>
-                    <div className="order-available">оступно: {formatNumber(order.available_amount)} USDT</div>
+                    <div className="order-rate">{formatNumber(order.rate)} ₽</div>
+                    <div className="order-available">Доступно: {formatNumber(order.available_amount)} USDT</div>
                 </div>
                 
                 <div className="info-row">
-                    <span>📊 имиты:</span>
+                    <span>📊 Лимиты:</span>
                     <span>{order.min_amount} - {order.max_amount} USDT</span>
                 </div>
                 
                 <div className="info-row">
-                    <span>💳 плата:</span>
+                    <span>💳 Оплата:</span>
                     <span>{paymentText}</span>
                 </div>
                 
                 <div className="info-row">
-                    <span>⏰ ремя на оплату:</span>
+                    <span>⏰ Время на оплату:</span>
                     <span>{order.payment_time || 30} минут</span>
                 </div>
                 
@@ -186,20 +186,20 @@ export default function P2PTrade({ telegramUser, showToast, navigateTo }) {
                     className="amountInput"
                     value={amount} 
                     onChange={e => setAmount(e.target.value)} 
-                    placeholder="ведите сумму в USDT"
+                    placeholder="Введите сумму в USDT"
                 />
                 
                 {amount && (
                     <div className="calcResult">
                         {currencyType === 'usdt' 
-                            ? ≈  
-                            : ≈  USDT
+                            ? `≈ ${formatNumber(parseFloat(amount) * order.rate)} ₽`
+                            : `≈ ${formatNumber(parseFloat(amount) / order.rate)} USDT`
                         }
                     </div>
                 )}
                 
                 <button className="confirmBtn" onClick={startTrade} disabled={creatingTrade}>
-                    {creatingTrade ? 'Создание...' : '✅ ачать сделку'}
+                    {creatingTrade ? 'Создание...' : '✅ Начать сделку'}
                 </button>
             </div>
         </div>

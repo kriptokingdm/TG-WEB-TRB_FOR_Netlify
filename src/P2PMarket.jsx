@@ -111,18 +111,20 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
 
     // API вызовы
     const fetchStats = async () => {
-        try {
-            const res = await fetch(`${API}/api/p2p/stats/${userId}`);
-            const data = await res.json();
-            setStats({
-                total: data.total_trades || 0,
-                completed: data.successful_trades || 0,
-                active: data.pending_trades || 0
-            });
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    try {
+        const res = await fetch(`${API}/api/p2p/stats/${userId}`);
+        const data = await res.json();
+        setStats({
+            total: data.total_trades || 0,
+            completed: data.successful_trades || 0,
+            active: data.pending_trades || 0,
+            cancelled: data.cancelled_trades || 0,
+            volume: data.total_volume || 0
+        });
+    } catch (e) {
+        console.error(e);
+    }
+};
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -650,7 +652,9 @@ const shareOrder = (order) => {
 
     // Экраны
     const ProfileScreen = () => {
-    const successRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+    const totalTrades = stats.total;
+    const completedTrades = stats.completed;
+    const successRate = totalTrades > 0 ? Math.round((completedTrades / totalTrades) * 100) : 0;
     
     return (
         <div className="profile">
@@ -664,7 +668,7 @@ const shareOrder = (order) => {
             </div>
             <div className="stats">
                 <div>
-                    <b>{stats.completed}</b>
+                    <b>{completedTrades}</b>
                     <span>✅ Выполнено</span>
                 </div>
                 <div>

@@ -1,5 +1,5 @@
 // src/TradeDetail.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './P2P.css';
 
 const API = 'https://tethrab.shop';
@@ -32,6 +32,12 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
         }
     }, [trade]);
 
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
     const updateTimeLeft = () => {
         if (!trade?.expires_at) return;
         const diff = new Date(trade.expires_at) - new Date();
@@ -52,7 +58,6 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
                 const foundTrade = data.trades.find(t => t.trade_id === tradeId);
                 if (foundTrade) {
                     setTrade(foundTrade);
-                    // Загружаем объявление
                     const orderRes = await fetch(`${API}/api/p2p/order/${foundTrade.order_id}`);
                     const orderData = await orderRes.json();
                     if (orderData.success) {
@@ -112,6 +117,64 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
         }
     };
 
+    const confirmPayment = async () => {
+        try {
+            const res = await fetch(`${API}/api/p2p/trade/confirm-payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tradeId: trade.trade_id, userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ Оплата подтверждена!', 'success');
+                fetchTrade();
+            } else {
+                showToast(data.error || 'Ошибка', 'error');
+            }
+        } catch (e) {
+            showToast('Ошибка соединения', 'error');
+        }
+    };
+
+    const confirmReceipt = async () => {
+        try {
+            const res = await fetch(`${API}/api/p2p/trade/confirm-receipt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tradeId: trade.trade_id, userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ Сделка завершена!', 'success');
+                fetchTrade();
+            } else {
+                showToast(data.error || 'Ошибка', 'error');
+            }
+        } catch (e) {
+            showToast('Ошибка соединения', 'error');
+        }
+    };
+
+    const cancelTrade = async () => {
+        if (!window.confirm('Отменить сделку?')) return;
+        try {
+            const res = await fetch(`${API}/api/p2p/trade/cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tradeId: trade.trade_id, userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('❌ Сделка отменена', 'success');
+                navigateTo('orders');
+            } else {
+                showToast(data.error || 'Ошибка', 'error');
+            }
+        } catch (e) {
+            showToast('Ошибка соединения', 'error');
+        }
+    };
+
     const formatNumber = (num) => {
         if (num === undefined || num === null) return '0';
         return new Intl.NumberFormat('ru-RU').format(num);
@@ -141,7 +204,6 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
 
     const isBuyer = trade?.buyer_id === userId;
     const isSeller = trade?.seller_id === userId;
-    const otherParty = isBuyer ? trade?.seller_id : trade?.buyer_id;
     const canConfirmPayment = trade?.status === 'pending' && isBuyer;
     const canConfirmReceipt = trade?.status === 'paid' && isSeller;
     const canCancel = trade?.status === 'pending' || trade?.status === 'paid';
@@ -264,61 +326,17 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
 
                 <div className="detail-actions">
                     {canConfirmPayment && (
-                        <button className="action-btn confirm-payment" onClick={() => {
-                            fetch(`${API}/api/p2p/trade/confirm-payment`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ tradeId: trade.trade_id, userId })
-                            }).then(async res => {
-                                const data = await res.json();
-                                if (data.success) {
-                                    showToast('✅ Оплата подтверждена! Ожидайте подтверждения продавца', 'success');
-                                    fetchTrade();
-                                } else {
-                                    showToast(data.error || 'Ошибка', 'error');
-                                }
-                            });
-                        }}>
+                        <button className="action-btn confirm-payment" onClick={confirmPayment}>
                             💳 Подтвердить оплату
                         </button>
                     )}
                     {canConfirmReceipt && (
-                        <button className="action-btn confirm-receipt" onClick={() => {
-                            fetch(`${API}/api/p2p/trade/confirm-receipt`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ tradeId: trade.trade_id, userId })
-                            }).then(async res => {
-                                const data = await res.json();
-                                if (data.success) {
-                                    showToast('✅ Сделка завершена!', 'success');
-                                    fetchTrade();
-                                } else {
-                                    showToast(data.error || 'Ошибка', 'error');
-                                }
-                            });
-                        }}>
+                        <button className="action-btn confirm-receipt" onClick={confirmReceipt}>
                             ✅ Подтвердить получение
                         </button>
                     )}
                     {canCancel && (
-                        <button className="action-btn cancel" onClick={() => {
-                            if (window.confirm('Отменить сделку?')) {
-                                fetch(`${API}/api/p2p/trade/cancel`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ tradeId: trade.trade_id, userId })
-                                }).then(async res => {
-                                    const data = await res.json();
-                                    if (data.success) {
-                                        showToast('❌ Сделка отменена', 'success');
-                                        navigateTo('orders');
-                                    } else {
-                                        showToast(data.error || 'Ошибка', 'error');
-                                    }
-                                });
-                            }
-                        }}>
+                        <button className="action-btn cancel" onClick={cancelTrade}>
                             ❌ Отменить сделку
                         </button>
                     )}

@@ -10,11 +10,11 @@ import P2PMarket from './P2PMarket';
 import P2PCreate from './P2PCreate';
 import P2POrder from './P2POrder';
 import P2PTrade from './P2PTrade';
+import TradeDetail from './TradeDetail';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
 import SecurityPage from './SecurityPage';
-import TradeDetail from './TradeDetail';
 
 const API_BASE_URL = 'https://tethrab.shop';
 
@@ -262,7 +262,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade'].includes(hash.split('/')[0])) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(hash.split('/')[0])) {
       setCurrentPage(hash);
     }
 
@@ -271,7 +271,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade'].includes(h.split('/')[0])) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(h.split('/')[0])) {
         setCurrentPage(h);
       }
     };
@@ -486,20 +486,21 @@ function App() {
       updateHideHints
     };
 
-    // В renderPage, ПЕРВЫМИ проверяем p2p/trade и p2p/order
-if (currentPage && currentPage.startsWith('p2p/trade/')) {
-  return <P2PTrade key="p2p-trade" {...commonProps} />;
-}
+    // Проверяем детали сделки (trade/ID)
+    if (currentPage && currentPage.startsWith('trade/')) {
+      const tradeId = currentPage.split('/')[1];
+      return <TradeDetail key="trade-detail" {...commonProps} tradeId={tradeId} />;
+    }
 
-// В renderPage добавь:
-if (currentPage && currentPage.startsWith('trade/')) {
-    const tradeId = currentPage.split('/')[1];
-    return <TradeDetail key="trade-detail" {...commonProps} tradeId={tradeId} />;
-}
+    // Проверяем p2p/trade/ID
+    if (currentPage && currentPage.startsWith('p2p/trade/')) {
+      return <P2PTrade key="p2p-trade" {...commonProps} />;
+    }
 
-if (currentPage && currentPage.startsWith('p2p/order/')) {
-  return <P2POrder key="p2p-order" {...commonProps} />;
-}
+    // Проверяем p2p/order/ID
+    if (currentPage && currentPage.startsWith('p2p/order/')) {
+      return <P2POrder key="p2p-order" {...commonProps} />;
+    }
 
     if (window.location.pathname === '/pin') {
       return <PinPage />;
@@ -560,7 +561,7 @@ if (currentPage && currentPage.startsWith('p2p/order/')) {
       <div className="app-wrapper">
         <div className="app-content">
           {renderPage()}
-          {currentPage !== 'help' && currentPage !== 'settings' && !currentPage?.startsWith('p2p/') && <Navigation />}
+          {currentPage !== 'help' && currentPage !== 'settings' && !currentPage?.startsWith('p2p/') && !currentPage?.startsWith('trade/') && <Navigation />}
           {toast && (
             <div className={`telegram-toast ${toast.type}`}>
               <span className="telegram-toast-icon">{toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}</span>

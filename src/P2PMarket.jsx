@@ -334,19 +334,26 @@ const startTrade = async () => {
         }
     };
 
-    const shareOrder = (order) => {
-    // Ссылка на бота с параметром order_
-    const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
-    
-    // Копируем ссылку
-    navigator.clipboard.writeText(botLink);
-    
+
+const shareOrder = (order) => {
+    const orderUrl = `https://tg-web-trb-for-netlify.vercel.app/#p2p/trade/${order.id}`;
+    navigator.clipboard.writeText(orderUrl);
     showToast('✅ Ссылка на объявление скопирована! Отправьте другу', 'success');
-    
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
 };
+
+//     const shareOrder = (order) => {
+//     // Ссылка на бота с параметром order_
+//     const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
+    
+//     // Копируем ссылку
+//     navigator.clipboard.writeText(botLink);
+    
+//     showToast('✅ Ссылка на объявление скопирована! Отправьте другу', 'success');
+    
+//     if (window.Telegram?.WebApp?.HapticFeedback) {
+//         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+//     }
+// };
 
     const openRules = (e) => {
         if (e) e.stopPropagation();
@@ -642,7 +649,10 @@ const startTrade = async () => {
     );
 
     // Экраны
-    const ProfileScreen = () => (
+    const ProfileScreen = () => {
+    const successRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+    
+    return (
         <div className="profile">
             <div className="profile-header">
                 <button className="profile-back-btn" onClick={onBack}>←</button>
@@ -653,9 +663,18 @@ const startTrade = async () => {
                 <div className="name">{userName}</div>
             </div>
             <div className="stats">
-                <div><b>{stats.total}</b><span>Всего</span></div>
-                <div><b>{stats.completed}</b><span>Завершено</span></div>
-                <div><b>{stats.active}</b><span>Активные</span></div>
+                <div>
+                    <b>{stats.completed}</b>
+                    <span>✅ Выполнено</span>
+                </div>
+                <div>
+                    <b>{successRate}%</b>
+                    <span>📊 Успешных</span>
+                </div>
+                <div>
+                    <b>{stats.active}</b>
+                    <span>🟢 Активные</span>
+                </div>
             </div>
             <div className="actions">
                 <button className="buy" onClick={() => setScreen('buy')}>Купить</button>
@@ -675,6 +694,7 @@ const startTrade = async () => {
             )}
         </div>
     );
+};
 
     const BuyScreen = () => {
         const paymentMethodsFilter = [

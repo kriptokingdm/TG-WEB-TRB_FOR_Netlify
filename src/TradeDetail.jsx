@@ -184,7 +184,7 @@ export default function TradeDetail({ telegramUser, showToast, navigateTo, trade
         const map = {
             pending: '⏳ Ожидает оплаты',
             paid: '💳 Оплачено',
-            completed: '✅ Завершена',
+            completed: '✅ Успешно завершена',
             cancelled: '❌ Отменена',
             expired: '⏰ Просрочена'
         };

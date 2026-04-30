@@ -337,10 +337,18 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     };
 
     const shareOrder = (order) => {
-        const orderUrl = `https://tg-web-trb-for-netlify.vercel.app/#p2p/trade/${order.id}`;
-        navigator.clipboard.writeText(orderUrl);
-        showToast('✅ Ссылка на объявление скопирована!', 'success');
-    };
+    // Ссылка на бота с параметром order_
+    const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
+    
+    // Копируем ссылку
+    navigator.clipboard.writeText(botLink);
+    
+    showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
+    
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    }
+};
 
     const openRules = (e) => {
         if (e) e.stopPropagation();

@@ -40,6 +40,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     const [showTimeDropdown, setShowTimeDropdown] = useState(false);
     
     const amountInputRef = useRef(null);
+    
+    // Баланс пользователя для создания объявления
+    const [userBalance, setUserBalance] = useState(0);
 
     const [newOrder, setNewOrder] = useState({
         type: 'sell',
@@ -66,6 +69,19 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         { value: '60', label: '1 час' },
         { value: '120', label: '2 часа' }
     ];
+
+    // Функция получения баланса
+    const fetchUserBalance = async () => {
+        try {
+            const res = await fetch(`${API}/api/wallet/usdt/balance/${userId}`);
+            const data = await res.json();
+            if (data.success) {
+                setUserBalance(data.balance || 0);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     useEffect(() => {
         fetchStats();
@@ -708,12 +724,69 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         );
     };
 
+    const createOrder = async () => {
+        if (!newOrder.amount || !newOrder.rate) {
+            showToast('Заполните сумму и курс', 'error');
+            return;
+        }
+        if (newOrder.payment_methods.length === 0) {
+            showToast('Выберите способ оплаты', 'error');
+            return;
+        }
+        
+        // Проверка баланса для продажи
+        if (newOrder.type === 'sell') {
+            const amountNum = parseFloat(newOrder.amount);
+            if (amountNum > userBalance) {
+                showToast(`❌ Недостаточно средств! Доступно: ${userBalance.toFixed(2)} USDT`, 'error');
+                return;
+            }
+        }
+        
+        setCreatingTrade(true);
+        try {
+            const res = await fetch(`${API}/api/p2p/order/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId,
+                    type: newOrder.type,
+                    amount: parseFloat(newOrder.amount),
+                    rate: parseFloat(newOrder.rate),
+                    min_amount: parseFloat(newOrder.min_amount),
+                    max_amount: newOrder.max_amount ? parseFloat(newOrder.max_amount) : parseFloat(newOrder.amount),
+                    payment_methods: newOrder.payment_methods,
+                    payment_details: newOrder.payment_details,
+                    terms: newOrder.terms,
+                    payment_time: parseInt(newOrder.payment_time)
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ Объявление создано!', 'success');
+                setShowCreateForm(false);
+                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [], payment_details: '', terms: '', payment_time: '30' });
+                fetchMyAds();
+                setScreen('my_ads');
+            } else {
+                showToast(data.error || 'Ошибка', 'error');
+            }
+        } catch (e) {
+            showToast('Ошибка соединения', 'error');
+        } finally {
+            setCreatingTrade(false);
+        }
+    };
+
     const MyAdsScreen = () => (
         <div className="screen">
             <div className="header">
                 <button onClick={() => setScreen('main')}>←</button>
                 <h2>Мои объявления</h2>
-                <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
+                <button className="create-btn" onClick={() => {
+                    setShowCreateForm(!showCreateForm);
+                    if (!showCreateForm) fetchUserBalance();
+                }}>+</button>
             </div>
             {showCreateForm && (
                 <div className="createForm">
@@ -721,7 +794,27 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                         <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
                         <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
                     </div>
-                    <input type="number" placeholder="Сумма (USDT)" value={newOrder.amount} onChange={e => setNewOrder({...newOrder, amount: e.target.value})} />
+                    
+                    {/* Показываем баланс для продажи */}
+                    {newOrder.type === 'sell' && (
+                        <div className="balance-info">
+                            <span>💰 Ваш баланс USDT:</span>
+                            <strong>{userBalance.toFixed(2)} USDT</strong>
+                        </div>
+                    )}
+                    
+                    <input 
+                        type="number" 
+                        placeholder="Сумма (USDT)" 
+                        value={newOrder.amount} 
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setNewOrder({...newOrder, amount: val});
+                            if (newOrder.type === 'sell' && parseFloat(val) > userBalance) {
+                                showToast(`⚠️ Недостаточно средств! Доступно: ${userBalance} USDT`, 'warning');
+                            }
+                        }} 
+                    />
                     <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
                     <div className="row">
                         <input type="number" placeholder="Мин. сумма" value={newOrder.min_amount} onChange={e => setNewOrder({...newOrder, min_amount: e.target.value})} />
@@ -773,50 +866,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             </div>
         </div>
     );
-
-    const createOrder = async () => {
-        if (!newOrder.amount || !newOrder.rate) {
-            showToast('Заполните сумму и курс', 'error');
-            return;
-        }
-        if (newOrder.payment_methods.length === 0) {
-            showToast('Выберите способ оплаты', 'error');
-            return;
-        }
-        setCreatingTrade(true);
-        try {
-            const res = await fetch(`${API}/api/p2p/order/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    type: newOrder.type,
-                    amount: parseFloat(newOrder.amount),
-                    rate: parseFloat(newOrder.rate),
-                    min_amount: parseFloat(newOrder.min_amount),
-                    max_amount: newOrder.max_amount ? parseFloat(newOrder.max_amount) : parseFloat(newOrder.amount),
-                    payment_methods: newOrder.payment_methods,
-                    payment_details: newOrder.payment_details,
-                    terms: newOrder.terms,
-                    payment_time: parseInt(newOrder.payment_time)
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('✅ Объявление создано!', 'success');
-                setShowCreateForm(false);
-                setNewOrder({ type: 'sell', amount: '', rate: '', min_amount: '10', max_amount: '', payment_methods: [], payment_details: '', terms: '', payment_time: '30' });
-                fetchMyAds();
-                setScreen('my_ads');
-            } else {
-                showToast(data.error || 'Ошибка', 'error');
-            }
-        } catch (e) {
-            showToast('Ошибка соединения', 'error');
-        } finally {
-            setCreatingTrade(false);
-        }
-    };
 
     return (
         <div className="app">

@@ -1332,3 +1332,101 @@
     background: var(--tg-border-color, #2c2c2e);
     margin: 16px 0;
 }
+
+/* Форма создания объявления */
+.tg-create-ad-form {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.tg-create-ad-form h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+
+.tg-form-type {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.tg-form-type button {
+    flex: 1;
+    padding: 10px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+}
+
+.tg-form-type button.active:first-child {
+    background: #ff3b30;
+    color: #fff;
+}
+
+.tg-form-type button.active:last-child {
+    background: #34c759;
+    color: #000;
+}
+
+.tg-create-ad-form input {
+    width: 100%;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-text-color, #fff);
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.tg-form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.tg-payment-methods {
+    margin: 12px 0;
+}
+
+.tg-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #888);
+    margin-bottom: 8px;
+}
+
+.tg-payment-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tg-payment-buttons button {
+    padding: 8px 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 20px;
+    color: var(--tg-theme-text-color, #fff);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.tg-payment-buttons button.selected {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+.tg-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #34c759;
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}

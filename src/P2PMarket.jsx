@@ -337,14 +337,9 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     };
 
     const shareOrder = (order) => {
-    // Ссылка на бота с параметром order_
     const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
-    
-    // Копируем ссылку
     navigator.clipboard.writeText(botLink);
-    
     showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
-    
     if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
     }
@@ -869,10 +864,11 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     };
 
     const shareAd = (ad) => {
-        const adUrl = `https://tg-web-trb-for-netlify.vercel.app/#p2p/trade/${ad.id}`;
-        navigator.clipboard.writeText(adUrl);
-        showToast('✅ Ссылка на объявление скопирована!', 'success');
-    };
+    // Ссылка на бота с параметром order_
+    const botLink = `https://t.me/TetherRabbitBot?start=order_${ad.id}`;
+    navigator.clipboard.writeText(botLink);
+    showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
+};
 
     return (
         <div className="screen">
@@ -935,61 +931,92 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
                     myAds.map(ad => (
                         <div key={ad.id} className="ad-card">
                             {editingAd?.id === ad.id ? (
-                                // Форма редактирования
-                                <div className="edit-form">
-                                    <div className="ad-header">
-                                        <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
-                                        <button className="edit-cancel" onClick={cancelEdit}>✕</button>
-                                    </div>
-                                    <input 
-                                        type="number" 
-                                        placeholder="Курс (RUB)" 
-                                        value={editForm.rate}
-                                        onChange={e => setEditForm({...editForm, rate: e.target.value})}
-                                    />
-                                    <div className="row">
-                                        <input 
-                                            type="number" 
-                                            placeholder="Мин. сумма" 
-                                            value={editForm.min_amount}
-                                            onChange={e => setEditForm({...editForm, min_amount: e.target.value})}
-                                        />
-                                        <input 
-                                            type="number" 
-                                            placeholder="Макс. сумма" 
-                                            value={editForm.max_amount}
-                                            onChange={e => setEditForm({...editForm, max_amount: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="paymentBtns">
-                                        {paymentMethodsList.map(m => (
-                                            <button 
-                                                key={m.value} 
-                                                className={editForm.payment_methods.includes(m.value) ? 'selected' : ''}
-                                                onClick={() => togglePaymentMethod(m.value)}
-                                            >
-                                                {m.icon}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <textarea 
-                                        placeholder="Условия сделки" 
-                                        value={editForm.terms}
-                                        onChange={e => setEditForm({...editForm, terms: e.target.value})}
-                                        rows="2"
-                                    />
-                                    <select 
-                                        value={editForm.payment_time}
-                                        onChange={e => setEditForm({...editForm, payment_time: e.target.value})}
-                                    >
-                                        {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
-                                    </select>
-                                    <div className="edit-actions">
-                                        <button className="edit-save" onClick={updateAd}>💾 Сохранить</button>
-                                        <button className="edit-cancel-btn" onClick={cancelEdit}>❌ Отмена</button>
-                                    </div>
-                                </div>
-                            ) : (
+    // Форма редактирования
+    <div className="edit-form" onClick={(e) => e.stopPropagation()}>
+        <div className="ad-header">
+            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
+            <button className="edit-cancel" onClick={cancelEdit}>✕</button>
+        </div>
+        <input 
+            type="number" 
+            placeholder="Курс (RUB)" 
+            value={editForm.rate}
+            onChange={e => setEditForm({...editForm, rate: e.target.value})}
+            onClick={(e) => e.stopPropagation()}
+        />
+        <div className="row">
+            <input 
+                type="number" 
+                placeholder="Мин. сумма" 
+                value={editForm.min_amount}
+                onChange={e => setEditForm({...editForm, min_amount: e.target.value})}
+                onClick={(e) => e.stopPropagation()}
+            />
+            <input 
+                type="number" 
+                placeholder="Макс. сумма" 
+                value={editForm.max_amount}
+                onChange={e => setEditForm({...editForm, max_amount: e.target.value})}
+                onClick={(e) => e.stopPropagation()}
+            />
+        </div>
+        <div className="paymentBtns" onClick={(e) => e.stopPropagation()}>
+            {paymentMethodsList.map(m => (
+                <button 
+                    key={m.value} 
+                    className={editForm.payment_methods.includes(m.value) ? 'selected' : ''}
+                    onClick={() => togglePaymentMethod(m.value)}
+                >
+                    {m.icon}
+                </button>
+            ))}
+        </div>
+        <textarea 
+            placeholder="Условия сделки" 
+            value={editForm.terms}
+            onChange={e => setEditForm({...editForm, terms: e.target.value})}
+            rows="2"
+            onClick={(e) => e.stopPropagation()}
+        />
+        <select 
+            value={editForm.payment_time}
+            onChange={e => setEditForm({...editForm, payment_time: e.target.value})}
+            onClick={(e) => e.stopPropagation()}
+        >
+            {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
+        </select>
+        <div className="edit-actions" onClick={(e) => e.stopPropagation()}>
+            <button className="edit-save" onClick={updateAd}>💾 Сохранить</button>
+            <button className="edit-cancel-btn" onClick={cancelEdit}>❌ Отмена</button>
+        </div>
+    </div>
+) : (
+    // Обычный вид объявления
+    <>
+        <div className="ad-header">
+            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
+            <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
+        </div>
+        <div className="ad-rate">{ad.rate} ₽</div>
+        <div className="ad-amount">{ad.available_amount}/{ad.amount} USDT</div>
+        <div className="ad-actions">
+            <button className="ad-edit" onClick={(e) => { e.stopPropagation(); startEdit(ad); }}>✏️ Редактировать</button>
+            <button className="ad-share" onClick={(e) => { e.stopPropagation(); shareAd(ad); }}>📤 Поделиться</button>
+            <button className="ad-delete" onClick={(e) => { 
+                e.stopPropagation();
+                if(window.confirm('Удалить объявление?')) 
+                    fetch(`${API}/api/p2p/order/${ad.id}`, {
+                        method:'DELETE', 
+                        headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify({userId})
+                    }).then(()=>{
+                        showToast('Удалено','success');
+                        fetchMyAds();
+                    });
+            }}>🗑 Удалить</button>
+        </div>
+    </>
+)} : (
                                 <>
                                     <div className="ad-header">
                                         <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>

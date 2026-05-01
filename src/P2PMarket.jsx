@@ -1022,7 +1022,7 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             }}>🗑 Удалить</button>
         </div>
     </>
-)} : (
+) : (
                                     <>
                                         <div className="ad-header">
                                             <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>

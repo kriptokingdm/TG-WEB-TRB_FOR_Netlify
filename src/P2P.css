@@ -1685,3 +1685,89 @@
     color: white;
     cursor: pointer;
 }
+
+/* ============ КНОПКИ ДЛЯ МОИХ ОБЪЯВЛЕНИЙ ============ */
+.ad-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.ad-edit, .ad-share, .ad-delete {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.1s ease;
+}
+
+.ad-edit {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+.ad-share {
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+    border: 0.5px solid rgba(52, 199, 89, 0.3);
+}
+
+.ad-delete {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
+    border: 0.5px solid rgba(255, 59, 48, 0.3);
+}
+
+/* Форма редактирования */
+.edit-form {
+    width: 100%;
+}
+
+.edit-form input, .edit-form textarea, .edit-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 10px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 13px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.edit-save {
+    flex: 1;
+    padding: 10px;
+    background: #34c759;
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.edit-cancel-btn {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 59, 48, 0.15);
+    border: none;
+    border-radius: 10px;
+    color: #ff3b30;
+    cursor: pointer;
+}
+
+.edit-cancel {
+    background: none;
+    border: none;
+    color: var(--tg-theme-hint-color, #888);
+    font-size: 18px;
+    cursor: pointer;
+}

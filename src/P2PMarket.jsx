@@ -41,7 +41,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     
     const amountInputRef = useRef(null);
     
-    // Баланс пользователя для создания объявления
     const [userBalance, setUserBalance] = useState(0);
 
     const [newOrder, setNewOrder] = useState({
@@ -70,7 +69,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
         { value: '120', label: '2 часа' }
     ];
 
-    // Функция получения баланса
     const fetchUserBalance = async () => {
         try {
             const res = await fetch(`${API}/api/wallet/usdt/balance/${userId}`);
@@ -337,13 +335,13 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     };
 
     const shareOrder = (order) => {
-    const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
-    navigator.clipboard.writeText(botLink);
-    showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    }
-};
+        const botLink = `https://t.me/TetherRabbitBot?start=order_${order.id}`;
+        navigator.clipboard.writeText(botLink);
+        showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+    };
 
     const openRules = (e) => {
         if (e) e.stopPropagation();
@@ -737,7 +735,6 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             return;
         }
         
-        // Проверка баланса для продажи
         if (newOrder.type === 'sell') {
             const amountNum = parseFloat(newOrder.amount);
             if (amountNum > userBalance) {
@@ -782,33 +779,8 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     };
 
     const MyAdsScreen = () => {
-    const [editingAd, setEditingAd] = useState(null);
-    const [editForm, setEditForm] = useState({
-        rate: '',
-        min_amount: '',
-        max_amount: '',
-        payment_methods: [],
-        payment_details: '',
-        terms: '',
-        payment_time: '30'
-    });
-
-    const startEdit = (ad) => {
-        setEditingAd(ad);
-        setEditForm({
-            rate: ad.rate,
-            min_amount: ad.min_amount,
-            max_amount: ad.max_amount,
-            payment_methods: ad.payment_methods || [],
-            payment_details: ad.payment_details || '',
-            terms: ad.terms || '',
-            payment_time: ad.payment_time || '30'
-        });
-    };
-
-    const cancelEdit = () => {
-        setEditingAd(null);
-        setEditForm({
+        const [editingAd, setEditingAd] = useState(null);
+        const [editForm, setEditForm] = useState({
             rate: '',
             min_amount: '',
             max_amount: '',
@@ -817,273 +789,272 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
             terms: '',
             payment_time: '30'
         });
-    };
 
-    const updateAd = async () => {
-        if (!editForm.rate) {
-            showToast('Введите курс', 'error');
-            return;
-        }
-
-        try {
-            const res = await fetch(`${API}/api/p2p/order/${editingAd.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: userId,
-                    rate: parseFloat(editForm.rate),
-                    min_amount: parseFloat(editForm.min_amount) || editingAd.min_amount,
-                    max_amount: parseFloat(editForm.max_amount) || editingAd.max_amount,
-                    payment_methods: editForm.payment_methods,
-                    payment_details: editForm.payment_details,
-                    terms: editForm.terms,
-                    payment_time: parseInt(editForm.payment_time),
-                    status: editingAd.status
-                })
+        const startEdit = (ad) => {
+            setEditingAd(ad);
+            setEditForm({
+                rate: ad.rate,
+                min_amount: ad.min_amount,
+                max_amount: ad.max_amount,
+                payment_methods: ad.payment_methods || [],
+                payment_details: ad.payment_details || '',
+                terms: ad.terms || '',
+                payment_time: ad.payment_time || '30'
             });
-            const data = await res.json();
-            if (data.success) {
-                showToast('✅ Объявление обновлено!', 'success');
-                cancelEdit();
-                fetchMyAds();
-            } else {
-                showToast(data.error || 'Ошибка обновления', 'error');
+        };
+
+        const cancelEdit = () => {
+            setEditingAd(null);
+            setEditForm({
+                rate: '',
+                min_amount: '',
+                max_amount: '',
+                payment_methods: [],
+                payment_details: '',
+                terms: '',
+                payment_time: '30'
+            });
+        };
+
+        const updateAd = async () => {
+            if (!editForm.rate) {
+                showToast('Введите курс', 'error');
+                return;
             }
-        } catch (e) {
-            showToast('Ошибка соединения', 'error');
-        }
+
+            try {
+                const res = await fetch(`${API}/api/p2p/order/${editingAd.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        rate: parseFloat(editForm.rate),
+                        min_amount: parseFloat(editForm.min_amount) || editingAd.min_amount,
+                        max_amount: parseFloat(editForm.max_amount) || editingAd.max_amount,
+                        payment_methods: editForm.payment_methods,
+                        payment_details: editForm.payment_details,
+                        terms: editForm.terms,
+                        payment_time: parseInt(editForm.payment_time),
+                        status: editingAd.status
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Объявление обновлено!', 'success');
+                    cancelEdit();
+                    fetchMyAds();
+                } else {
+                    showToast(data.error || 'Ошибка обновления', 'error');
+                }
+            } catch (e) {
+                showToast('Ошибка соединения', 'error');
+            }
+        };
+
+        const togglePaymentMethod = (method) => {
+            setEditForm(prev => ({
+                ...prev,
+                payment_methods: prev.payment_methods.includes(method)
+                    ? prev.payment_methods.filter(m => m !== method)
+                    : [...prev.payment_methods, method]
+            }));
+        };
+
+        const shareAd = (ad) => {
+            const botLink = `https://t.me/TetherRabbitBot?start=order_${ad.id}`;
+            navigator.clipboard.writeText(botLink);
+            showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
+        };
+
+        return (
+            <div className="screen">
+                <div className="header">
+                    <button onClick={() => setScreen('main')}>←</button>
+                    <h2>Мои объявления</h2>
+                    <button className="create-btn" onClick={() => {
+                        setShowCreateForm(!showCreateForm);
+                        if (!showCreateForm) fetchUserBalance();
+                    }}>+</button>
+                </div>
+                
+                {showCreateForm && (
+                    <div className="createForm">
+                        <div className="formType">
+                            <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
+                            <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
+                        </div>
+                        
+                        {newOrder.type === 'sell' && (
+                            <div className="balance-info">
+                                <span>💰 Ваш баланс USDT:</span>
+                                <strong>{userBalance.toFixed(2)} USDT</strong>
+                            </div>
+                        )}
+                        
+                        <input 
+                            type="number" 
+                            placeholder="Сумма (USDT)" 
+                            value={newOrder.amount} 
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setNewOrder({...newOrder, amount: val});
+                                if (newOrder.type === 'sell' && parseFloat(val) > userBalance) {
+                                    showToast(`⚠️ Недостаточно средств! Доступно: ${userBalance} USDT`, 'warning');
+                                }
+                            }} 
+                        />
+                        <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
+                        <div className="row">
+                            <input type="number" placeholder="Мин. сумма" value={newOrder.min_amount} onChange={e => setNewOrder({...newOrder, min_amount: e.target.value})} />
+                            <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
+                        </div>
+                        <div className="paymentBtns">
+                            {paymentMethodsList.map(m => (<button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => { const methods = newOrder.payment_methods.includes(m.value) ? newOrder.payment_methods.filter(x => x !== m.value) : [...newOrder.payment_methods, m.value]; setNewOrder({...newOrder, payment_methods: methods}); }}>{m.icon}</button>))}
+                        </div>
+                        <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}>
+                            {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
+                        </select>
+                        <textarea placeholder="Условия сделки" value={newOrder.terms} onChange={e => setNewOrder({...newOrder, terms: e.target.value})} rows="2" />
+                        <button className="submit" onClick={createOrder} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : 'Создать объявление'}</button>
+                    </div>
+                )}
+
+                <div className="ads-list">
+                    {loading ? (
+                        <div className="loading">Загрузка...</div>
+                    ) : myAds.length === 0 ? (
+                        <div className="empty">Нет объявлений</div>
+                    ) : (
+                        myAds.map(ad => (
+                            <div key={ad.id} className="ad-card">
+                                {editingAd?.id === ad.id ? (
+                                    <div className="edit-form" onClick={(e) => e.stopPropagation()}>
+                                        <div className="ad-header">
+                                            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
+                                            <button className="edit-cancel" onClick={cancelEdit}>✕</button>
+                                        </div>
+                                        <input 
+                                            type="number" 
+                                            placeholder="Курс (RUB)" 
+                                            value={editForm.rate}
+                                            onChange={e => setEditForm({...editForm, rate: e.target.value})}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <div className="row">
+                                            <input 
+                                                type="number" 
+                                                placeholder="Мин. сумма" 
+                                                value={editForm.min_amount}
+                                                onChange={e => setEditForm({...editForm, min_amount: e.target.value})}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            <input 
+                                                type="number" 
+                                                placeholder="Макс. сумма" 
+                                                value={editForm.max_amount}
+                                                onChange={e => setEditForm({...editForm, max_amount: e.target.value})}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        <div className="paymentBtns" onClick={(e) => e.stopPropagation()}>
+                                            {paymentMethodsList.map(m => (
+                                                <button 
+                                                    key={m.value} 
+                                                    className={editForm.payment_methods.includes(m.value) ? 'selected' : ''}
+                                                    onClick={() => togglePaymentMethod(m.value)}
+                                                >
+                                                    {m.icon}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <textarea 
+                                            placeholder="Условия сделки" 
+                                            value={editForm.terms}
+                                            onChange={e => setEditForm({...editForm, terms: e.target.value})}
+                                            rows="2"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        <select 
+                                            value={editForm.payment_time}
+                                            onChange={e => setEditForm({...editForm, payment_time: e.target.value})}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
+                                        </select>
+                                        <div className="edit-actions" onClick={(e) => e.stopPropagation()}>
+                                            <button className="edit-save" onClick={updateAd}>💾 Сохранить</button>
+                                            <button className="edit-cancel-btn" onClick={cancelEdit}>❌ Отмена</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="ad-header">
+                                            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
+                                            <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
+                                        </div>
+                                        <div className="ad-rate">{ad.rate} ₽</div>
+                                        <div className="ad-amount">{ad.available_amount}/{ad.amount} USDT</div>
+                                        <div className="ad-actions">
+                                            <button className="ad-edit" onClick={(e) => { e.stopPropagation(); startEdit(ad); }}>✏️ Редактировать</button>
+                                            <button className="ad-share" onClick={(e) => { e.stopPropagation(); shareAd(ad); }}>📤 Поделиться</button>
+                                            <button className="ad-delete" onClick={(e) => { 
+                                                e.stopPropagation();
+                                                if(window.confirm('Удалить объявление?')) 
+                                                    fetch(`${API}/api/p2p/order/${ad.id}`, {
+                                                        method:'DELETE', 
+                                                        headers:{'Content-Type':'application/json'}, 
+                                                        body:JSON.stringify({userId})
+                                                    }).then(()=>{
+                                                        showToast('Удалено','success');
+                                                        fetchMyAds();
+                                                    });
+                                            }}>🗑 Удалить</button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        );
     };
 
-    const togglePaymentMethod = (method) => {
-        setEditForm(prev => ({
-            ...prev,
-            payment_methods: prev.payment_methods.includes(method)
-                ? prev.payment_methods.filter(m => m !== method)
-                : [...prev.payment_methods, method]
-        }));
-    };
-
-    const shareAd = (ad) => {
-    // Ссылка на бота с параметром order_
-    const botLink = `https://t.me/TetherRabbitBot?start=order_${ad.id}`;
-    navigator.clipboard.writeText(botLink);
-    showToast('✅ Ссылка на объявление скопирована! Отправьте другу в Telegram', 'success');
-};
-
-    return (
+    const OrdersScreen = () => (
         <div className="screen">
             <div className="header">
                 <button onClick={() => setScreen('main')}>←</button>
-                <h2>Мои объявления</h2>
-                <button className="create-btn" onClick={() => setShowCreateForm(!showCreateForm)}>+</button>
+                <h2>Мои сделки</h2>
+                <div></div>
             </div>
-            
-            {/* Форма создания нового объявления */}
-            {showCreateForm && (
-                <div className="createForm">
-                    <div className="formType">
-                        <button className={newOrder.type === 'sell' ? 'active sell' : ''} onClick={() => setNewOrder({...newOrder, type: 'sell'})}>Продажа</button>
-                        <button className={newOrder.type === 'buy' ? 'active buy' : ''} onClick={() => setNewOrder({...newOrder, type: 'buy'})}>Покупка</button>
-                    </div>
-                    
-                    {newOrder.type === 'sell' && (
-                        <div className="balance-info">
-                            <span>💰 Ваш баланс USDT:</span>
-                            <strong>{userBalance.toFixed(2)} USDT</strong>
-                        </div>
-                    )}
-                    
-                    <input 
-                        type="number" 
-                        placeholder="Сумма (USDT)" 
-                        value={newOrder.amount} 
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            setNewOrder({...newOrder, amount: val});
-                            if (newOrder.type === 'sell' && parseFloat(val) > userBalance) {
-                                showToast(`⚠️ Недостаточно средств! Доступно: ${userBalance} USDT`, 'warning');
-                            }
-                        }} 
-                    />
-                    <input type="number" placeholder="Курс (RUB)" value={newOrder.rate} onChange={e => setNewOrder({...newOrder, rate: e.target.value})} />
-                    <div className="row">
-                        <input type="number" placeholder="Мин. сумма" value={newOrder.min_amount} onChange={e => setNewOrder({...newOrder, min_amount: e.target.value})} />
-                        <input type="number" placeholder="Макс. сумма" value={newOrder.max_amount} onChange={e => setNewOrder({...newOrder, max_amount: e.target.value})} />
-                    </div>
-                    <div className="paymentBtns">
-                        {paymentMethodsList.map(m => (<button key={m.value} className={newOrder.payment_methods.includes(m.value) ? 'selected' : ''} onClick={() => { const methods = newOrder.payment_methods.includes(m.value) ? newOrder.payment_methods.filter(x => x !== m.value) : [...newOrder.payment_methods, m.value]; setNewOrder({...newOrder, payment_methods: methods}); }}>{m.icon}</button>))}
-                    </div>
-                    <select value={newOrder.payment_time} onChange={e => setNewOrder({...newOrder, payment_time: e.target.value})}>
-                        {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
-                    </select>
-                    <textarea placeholder="Условия сделки" value={newOrder.terms} onChange={e => setNewOrder({...newOrder, terms: e.target.value})} rows="2" />
-                    <button className="submit" onClick={createOrder} disabled={creatingTrade}>{creatingTrade ? 'Создание...' : 'Создать объявление'}</button>
-                </div>
-            )}
-
-            {/* Список объявлений */}
-            <div className="ads-list">
+            <div className="tabs">
+                <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
+                <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>История</button>
+            </div>
+            <div className="trades-list">
                 {loading ? (
                     <div className="loading">Загрузка...</div>
-                ) : myAds.length === 0 ? (
-                    <div className="empty">Нет объявлений</div>
+                ) : myTrades.length === 0 ? (
+                    <div className="empty">Нет сделок</div>
                 ) : (
-                    myAds.map(ad => (
-                        <div key={ad.id} className="ad-card">
-                            {editingAd?.id === ad.id ? (
-    // Форма редактирования
-    <div className="edit-form" onClick={(e) => e.stopPropagation()}>
-        <div className="ad-header">
-            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
-            <button className="edit-cancel" onClick={cancelEdit}>✕</button>
-        </div>
-        <input 
-            type="number" 
-            placeholder="Курс (RUB)" 
-            value={editForm.rate}
-            onChange={e => setEditForm({...editForm, rate: e.target.value})}
-            onClick={(e) => e.stopPropagation()}
-        />
-        <div className="row">
-            <input 
-                type="number" 
-                placeholder="Мин. сумма" 
-                value={editForm.min_amount}
-                onChange={e => setEditForm({...editForm, min_amount: e.target.value})}
-                onClick={(e) => e.stopPropagation()}
-            />
-            <input 
-                type="number" 
-                placeholder="Макс. сумма" 
-                value={editForm.max_amount}
-                onChange={e => setEditForm({...editForm, max_amount: e.target.value})}
-                onClick={(e) => e.stopPropagation()}
-            />
-        </div>
-        <div className="paymentBtns" onClick={(e) => e.stopPropagation()}>
-            {paymentMethodsList.map(m => (
-                <button 
-                    key={m.value} 
-                    className={editForm.payment_methods.includes(m.value) ? 'selected' : ''}
-                    onClick={() => togglePaymentMethod(m.value)}
-                >
-                    {m.icon}
-                </button>
-            ))}
-        </div>
-        <textarea 
-            placeholder="Условия сделки" 
-            value={editForm.terms}
-            onChange={e => setEditForm({...editForm, terms: e.target.value})}
-            rows="2"
-            onClick={(e) => e.stopPropagation()}
-        />
-        <select 
-            value={editForm.payment_time}
-            onChange={e => setEditForm({...editForm, payment_time: e.target.value})}
-            onClick={(e) => e.stopPropagation()}
-        >
-            {timeOptions.map(opt => <option key={opt.value} value={opt.value}>⏰ {opt.label}</option>)}
-        </select>
-        <div className="edit-actions" onClick={(e) => e.stopPropagation()}>
-            <button className="edit-save" onClick={updateAd}>💾 Сохранить</button>
-            <button className="edit-cancel-btn" onClick={cancelEdit}>❌ Отмена</button>
-        </div>
-    </div>
-) : (
-    // Обычный вид объявления
-    <>
-        <div className="ad-header">
-            <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
-            <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
-        </div>
-        <div className="ad-rate">{ad.rate} ₽</div>
-        <div className="ad-amount">{ad.available_amount}/{ad.amount} USDT</div>
-        <div className="ad-actions">
-            <button className="ad-edit" onClick={(e) => { e.stopPropagation(); startEdit(ad); }}>✏️ Редактировать</button>
-            <button className="ad-share" onClick={(e) => { e.stopPropagation(); shareAd(ad); }}>📤 Поделиться</button>
-            <button className="ad-delete" onClick={(e) => { 
-                e.stopPropagation();
-                if(window.confirm('Удалить объявление?')) 
-                    fetch(`${API}/api/p2p/order/${ad.id}`, {
-                        method:'DELETE', 
-                        headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({userId})
-                    }).then(()=>{
-                        showToast('Удалено','success');
-                        fetchMyAds();
-                    });
-            }}>🗑 Удалить</button>
-        </div>
-    </>
-)} : (
-                                <>
-                                    <div className="ad-header">
-                                        <span className={`ad-type ${ad.type}`}>{ad.type === 'sell' ? 'Продажа' : 'Покупка'}</span>
-                                        <span className={`ad-status ${ad.status}`}>{ad.status === 'active' ? 'Активно' : 'Приостановлено'}</span>
-                                    </div>
-                                    <div className="ad-rate">{ad.rate} ₽</div>
-                                    <div className="ad-amount">{ad.available_amount}/{ad.amount} USDT</div>
-                                    <div className="ad-actions">
-                                        <button className="ad-edit" onClick={() => startEdit(ad)}>✏️ Редактировать</button>
-                                        <button className="ad-share" onClick={() => shareAd(ad)}>📤 Поделиться</button>
-                                        <button className="ad-delete" onClick={() => { 
-                                            if(window.confirm('Удалить объявление?')) 
-                                                fetch(`${API}/api/p2p/order/${ad.id}`, {
-                                                    method:'DELETE', 
-                                                    headers:{'Content-Type':'application/json'}, 
-                                                    body:JSON.stringify({userId})
-                                                }).then(()=>{
-                                                    showToast('Удалено','success');
-                                                    fetchMyAds();
-                                                });
-                                        }}>🗑 Удалить</button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))
+                    myTrades
+                        .filter(t => activeTab === 'active' 
+                            ? ['pending', 'paid'].includes(t.status) 
+                            : ['completed', 'cancelled', 'expired'].includes(t.status))
+                        .map((trade, index) => (
+                            <div 
+                                key={trade.trade_id} 
+                                className="trade-card-wrapper" 
+                                onClick={() => navigateTo(`trade/${trade.trade_id}`)} 
+                                style={{ cursor: 'pointer' }}
+                            >
+                                <TradeCard trade={trade} onUpdate={fetchMyTrades} />
+                            </div>
+                        ))
                 )}
             </div>
         </div>
     );
-};
-
-    const OrdersScreen = () => (
-    <div className="screen">
-        <div className="header">
-            <button onClick={() => setScreen('main')}>←</button>
-            <h2>Мои сделки</h2>
-            <div></div>
-        </div>
-        <div className="tabs">
-            <button className={activeTab === 'active' ? 'active' : ''} onClick={() => setActiveTab('active')}>Активные</button>
-            <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>История</button>
-        </div>
-        <div className="trades-list">
-            {loading ? (
-                <div className="loading">Загрузка...</div>
-            ) : myTrades.length === 0 ? (
-                <div className="empty">Нет сделок</div>
-            ) : (
-                myTrades
-                    .filter(t => activeTab === 'active' 
-                        ? ['pending', 'paid'].includes(t.status) 
-                        : ['completed', 'cancelled', 'expired'].includes(t.status))
-                    .map((trade, index) => (
-                        <div 
-                            key={trade.trade_id} 
-                            className="trade-card-wrapper" 
-                            onClick={() => navigateTo(`trade/${trade.trade_id}`)} 
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <TradeCard trade={trade} onUpdate={fetchMyTrades} />
-                        </div>
-                    ))
-            )}
-        </div>
-    </div>
-);
 
     const HelpScreen = () => (
         <div className="screen">

@@ -249,3 +249,239 @@
 .edit-save { flex: 1; padding: 10px; background: #34c759; border: none; border-radius: 10px; color: #000; font-weight: 600; cursor: pointer; }
 .edit-cancel-btn { flex: 1; padding: 10px; background: rgba(255, 59, 48, 0.15); border: none; border-radius: 10px; color: #ff3b30; cursor: pointer; }
 .edit-cancel { background: none; border: none; color: var(--tg-theme-hint-color, #888); font-size: 18px; cursor: pointer; }
+
+/* ============ ДЕТАЛИ СДЕЛКИ (ДОПОЛНИТЕЛЬНЫЕ СТИЛИ) ============ */
+.trade-detail-screen {
+    padding-bottom: 20px;
+}
+
+.trade-detail-card {
+    background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+    border-radius: 20px;
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid var(--tg-border-color, #2c2c2e);
+    margin-bottom: 16px;
+}
+
+.detail-trade-id {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.detail-status {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.detail-section {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border-radius: 16px;
+}
+
+.detail-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #fff);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--tg-border-color, #3a3d42);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+}
+
+.detail-row.total {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 0.5px solid var(--tg-border-color, #3a3d42);
+    font-size: 16px;
+}
+
+.detail-row.fee {
+    color: #ff9500;
+}
+
+.green {
+    color: #34c759;
+}
+
+.payment-details {
+    background: var(--tg-theme-card-bg, #1a1d21);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.payment-text {
+    font-size: 13px;
+    word-break: break-all;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.payment-placeholder {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #888);
+}
+
+.payment-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.payment-badge {
+    background: var(--tg-theme-button-color, #2f80ed);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: #fff;
+}
+
+.terms-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.timer-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 149, 0, 0.1);
+    border-radius: 30px;
+    padding: 10px;
+}
+
+.timer-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: monospace;
+    color: #ff9500;
+}
+
+.detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.detail-actions .action-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.confirm-payment, .confirm-receipt {
+    background: #34c759;
+    color: #000;
+}
+
+.cancel {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff3b30;
+}
+
+.chat {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: #fff;
+}
+
+/* Чат в деталях сделки */
+.chat-window {
+    margin-top: 16px;
+    border-top: 0.5px solid var(--tg-border-color, #2c2c2e);
+    padding-top: 16px;
+}
+
+.chat-messages-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.chat-bubble {
+    max-width: 85%;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 16px;
+}
+
+.chat-bubble.own {
+    background: var(--tg-theme-button-color, #2f80ed);
+    color: white;
+    margin-left: auto;
+}
+
+.chat-bubble.other {
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    color: var(--tg-theme-text-color, #fff);
+}
+
+.chat-name {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.chat-text {
+    font-size: 13px;
+    word-break: break-word;
+}
+
+.chat-time {
+    font-size: 10px;
+    opacity: 0.5;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.chat-input-field {
+    flex: 1;
+    padding: 12px;
+    background: var(--tg-theme-section-bg-color, #2c2c2e);
+    border: none;
+    border-radius: 24px;
+    color: var(--tg-theme-text-color, #fff);
+    font-size: 14px;
+    outline: none;
+}
+
+.chat-send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color, #2f80ed);
+    border: none;
+    color: white;
+    cursor: pointer;
+}

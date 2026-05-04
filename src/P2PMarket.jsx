@@ -119,20 +119,26 @@ export default function P2PMarket({ telegramUser, showToast, onBack, navigateTo 
     }, [messages]);
 
     const fetchStats = async () => {
-        try {
-            const res = await fetch(`${API}/api/p2p/stats/${userId}`);
-            const data = await res.json();
+    try {
+        const res = await fetch(`${API}/api/p2p/stats/${userId}`);
+        const data = await res.json();
+        if (data.success && data.stats) {
             setStats({
-                total: data.total_trades || 0,
-                completed: data.successful_trades || 0,
-                active: data.pending_trades || 0,
-                cancelled: data.cancelled_trades || 0,
-                volume: data.total_volume || 0
+                total: data.stats.trades?.total || 0,
+                completed: data.stats.trades?.completed || 0,
+                active: data.stats.trades?.pending || 0,
+                cancelled: data.stats.trades?.cancelled || 0,
+                volume: data.stats.volume?.usdt || 0
             });
-        } catch (e) {
-            console.error(e);
+        } else {
+            // Default values if API fails
+            setStats({ total: 0, completed: 0, active: 0, cancelled: 0, volume: 0 });
         }
-    };
+    } catch (e) {
+        console.error(e);
+        setStats({ total: 0, completed: 0, active: 0, cancelled: 0, volume: 0 });
+    }
+};
 
     const fetchOrders = async () => {
         setLoading(true);

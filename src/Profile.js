@@ -125,10 +125,18 @@ function Profile({ navigateTo, telegramUser }) {
   }, [haptic]);
 
   const loadUSDTBalanceData = useCallback(async () => {
-    const userId = getUserId();
-    const r = await fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`);
-    if (r.ok && r.json?.success) setUsdtBalanceData(r.json.data);
-  }, [getUserId]);
+  const userId = getUserId();
+  const r = await fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${userId}`);
+  if (r.ok && r.json?.success) {
+    // Исправление: API возвращает { balance, currency } а не { data }
+    setUsdtBalanceData({ 
+      available: r.json.balance || 0,
+      total: r.json.balance || 0
+    });
+  } else {
+    setUsdtBalanceData({ available: 0, total: 0 });
+  }
+}, [getUserId]);
 
   const loadReferralData = useCallback(async () => {
     const userId = getUserId();

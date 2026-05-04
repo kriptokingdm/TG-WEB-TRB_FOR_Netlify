@@ -226,57 +226,81 @@ export default function USDTWalletTG({ telegramId, onBack }) {
   }, []);
 
   // load data
-  const loadData = async ({ silent = false } = {}) => {
-    if (!telegramId) return;
+  // load data
+const loadData = async ({ silent = false } = {}) => {
+    if (!telegramId) {
+        console.error('❌ NO telegramId!');
+        return;
+    }
 
+    console.log('🔄 loadData START for telegramId:', telegramId);
+    
     if (!silent) setIsLoading(true);
     else setIsRefreshing(true);
 
     try {
-      const [bal, addr, wds, chks] = await Promise.allSettled([
-        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`, { timeoutMs: 8000 }),
-        fetchJSON(`${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`, { timeoutMs: 8000 }),
-        fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
-        fetchJSON(`${API_BASE_URL}/api/checks/user/${telegramId}`, { timeoutMs: 8000 }),
-      ]);
+        const balanceUrl = `${API_BASE_URL}/api/wallet/usdt/balance/${telegramId}`;
+        const addressUrl = `${API_BASE_URL}/api/wallet/usdt/user-address/${telegramId}?network=BEP20`;
+        
+        console.log('📡 Fetching balance:', balanceUrl);
+        console.log('📡 Fetching address:', addressUrl);
+        
+        const [bal, addr, wds, chks] = await Promise.allSettled([
+            fetchJSON(balanceUrl, { timeoutMs: 8000 }),
+            fetchJSON(addressUrl, { timeoutMs: 8000 }),
+            fetchJSON(`${API_BASE_URL}/api/wallet/withdrawals/${telegramId}`, { timeoutMs: 8000 }),
+            fetchJSON(`${API_BASE_URL}/api/checks/user/${telegramId}`, { timeoutMs: 8000 }),
+        ]);
 
-      if (bal.status === "fulfilled" && bal.value.ok && bal.value.json?.success) {
-        setBalance(bal.value.json.balance || 0);
-      }
+        console.log('📊 Balance result:', bal);
+        console.log('📊 Address result:', addr);
+        console.log('📊 Withdrawals result:', wds);
+        console.log('📊 Checks result:', chks);
 
-      if (addr.status === "fulfilled" && addr.value.ok && addr.value.json?.success) {
-        const data = addr.value.json;
-        setAddressData({
-          address: data.address || "",
-          memo: data.memo || "",
-          network: data.network || "BEP20",
-          currency: data.currency || "USDT",
-          qrCode: data.qrCode || "",
-          min_deposit: data.min_deposit || 10,
-          max_deposit: data.max_deposit || 10000,
-          instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address}`,
-        });
-      }
+        if (bal.status === "fulfilled" && bal.value.ok && bal.value.json?.success) {
+            const balanceAmount = bal.value.json.balance || 0;
+            console.log('💰 Balance loaded:', balanceAmount);
+            setBalance(balanceAmount);
+        } else {
+            console.error('❌ Balance failed:', bal);
+        }
 
-      if (wds.status === "fulfilled" && wds.value.ok && wds.value.json?.success) {
-        setWithdrawals(wds.value.json.withdrawals || []);
-      } else {
-        setWithdrawals([]);
-      }
+        if (addr.status === "fulfilled" && addr.value.ok && addr.value.json?.success) {
+            const data = addr.value.json;
+            console.log('📍 Address loaded:', data);
+            setAddressData({
+                address: data.address || "",
+                memo: data.memo || "",
+                network: data.network || "BEP20",
+                currency: data.currency || "USDT",
+                qrCode: data.qrCode || "",
+                min_deposit: data.min_deposit || 10,
+                max_deposit: data.max_deposit || 10000,
+                instructions: data.instructions || `Отправляйте USDT (BEP20) на адрес ${data.address}`,
+            });
+        } else {
+            console.error('❌ Address failed:', addr);
+        }
 
-      if (chks.status === "fulfilled" && chks.value.ok && chks.value.json?.success) {
-        setChecks(chks.value.json.checks || []);
-      } else {
-        setChecks([]);
-      }
+        if (wds.status === "fulfilled" && wds.value.ok && wds.value.json?.success) {
+            setWithdrawals(wds.value.json.withdrawals || []);
+        } else {
+            setWithdrawals([]);
+        }
+
+        if (chks.status === "fulfilled" && chks.value.ok && chks.value.json?.success) {
+            setChecks(chks.value.json.checks || []);
+        } else {
+            setChecks([]);
+        }
     } catch (e) {
-      console.error("❌ loadData error:", e);
-      showToastMessage("Ошибка загрузки", "error");
+        console.error("❌ loadData error:", e);
+        showToastMessage("Ошибка загрузки", "error");
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+        setIsLoading(false);
+        setIsRefreshing(false);
     }
-  };
+};
 
   useEffect(() => {
     loadData({ silent: false });

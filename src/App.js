@@ -11,6 +11,7 @@ import P2PCreate from './P2PCreate';
 import P2POrder from './P2POrder';
 import P2PTrade from './P2PTrade';
 import TradeDetail from './TradeDetail';
+import USDTWallet from './USDTWallet';
 import { ProfileIcon, ExchangeIcon, HistoryIcon } from './NavIcons';
 import Game from './Game';
 import PinPage from './PinPage';
@@ -262,7 +263,7 @@ function App() {
     initTelegramWebApp();
 
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(hash.split('/')[0])) {
+    if (hash && ['home', 'profile', 'history', 'help', 'settings', 'game', 'wallet', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(hash.split('/')[0])) {
       setCurrentPage(hash);
     }
 
@@ -271,7 +272,7 @@ function App() {
 
     const handleHashChange = () => {
       const h = window.location.hash.replace('#', '');
-      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(h.split('/')[0])) {
+      if (h && ['home', 'profile', 'history', 'help', 'settings', 'game', 'wallet', 'p2p', 'p2p/create', 'p2p/order', 'p2p/trade', 'trade'].includes(h.split('/')[0])) {
         setCurrentPage(h);
       }
     };
@@ -509,6 +510,7 @@ function App() {
     switch (currentPage) {
       case 'history': return <History key="history" {...commonProps} />;
       case 'profile': return <Profile key="profile" {...commonProps} />;
+      case 'wallet': return <USDTWallet key="wallet" telegramId={telegramUser?.id} onBack={() => navigateTo('profile')} />;
       case 'p2p': return <P2PMarket key="p2p" {...commonProps} onBack={() => navigateTo('home')} navigateTo={navigateTo} />;
       case 'p2p/create': return <P2PCreate key="p2p-create" {...commonProps} />;
       case 'help': return <Help key="help" {...commonProps} />;
